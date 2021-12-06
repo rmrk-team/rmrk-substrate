@@ -342,7 +342,7 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
-		rmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
+		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
 		Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
 	}
 );
