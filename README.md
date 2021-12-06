@@ -68,7 +68,9 @@ local node template.
 If you want to see the multi-node consensus algorithm in action, refer to our
 [Start a Private Network tutorial](https://docs.substrate.io/tutorials/v3/private-network).
 
-## Template Structure
+## RMRK Pallets structure
+
+![](https://static.swimlanes.io/1fb43d728504af2c6820e9e1dc0eb45d.png)
 
 A Substrate project such as this consists of a number of components that are spread across a few
 directories.
