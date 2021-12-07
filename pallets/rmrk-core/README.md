@@ -2,7 +2,7 @@
 
 ![](https://static.swimlanes.io/15201cbf30d5a669d71beee38813e5a5.png)
 
-Extends uniques pallet. 
+Extends uniques pallet. Based on [RMRK2 Spec](https://github.com/rmrk-team/rmrk-spec/tree/master/standards/rmrk2.0.0)
 
 * **create_collection**(origin, metadata: Vec<u8>, max: u16)
     * create a collection
