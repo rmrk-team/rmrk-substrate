@@ -1,4 +1,5 @@
 use frame_support::{assert_noop, assert_ok, error::BadOrigin};
+// use sp_runtime::AccountId32;
 
 // use crate::types::ClassType;
 
@@ -21,7 +22,7 @@ fn stv(s: &str) -> Vec<u8> {
 #[test]
 fn create_collection_works() {
 	ExtBuilder::default().build().execute_with(|| {
-        let metadata = stv("testing");
+		let metadata = stv("testing");
 		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
 		assert_noop!(
 			RMRKCore::create_collection(
@@ -34,7 +35,7 @@ fn create_collection_works() {
 		assert_noop!(
 			RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()),
 			Error::<Test>::NoAvailableCollectionId
-		);        
+		);
 	});
 }
 
@@ -44,6 +45,7 @@ fn mint_nft_works() {
 		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), b"metadata".to_vec()));
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
+			ALICE,
 			0,
 			Some(ALICE),
 			Some(0),
@@ -51,27 +53,77 @@ fn mint_nft_works() {
 		));
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
+			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(20),
 			Some(b"metadata".to_vec())
-		));       
-        assert_ok!(RMRKCore::mint_nft(
-            Origin::signed(BOB),
-            COLLECTION_ID_0,
-            Some(CHARLIE),
-            Some(20),
-            Some(b"metadata".to_vec())
-        ));
+		));
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(BOB),
+			BOB,
+			COLLECTION_ID_0,
+			Some(CHARLIE),
+			Some(20),
+			Some(b"metadata".to_vec())
+		));
 		assert_noop!(
 			RMRKCore::mint_nft(
 				Origin::signed(ALICE),
+				ALICE,
 				NOT_EXISTING_CLASS_ID,
 				Some(CHARLIE),
 				Some(20),
 				Some(b"metadata".to_vec())
 			),
 			Error::<Test>::CollectionUnknown
-		);        
+		);
+	});
+}
+
+#[test]
+fn send_nft_to_minted_nft_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		let collection_metadata = stv("testing");
+		let nft_metadata = stv("testing");
+		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), collection_metadata));
+		// Alice mints NFT (0, 0) [will be the parent]
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(0),
+			Some(nft_metadata.clone())
+		));
+		// Alice mints NFT (0, 1) [will be the child]
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(0),
+			Some(nft_metadata)
+		));
+		// Alice sends NFT (0, 0) [parent] to Bob
+		let x = RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			0,
+			AccountIdOrCollectionNftTuple::AccountId(BOB),
+		);
+		// Alice sends NFT (0, 1) [parent] to NFT (0, 0) [child]
+		let x = RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		);
+
+		// Check that
+		assert_eq!(
+			RMRKCore::nfts(0, 1).unwrap().owner,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		)
 	});
 }

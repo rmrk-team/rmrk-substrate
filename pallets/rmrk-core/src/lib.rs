@@ -9,7 +9,7 @@ use frame_system::ensure_signed;
 use sp_runtime::traits::{AtLeast32BitUnsigned, CheckedAdd, One, StaticLookup, Zero};
 use sp_std::{convert::TryInto, vec::Vec};
 
-use types::{ClassInfo, InstanceInfo};
+use types::{AccountIdOrCollectionNftTuple, ClassInfo, InstanceInfo};
 
 #[cfg(test)]
 mod mock;
@@ -23,6 +23,8 @@ pub type ClassInfoOf<T> = ClassInfo<BoundedVec<u8, <T as pallet_uniques::Config>
 pub type InstanceInfoOf<T> = InstanceInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+	<T as pallet::Config>::CollectionId,
+	<T as pallet::Config>::NftId,
 >;
 
 pub mod types;
@@ -112,7 +114,12 @@ pub mod pallet {
 		NftMinted(T::AccountId, T::CollectionId, T::NftId),
 		NFTBurned(T::AccountId, T::NftId),
 		CollectionBurned(T::AccountId, T::CollectionId),
-		NFTSent(T::AccountId, T::AccountId, T::CollectionId, T::NftId),
+		NFTSent(
+			T::AccountId,
+			AccountIdOrCollectionNftTuple<T::AccountId, T::CollectionId, T::NftId>,
+			T::CollectionId,
+			T::NftId,
+		),
 		IssuerChanged(T::AccountId, T::AccountId, T::CollectionId),
 		PropertySet(
 			T::CollectionId,
@@ -140,7 +147,7 @@ pub mod pallet {
 		NoAvailableNftId,
 		NotInRange,
 		RoyaltyNotSet,
-		CollectionUnknown
+		CollectionUnknown,
 	}
 
 	#[pallet::call]
@@ -158,6 +165,7 @@ pub mod pallet {
 		#[transactional]
 		pub fn mint_nft(
 			origin: OriginFor<T>,
+			owner: T::AccountId,
 			collection_id: T::CollectionId,
 			author: Option<T::AccountId>,
 			royalty: Option<u8>,
@@ -168,8 +176,7 @@ pub mod pallet {
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
 
-			let _ = Self::collections(collection_id)
-				.ok_or(Error::<T>::CollectionUnknown)?;
+			let _ = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
 			if let Some(r) = royalty {
 				ensure!(r < 100, Error::<T>::NotInRange);
@@ -196,10 +203,13 @@ pub mod pallet {
 			let author = author.ok_or(Error::<T>::AuthorNotSet)?;
 			let royalty = royalty.ok_or(Error::<T>::RoyaltyNotSet)?;
 
+			let rootowner = owner.clone();
+			let owner = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
+
 			NFTs::<T>::insert(
 				collection_id,
 				nft_id,
-				InstanceInfo { author, royalty, metadata: metadata_bounded },
+				InstanceInfo { owner, rootowner, author, royalty, metadata: metadata_bounded },
 			);
 
 			Self::deposit_event(Event::NftMinted(
@@ -211,7 +221,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Mint a collection
+		/// Create a collection
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn create_collection(origin: OriginFor<T>, metadata: Vec<u8>) -> DispatchResult {
@@ -289,14 +299,31 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: T::CollectionId,
 			nft_id: T::NftId,
-			dest: <T::Lookup as StaticLookup>::Source,
+			dest: AccountIdOrCollectionNftTuple<T::AccountId, T::CollectionId, T::NftId>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
-			let dest = T::Lookup::lookup(dest)?;
-			// TODO
+
+			//TODO checks...
+			// Does NFT exist?
+			// Is sender the owner?
+			// If dest is tuple, does that NFT exist?
+
+			let mut z = NFTs::<T>::get(collection_id, nft_id).unwrap();
+			// TODO if Alice sends to Bob's NFT, does Bob become the rootowner?
+			match dest.clone() {
+				AccountIdOrCollectionNftTuple::AccountId(account_id) => {
+					z.rootowner = account_id.clone();
+				}
+				_ => (),
+			};
+			z.owner = dest.clone();
+
+			NFTs::<T>::remove(collection_id, nft_id);
+			NFTs::<T>::insert(collection_id, nft_id, z);
+
 			Self::deposit_event(Event::NFTSent(
 				sender.unwrap_or_default(),
 				dest,
@@ -379,7 +406,6 @@ pub mod pallet {
 			Self::deposit_event(Event::ResourceAdded(nft_id, resource_id));
 			Ok(())
 		}
-
 		/// accept the addition of a new resource to an existing NFT
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
