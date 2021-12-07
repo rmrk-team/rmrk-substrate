@@ -112,7 +112,7 @@ fn send_nft_to_minted_nft_works() {
 			0,
 			AccountIdOrCollectionNftTuple::AccountId(BOB),
 		);
-		// Alice sends NFT (0, 1) [parent] to NFT (0, 0) [child]
+		// Alice sends NFT (0, 1) [child] to NFT (0, 0) [parent]
 		let x = RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
@@ -120,10 +120,13 @@ fn send_nft_to_minted_nft_works() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		);
 
-		// Check that
+		// Check that NFT (0,1) [child] is owned by NFT (0,0) [parent]
 		assert_eq!(
 			RMRKCore::nfts(0, 1).unwrap().owner,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
-		)
+		);
+
+		// Check that Bob now root-owns NFT (0, 1) [child] since he wasn't originally rootowner
+		assert_eq!(RMRKCore::nfts(0, 1).unwrap().rootowner, BOB)
 	});
 }

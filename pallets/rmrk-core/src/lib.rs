@@ -307,17 +307,23 @@ pub mod pallet {
 			};
 
 			//TODO checks...
-			// Does NFT exist?
+			// Does sending NFT exist?
+			// Does recipient NFT exist?
 			// Is sender the owner?
 			// If dest is tuple, does that NFT exist?
 
 			let mut z = NFTs::<T>::get(collection_id, nft_id).unwrap();
-			// TODO if Alice sends to Bob's NFT, does Bob become the rootowner?
+
 			match dest.clone() {
 				AccountIdOrCollectionNftTuple::AccountId(account_id) => {
 					z.rootowner = account_id.clone();
 				}
-				_ => (),
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
+					let recipient_nft = NFTs::<T>::get(cid, nid).unwrap();
+					if z.rootowner != recipient_nft.rootowner {
+						z.rootowner = recipient_nft.rootowner
+					}
+				}
 			};
 			z.owner = dest.clone();
 
