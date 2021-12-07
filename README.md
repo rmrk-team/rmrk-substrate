@@ -70,7 +70,7 @@ If you want to see the multi-node consensus algorithm in action, refer to our
 
 ## RMRK Pallets structure
 
-![](https://static.swimlanes.io/1fb43d728504af2c6820e9e1dc0eb45d.png)
+![](https://static.swimlanes.io/6871f1a4238e3f6762eb78412f0b83c2.png)
 
 A Substrate project such as this consists of a number of components that are spread across a few
 directories.
