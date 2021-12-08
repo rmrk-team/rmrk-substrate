@@ -262,14 +262,15 @@ pub mod pallet {
 		/// burn nft
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
-		pub fn burn_nft(origin: OriginFor<T>, nft_id: T::NftId) -> DispatchResult {
-			let sender = match T::ProtocolOrigin::try_origin(origin) {
-				Ok(_) => None,
-				Err(origin) => Some(ensure_signed(origin)?),
-			};
-			// TODO
-			// pallet_uniques::Pallet::<T>::burn
-			Self::deposit_event(Event::NFTBurned(sender.unwrap_or_default(), nft_id));
+		pub fn burn_nft(origin: OriginFor<T>, collection_id: T::CollectionId, nft_id: T::NftId) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
+			pallet_uniques::Pallet::<T>::do_burn(
+				collection_id.into(),
+				nft_id.into(),
+				|_,_| Ok(()),
+			)?;
+			NFTs::<T>::remove(collection_id, nft_id);
+			Self::deposit_event(Event::NFTBurned(sender, nft_id));
 			Ok(())
 		}
 
