@@ -133,7 +133,7 @@ pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const RMRK: Balance = 1;
 pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::ClassId = 0;
 pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::ClassId = 1;
-pub const TOKEN_ID_0: <Test as pallet_uniques::Config>::InstanceId = 0;
+pub const NFT_ID_0: <Test as pallet_uniques::Config>::InstanceId = 0;
 pub const NOT_EXISTING_CLASS_ID: <Test as pallet_uniques::Config>::ClassId = 999;
 
 pub struct ExtBuilder;

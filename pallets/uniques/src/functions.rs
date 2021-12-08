@@ -150,7 +150,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		Ok(())
 	}
 
-	pub(super) fn do_burn(
+	pub fn do_burn(
 		class: T::ClassId,
 		instance: T::InstanceId,
 		with_details: impl FnOnce(&ClassDetailsFor<T, I>, &InstanceDetailsFor<T, I>) -> DispatchResult,
