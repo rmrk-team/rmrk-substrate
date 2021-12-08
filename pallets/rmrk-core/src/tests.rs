@@ -180,21 +180,3 @@ fn change_issuer_works() {
 		assert_eq!(RMRKCore::collections(0).unwrap().issuer, BOB);
 	});
 }
-
-#[test]
-fn burn_nft_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		let metadata = stv("testing");
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(0),
-			Some(metadata.clone())
-		));
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
-		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0), None);
-	});
-}

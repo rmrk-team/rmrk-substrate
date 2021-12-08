@@ -262,17 +262,14 @@ pub mod pallet {
 		/// burn nft
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
-		pub fn burn_nft(
-			origin: OriginFor<T>,
-			collection_id: T::CollectionId,
-			nft_id: T::NftId,
-		) -> DispatchResult {
-			let sender = ensure_signed(origin)?;
-			pallet_uniques::Pallet::<T>::do_burn(collection_id.into(), nft_id.into(), |_, _| {
-				Ok(())
-			})?;
-			NFTs::<T>::remove(collection_id, nft_id);
-			Self::deposit_event(Event::NFTBurned(sender, nft_id));
+		pub fn burn_nft(origin: OriginFor<T>, nft_id: T::NftId) -> DispatchResult {
+			let sender = match T::ProtocolOrigin::try_origin(origin) {
+				Ok(_) => None,
+				Err(origin) => Some(ensure_signed(origin)?),
+			};
+			// TODO
+			// pallet_uniques::Pallet::<T>::burn
+			Self::deposit_event(Event::NFTBurned(sender.unwrap_or_default(), nft_id));
 			Ok(())
 		}
 
@@ -316,14 +313,14 @@ pub mod pallet {
 			match new_owner.clone() {
 				AccountIdOrCollectionNftTuple::AccountId(account_id) => {
 					sending_nft.rootowner = account_id.clone();
-				},
+				}
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 					let recipient_nft =
 						NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
 					if sending_nft.rootowner != recipient_nft.rootowner {
 						sending_nft.rootowner = recipient_nft.rootowner
 					}
-				},
+				}
 			};
 			sending_nft.owner = new_owner.clone();
 
