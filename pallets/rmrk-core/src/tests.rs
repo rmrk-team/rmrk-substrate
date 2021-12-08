@@ -106,19 +106,19 @@ fn send_nft_to_minted_nft_works() {
 			Some(nft_metadata)
 		));
 		// Alice sends NFT (0, 0) [parent] to Bob
-		let x = RMRKCore::send(
+		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			0,
 			AccountIdOrCollectionNftTuple::AccountId(BOB),
-		);
+		));
 		// Alice sends NFT (0, 1) [child] to NFT (0, 0) [parent]
-		let x = RMRKCore::send(
+		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
-		);
+		));
 
 		// Check that NFT (0,1) [child] is owned by NFT (0,0) [parent]
 		assert_eq!(

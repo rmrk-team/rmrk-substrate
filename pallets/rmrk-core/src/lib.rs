@@ -299,7 +299,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: T::CollectionId,
 			nft_id: T::NftId,
-			dest: AccountIdOrCollectionNftTuple<T::AccountId, T::CollectionId, T::NftId>,
+			new_owner: AccountIdOrCollectionNftTuple<T::AccountId, T::CollectionId, T::NftId>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
@@ -312,27 +312,27 @@ pub mod pallet {
 			// Is sender the owner?
 			// If dest is tuple, does that NFT exist?
 
-			let mut z = NFTs::<T>::get(collection_id, nft_id).unwrap();
+			let mut sending_nft = NFTs::<T>::get(collection_id, nft_id).unwrap();
 
-			match dest.clone() {
+			match new_owner.clone() {
 				AccountIdOrCollectionNftTuple::AccountId(account_id) => {
-					z.rootowner = account_id.clone();
+					sending_nft.rootowner = account_id.clone();
 				}
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 					let recipient_nft = NFTs::<T>::get(cid, nid).unwrap();
-					if z.rootowner != recipient_nft.rootowner {
-						z.rootowner = recipient_nft.rootowner
+					if sending_nft.rootowner != recipient_nft.rootowner {
+						sending_nft.rootowner = recipient_nft.rootowner
 					}
 				}
 			};
-			z.owner = dest.clone();
+			sending_nft.owner = new_owner.clone();
 
 			NFTs::<T>::remove(collection_id, nft_id);
-			NFTs::<T>::insert(collection_id, nft_id, z);
+			NFTs::<T>::insert(collection_id, nft_id, sending_nft);
 
 			Self::deposit_event(Event::NFTSent(
 				sender.unwrap_or_default(),
-				dest,
+				new_owner,
 				collection_id,
 				nft_id,
 			));
