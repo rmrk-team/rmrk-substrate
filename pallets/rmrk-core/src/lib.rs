@@ -19,7 +19,10 @@ mod tests;
 
 // pub type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as
 // frame_system::Config>::AccountId>>::Balance;
-pub type ClassInfoOf<T> = ClassInfo<BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
+pub type ClassInfoOf<T> = ClassInfo<
+	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+	<T as frame_system::Config>::AccountId,
+>;
 pub type InstanceInfoOf<T> = InstanceInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
@@ -254,7 +257,13 @@ pub mod pallet {
 				),
 			)?;
 
-			Collections::<T>::insert(collection_id, ClassInfo { metadata: metadata_bounded });
+			Collections::<T>::insert(
+				collection_id,
+				ClassInfo {
+					issuer: sender.clone().unwrap_or_default(),
+					metadata: metadata_bounded,
+				},
+			);
 
 			Self::deposit_event(Event::CollectionCreated(
 				sender.unwrap_or_default(),
@@ -346,17 +355,34 @@ pub mod pallet {
 		pub fn change_issuer(
 			origin: OriginFor<T>,
 			collection_id: T::CollectionId,
-			dest: <T::Lookup as StaticLookup>::Source,
+			new_issuer: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
-			let dest = T::Lookup::lookup(dest)?;
-			// TODO
+			let new_issuer = T::Lookup::lookup(new_issuer)?;
+
+			// Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
+			// 	let mut collection =
+			// 		collection.take().ok_or(Error::<T>::NoAvailableCollectionId)?;
+			// 	collection.issuer = dest.clone();
+			// 	Collections::<T>::insert(collection_id, collection);
+			// 	Ok(())
+			// })?;
+
+			// Check that sender is current issuer
+			let mut collection =
+				Collections::<T>::get(collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
+			collection.issuer = new_issuer.clone();
+
+			// TODO: I'd rather write it with try_mutate_exists but can't figure out how :/
+			Collections::<T>::remove(collection_id);
+			Collections::<T>::insert(collection_id, collection);
+
 			Self::deposit_event(Event::IssuerChanged(
 				sender.unwrap_or_default(),
-				dest,
+				new_issuer,
 				collection_id,
 			));
 			Ok(())

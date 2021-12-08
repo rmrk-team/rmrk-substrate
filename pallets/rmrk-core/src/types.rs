@@ -14,8 +14,9 @@ pub enum AccountIdOrCollectionNftTuple<AccountId, CollectionId, NftId> {
 
 #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct ClassInfo<BoundedString> {
+pub struct ClassInfo<BoundedString, AccountId> {
 	/// Arbitrary data about a class, e.g. IPFS hash
+	pub issuer: AccountId,
 	pub metadata: BoundedString,
 }
 
