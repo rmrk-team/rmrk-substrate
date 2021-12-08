@@ -127,6 +127,47 @@ fn send_nft_to_minted_nft_works() {
 		);
 
 		// Check that Bob now root-owns NFT (0, 1) [child] since he wasn't originally rootowner
-		assert_eq!(RMRKCore::nfts(0, 1).unwrap().rootowner, BOB)
+		assert_eq!(RMRKCore::nfts(0, 1).unwrap().rootowner, BOB);
+
+		// Error if sender doesn't root-own sending NFT
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(CHARLIE),
+				0,
+				0,
+				AccountIdOrCollectionNftTuple::AccountId(BOB)
+			),
+			Error::<Test>::NoPermission
+		);
+
+		// Error if sending NFT doesn't exist
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(ALICE),
+				666,
+				666,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)
+			),
+			Error::<Test>::NoAvailableNftId
+		);
+
+		// BOB can send back child NFT to ALICE
+		assert_ok!(RMRKCore::send(
+			Origin::signed(BOB),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::AccountId(ALICE)
+		));
+
+		// Error if recipient is NFT and that NFT doesn't exist
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(ALICE),
+				0,
+				1,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(666, 666)
+			),
+			Error::<Test>::NoAvailableNftId
+		);
 	});
 }

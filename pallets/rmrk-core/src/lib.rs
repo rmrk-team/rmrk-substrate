@@ -148,6 +148,7 @@ pub mod pallet {
 		NotInRange,
 		RoyaltyNotSet,
 		CollectionUnknown,
+		NoPermission,
 	}
 
 	#[pallet::call]
@@ -292,7 +293,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// transfer NFT from account A to account B
+		/// transfer NFT from account A to (account B or NFT)
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn send(
@@ -306,20 +307,20 @@ pub mod pallet {
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
 
-			//TODO checks...
-			// Does sending NFT exist?
-			// Does recipient NFT exist?
-			// Is sender the owner?
-			// If dest is tuple, does that NFT exist?
-
-			let mut sending_nft = NFTs::<T>::get(collection_id, nft_id).unwrap();
+			let mut sending_nft =
+				NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+			ensure!(
+				sending_nft.rootowner == sender.clone().unwrap_or_default(),
+				Error::<T>::NoPermission
+			);
 
 			match new_owner.clone() {
 				AccountIdOrCollectionNftTuple::AccountId(account_id) => {
 					sending_nft.rootowner = account_id.clone();
 				}
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
-					let recipient_nft = NFTs::<T>::get(cid, nid).unwrap();
+					let recipient_nft =
+						NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
 					if sending_nft.rootowner != recipient_nft.rootowner {
 						sending_nft.rootowner = recipient_nft.rootowner
 					}
