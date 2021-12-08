@@ -170,3 +170,13 @@ fn send_nft_to_minted_nft_works() {
 		);
 	});
 }
+
+#[test]
+fn change_issuer_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		let collection_metadata = stv("testing");
+		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), collection_metadata));
+		assert_ok!(RMRKCore::change_issuer(Origin::signed(ALICE), 0, BOB));
+		assert_eq!(RMRKCore::collections(0).unwrap().issuer, BOB);
+	});
+}
