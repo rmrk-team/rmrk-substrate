@@ -1,8 +1,7 @@
 use super::*;
 use crate as pallet_rmrk_core;
 
-use frame_support::traits::Everything;
-use frame_support::{parameter_types, weights::Weight};
+use frame_support::{parameter_types, traits::Everything, weights::Weight};
 use frame_system::EnsureRoot;
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
@@ -125,7 +124,7 @@ impl pallet_balances::Config for Test {
 	type WeightInfo = ();
 	type MaxReserves = MaxReserves;
 	// type ReserveIdentifier = ReserveIdentifier;
-    type ReserveIdentifier = ();
+	type ReserveIdentifier = ();
 }
 
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);

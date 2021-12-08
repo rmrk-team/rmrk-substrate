@@ -21,7 +21,7 @@ fn stv(s: &str) -> Vec<u8> {
 #[test]
 fn create_collection_works() {
 	ExtBuilder::default().build().execute_with(|| {
-        let metadata = stv("testing");
+		let metadata = stv("testing");
 		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
 		assert_noop!(
 			RMRKCore::create_collection(
@@ -34,7 +34,7 @@ fn create_collection_works() {
 		assert_noop!(
 			RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()),
 			Error::<Test>::NoAvailableCollectionId
-		);        
+		);
 	});
 }
 
@@ -55,14 +55,14 @@ fn mint_nft_works() {
 			Some(ALICE),
 			Some(20),
 			Some(b"metadata".to_vec())
-		));       
-        assert_ok!(RMRKCore::mint_nft(
-            Origin::signed(BOB),
-            COLLECTION_ID_0,
-            Some(CHARLIE),
-            Some(20),
-            Some(b"metadata".to_vec())
-        ));
+		));
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			Some(CHARLIE),
+			Some(20),
+			Some(b"metadata".to_vec())
+		));
 		assert_noop!(
 			RMRKCore::mint_nft(
 				Origin::signed(ALICE),
@@ -72,6 +72,6 @@ fn mint_nft_works() {
 				Some(b"metadata".to_vec())
 			),
 			Error::<Test>::CollectionUnknown
-		);        
+		);
 	});
 }
