@@ -198,3 +198,25 @@ fn burn_nft_works() {
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0), None);
 	});
 }
+
+#[test]
+fn destroy_collection_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata = stv("testing");
+		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(0),
+			Some(metadata.clone())
+		));
+		assert_noop!(
+			RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0),
+			Error::<Test>::CollectionNotEmpty
+		);
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+		assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
+	});
+}

@@ -80,7 +80,7 @@ impl<T: Config<I>, I: 'static> Pallet<T, I> {
 		Ok(())
 	}
 
-	pub(super) fn do_destroy_class(
+	pub fn do_destroy_class(
 		class: T::ClassId,
 		witness: DestroyWitness,
 		maybe_check_owner: Option<T::AccountId>,

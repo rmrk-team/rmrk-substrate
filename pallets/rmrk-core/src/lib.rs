@@ -3,7 +3,15 @@
 #![allow(clippy::upper_case_acronyms)]
 
 use codec::HasCompact;
-use frame_support::{ensure, transactional, BoundedVec};
+use frame_support::{
+	dispatch::DispatchResult,
+	ensure,
+	traits::{
+		tokens::nonfungibles::*, BalanceStatus, Currency, NamedReservableCurrency,
+		ReservableCurrency,
+	},
+	transactional, BoundedVec,
+};
 use frame_system::ensure_signed;
 
 use sp_runtime::traits::{AtLeast32BitUnsigned, CheckedAdd, One, StaticLookup, Zero};
@@ -116,7 +124,7 @@ pub mod pallet {
 		CollectionCreated(T::AccountId, T::CollectionId),
 		NftMinted(T::AccountId, T::CollectionId, T::NftId),
 		NFTBurned(T::AccountId, T::NftId),
-		CollectionBurned(T::AccountId, T::CollectionId),
+		CollectionDestroyed(T::AccountId, T::CollectionId),
 		NFTSent(
 			T::AccountId,
 			AccountIdOrCollectionNftTuple<T::AccountId, T::CollectionId, T::NftId>,
@@ -152,6 +160,8 @@ pub mod pallet {
 		RoyaltyNotSet,
 		CollectionUnknown,
 		NoPermission,
+		NoWitness,
+		CollectionNotEmpty,
 	}
 
 	#[pallet::call]
@@ -260,6 +270,7 @@ pub mod pallet {
 		}
 
 		/// burn nft
+		/// TODO: If an NFT that contains other NFTs is being burnt, the owned NFTs are also burned.
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn burn_nft(
@@ -276,10 +287,10 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// burn collection
+		/// destroy collection
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
-		pub fn burn_collection(
+		pub fn destroy_collection(
 			origin: OriginFor<T>,
 			collection_id: T::CollectionId,
 		) -> DispatchResult {
@@ -287,8 +298,21 @@ pub mod pallet {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
-			// TODO
-			Self::deposit_event(Event::CollectionBurned(sender.unwrap_or_default(), collection_id));
+			let witness = pallet_uniques::Pallet::<T>::get_destroy_witness(&collection_id.into())
+				.ok_or(Error::<T>::NoWitness)?;
+			ensure!(witness.instances == 0u32, Error::<T>::CollectionNotEmpty);
+
+			pallet_uniques::Pallet::<T>::do_destroy_class(
+				collection_id.into(),
+				witness,
+				sender.clone(),
+			)?;
+			Collections::<T>::remove(collection_id);
+
+			Self::deposit_event(Event::CollectionDestroyed(
+				sender.unwrap_or_default(),
+				collection_id,
+			));
 			Ok(())
 		}
 
