@@ -80,7 +80,6 @@ fn mint_nft_works() {
 		);
 	});
 }
-
 #[test]
 fn send_nft_to_minted_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {

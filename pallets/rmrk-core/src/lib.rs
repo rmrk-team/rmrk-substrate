@@ -183,14 +183,7 @@ pub mod pallet {
 				ensure!(r < 100, Error::<T>::NotInRange);
 			}
 
-			let nft_id: T::NftId = NextNftId::<T>::try_mutate(
-				collection_id,
-				|id| -> Result<T::NftId, DispatchError> {
-					let current_id = *id;
-					*id = id.checked_add(&One::one()).ok_or(Error::<T>::NoAvailableNftId)?;
-					Ok(current_id)
-				},
-			)?;
+			let nft_id: T::NftId = Self::get_next_nft_id(collection_id)?;
 
 			pallet_uniques::Pallet::<T>::do_mint(
 				collection_id.into(),
@@ -231,13 +224,7 @@ pub mod pallet {
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
 
-			let collection_id = NextCollectionId::<T>::try_mutate(
-				|id| -> Result<T::CollectionId, DispatchError> {
-					let current_id = *id;
-					*id = id.checked_add(&One::one()).ok_or(Error::<T>::NoAvailableCollectionId)?;
-					Ok(current_id)
-				},
-			)?;
+			let collection_id = Self::get_next_collection_id()?;
 
 			let metadata_bounded = Self::to_bounded_string(metadata)?;
 
@@ -447,8 +434,24 @@ pub mod pallet {
 	}
 
 	impl<T: Config> Pallet<T> {
-		fn to_bounded_string(name: Vec<u8>) -> Result<BoundedVec<u8, T::StringLimit>, Error<T>> {
+		pub fn to_bounded_string(
+			name: Vec<u8>,
+		) -> Result<BoundedVec<u8, T::StringLimit>, Error<T>> {
 			name.try_into().map_err(|_| Error::<T>::TooLong)
+		}
+		pub fn get_next_collection_id() -> Result<T::CollectionId, Error<T>> {
+			NextCollectionId::<T>::try_mutate(|id| {
+				let current_id = *id;
+				*id = id.checked_add(&One::one()).ok_or(Error::<T>::NoAvailableCollectionId)?;
+				Ok(current_id)
+			})
+		}
+		pub fn get_next_nft_id(collection_id: T::CollectionId) -> Result<T::NftId, Error<T>> {
+			NextNftId::<T>::try_mutate(collection_id, |id| {
+				let current_id = *id;
+				*id = id.checked_add(&One::one()).ok_or(Error::<T>::NoAvailableNftId)?;
+				Ok(current_id)
+			})
 		}
 	}
 }
