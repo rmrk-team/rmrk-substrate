@@ -126,6 +126,20 @@ pub mod pallet {
 	pub type Resources<T: Config> =
 		StorageDoubleMap<_, Twox64Concat, T::NftId, Twox64Concat, T::ResourceId, InstanceInfoOf<T>>;
 
+	#[pallet::storage]
+	#[pallet::getter(fn properties)]
+	/// Metadata of an asset class.
+	pub(super) type Properties<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, T::CollectionId>,
+			NMapKey<Blake2_128Concat, Option<T::NftId>>,
+			NMapKey<Blake2_128Concat, BoundedVec<u8, T::KeyLimit>>,
+		),
+		BoundedVec<u8, T::ValueLimit>,
+		OptionQuery,
+	>;
+
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
@@ -468,11 +482,25 @@ pub mod pallet {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
-			// TODO
+
+			let collection =
+				Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
+			ensure!(collection.issuer == sender.unwrap_or_default(), Error::<T>::NoPermission);
+
+			if let Some(nft_id) = &maybe_nft_id {
+				ensure!(
+					NFTs::<T>::contains_key(collection_id, nft_id),
+					Error::<T>::NoAvailableNftId
+				);
+				if let Some(nft) = NFTs::<T>::get(collection_id, nft_id) {
+					ensure!(nft.rootowner == collection.issuer, Error::<T>::NoPermission);
+				}
+			}
+			Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
+
 			Self::deposit_event(Event::PropertySet(collection_id, maybe_nft_id, key, value));
 			Ok(())
 		}
-
 		/// lock collection
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]

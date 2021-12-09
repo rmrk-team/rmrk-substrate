@@ -14,6 +14,11 @@ fn stb(s: &str) -> BoundedVec<u8, ValueLimit> {
 	s.as_bytes().to_vec().try_into().unwrap()
 }
 
+/// Turns a string into a BoundedVec
+fn stbk(s: &str) -> BoundedVec<u8, KeyLimit> {
+	s.as_bytes().to_vec().try_into().unwrap()
+}
+
 /// Turns a string into a Vec
 fn stv(s: &str) -> Vec<u8> {
 	s.as_bytes().to_vec()
@@ -480,5 +485,31 @@ fn destroy_collection_works() {
 		);
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
+	});
+}
+
+#[test]
+fn set_property_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata = stv("testing");
+		let key = stbk("test-key");
+		let value = stb("test-value");
+		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(0),
+			Some(metadata.clone())
+		));
+		assert_ok!(RMRKCore::set_property(
+			Origin::signed(ALICE),
+			0,
+			Some(0),
+			key.clone(),
+			value.clone()
+		));
+		assert_eq!(RMRKCore::properties((0, Some(0), key)).unwrap(), value);
 	});
 }
