@@ -19,6 +19,8 @@ use sp_std::{convert::TryInto, vec, vec::Vec};
 
 use types::{AccountIdOrCollectionNftTuple, ClassInfo, InstanceInfo};
 
+mod functions;
+
 #[cfg(test)]
 mod mock;
 
@@ -174,6 +176,7 @@ pub mod pallet {
 		NoPermission,
 		NoWitness,
 		CollectionNotEmpty,
+		CannotSendToDescendent,
 	}
 
 	#[pallet::call]
@@ -333,8 +336,6 @@ pub mod pallet {
 		}
 
 		/// transfer NFT from account A to (account B or NFT)
-		/// TODO should not be able to send to its own child or grandchild, etc
-		/// TODO issue might occur trying to send to its own grandparent or beyond
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn send(
@@ -371,6 +372,12 @@ pub mod pallet {
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 					let recipient_nft =
 						NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
+					// Check if sending NFT is already a child of recipient NFT
+					ensure!(
+						!Pallet::<T>::is_x_descendent_of_y(cid, nid, collection_id, nft_id),
+						Error::<T>::CannotSendToDescendent
+					);
+
 					// Remove parent if exists: first we only care if the owner is a non-AccountId)
 					if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =
 						sending_nft.owner
