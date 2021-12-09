@@ -15,7 +15,7 @@ use frame_support::{
 use frame_system::ensure_signed;
 
 use sp_runtime::traits::{AtLeast32BitUnsigned, CheckedAdd, One, StaticLookup, Zero};
-use sp_std::{convert::TryInto, vec::Vec};
+use sp_std::{convert::TryInto, vec, vec::Vec};
 
 use types::{AccountIdOrCollectionNftTuple, ClassInfo, InstanceInfo};
 
@@ -104,6 +104,18 @@ pub mod pallet {
 		Twox64Concat,
 		T::NftId,
 		InstanceInfoOf<T>,
+	>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn children)]
+	/// Stores nft info
+	pub type Children<T: Config> = StorageDoubleMap<
+		_,
+		Twox64Concat,
+		T::CollectionId,
+		Twox64Concat,
+		T::NftId,
+		Vec<(T::CollectionId, T::NftId)>,
 	>;
 
 	#[pallet::storage]
@@ -270,7 +282,6 @@ pub mod pallet {
 		}
 
 		/// burn nft
-		/// TODO: If an NFT that contains other NFTs is being burnt, the owned NFTs are also burned.
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn burn_nft(
@@ -278,11 +289,16 @@ pub mod pallet {
 			collection_id: T::CollectionId,
 			nft_id: T::NftId,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin)?;
+			let sender = ensure_signed(origin.clone())?;
 			pallet_uniques::Pallet::<T>::do_burn(collection_id.into(), nft_id.into(), |_, _| {
 				Ok(())
 			})?;
 			NFTs::<T>::remove(collection_id, nft_id);
+			if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
+				for child in kids {
+					Pallet::<T>::burn_nft(origin.clone(), child.0, child.1)?;
+				}
+			}
 			Self::deposit_event(Event::NFTBurned(sender, nft_id));
 			Ok(())
 		}
@@ -317,6 +333,8 @@ pub mod pallet {
 		}
 
 		/// transfer NFT from account A to (account B or NFT)
+		/// TODO should not be able to send to its own child or grandchild, etc
+		/// TODO issue might occur trying to send to its own grandparent or beyond
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn send(
@@ -339,15 +357,42 @@ pub mod pallet {
 
 			match new_owner.clone() {
 				AccountIdOrCollectionNftTuple::AccountId(account_id) => {
+					// Remove previous parental relationship
+					if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =
+						sending_nft.owner
+					{
+						if let Some(mut kids) = Children::<T>::take(cid, nid) {
+							kids.retain(|&kid| kid != (collection_id, nft_id));
+							Children::<T>::insert(cid, nid, kids);
+						}
+					}
 					sending_nft.rootowner = account_id.clone();
-				},
+				}
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 					let recipient_nft =
 						NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
+					// Remove parent if exists: first we only care if the owner is a non-AccountId)
+					if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =
+						sending_nft.owner
+					{
+						// second we only care if the parent has children (it should)
+						if let Some(mut kids) = Children::<T>::take(cid, nid) {
+							// third we only "retain" the other children
+							kids.retain(|&kid| kid != (collection_id, nft_id));
+							Children::<T>::insert(cid, nid, kids);
+						}
+					}
 					if sending_nft.rootowner != recipient_nft.rootowner {
 						sending_nft.rootowner = recipient_nft.rootowner
 					}
-				},
+					match Children::<T>::take(cid, nid) {
+						None => Children::<T>::insert(cid, nid, vec![(collection_id, nft_id)]),
+						Some(mut kids) => {
+							kids.push((collection_id, nft_id));
+							Children::<T>::insert(cid, nid, kids);
+						}
+					}
+				}
 			};
 			sending_nft.owner = new_owner.clone();
 
