@@ -225,7 +225,7 @@ fn destroy_collection_works() {
 fn create_resource_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		let metadata = stv("testing");
-		assert_ok!(RMRKCore::create_resource(
+		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(ALICE),
 			0,
 			0,
