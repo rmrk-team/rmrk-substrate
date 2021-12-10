@@ -220,3 +220,21 @@ fn destroy_collection_works() {
 		assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
 	});
 }
+
+#[test]
+fn create_resource_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata = stv("testing");
+		assert_ok!(RMRKCore::create_resource(
+			Origin::signed(ALICE),
+			0,
+			0,
+			Some(stv("i-am-a-base")),
+			Some(stv("i-am-a-src")),
+			Some(stv("i-am-metadata")),
+			Some(stv("i-am-a-slot")),
+			Some(stv("i-am-a-license")),
+			Some(stv("i-am-a-thumb")),
+		));
+	});
+}
