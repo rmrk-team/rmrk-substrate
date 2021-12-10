@@ -452,7 +452,12 @@ pub mod pallet {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
-			// TODO
+
+			Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
+				let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
+				collection.max = 0;
+				Ok(())
+			})?;
 			Self::deposit_event(Event::CollectionLocked(sender.unwrap_or_default(), collection_id));
 			Ok(())
 		}

@@ -264,3 +264,33 @@ fn mint_beyond_collection_max_fails() {
 		);
 	});
 }
+
+#[test]
+fn lock_collection_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata = stv("testing");
+		assert_ok!(basic_collection());
+		for _ in 0..3 {
+			assert_ok!(RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				ALICE,
+				COLLECTION_ID_0,
+				Some(ALICE),
+				Some(0),
+				Some(stv("testing"))
+			));
+		}
+		assert_ok!(RMRKCore::lock_collection(Origin::signed(ALICE), 0));
+		assert_noop!(
+			RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				ALICE,
+				COLLECTION_ID_0,
+				Some(ALICE),
+				Some(0),
+				Some(stv("testing"))
+			),
+			Error::<Test>::CollectionFullOrLocked
+		);
+	});
+}
