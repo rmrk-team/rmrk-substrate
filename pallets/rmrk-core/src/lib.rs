@@ -455,7 +455,8 @@ pub mod pallet {
 
 			Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
 				let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
-				collection.max = 0;
+				let currently_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
+				collection.max = currently_minted.try_into().unwrap();
 				Ok(())
 			})?;
 			Self::deposit_event(Event::CollectionLocked(sender.unwrap_or_default(), collection_id));
