@@ -435,7 +435,7 @@ pub mod pallet {
 			// 	collection.issuer = dest.clone();
 			// 	Collections::<T>::insert(collection_id, collection);
 			// 	Ok(())
-			// })?;
+			// })?; 
 
 			// Check that sender is current issuer
 			let mut collection =
