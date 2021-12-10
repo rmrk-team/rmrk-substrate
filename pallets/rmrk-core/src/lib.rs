@@ -512,7 +512,7 @@ pub mod pallet {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
-			// TODO
+			// TODO 
 			Self::deposit_event(Event::CollectionLocked(sender.unwrap_or_default(), collection_id));
 			Ok(())
 		}
