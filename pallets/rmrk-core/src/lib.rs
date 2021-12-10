@@ -194,9 +194,11 @@ pub mod pallet {
 			let collection =
 				Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
+			let nfts_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
+			let max: u32 = collection.max.try_into().unwrap();
+
 			ensure!(
-				NFTs::<T>::iter_prefix_values(collection_id).count()
-					< collection.max.try_into().unwrap(),
+				nfts_minted < max.try_into().unwrap() || max == max - max, //Probably a better way to do "max == 0"
 				Error::<T>::CollectionFullOrLocked
 			);
 
