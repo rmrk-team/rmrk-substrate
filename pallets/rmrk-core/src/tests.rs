@@ -262,7 +262,5 @@ fn mint_beyond_collection_max_fails() {
 			),
 			Error::<Test>::CollectionFullOrLocked
 		);
-		// assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
-		// assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
 	});
 }

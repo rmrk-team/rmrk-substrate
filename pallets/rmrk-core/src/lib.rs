@@ -191,7 +191,14 @@ pub mod pallet {
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
 
-			let _ = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+			let collection =
+				Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+
+			ensure!(
+				NFTs::<T>::iter_prefix_values(collection_id).count()
+					< collection.max.try_into().unwrap(),
+				Error::<T>::CollectionFullOrLocked
+			);
 
 			if let Some(r) = royalty {
 				ensure!(r < 100, Error::<T>::NotInRange);
