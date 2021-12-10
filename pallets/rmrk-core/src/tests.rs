@@ -23,7 +23,7 @@ fn basic_collection() -> DispatchResult {
 	RMRKCore::create_collection(
 		Origin::signed(ALICE),
 		stv("testing"),
-		None,
+		Some(5),
 		stv("SYMBOL"),
 		stv("COLLECTION-ID"),
 	)
@@ -233,5 +233,36 @@ fn destroy_collection_works() {
 		);
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
+	});
+}
+
+#[test]
+fn mint_beyond_collection_max_fails() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata = stv("testing");
+		assert_ok!(basic_collection());
+		for _ in 0..5 {
+			assert_ok!(RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				ALICE,
+				COLLECTION_ID_0,
+				Some(ALICE),
+				Some(0),
+				Some(stv("testing"))
+			));
+		}
+		assert_noop!(
+			RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				ALICE,
+				COLLECTION_ID_0,
+				Some(ALICE),
+				Some(0),
+				Some(stv("testing"))
+			),
+			Error::<Test>::CollectionFullOrLocked
+		);
+		// assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+		// assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
 	});
 }

@@ -162,6 +162,7 @@ pub mod pallet {
 		NoPermission,
 		NoWitness,
 		CollectionNotEmpty,
+		CollectionFullOrLocked,
 	}
 
 	#[pallet::call]
