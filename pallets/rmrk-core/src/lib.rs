@@ -18,7 +18,7 @@ use sp_runtime::traits::{AtLeast32BitUnsigned, CheckedAdd, One, StaticLookup, Ze
 use sp_runtime::Permill;
 use sp_std::{convert::TryInto, vec, vec::Vec};
 
-use types::{AccountIdOrCollectionNftTuple, ClassInfo, InstanceInfo};
+use types::{AccountIdOrCollectionNftTuple, ClassInfo, InstanceInfo, ResourceInfo};
 
 mod functions;
 
@@ -39,6 +39,10 @@ pub type InstanceInfoOf<T> = InstanceInfo<
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 	<T as pallet::Config>::CollectionId,
 	<T as pallet::Config>::NftId,
+>;
+pub type ResourceOf<T> = ResourceInfo<
+	<T as pallet::Config>::ResourceId,
+	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
 
 pub mod types;
@@ -92,6 +96,11 @@ pub mod pallet {
 	pub type NextNftId<T: Config> =
 		StorageMap<_, Twox64Concat, T::CollectionId, T::NftId, ValueQuery>;
 
+	/// Next available Resource ID.
+	#[pallet::storage]
+	#[pallet::getter(fn next_resource_id)]
+	pub type NextResourceId<T: Config> = StorageValue<_, T::ResourceId, ValueQuery>;
+
 	#[pallet::storage]
 	#[pallet::getter(fn collections)]
 	/// Stores collections info
@@ -124,8 +133,16 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn resources)]
 	/// Stores resource info
-	pub type Resources<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, T::NftId, Twox64Concat, T::ResourceId, InstanceInfoOf<T>>;
+	pub type Resources<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, T::CollectionId>,
+			NMapKey<Blake2_128Concat, T::NftId>,
+			NMapKey<Blake2_128Concat, T::ResourceId>,
+		),
+		ResourceOf<T>,
+		OptionQuery,
+	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn properties)]
@@ -512,19 +529,44 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// add resource
+		/// Create resource
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn add_resource(
 			origin: OriginFor<T>,
+			collection_id: T::CollectionId,
 			nft_id: T::NftId,
-			resource_id: T::ResourceId,
+			base: Option<Vec<u8>>,
+			src: Option<Vec<u8>>,
+			metadata: Option<Vec<u8>>,
+			slot: Option<Vec<u8>>,
+			license: Option<Vec<u8>>,
+			thumb: Option<Vec<u8>>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
-			// TODO, add resource_id
+
+			let resource_id = Self::get_next_resource_id()?;
+			let base_bounded = Self::to_optional_bounded_string(base)?;
+			let src_bounded = Self::to_optional_bounded_string(src)?;
+			let metadata_bounded = Self::to_optional_bounded_string(metadata)?;
+			let slot_bounded = Self::to_optional_bounded_string(slot)?;
+			let license_bounded = Self::to_optional_bounded_string(license)?;
+			let thumb_bounded = Self::to_optional_bounded_string(thumb)?;
+
+			let res = ResourceInfo {
+				id: resource_id,
+				base: base_bounded,
+				src: src_bounded,
+				metadata: metadata_bounded,
+				slot: slot_bounded,
+				license: license_bounded,
+				thumb: thumb_bounded,
+			};
+			Resources::<T>::insert((collection_id, nft_id, resource_id), res);
+
 			Self::deposit_event(Event::ResourceAdded(nft_id, resource_id));
 			Ok(())
 		}
@@ -567,6 +609,18 @@ pub mod pallet {
 		) -> Result<BoundedVec<u8, T::StringLimit>, Error<T>> {
 			name.try_into().map_err(|_| Error::<T>::TooLong)
 		}
+		pub fn to_optional_bounded_string(
+			name: Option<Vec<u8>>,
+		) -> Result<Option<BoundedVec<u8, T::StringLimit>>, Error<T>> {
+			match name {
+				Some(n) => {
+					let bounded_string = Self::to_bounded_string(n)?;
+					return Ok(Some(bounded_string));
+				}
+				None => return Ok(None),
+			}
+		}
+
 		pub fn get_next_collection_id() -> Result<T::CollectionId, Error<T>> {
 			NextCollectionId::<T>::try_mutate(|id| {
 				let current_id = *id;
@@ -578,6 +632,13 @@ pub mod pallet {
 			NextNftId::<T>::try_mutate(collection_id, |id| {
 				let current_id = *id;
 				*id = id.checked_add(&One::one()).ok_or(Error::<T>::NoAvailableNftId)?;
+				Ok(current_id)
+			})
+		}
+		pub fn get_next_resource_id() -> Result<T::ResourceId, Error<T>> {
+			NextResourceId::<T>::try_mutate(|id| {
+				let current_id = *id;
+				*id = id.checked_add(&One::one()).ok_or(Error::<T>::NoAvailableCollectionId)?;
 				Ok(current_id)
 			})
 		}

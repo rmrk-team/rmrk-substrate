@@ -490,6 +490,24 @@ fn destroy_collection_works() {
 }
 
 #[test]
+fn create_resource_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata = stv("testing");
+		assert_ok!(RMRKCore::add_resource(
+			Origin::signed(ALICE),
+			0,
+			0,
+			Some(stv("i-am-a-base")),
+			Some(stv("i-am-a-src")),
+			Some(stv("i-am-metadata")),
+			Some(stv("i-am-a-slot")),
+			Some(stv("i-am-a-license")),
+			Some(stv("i-am-a-thumb")),
+		));
+	});
+}    
+    
+#[test]
 fn set_property_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		let metadata = stv("testing");
