@@ -583,27 +583,27 @@ fn create_resource_works() {
 }    
     
 #[test]
-fn set_property_works() {
+fn set_priority_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		let metadata = stv("testing");
-		let key = stbk("test-key");
-		let value = stb("test-value");
-		assert_ok!(basic_collection());
+		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(Permill::from_float(1.525)),
+			Some(Permill::from_float(0.0)),
 			metadata.clone()
 		));
-		assert_ok!(RMRKCore::set_property(
+		assert_ok!(RMRKCore::set_priority(
 			Origin::signed(ALICE),
-			0,
-			Some(0),
-			key.clone(),
-			value.clone()
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			vec![stv("hello"), stv("world")]
 		));
-		assert_eq!(RMRKCore::properties((0, Some(0), key)).unwrap(), value);
+		assert_eq!(
+			RMRKCore::priorities(COLLECTION_ID_0, NFT_ID_0).unwrap(),
+			vec![stv("hello"), stv("world")]
+		);
 	});
 }
