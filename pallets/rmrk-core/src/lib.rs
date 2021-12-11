@@ -154,7 +154,7 @@ pub mod pallet {
 		TooLong,
 		NoAvailableCollectionId,
 		MetadataNotSet,
-		AuthorNotSet,
+		RecipientNotSet,
 		NoAvailableNftId,
 		NotInRange,
 		RoyaltyNotSet,
@@ -172,8 +172,8 @@ pub mod pallet {
 		/// Parameters:
 		/// - `collection_id`: The class of the asset to be minted.
 		/// - `nft_id`: The nft value of the asset to be minted.
-		/// - `author`: Receiver of the royalty
-		/// - `royalty`: Percentage reward from each trade for the author
+		/// - `recipient`: Receiver of the royalty
+		/// - `royalty`: Percentage reward from each trade for the Recipient
 		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
@@ -181,8 +181,8 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			owner: T::AccountId,
 			collection_id: T::CollectionId,
-			author: Option<T::AccountId>,
-			royalty: Option<u8>,
+			recipient: Option<T::AccountId>,
+			royalty: Option<u16>,
 			metadata: Option<Vec<u8>>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
@@ -207,7 +207,7 @@ pub mod pallet {
 
 			let metadata_bounded =
 				Self::to_bounded_string(metadata.ok_or(Error::<T>::MetadataNotSet)?)?;
-			let author = author.ok_or(Error::<T>::AuthorNotSet)?;
+			let recipient = recipient.ok_or(Error::<T>::RecipientNotSet)?;
 			let royalty = royalty.ok_or(Error::<T>::RoyaltyNotSet)?;
 
 			let rootowner = owner.clone();
@@ -216,7 +216,7 @@ pub mod pallet {
 			NFTs::<T>::insert(
 				collection_id,
 				nft_id,
-				InstanceInfo { owner, rootowner, author, royalty, metadata: metadata_bounded },
+				InstanceInfo { owner, rootowner, recipient, royalty, metadata: metadata_bounded },
 			);
 
 			Self::deposit_event(Event::NftMinted(
