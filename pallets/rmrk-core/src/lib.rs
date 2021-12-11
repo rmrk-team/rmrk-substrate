@@ -16,7 +16,7 @@ use frame_system::ensure_signed;
 
 use sp_runtime::traits::{AtLeast32BitUnsigned, CheckedAdd, One, StaticLookup, Zero};
 use sp_runtime::Permill;
-use sp_std::{convert::TryInto, vec::Vec};
+use sp_std::{convert::TryInto, vec, vec::Vec};
 
 use types::{AccountIdOrCollectionNftTuple, ClassInfo, InstanceInfo};
 

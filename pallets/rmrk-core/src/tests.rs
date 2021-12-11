@@ -6,6 +6,7 @@ use sp_runtime::Permill;
 use super::*;
 use mock::*;
 use pallet_uniques as UNQ;
+use sp_std::{convert::TryInto, vec::Vec};
 
 type RMRKCore = Pallet<Test>;
 
@@ -183,8 +184,8 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			ALICE,
 			0,
 			Some(ALICE),
-			Some(0),
-			Some(nft_metadata.clone())
+			Some(Permill::from_float(0.0)),
+			nft_metadata.clone()
 		));
 		// Alice mints NFT (0, 1)
 		assert_ok!(RMRKCore::mint_nft(
@@ -192,8 +193,8 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			ALICE,
 			0,
 			Some(ALICE),
-			Some(0),
-			Some(nft_metadata.clone())
+			Some(Permill::from_float(0.0)),
+			nft_metadata.clone()
 		));
 		// Alice mints NFT (0, 2)
 		assert_ok!(RMRKCore::mint_nft(
@@ -201,8 +202,8 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			ALICE,
 			0,
 			Some(ALICE),
-			Some(0),
-			Some(nft_metadata)
+			Some(Permill::from_float(0.0)),
+			nft_metadata
 		));
 
 		// Alice sends NFT (0, 1) to NFT (0, 0)
@@ -236,8 +237,8 @@ fn send_nft_removes_existing_parent() {
 			ALICE,
 			0,
 			Some(ALICE),
-			Some(0),
-			Some(nft_metadata.clone())
+			Some(Permill::from_float(0.0)),
+			nft_metadata.clone()
 		));
 		// Alice mints NFT (0, 1)
 		assert_ok!(RMRKCore::mint_nft(
@@ -245,8 +246,8 @@ fn send_nft_removes_existing_parent() {
 			ALICE,
 			0,
 			Some(ALICE),
-			Some(0),
-			Some(nft_metadata.clone())
+			Some(Permill::from_float(0.0)),
+			nft_metadata.clone()
 		));
 		// Alice mints NFT (0, 2)
 		assert_ok!(RMRKCore::mint_nft(
@@ -254,8 +255,8 @@ fn send_nft_removes_existing_parent() {
 			ALICE,
 			0,
 			Some(ALICE),
-			Some(0),
-			Some(nft_metadata.clone())
+			Some(Permill::from_float(0.0)),
+			nft_metadata.clone()
 		));
 		// Alice mints NFT (0, 3)
 		assert_ok!(RMRKCore::mint_nft(
@@ -263,8 +264,8 @@ fn send_nft_removes_existing_parent() {
 			ALICE,
 			0,
 			Some(ALICE),
-			Some(0),
-			Some(nft_metadata)
+			Some(Permill::from_float(0.0)),
+			nft_metadata
 		));
 
 		// Alice sends NFT (0, 1) to NFT (0, 0)
@@ -341,8 +342,8 @@ fn burn_nft_with_great_grandchildren_works() {
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(0),
-			Some(metadata.clone())
+			Some(Permill::from_float(0.0)),
+			metadata.clone()
 		));
 		// Alice mints (0, 1)
 		assert_ok!(RMRKCore::mint_nft(
@@ -350,8 +351,8 @@ fn burn_nft_with_great_grandchildren_works() {
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(0),
-			Some(metadata.clone())
+			Some(Permill::from_float(0.0)),
+			metadata.clone()
 		));
 		// Alice mints (0, 2)
 		assert_ok!(RMRKCore::mint_nft(
@@ -359,8 +360,8 @@ fn burn_nft_with_great_grandchildren_works() {
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(0),
-			Some(metadata.clone())
+			Some(Permill::from_float(0.0)),
+			metadata.clone()
 		));
 		// Alice mints (0, 3)
 		assert_ok!(RMRKCore::mint_nft(
@@ -368,8 +369,8 @@ fn burn_nft_with_great_grandchildren_works() {
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(0),
-			Some(metadata.clone())
+			Some(Permill::from_float(0.0)),
+			metadata.clone()
 		));
 		// Alice sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
@@ -412,8 +413,8 @@ fn send_to_grandchild_fails() {
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(0),
-			Some(metadata.clone())
+			Some(Permill::from_float(0.0)),
+			metadata.clone()
 		));
 		// Alice mints (0, 1)
 		assert_ok!(RMRKCore::mint_nft(
@@ -421,8 +422,8 @@ fn send_to_grandchild_fails() {
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(0),
-			Some(metadata.clone())
+			Some(Permill::from_float(0.0)),
+			metadata.clone()
 		));
 		// Alice mints (0, 2)
 		assert_ok!(RMRKCore::mint_nft(
@@ -430,8 +431,8 @@ fn send_to_grandchild_fails() {
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(0),
-			Some(metadata.clone())
+			Some(Permill::from_float(0.0)),
+			metadata.clone()
 		));
 		// Alice sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
