@@ -501,8 +501,8 @@ fn set_property_works() {
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(0),
-			Some(metadata.clone())
+			Some(Permill::from_float(1.525)),
+			metadata.clone()
 		));
 		assert_ok!(RMRKCore::set_property(
 			Origin::signed(ALICE),
