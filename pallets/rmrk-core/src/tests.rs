@@ -172,6 +172,137 @@ fn send_nft_to_minted_nft_works() {
 }
 
 #[test]
+fn send_two_nfts_to_same_nft_creates_two_children() {
+	ExtBuilder::default().build().execute_with(|| {
+		let collection_metadata = stv("testing");
+		let nft_metadata = stv("testing");
+		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), collection_metadata));
+		// Alice mints NFT (0, 0)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(0),
+			Some(nft_metadata.clone())
+		));
+		// Alice mints NFT (0, 1)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(0),
+			Some(nft_metadata.clone())
+		));
+		// Alice mints NFT (0, 2)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(0),
+			Some(nft_metadata)
+		));
+
+		// Alice sends NFT (0, 1) to NFT (0, 0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+		// Alice sends NFT (0, 2) to NFT (0, 0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			2,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+		// Children for NFT (0, 0) contains (0, 1) and (0, 2)
+		assert_eq!(RMRKCore::children(0, 0).unwrap(), vec![(0, 1), (0, 2)]);
+	});
+}
+
+#[test]
+fn send_nft_removes_existing_parent() {
+	ExtBuilder::default().build().execute_with(|| {
+		let collection_metadata = stv("testing");
+		let nft_metadata = stv("testing");
+		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), collection_metadata));
+		// Alice mints NFT (0, 0)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(0),
+			Some(nft_metadata.clone())
+		));
+		// Alice mints NFT (0, 1)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(0),
+			Some(nft_metadata.clone())
+		));
+		// Alice mints NFT (0, 2)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(0),
+			Some(nft_metadata.clone())
+		));
+		// Alice mints NFT (0, 3)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(0),
+			Some(nft_metadata)
+		));
+
+		// Alice sends NFT (0, 1) to NFT (0, 0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+		// Alice sends NFT (0, 2) to NFT (0, 0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			2,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+
+		// NFT (0, 0) is parent of NFT (0, 1)
+		assert_eq!(RMRKCore::children(0, 0).unwrap(), vec![(0, 1), (0, 2)]);
+
+		// Alice sends NFT (0, 1) to NFT (0, 2)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
+		));
+
+		// NFT (0, 0) is not parent of NFT (0, 1)
+		assert_eq!(RMRKCore::children(0, 0).unwrap(), vec![(0, 2)]);
+	});
+}
+
+// #[test]
+// TODO fn cannot send to its own descendent?  this should be easy enough to check
+// TODO fn cannot send to its own grandparent?  this seems difficult to check without implementing a new Parent storage struct
+
+#[test]
 fn change_issuer_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		let collection_metadata = stv("testing");
@@ -196,6 +327,137 @@ fn burn_nft_works() {
 		));
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0), None);
+	});
+}
+
+#[test]
+fn burn_nft_with_great_grandchildren_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata = stv("testing");
+		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
+		// Alice mints (0, 0)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(0),
+			Some(metadata.clone())
+		));
+		// Alice mints (0, 1)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(0),
+			Some(metadata.clone())
+		));
+		// Alice mints (0, 2)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(0),
+			Some(metadata.clone())
+		));
+		// Alice mints (0, 3)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(0),
+			Some(metadata.clone())
+		));
+		// Alice sends NFT (0, 1) to NFT (0, 0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+		// Alice sends NFT (0, 2) to NFT (0, 1)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			2,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
+		));
+		// Alice sends NFT (0, 3) to NFT (0, 2)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			3,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
+		));
+		// Child is alive
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_some(), true);
+		// Burn great-grandfather
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+		// Child is dead
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3), None);
+	});
+}
+
+#[test]
+fn send_to_grandchild_fails() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata = stv("testing");
+		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
+		// Alice mints (0, 0)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(0),
+			Some(metadata.clone())
+		));
+		// Alice mints (0, 1)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(0),
+			Some(metadata.clone())
+		));
+		// Alice mints (0, 2)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(0),
+			Some(metadata.clone())
+		));
+		// Alice sends NFT (0, 1) to NFT (0, 0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+		// Alice sends NFT (0, 2) to NFT (0, 1)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			2,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
+		));
+
+		// Alice sends (0, 0) to (0, 2)
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(ALICE),
+				0,
+				0,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
+			),
+			Error::<Test>::CannotSendToDescendent
+		);
 	});
 }
 
