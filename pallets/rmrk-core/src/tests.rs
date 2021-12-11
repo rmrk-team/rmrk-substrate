@@ -30,6 +30,8 @@ fn basic_collection() -> DispatchResult {
 		Origin::signed(ALICE),
 		stv("testing"),
 		Some(5),
+		stv("SYMBOL"),
+		stv("COLLECTION-ID"),
 	)
 }
 #[test]
@@ -41,6 +43,8 @@ fn create_collection_works() {
 				Origin::signed(ALICE),
 				vec![0; <Test as UNQ::Config>::StringLimit::get() as usize + 1],
 				None,
+				stv("SYMBOL"),
+				stv("COLLECTION-ID"),
 			),
 			Error::<Test>::TooLong
 		);
@@ -50,6 +54,8 @@ fn create_collection_works() {
 				Origin::signed(ALICE),
 				stv("testing"),
 				None,
+				stv("SYMBOL"),
+				stv("COLLECTION-ID"),
 			),
 			Error::<Test>::NoAvailableCollectionId
 		);
