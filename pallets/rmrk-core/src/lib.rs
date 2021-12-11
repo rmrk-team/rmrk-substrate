@@ -429,22 +429,17 @@ pub mod pallet {
 			};
 			let new_issuer = T::Lookup::lookup(new_issuer)?;
 
-			// Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
-			// 	let mut collection =
-			// 		collection.take().ok_or(Error::<T>::NoAvailableCollectionId)?;
-			// 	collection.issuer = dest.clone();
-			// 	Collections::<T>::insert(collection_id, collection);
-			// 	Ok(())
-			// })?; 
+			ensure!(
+				Collections::<T>::contains_key(collection_id),
+				Error::<T>::NoAvailableCollectionId
+			);
 
-			// Check that sender is current issuer
-			let mut collection =
-				Collections::<T>::get(collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
-			collection.issuer = new_issuer.clone();
-
-			// TODO: I'd rather write it with try_mutate_exists but can't figure out how :/
-			Collections::<T>::remove(collection_id);
-			Collections::<T>::insert(collection_id, collection);
+			Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
+				if let Some(col) = collection.into_mut() {
+					col.issuer = new_issuer.clone();
+				}
+				Ok(())
+			})?;
 
 			Self::deposit_event(Event::IssuerChanged(
 				sender.unwrap_or_default(),
