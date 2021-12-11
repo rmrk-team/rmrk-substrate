@@ -1,4 +1,5 @@
 use frame_support::pallet_prelude::*;
+use sp_runtime::Permill;
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -28,9 +29,9 @@ pub struct InstanceInfo<AccountId, BoundedString, CollectionId, NftId> {
 	/// The owner of the NFT, can be either an Account or a tuple (CollectionId, NftId)
 	pub owner: AccountIdOrCollectionNftTuple<AccountId, CollectionId, NftId>,
 	/// The user account which receives the royalty
-	pub author: AccountId,
-	/// Royalty in percent in range 0-99
-	pub royalty: u8,
+	pub recipient: AccountId,
+	/// Royalty in per mille (1/1000)
+	pub royalty: Permill,
 	/// Arbitrary data about an instance, e.g. IPFS hash
 	pub metadata: BoundedString,
 }
