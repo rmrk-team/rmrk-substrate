@@ -130,6 +130,7 @@ pub mod pallet {
 		Vec<BoundedVec<u8, T::StringLimit>>,
 	>;
 
+	#[pallet::storage]
 	#[pallet::getter(fn children)]
 	/// Stores nft info
 	pub type Children<T: Config> = StorageDoubleMap<
