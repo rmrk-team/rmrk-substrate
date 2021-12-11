@@ -15,6 +15,7 @@ use frame_support::{
 use frame_system::ensure_signed;
 
 use sp_runtime::traits::{AtLeast32BitUnsigned, CheckedAdd, One, StaticLookup, Zero};
+use sp_runtime::Permill;
 use sp_std::{convert::TryInto, vec::Vec};
 
 use types::{AccountIdOrCollectionNftTuple, ClassInfo, InstanceInfo};
@@ -173,7 +174,7 @@ pub mod pallet {
 		/// - `collection_id`: The class of the asset to be minted.
 		/// - `nft_id`: The nft value of the asset to be minted.
 		/// - `recipient`: Receiver of the royalty
-		/// - `royalty`: Percentage reward from each trade for the Recipient
+		/// - `royalty`: Permillage reward from each trade for the Recipient
 		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
@@ -182,8 +183,8 @@ pub mod pallet {
 			owner: T::AccountId,
 			collection_id: T::CollectionId,
 			recipient: Option<T::AccountId>,
-			royalty: Option<u16>,
-			metadata: Option<Vec<u8>>,
+			royalty: Option<Permill>,
+			metadata: Vec<u8>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
@@ -192,9 +193,9 @@ pub mod pallet {
 
 			let _ = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
-			if let Some(r) = royalty {
-				ensure!(r < 100, Error::<T>::NotInRange);
-			}
+			// if let Some(r) = royalty {
+			// 	ensure!(r < 100, Error::<T>::NotInRange);
+			// }
 
 			let nft_id: T::NftId = Self::get_next_nft_id(collection_id)?;
 
@@ -205,8 +206,7 @@ pub mod pallet {
 				|_details| Ok(()),
 			)?;
 
-			let metadata_bounded =
-				Self::to_bounded_string(metadata.ok_or(Error::<T>::MetadataNotSet)?)?;
+			let metadata_bounded = Self::to_bounded_string(metadata)?;
 			let recipient = recipient.ok_or(Error::<T>::RecipientNotSet)?;
 			let royalty = royalty.ok_or(Error::<T>::RoyaltyNotSet)?;
 

@@ -1,6 +1,6 @@
 use frame_support::{assert_noop, assert_ok, error::BadOrigin};
 // use sp_runtime::AccountId32;
-
+use sp_runtime::Permill;
 // use crate::types::ClassType;
 
 use super::*;
@@ -48,24 +48,24 @@ fn mint_nft_works() {
 			ALICE,
 			0,
 			Some(ALICE),
-			Some(0),
-			Some(b"metadata".to_vec())
+			Some(Permill::from_float(20.525)),
+			b"metadata".to_vec()
 		));
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(20),
-			Some(b"metadata".to_vec())
+			Some(Permill::from_float(20.525)),
+			b"metadata".to_vec()
 		));
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(BOB),
 			BOB,
 			COLLECTION_ID_0,
 			Some(CHARLIE),
-			Some(20),
-			Some(b"metadata".to_vec())
+			Some(Permill::from_float(20.525)),
+			b"metadata".to_vec()
 		));
 		assert_noop!(
 			RMRKCore::mint_nft(
@@ -73,8 +73,8 @@ fn mint_nft_works() {
 				ALICE,
 				NOT_EXISTING_CLASS_ID,
 				Some(CHARLIE),
-				Some(20),
-				Some(b"metadata".to_vec())
+				Some(Permill::from_float(20.525)),
+				b"metadata".to_vec()
 			),
 			Error::<Test>::CollectionUnknown
 		);
@@ -92,8 +92,8 @@ fn send_nft_to_minted_nft_works() {
 			ALICE,
 			0,
 			Some(ALICE),
-			Some(0),
-			Some(nft_metadata.clone())
+			Some(Permill::from_float(1.525)),
+			nft_metadata.clone()
 		));
 		// Alice mints NFT (0, 1) [will be the child]
 		assert_ok!(RMRKCore::mint_nft(
@@ -101,8 +101,8 @@ fn send_nft_to_minted_nft_works() {
 			ALICE,
 			0,
 			Some(ALICE),
-			Some(0),
-			Some(nft_metadata)
+			Some(Permill::from_float(1.525)),
+			nft_metadata
 		));
 		// Alice sends NFT (0, 0) [parent] to Bob
 		assert_ok!(RMRKCore::send(
@@ -191,8 +191,8 @@ fn burn_nft_works() {
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(0),
-			Some(metadata.clone())
+			Some(Permill::from_float(1.525)),
+			metadata.clone()
 		));
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0), None);
@@ -209,8 +209,8 @@ fn destroy_collection_works() {
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(0),
-			Some(metadata.clone())
+			Some(Permill::from_float(1.525)),
+			metadata.clone()
 		));
 		assert_noop!(
 			RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0),

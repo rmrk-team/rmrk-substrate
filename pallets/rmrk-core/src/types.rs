@@ -1,4 +1,5 @@
 use frame_support::pallet_prelude::*;
+use sp_runtime::Permill;
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -30,7 +31,7 @@ pub struct InstanceInfo<AccountId, BoundedString, CollectionId, NftId> {
 	/// The user account which receives the royalty
 	pub recipient: AccountId,
 	/// Royalty in per mille (1/1000)
-	pub royalty: u16,
+	pub royalty: Permill,
 	/// Arbitrary data about an instance, e.g. IPFS hash
 	pub metadata: BoundedString,
 }
