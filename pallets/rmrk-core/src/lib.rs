@@ -303,7 +303,6 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			metadata: Vec<u8>,
 			max: Option<u32>,
-			symbol: Vec<u8>,
 			id: Vec<u8>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
@@ -314,7 +313,6 @@ pub mod pallet {
 			let collection_id = Self::get_next_collection_id()?;
 
 			let metadata_bounded = Self::to_bounded_string(metadata)?;
-			let symbol_bounded = Self::to_bounded_string(symbol)?;
 			let id_bounded = Self::to_bounded_string(id)?;
 			let max = max.unwrap_or_default();
 
@@ -338,7 +336,6 @@ pub mod pallet {
 					metadata: metadata_bounded,
 					max,
 					id: id_bounded,
-					symbol: symbol_bounded,
 				},
 			);
 
