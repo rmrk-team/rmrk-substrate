@@ -15,9 +15,12 @@ use frame_support::{
 use frame_system::ensure_signed;
 
 use sp_runtime::traits::{AtLeast32BitUnsigned, CheckedAdd, One, StaticLookup, Zero};
-use sp_std::{convert::TryInto, vec::Vec};
+use sp_runtime::Permill;
+use sp_std::{convert::TryInto, vec, vec::Vec};
 
 use types::{AccountIdOrCollectionNftTuple, ClassInfo, InstanceInfo, ResourceInfo};
+
+mod functions;
 
 #[cfg(test)]
 mod mock;
@@ -116,6 +119,18 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn children)]
+	/// Stores nft info
+	pub type Children<T: Config> = StorageDoubleMap<
+		_,
+		Twox64Concat,
+		T::CollectionId,
+		Twox64Concat,
+		T::NftId,
+		Vec<(T::CollectionId, T::NftId)>,
+	>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn resources)]
 	/// Stores resource info
 	pub type Resources<T: Config> = StorageNMap<
@@ -126,6 +141,20 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, T::ResourceId>,
 		),
 		ResourceOf<T>,
+		OptionQuery,
+	>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn properties)]
+	/// Metadata of an asset class.
+	pub(super) type Properties<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, T::CollectionId>,
+			NMapKey<Blake2_128Concat, Option<T::NftId>>,
+			NMapKey<Blake2_128Concat, BoundedVec<u8, T::KeyLimit>>,
+		),
+		BoundedVec<u8, T::ValueLimit>,
 		OptionQuery,
 	>;
 
@@ -171,7 +200,7 @@ pub mod pallet {
 		TooLong,
 		NoAvailableCollectionId,
 		MetadataNotSet,
-		AuthorNotSet,
+		RecipientNotSet,
 		NoAvailableNftId,
 		NotInRange,
 		RoyaltyNotSet,
@@ -179,6 +208,7 @@ pub mod pallet {
 		NoPermission,
 		NoWitness,
 		CollectionNotEmpty,
+		CannotSendToDescendent,
 	}
 
 	#[pallet::call]
@@ -189,8 +219,8 @@ pub mod pallet {
 		/// Parameters:
 		/// - `collection_id`: The class of the asset to be minted.
 		/// - `nft_id`: The nft value of the asset to be minted.
-		/// - `author`: Receiver of the royalty
-		/// - `royalty`: Percentage reward from each trade for the author
+		/// - `recipient`: Receiver of the royalty
+		/// - `royalty`: Permillage reward from each trade for the Recipient
 		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
@@ -198,9 +228,9 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			owner: T::AccountId,
 			collection_id: T::CollectionId,
-			author: Option<T::AccountId>,
-			royalty: Option<u8>,
-			metadata: Option<Vec<u8>>,
+			recipient: Option<T::AccountId>,
+			royalty: Option<Permill>,
+			metadata: Vec<u8>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
@@ -209,9 +239,9 @@ pub mod pallet {
 
 			let _ = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
-			if let Some(r) = royalty {
-				ensure!(r < 100, Error::<T>::NotInRange);
-			}
+			// if let Some(r) = royalty {
+			// 	ensure!(r < 100, Error::<T>::NotInRange);
+			// }
 
 			let nft_id: T::NftId = Self::get_next_nft_id(collection_id)?;
 
@@ -222,9 +252,8 @@ pub mod pallet {
 				|_details| Ok(()),
 			)?;
 
-			let metadata_bounded =
-				Self::to_bounded_string(metadata.ok_or(Error::<T>::MetadataNotSet)?)?;
-			let author = author.ok_or(Error::<T>::AuthorNotSet)?;
+			let metadata_bounded = Self::to_bounded_string(metadata)?;
+			let recipient = recipient.ok_or(Error::<T>::RecipientNotSet)?;
 			let royalty = royalty.ok_or(Error::<T>::RoyaltyNotSet)?;
 
 			let rootowner = owner.clone();
@@ -233,7 +262,7 @@ pub mod pallet {
 			NFTs::<T>::insert(
 				collection_id,
 				nft_id,
-				InstanceInfo { owner, rootowner, author, royalty, metadata: metadata_bounded },
+				InstanceInfo { owner, rootowner, recipient, royalty, metadata: metadata_bounded },
 			);
 
 			Self::deposit_event(Event::NftMinted(
@@ -287,7 +316,6 @@ pub mod pallet {
 		}
 
 		/// burn nft
-		/// TODO: If an NFT that contains other NFTs is being burnt, the owned NFTs are also burned.
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn burn_nft(
@@ -295,11 +323,16 @@ pub mod pallet {
 			collection_id: T::CollectionId,
 			nft_id: T::NftId,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin)?;
+			let sender = ensure_signed(origin.clone())?;
 			pallet_uniques::Pallet::<T>::do_burn(collection_id.into(), nft_id.into(), |_, _| {
 				Ok(())
 			})?;
 			NFTs::<T>::remove(collection_id, nft_id);
+			if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
+				for child in kids {
+					Pallet::<T>::burn_nft(origin.clone(), child.0, child.1)?;
+				}
+			}
 			Self::deposit_event(Event::NFTBurned(sender, nft_id));
 			Ok(())
 		}
@@ -356,13 +389,46 @@ pub mod pallet {
 
 			match new_owner.clone() {
 				AccountIdOrCollectionNftTuple::AccountId(account_id) => {
+					// Remove previous parental relationship
+					if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =
+						sending_nft.owner
+					{
+						if let Some(mut kids) = Children::<T>::take(cid, nid) {
+							kids.retain(|&kid| kid != (collection_id, nft_id));
+							Children::<T>::insert(cid, nid, kids);
+						}
+					}
 					sending_nft.rootowner = account_id.clone();
 				}
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 					let recipient_nft =
 						NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
+					// Check if sending NFT is already a child of recipient NFT
+					ensure!(
+						!Pallet::<T>::is_x_descendent_of_y(cid, nid, collection_id, nft_id),
+						Error::<T>::CannotSendToDescendent
+					);
+
+					// Remove parent if exists: first we only care if the owner is a non-AccountId)
+					if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =
+						sending_nft.owner
+					{
+						// second we only care if the parent has children (it should)
+						if let Some(mut kids) = Children::<T>::take(cid, nid) {
+							// third we only "retain" the other children
+							kids.retain(|&kid| kid != (collection_id, nft_id));
+							Children::<T>::insert(cid, nid, kids);
+						}
+					}
 					if sending_nft.rootowner != recipient_nft.rootowner {
 						sending_nft.rootowner = recipient_nft.rootowner
+					}
+					match Children::<T>::take(cid, nid) {
+						None => Children::<T>::insert(cid, nid, vec![(collection_id, nft_id)]),
+						Some(mut kids) => {
+							kids.push((collection_id, nft_id));
+							Children::<T>::insert(cid, nid, kids);
+						}
 					}
 				}
 			};
@@ -394,22 +460,17 @@ pub mod pallet {
 			};
 			let new_issuer = T::Lookup::lookup(new_issuer)?;
 
-			// Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
-			// 	let mut collection =
-			// 		collection.take().ok_or(Error::<T>::NoAvailableCollectionId)?;
-			// 	collection.issuer = dest.clone();
-			// 	Collections::<T>::insert(collection_id, collection);
-			// 	Ok(())
-			// })?;
+			ensure!(
+				Collections::<T>::contains_key(collection_id),
+				Error::<T>::NoAvailableCollectionId
+			);
 
-			// Check that sender is current issuer
-			let mut collection =
-				Collections::<T>::get(collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
-			collection.issuer = new_issuer.clone();
-
-			// TODO: I'd rather write it with try_mutate_exists but can't figure out how :/
-			Collections::<T>::remove(collection_id);
-			Collections::<T>::insert(collection_id, collection);
+			Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
+				if let Some(col) = collection.into_mut() {
+					col.issuer = new_issuer.clone();
+				}
+				Ok(())
+			})?;
 
 			Self::deposit_event(Event::IssuerChanged(
 				sender.unwrap_or_default(),
@@ -433,11 +494,25 @@ pub mod pallet {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
-			// TODO
+
+			let collection =
+				Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
+			ensure!(collection.issuer == sender.unwrap_or_default(), Error::<T>::NoPermission);
+
+			if let Some(nft_id) = &maybe_nft_id {
+				ensure!(
+					NFTs::<T>::contains_key(collection_id, nft_id),
+					Error::<T>::NoAvailableNftId
+				);
+				if let Some(nft) = NFTs::<T>::get(collection_id, nft_id) {
+					ensure!(nft.rootowner == collection.issuer, Error::<T>::NoPermission);
+				}
+			}
+			Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
+
 			Self::deposit_event(Event::PropertySet(collection_id, maybe_nft_id, key, value));
 			Ok(())
 		}
-
 		/// lock collection
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
@@ -449,7 +524,7 @@ pub mod pallet {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
-			// TODO
+			// TODO 
 			Self::deposit_event(Event::CollectionLocked(sender.unwrap_or_default(), collection_id));
 			Ok(())
 		}
