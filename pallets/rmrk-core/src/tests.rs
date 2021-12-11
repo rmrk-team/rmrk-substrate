@@ -25,21 +25,38 @@ fn stv(s: &str) -> Vec<u8> {
 	s.as_bytes().to_vec()
 }
 
+fn basic_collection() -> DispatchResult {
+	RMRKCore::create_collection(
+		Origin::signed(ALICE),
+		stv("testing"),
+		Some(5),
+		stv("SYMBOL"),
+		stv("COLLECTION-ID"),
+	)
+}
 #[test]
 fn create_collection_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		let metadata = stv("testing");
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
+		assert_ok!(basic_collection());
 		assert_noop!(
 			RMRKCore::create_collection(
 				Origin::signed(ALICE),
-				vec![0; <Test as UNQ::Config>::StringLimit::get() as usize + 1]
+				vec![0; <Test as UNQ::Config>::StringLimit::get() as usize + 1],
+				None,
+				stv("SYMBOL"),
+				stv("COLLECTION-ID"),
 			),
 			Error::<Test>::TooLong
 		);
 		NextCollectionId::<Test>::mutate(|id| *id = <Test as UNQ::Config>::ClassId::max_value());
 		assert_noop!(
-			RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()),
+			RMRKCore::create_collection(
+				Origin::signed(ALICE),
+				stv("testing"),
+				None,
+				stv("SYMBOL"),
+				stv("COLLECTION-ID"),
+			),
 			Error::<Test>::NoAvailableCollectionId
 		);
 	});
@@ -48,7 +65,7 @@ fn create_collection_works() {
 #[test]
 fn mint_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), b"metadata".to_vec()));
+		assert_ok!(basic_collection());
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
@@ -91,7 +108,7 @@ fn send_nft_to_minted_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		let collection_metadata = stv("testing");
 		let nft_metadata = stv("testing");
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), collection_metadata));
+		assert_ok!(basic_collection());
 		// Alice mints NFT (0, 0) [will be the parent]
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
@@ -311,8 +328,7 @@ fn send_nft_removes_existing_parent() {
 #[test]
 fn change_issuer_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		let collection_metadata = stv("testing");
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), collection_metadata));
+		assert_ok!(basic_collection());
 		assert_ok!(RMRKCore::change_issuer(Origin::signed(ALICE), 0, BOB));
 		assert_eq!(RMRKCore::collections(0).unwrap().issuer, BOB);
 	});
@@ -321,15 +337,14 @@ fn change_issuer_works() {
 #[test]
 fn burn_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		let metadata = stv("testing");
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
+		assert_ok!(basic_collection());
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE),
-			Some(Permill::from_float(1.525)),
-			metadata.clone()
+			Some(Permill::from_float(0.0)),
+			stv("testing")
 		));
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0), None);
@@ -471,7 +486,7 @@ fn send_to_grandchild_fails() {
 fn destroy_collection_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		let metadata = stv("testing");
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
+		assert_ok!(basic_collection());
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
@@ -486,6 +501,65 @@ fn destroy_collection_works() {
 		);
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
+	});
+}
+
+#[test]
+fn mint_beyond_collection_max_fails() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata = stv("testing");
+		assert_ok!(basic_collection());
+		for _ in 0..5 {
+			assert_ok!(RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				ALICE,
+				COLLECTION_ID_0,
+				Some(ALICE),
+				Some(0),
+				Some(stv("testing"))
+			));
+		}
+		assert_noop!(
+			RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				ALICE,
+				COLLECTION_ID_0,
+				Some(ALICE),
+				Some(0),
+				Some(stv("testing"))
+			),
+			Error::<Test>::CollectionFullOrLocked
+		);
+	});
+}
+
+#[test]
+fn lock_collection_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata = stv("testing");
+		assert_ok!(basic_collection());
+		for _ in 0..3 {
+			assert_ok!(RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				ALICE,
+				COLLECTION_ID_0,
+				Some(ALICE),
+				Some(0),
+				Some(stv("testing"))
+			));
+		}
+		assert_ok!(RMRKCore::lock_collection(Origin::signed(ALICE), 0));
+		assert_noop!(
+			RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				ALICE,
+				COLLECTION_ID_0,
+				Some(ALICE),
+				Some(0),
+				Some(stv("testing"))
+			),
+			Error::<Test>::CollectionFullOrLocked
+		);
 	});
 }
 

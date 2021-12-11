@@ -208,6 +208,7 @@ pub mod pallet {
 		NoPermission,
 		NoWitness,
 		CollectionNotEmpty,
+		CollectionFullOrLocked,
 		CannotSendToDescendent,
 	}
 
@@ -237,7 +238,16 @@ pub mod pallet {
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
 
-			let _ = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+			let collection =
+				Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+
+			let nfts_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
+			let max: u32 = collection.max.try_into().unwrap();
+
+			ensure!(
+				nfts_minted < max.try_into().unwrap() || max == max - max, //Probably a better way to do "max == 0"
+				Error::<T>::CollectionFullOrLocked
+			);
 
 			// if let Some(r) = royalty {
 			// 	ensure!(r < 100, Error::<T>::NotInRange);
@@ -277,7 +287,13 @@ pub mod pallet {
 		/// Create a collection
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
-		pub fn create_collection(origin: OriginFor<T>, metadata: Vec<u8>) -> DispatchResult {
+		pub fn create_collection(
+			origin: OriginFor<T>,
+			metadata: Vec<u8>,
+			max: Option<u32>,
+			symbol: Vec<u8>,
+			id: Vec<u8>,
+		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
@@ -286,6 +302,9 @@ pub mod pallet {
 			let collection_id = Self::get_next_collection_id()?;
 
 			let metadata_bounded = Self::to_bounded_string(metadata)?;
+			let symbol_bounded = Self::to_bounded_string(symbol)?;
+			let id_bounded = Self::to_bounded_string(id)?;
+			let max = max.unwrap_or_default();
 
 			pallet_uniques::Pallet::<T>::do_create_class(
 				collection_id.into(),
@@ -305,6 +324,9 @@ pub mod pallet {
 				ClassInfo {
 					issuer: sender.clone().unwrap_or_default(),
 					metadata: metadata_bounded,
+					max,
+					id: id_bounded,
+					symbol: symbol_bounded,
 				},
 			);
 
@@ -524,7 +546,12 @@ pub mod pallet {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
-			// TODO 
+			Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
+				let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
+				let currently_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
+				collection.max = currently_minted.try_into().unwrap();
+				Ok(())
+			})?;
 			Self::deposit_event(Event::CollectionLocked(sender.unwrap_or_default(), collection_id));
 			Ok(())
 		}
