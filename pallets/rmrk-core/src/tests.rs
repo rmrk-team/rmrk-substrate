@@ -199,7 +199,7 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 	ExtBuilder::default().build().execute_with(|| {
 		let collection_metadata = stv("testing");
 		let nft_metadata = stv("testing");
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), collection_metadata));
+		assert_ok!(basic_collection());
 		// Alice mints NFT (0, 0)
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
@@ -252,7 +252,8 @@ fn send_nft_removes_existing_parent() {
 	ExtBuilder::default().build().execute_with(|| {
 		let collection_metadata = stv("testing");
 		let nft_metadata = stv("testing");
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), collection_metadata));
+		// assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), collection_metadata));
+		assert_ok!(basic_collection());
 		// Alice mints NFT (0, 0)
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
@@ -355,7 +356,7 @@ fn burn_nft_works() {
 fn burn_nft_with_great_grandchildren_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		let metadata = stv("testing");
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
+		assert_ok!(basic_collection());
 		// Alice mints (0, 0)
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
@@ -426,7 +427,7 @@ fn burn_nft_with_great_grandchildren_works() {
 fn send_to_grandchild_fails() {
 	ExtBuilder::default().build().execute_with(|| {
 		let metadata = stv("testing");
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
+		assert_ok!(basic_collection());
 		// Alice mints (0, 0)
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
@@ -515,8 +516,8 @@ fn mint_beyond_collection_max_fails() {
 				ALICE,
 				COLLECTION_ID_0,
 				Some(ALICE),
-				Some(0),
-				Some(stv("testing"))
+				Some(Permill::from_float(0.0)),
+				stv("testing")
 			));
 		}
 		assert_noop!(
@@ -525,8 +526,8 @@ fn mint_beyond_collection_max_fails() {
 				ALICE,
 				COLLECTION_ID_0,
 				Some(ALICE),
-				Some(0),
-				Some(stv("testing"))
+				Some(Permill::from_float(0.0)),
+				stv("testing")
 			),
 			Error::<Test>::CollectionFullOrLocked
 		);
@@ -544,8 +545,8 @@ fn lock_collection_works() {
 				ALICE,
 				COLLECTION_ID_0,
 				Some(ALICE),
-				Some(0),
-				Some(stv("testing"))
+				Some(Permill::from_float(0.0)),
+				stv("testing")
 			));
 		}
 		assert_ok!(RMRKCore::lock_collection(Origin::signed(ALICE), 0));
@@ -555,8 +556,8 @@ fn lock_collection_works() {
 				ALICE,
 				COLLECTION_ID_0,
 				Some(ALICE),
-				Some(0),
-				Some(stv("testing"))
+				Some(Permill::from_float(0.0)),
+				stv("testing")
 			),
 			Error::<Test>::CollectionFullOrLocked
 		);
@@ -587,7 +588,7 @@ fn set_property_works() {
 		let metadata = stv("testing");
 		let key = stbk("test-key");
 		let value = stb("test-value");
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
+		assert_ok!(basic_collection());
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
