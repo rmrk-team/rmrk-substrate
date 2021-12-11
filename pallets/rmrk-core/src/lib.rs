@@ -107,6 +107,18 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn priorities)]
+	/// Stores priority info
+	pub type Priorities<T: Config> = StorageDoubleMap<
+		_,
+		Twox64Concat,
+		T::CollectionId,
+		Twox64Concat,
+		T::NftId,
+		Vec<BoundedVec<u8, T::StringLimit>>,
+	>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn resources)]
 	/// Stores resource info
 	pub type Resources<T: Config> =
@@ -340,14 +352,14 @@ pub mod pallet {
 			match new_owner.clone() {
 				AccountIdOrCollectionNftTuple::AccountId(account_id) => {
 					sending_nft.rootowner = account_id.clone();
-				},
+				}
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 					let recipient_nft =
 						NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
 					if sending_nft.rootowner != recipient_nft.rootowner {
 						sending_nft.rootowner = recipient_nft.rootowner
 					}
-				},
+				}
 			};
 			sending_nft.owner = new_owner.clone();
 
@@ -476,11 +488,18 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: T::CollectionId,
 			nft_id: T::NftId,
+			priorities: Vec<Vec<u8>>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
+			let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
+			for priority in priorities {
+				let bounded_priority = Self::to_bounded_string(priority)?;
+				bounded_priorities.push(bounded_priority);
+			}
+			Priorities::<T>::insert(collection_id, nft_id, bounded_priorities);
 			Self::deposit_event(Event::PrioritySet(collection_id, nft_id));
 			Ok(())
 		}

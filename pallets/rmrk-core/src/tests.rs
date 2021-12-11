@@ -220,3 +220,29 @@ fn destroy_collection_works() {
 		assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
 	});
 }
+
+#[test]
+fn set_priority_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		let metadata = stv("testing");
+		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), metadata.clone()));
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(0),
+			Some(metadata.clone())
+		));
+		assert_ok!(RMRKCore::set_priority(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			vec![stv("hello"), stv("world")]
+		));
+		assert_eq!(
+			RMRKCore::priorities(COLLECTION_ID_0, NFT_ID_0).unwrap(),
+			vec![stv("hello"), stv("world")]
+		);
+	});
+}
