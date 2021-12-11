@@ -30,7 +30,6 @@ fn basic_collection() -> DispatchResult {
 		Origin::signed(ALICE),
 		stv("testing"),
 		Some(5),
-		stv("COLLECTION-ID"),
 	)
 }
 #[test]
@@ -42,7 +41,6 @@ fn create_collection_works() {
 				Origin::signed(ALICE),
 				vec![0; <Test as UNQ::Config>::StringLimit::get() as usize + 1],
 				None,
-				stv("COLLECTION-ID"),
 			),
 			Error::<Test>::TooLong
 		);
@@ -52,7 +50,6 @@ fn create_collection_works() {
 				Origin::signed(ALICE),
 				stv("testing"),
 				None,
-				stv("COLLECTION-ID"),
 			),
 			Error::<Test>::NoAvailableCollectionId
 		);
@@ -194,7 +191,6 @@ fn send_nft_to_minted_nft_works() {
 #[test]
 fn send_two_nfts_to_same_nft_creates_two_children() {
 	ExtBuilder::default().build().execute_with(|| {
-		let collection_metadata = stv("testing");
 		let nft_metadata = stv("testing");
 		assert_ok!(basic_collection());
 		// Alice mints NFT (0, 0)
@@ -247,9 +243,7 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 #[test]
 fn send_nft_removes_existing_parent() {
 	ExtBuilder::default().build().execute_with(|| {
-		let collection_metadata = stv("testing");
 		let nft_metadata = stv("testing");
-		// assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), collection_metadata));
 		assert_ok!(basic_collection());
 		// Alice mints NFT (0, 0)
 		assert_ok!(RMRKCore::mint_nft(

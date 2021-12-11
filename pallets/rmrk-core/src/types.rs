@@ -19,7 +19,6 @@ pub struct ClassInfo<BoundedString, AccountId> {
 	pub issuer: AccountId,
 	pub metadata: BoundedString,
 	pub max: u32,
-	pub id: BoundedString,
 }
 
 #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]

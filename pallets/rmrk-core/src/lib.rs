@@ -303,7 +303,6 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			metadata: Vec<u8>,
 			max: Option<u32>,
-			id: Vec<u8>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
@@ -313,7 +312,6 @@ pub mod pallet {
 			let collection_id = Self::get_next_collection_id()?;
 
 			let metadata_bounded = Self::to_bounded_string(metadata)?;
-			let id_bounded = Self::to_bounded_string(id)?;
 			let max = max.unwrap_or_default();
 
 			pallet_uniques::Pallet::<T>::do_create_class(
@@ -335,7 +333,6 @@ pub mod pallet {
 					issuer: sender.clone().unwrap_or_default(),
 					metadata: metadata_bounded,
 					max,
-					id: id_bounded,
 				},
 			);
 
