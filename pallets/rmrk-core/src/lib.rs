@@ -243,7 +243,7 @@ pub mod pallet {
 			collection_id: T::CollectionId,
 			recipient: Option<T::AccountId>,
 			royalty: Option<Permill>,
-			metadata: Vec<u8>,
+			metadata: BoundedVec<u8, T::StringLimit>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
@@ -262,7 +262,7 @@ pub mod pallet {
 			);
 
 			// if let Some(r) = royalty {
-			// 	ensure!(r < 100, Error::<T>::NotInRange);
+			// 	ensure!(r < 1000, Error::<T>::NotInRange);
 			// }
 
 			let nft_id: T::NftId = Self::get_next_nft_id(collection_id)?;
@@ -274,7 +274,6 @@ pub mod pallet {
 				|_details| Ok(()),
 			)?;
 
-			let metadata_bounded = Self::to_bounded_string(metadata)?;
 			let recipient = recipient.ok_or(Error::<T>::RecipientNotSet)?;
 			let royalty = royalty.ok_or(Error::<T>::RoyaltyNotSet)?;
 
@@ -284,7 +283,7 @@ pub mod pallet {
 			NFTs::<T>::insert(
 				collection_id,
 				nft_id,
-				InstanceInfo { owner, rootowner, recipient, royalty, metadata: metadata_bounded },
+				InstanceInfo { owner, rootowner, recipient, royalty, metadata },
 			);
 
 			Self::deposit_event(Event::NftMinted(
@@ -301,10 +300,9 @@ pub mod pallet {
 		#[transactional]
 		pub fn create_collection(
 			origin: OriginFor<T>,
-			metadata: Vec<u8>,
+			metadata: BoundedVec<u8, T::StringLimit>,
 			max: Option<u32>,
-			symbol: Vec<u8>,
-			id: Vec<u8>,
+			symbol: BoundedVec<u8, T::StringLimit>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
@@ -312,10 +310,6 @@ pub mod pallet {
 			};
 
 			let collection_id = Self::get_next_collection_id()?;
-
-			let metadata_bounded = Self::to_bounded_string(metadata)?;
-			let symbol_bounded = Self::to_bounded_string(symbol)?;
-			let id_bounded = Self::to_bounded_string(id)?;
 			let max = max.unwrap_or_default();
 
 			pallet_uniques::Pallet::<T>::do_create_class(
@@ -335,10 +329,9 @@ pub mod pallet {
 				collection_id,
 				ClassInfo {
 					issuer: sender.clone().unwrap_or_default(),
-					metadata: metadata_bounded,
+					metadata,
 					max,
-					id: id_bounded,
-					symbol: symbol_bounded,
+					symbol,
 				},
 			);
 
