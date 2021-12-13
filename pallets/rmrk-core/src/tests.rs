@@ -663,6 +663,15 @@ fn send_multigenerational_nft_to_account_updates_rootowners() {
 			Some(Permill::from_float(0.0)),
 			nft_metadata.clone()
 		));
+		// Alice mints NFT (0, 3)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			nft_metadata.clone()
+		));
 
 		// Alice sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
@@ -671,14 +680,22 @@ fn send_multigenerational_nft_to_account_updates_rootowners() {
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
-		// Alice sends NFT (0, 2) to NFT (0, 0)
+		// Alice sends NFT (0, 2) to NFT (0, 1)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			2,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
+		));
+		// Alice sends NFT (0, 3) to NFT (0, 2)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			3,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
 		));
 
+		println!("sending to bob");
 		// Alice sends NFT (0, 0) to Bob
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -765,8 +782,9 @@ fn send_multigenerational_nft_to_nft_updates_rootowners() {
 			Origin::signed(BOB),
 			0,
 			0,
-			AccountIdOrCollectionNftTuple::AccountId(ALICE),
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 3),
 		));
+
 		// Alice now rootowns (0, 2) again
 		assert_eq!(RMRKCore::nfts(0, 2).unwrap().rootowner, ALICE);
 	});

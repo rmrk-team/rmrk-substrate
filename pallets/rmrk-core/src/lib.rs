@@ -433,6 +433,11 @@ pub mod pallet {
 						}
 					}
 					sending_nft.rootowner = account_id.clone();
+					Pallet::<T>::recursive_update_rootowner(
+						collection_id,
+						nft_id,
+						account_id.clone(),
+					)?;
 				}
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 					let recipient_nft =
@@ -455,7 +460,14 @@ pub mod pallet {
 						}
 					}
 					if sending_nft.rootowner != recipient_nft.rootowner {
-						sending_nft.rootowner = recipient_nft.rootowner
+						sending_nft.rootowner = recipient_nft.rootowner.clone();
+
+						Pallet::<T>::recursive_update_rootowner(
+							collection_id,
+							nft_id,
+							recipient_nft.rootowner,
+						)?;
+						// sending_nft.rootowner = recipient_nft.rootowner
 					}
 					match Children::<T>::take(cid, nid) {
 						None => Children::<T>::insert(cid, nid, vec![(collection_id, nft_id)]),
