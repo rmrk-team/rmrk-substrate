@@ -243,7 +243,7 @@ pub mod pallet {
 			collection_id: T::CollectionId,
 			recipient: Option<T::AccountId>,
 			royalty: Option<Permill>,
-			metadata: Vec<u8>,
+			metadata: BoundedVec<u8, T::StringLimit>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
@@ -262,7 +262,7 @@ pub mod pallet {
 			);
 
 			// if let Some(r) = royalty {
-			// 	ensure!(r < 100, Error::<T>::NotInRange);
+			// 	ensure!(r < 1000, Error::<T>::NotInRange);
 			// }
 
 			let nft_id: T::NftId = Self::get_next_nft_id(collection_id)?;
@@ -274,7 +274,6 @@ pub mod pallet {
 				|_details| Ok(()),
 			)?;
 
-			let metadata_bounded = Self::to_bounded_string(metadata)?;
 			let recipient = recipient.ok_or(Error::<T>::RecipientNotSet)?;
 			let royalty = royalty.ok_or(Error::<T>::RoyaltyNotSet)?;
 
@@ -284,7 +283,7 @@ pub mod pallet {
 			NFTs::<T>::insert(
 				collection_id,
 				nft_id,
-				InstanceInfo { owner, rootowner, recipient, royalty, metadata: metadata_bounded },
+				InstanceInfo { owner, rootowner, recipient, royalty, metadata },
 			);
 
 			Self::deposit_event(Event::NftMinted(
@@ -301,10 +300,9 @@ pub mod pallet {
 		#[transactional]
 		pub fn create_collection(
 			origin: OriginFor<T>,
-			metadata: Vec<u8>,
+			metadata: BoundedVec<u8, T::StringLimit>,
 			max: Option<u32>,
-			symbol: Vec<u8>,
-			id: Vec<u8>,
+			symbol: BoundedVec<u8, T::StringLimit>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
@@ -312,10 +310,6 @@ pub mod pallet {
 			};
 
 			let collection_id = Self::get_next_collection_id()?;
-
-			let metadata_bounded = Self::to_bounded_string(metadata)?;
-			let symbol_bounded = Self::to_bounded_string(symbol)?;
-			let id_bounded = Self::to_bounded_string(id)?;
 			let max = max.unwrap_or_default();
 
 			pallet_uniques::Pallet::<T>::do_create_class(
@@ -335,10 +329,9 @@ pub mod pallet {
 				collection_id,
 				ClassInfo {
 					issuer: sender.clone().unwrap_or_default(),
-					metadata: metadata_bounded,
+					metadata,
 					max,
-					id: id_bounded,
-					symbol: symbol_bounded,
+					symbol,
 				},
 			);
 
@@ -587,12 +580,12 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: T::CollectionId,
 			nft_id: T::NftId,
-			base: Option<Vec<u8>>,
-			src: Option<Vec<u8>>,
-			metadata: Option<Vec<u8>>,
-			slot: Option<Vec<u8>>,
-			license: Option<Vec<u8>>,
-			thumb: Option<Vec<u8>>,
+			base: Option<BoundedVec<u8, T::StringLimit>>,
+			src: Option<BoundedVec<u8, T::StringLimit>>,
+			metadata: Option<BoundedVec<u8, T::StringLimit>>,
+			slot: Option<BoundedVec<u8, T::StringLimit>>,
+			license: Option<BoundedVec<u8, T::StringLimit>>,
+			thumb: Option<BoundedVec<u8, T::StringLimit>>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
@@ -600,22 +593,8 @@ pub mod pallet {
 			};
 
 			let resource_id = Self::get_next_resource_id()?;
-			let base_bounded = Self::to_optional_bounded_string(base)?;
-			let src_bounded = Self::to_optional_bounded_string(src)?;
-			let metadata_bounded = Self::to_optional_bounded_string(metadata)?;
-			let slot_bounded = Self::to_optional_bounded_string(slot)?;
-			let license_bounded = Self::to_optional_bounded_string(license)?;
-			let thumb_bounded = Self::to_optional_bounded_string(thumb)?;
 
-			let res = ResourceInfo {
-				id: resource_id,
-				base: base_bounded,
-				src: src_bounded,
-				metadata: metadata_bounded,
-				slot: slot_bounded,
-				license: license_bounded,
-				thumb: thumb_bounded,
-			};
+			let res = ResourceInfo { id: resource_id, base, src, metadata, slot, license, thumb };
 			Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
 			Self::deposit_event(Event::ResourceAdded(nft_id, resource_id));
