@@ -14,8 +14,8 @@ use frame_support::{
 };
 use frame_system::ensure_signed;
 
-use sp_runtime::traits::{AtLeast32BitUnsigned, CheckedAdd, One, StaticLookup, Zero};
-use sp_runtime::Permill;
+use sp_runtime::traits::{AtLeast32BitUnsigned, Bounded, CheckedAdd, One, StaticLookup, Zero};
+use sp_runtime::{DispatchError, Permill};
 use sp_std::{convert::TryInto, vec, vec::Vec};
 
 use types::{AccountIdOrCollectionNftTuple, ClassInfo, InstanceInfo, ResourceInfo};
@@ -118,7 +118,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn auctions_index)]
-	pub type CollectionTwoIndex<T: Config> = StorageValue<_, T::AuctionId, ValueQuery>;
+	pub type CollectionTwoIndex<T: Config> = StorageValue<_, T::CollectionTwoId, ValueQuery>;
 
 	/// Next available Resource ID.
 	#[pallet::storage]
@@ -129,6 +129,12 @@ pub mod pallet {
 	#[pallet::getter(fn collections)]
 	/// Stores collections info
 	pub type Collections<T: Config> = StorageMap<_, Twox64Concat, T::CollectionId, ClassInfoOf<T>>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn collectionstwo)]
+	/// Stores collections info
+	pub type CollectionsTwo<T: Config> =
+		StorageMap<_, Twox64Concat, T::CollectionTwoId, CollectionTwoInfo<T::AccountId>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn nfts)]
@@ -365,6 +371,10 @@ pub mod pallet {
 					symbol: symbol_bounded,
 				},
 			);
+
+			<Self as CollectionTwo<T::AccountId>>::create_collection(
+				sender.clone().unwrap_or_default(),
+			)?;
 
 			Self::deposit_event(Event::CollectionCreated(
 				sender.unwrap_or_default(),
@@ -733,27 +743,18 @@ impl<T: Config> CollectionTwo<T::AccountId> for Pallet<T> {
 	fn collection_two_info(id: Self::CollectionTwoId) -> Option<CollectionTwoInfo<T::AccountId>> {
 		None
 	}
-	// fn auction_info(id: Self::AuctionId) -> Option<AuctionInfo<T::AccountId, Self::Balance, T::BlockNumber>> {
-	// 	Self::auctions(id)
-	// }
 	fn issuer(collection_id: Self::CollectionTwoId) -> Option<T::AccountId> {
 		None
 	}
-	fn create_collection() -> sp_std::result::Result<Self::CollectionTwoId, DispatchError> {
-		let collection = CollectionInfo { bid: None, start, end };
-		let auction_id = <CollectionTwoIndex<T>>::try_mutate(
-			|n| -> sp_std::result::Result<Self::AuctionId, DispatchError> {
+	fn create_collection(issuer: T::AccountId) -> DispatchResult {
+		let collection = CollectionTwoInfo { issuer };
+		let collection_id = <CollectionTwoIndex<T>>::try_mutate(
+			|n| -> sp_std::result::Result<Self::CollectionTwoId, DispatchError> {
 				let id = *n;
-				ensure!(id != Self::AuctionId::max_value(), Error::<T>::NoAvailableCollectionTwoId);
-				*n += One::one();
 				Ok(id)
 			},
 		)?;
-		Collections::<T>::insert(auction_id, auction);
-		if let Some(end_block) = end {
-			AuctionEndTime::<T>::insert(&end_block, auction_id, ());
-		}
-
-		Ok(auction_id)
+		CollectionsTwo::<T>::insert(collection_id, collection);
+		Ok(())
 	}
 }
