@@ -34,7 +34,6 @@ impl<T: Config> Pallet<T> {
 		new_rootowner: T::AccountId,
 	) -> DispatchResult {
 		NFTs::<T>::try_mutate_exists(collection_id, nft_id, |nft| -> DispatchResult {
-			println!("exists");
 			if let Some(n) = nft.into_mut() {
 				n.rootowner = new_rootowner.clone();
 			}

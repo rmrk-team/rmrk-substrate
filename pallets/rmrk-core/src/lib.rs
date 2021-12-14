@@ -460,7 +460,6 @@ pub mod pallet {
 							nft_id,
 							recipient_nft.rootowner,
 						)?;
-						// sending_nft.rootowner = recipient_nft.rootowner
 					}
 					match Children::<T>::take(cid, nid) {
 						None => Children::<T>::insert(cid, nid, vec![(collection_id, nft_id)]),

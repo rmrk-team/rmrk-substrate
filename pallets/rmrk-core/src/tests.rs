@@ -640,7 +640,7 @@ fn send_multigenerational_nft_to_account_updates_rootowners() {
 			0,
 			Some(ALICE),
 			Some(Permill::from_float(0.0)),
-			nft_metadata.clone()
+			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 1)
 		assert_ok!(RMRKCore::mint_nft(
@@ -649,7 +649,7 @@ fn send_multigenerational_nft_to_account_updates_rootowners() {
 			0,
 			Some(ALICE),
 			Some(Permill::from_float(0.0)),
-			nft_metadata.clone()
+			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 2)
 		assert_ok!(RMRKCore::mint_nft(
@@ -658,7 +658,7 @@ fn send_multigenerational_nft_to_account_updates_rootowners() {
 			0,
 			Some(ALICE),
 			Some(Permill::from_float(0.0)),
-			nft_metadata.clone()
+			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 3)
 		assert_ok!(RMRKCore::mint_nft(
@@ -667,7 +667,7 @@ fn send_multigenerational_nft_to_account_updates_rootowners() {
 			0,
 			Some(ALICE),
 			Some(Permill::from_float(0.0)),
-			nft_metadata.clone()
+			bvec![0u8; 20]
 		));
 
 		// Alice sends NFT (0, 1) to NFT (0, 0)
@@ -718,7 +718,7 @@ fn send_multigenerational_nft_to_nft_updates_rootowners() {
 			0,
 			Some(ALICE),
 			Some(Permill::from_float(0.0)),
-			nft_metadata.clone()
+			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 1)
 		assert_ok!(RMRKCore::mint_nft(
@@ -727,7 +727,7 @@ fn send_multigenerational_nft_to_nft_updates_rootowners() {
 			0,
 			Some(ALICE),
 			Some(Permill::from_float(0.0)),
-			nft_metadata.clone()
+			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 2)
 		assert_ok!(RMRKCore::mint_nft(
@@ -736,7 +736,7 @@ fn send_multigenerational_nft_to_nft_updates_rootowners() {
 			0,
 			Some(ALICE),
 			Some(Permill::from_float(0.0)),
-			nft_metadata.clone()
+			bvec![0u8; 20]
 		));
 
 		// Alice sends NFT (0, 1) to NFT (0, 0)
@@ -771,7 +771,7 @@ fn send_multigenerational_nft_to_nft_updates_rootowners() {
 			0,
 			Some(ALICE),
 			Some(Permill::from_float(0.0)),
-			nft_metadata.clone()
+			bvec![0u8; 20]
 		));
 
 		// Bob sends NFT (0, 0) [with children] to NFT (0, 3)
