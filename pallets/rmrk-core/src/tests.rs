@@ -579,6 +579,16 @@ fn create_resource_works() {
 }
 
 #[test]
+fn create_empty_resource_fails() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_noop!(
+			RMRKCore::add_resource(Origin::signed(ALICE), 0, 0, None, None, None, None, None, None),
+			Error::<Test>::EmptyResource
+		);
+	});
+}
+
+#[test]
 fn set_property_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		let key = stbk("test-key");
