@@ -20,6 +20,8 @@ use sp_std::{convert::TryInto, vec, vec::Vec};
 
 use types::{AccountIdOrCollectionNftTuple, ClassInfo, InstanceInfo, ResourceInfo};
 
+use rmrk_traits::{CollectionTwo, CollectionTwoInfo};
+
 mod functions;
 
 #[cfg(test)]
@@ -71,6 +73,14 @@ pub mod pallet {
 			+ AtLeast32BitUnsigned
 			+ Into<Self::ClassId>;
 
+		// type CollectionTwoId: Member
+		// 	+ Parameter
+		// 	+ Default
+		// 	+ Copy
+		// 	+ HasCompact
+		// 	+ AtLeast32BitUnsigned
+		// 	+ Into<Self::ClassId>;
+
 		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
 
 		type NftId: Member
@@ -83,6 +93,16 @@ pub mod pallet {
 			+ Into<Self::InstanceId>;
 
 		type ResourceId: Member + Parameter + Default + Copy + HasCompact + AtLeast32BitUnsigned;
+
+		/// The auction ID type.
+		type CollectionTwoId: Parameter
+			+ Member
+			+ AtLeast32BitUnsigned
+			+ Default
+			+ Copy
+			+ MaybeSerializeDeserialize
+			+ Bounded
+			+ codec::FullCodec;
 	}
 
 	/// Next available collection ID.
@@ -95,6 +115,10 @@ pub mod pallet {
 	#[pallet::getter(fn next_nft_id)]
 	pub type NextNftId<T: Config> =
 		StorageMap<_, Twox64Concat, T::CollectionId, T::NftId, ValueQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn auctions_index)]
+	pub type CollectionTwoIndex<T: Config> = StorageValue<_, T::AuctionId, ValueQuery>;
 
 	/// Next available Resource ID.
 	#[pallet::storage]
@@ -700,5 +724,36 @@ pub mod pallet {
 				Ok(current_id)
 			})
 		}
+	}
+}
+
+impl<T: Config> CollectionTwo<T::AccountId> for Pallet<T> {
+	type CollectionTwoId = T::CollectionTwoId;
+
+	fn collection_two_info(id: Self::CollectionTwoId) -> Option<CollectionTwoInfo<T::AccountId>> {
+		None
+	}
+	// fn auction_info(id: Self::AuctionId) -> Option<AuctionInfo<T::AccountId, Self::Balance, T::BlockNumber>> {
+	// 	Self::auctions(id)
+	// }
+	fn issuer(collection_id: Self::CollectionTwoId) -> Option<T::AccountId> {
+		None
+	}
+	fn create_collection() -> sp_std::result::Result<Self::CollectionTwoId, DispatchError> {
+		let collection = CollectionInfo { bid: None, start, end };
+		let auction_id = <CollectionTwoIndex<T>>::try_mutate(
+			|n| -> sp_std::result::Result<Self::AuctionId, DispatchError> {
+				let id = *n;
+				ensure!(id != Self::AuctionId::max_value(), Error::<T>::NoAvailableCollectionTwoId);
+				*n += One::one();
+				Ok(id)
+			},
+		)?;
+		Collections::<T>::insert(auction_id, auction);
+		if let Some(end_block) = end {
+			AuctionEndTime::<T>::insert(&end_block, auction_id, ());
+		}
+
+		Ok(auction_id)
 	}
 }

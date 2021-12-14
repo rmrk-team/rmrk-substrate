@@ -3716,6 +3716,7 @@ dependencies = [
  "pallet-balances",
  "pallet-uniques",
  "parity-scale-codec",
+ "rmrk-traits",
  "scale-info",
  "serde",
  "sp-core",
@@ -4736,6 +4737,23 @@ dependencies = [
  "sp-transaction-pool",
  "sp-version",
  "substrate-wasm-builder",
+]
+
+[[package]]
+name = "rmrk-traits"
+version = "0.4.1-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
