@@ -568,12 +568,12 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: T::CollectionId,
 			nft_id: T::NftId,
-			base: Option<Vec<u8>>,
-			src: Option<Vec<u8>>,
-			metadata: Option<Vec<u8>>,
-			slot: Option<Vec<u8>>,
-			license: Option<Vec<u8>>,
-			thumb: Option<Vec<u8>>,
+			base: Option<BoundedVec<u8, T::StringLimit>>,
+			src: Option<BoundedVec<u8, T::StringLimit>>,
+			metadata: Option<BoundedVec<u8, T::StringLimit>>,
+			slot: Option<BoundedVec<u8, T::StringLimit>>,
+			license: Option<BoundedVec<u8, T::StringLimit>>,
+			thumb: Option<BoundedVec<u8, T::StringLimit>>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
@@ -581,22 +581,8 @@ pub mod pallet {
 			};
 
 			let resource_id = Self::get_next_resource_id()?;
-			let base_bounded = Self::to_optional_bounded_string(base)?;
-			let src_bounded = Self::to_optional_bounded_string(src)?;
-			let metadata_bounded = Self::to_optional_bounded_string(metadata)?;
-			let slot_bounded = Self::to_optional_bounded_string(slot)?;
-			let license_bounded = Self::to_optional_bounded_string(license)?;
-			let thumb_bounded = Self::to_optional_bounded_string(thumb)?;
 
-			let res = ResourceInfo {
-				id: resource_id,
-				base: base_bounded,
-				src: src_bounded,
-				metadata: metadata_bounded,
-				slot: slot_bounded,
-				license: license_bounded,
-				thumb: thumb_bounded,
-			};
+			let res = ResourceInfo { id: resource_id, base, src, metadata, slot, license, thumb };
 			Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
 			Self::deposit_event(Event::ResourceAdded(nft_id, resource_id));
