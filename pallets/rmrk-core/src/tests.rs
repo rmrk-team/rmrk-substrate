@@ -32,12 +32,7 @@ macro_rules! bvec {
 }
 
 fn basic_collection() -> DispatchResult {
-	RMRKCore::create_collection(
-		Origin::signed(ALICE),
-		bvec![0u8; 20],
-		Some(5),
-		bvec![0u8; 15],
-	)
+	RMRKCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], Some(5), bvec![0u8; 15])
 }
 #[test]
 fn create_collection_works() {
@@ -49,7 +44,7 @@ fn create_collection_works() {
 		// 		Origin::signed(ALICE),
 		// 		bvec![0; <Test as UNQ::Config>::StringLimit::get() as usize + 1],
 		// 		None,
-		// 		bvec![0u8; 10],				
+		// 		bvec![0u8; 10],
 		// 	),
 		// 	Error::<Test>::TooLong
 		// );
@@ -59,7 +54,7 @@ fn create_collection_works() {
 				Origin::signed(ALICE),
 				bvec![0u8; 20],
 				None,
-				bvec![0u8; 15],				
+				bvec![0u8; 15],
 			),
 			Error::<Test>::NoAvailableCollectionId
 		);
@@ -355,7 +350,6 @@ fn burn_nft_works() {
 #[test]
 fn burn_nft_with_great_grandchildren_works() {
 	ExtBuilder::default().build().execute_with(|| {
-
 		assert_ok!(basic_collection());
 		// Alice mints (0, 0)
 		assert_ok!(RMRKCore::mint_nft(
@@ -534,7 +528,6 @@ fn mint_beyond_collection_max_fails() {
 #[test]
 fn lock_collection_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		
 		assert_ok!(basic_collection());
 		for _ in 0..3 {
 			assert_ok!(RMRKCore::mint_nft(
@@ -564,6 +557,32 @@ fn lock_collection_works() {
 #[test]
 fn create_resource_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Creating a resource for non-existent NFT fails
+		assert_noop!(
+			RMRKCore::add_resource(
+				Origin::signed(ALICE),
+				0,
+				0,
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+			),
+			Error::<Test>::NoAvailableNftId
+		);
+		// Create collection and NFT
+		assert_ok!(basic_collection());
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+		// Add resource works
 		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(ALICE),
 			0,
@@ -575,6 +594,8 @@ fn create_resource_works() {
 			Some(bvec![0u8; 20]),
 			Some(bvec![0u8; 20]),
 		));
+		// Since ALICE rootowns NFT (0, 0), pending should be false
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 	});
 }
 
@@ -602,7 +623,6 @@ fn set_property_works() {
 		assert_eq!(RMRKCore::properties((0, Some(0), key)).unwrap(), value);
 	});
 }
-    
 #[test]
 fn set_priority_works() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -625,5 +645,65 @@ fn set_priority_works() {
 			RMRKCore::priorities(COLLECTION_ID_0, NFT_ID_0).unwrap(),
 			vec![stv("hello"), stv("world")]
 		);
+	});
+}
+
+#[test]
+fn add_resource_pending_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(basic_collection());
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+		assert_ok!(RMRKCore::add_resource(
+			Origin::signed(BOB),
+			0,
+			0,
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+		));
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, true);
+	});
+}
+
+#[test]
+fn accept_resource_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(basic_collection());
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+		assert_ok!(RMRKCore::add_resource(
+			Origin::signed(BOB),
+			0,
+			0,
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+		));
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, true);
+		// Bob can't accept Alice's NFT's resource
+		assert_noop!(RMRKCore::accept(Origin::signed(BOB), 0, 0, 0), Error::<Test>::NoPermission);
+		// Alice can accept her own NFT's resource
+		assert_ok!(RMRKCore::accept(Origin::signed(ALICE), 0, 0, 0));
+		// Resource should now be pending = false
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 	});
 }
