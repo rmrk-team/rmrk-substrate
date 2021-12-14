@@ -107,6 +107,12 @@ pub mod pallet {
 	pub type Collections<T: Config> = StorageMap<_, Twox64Concat, T::CollectionId, ClassInfoOf<T>>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn get_nfts_by_owner)]
+	/// Stores collections info
+	pub type NftsByOwner<T: Config> =
+		StorageMap<_, Twox64Concat, T::AccountId, Vec<(T::CollectionId, T::NftId)>>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn nfts)]
 	/// Stores nft info
 	pub type NFTs<T: Config> = StorageDoubleMap<
@@ -278,13 +284,18 @@ pub mod pallet {
 			let royalty = royalty.ok_or(Error::<T>::RoyaltyNotSet)?;
 
 			let rootowner = owner.clone();
-			let owner = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
+			let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
 
-			NFTs::<T>::insert(
-				collection_id,
-				nft_id,
-				InstanceInfo { owner, rootowner, recipient, royalty, metadata },
-			);
+			let nft = InstanceInfo {
+				owner: owner_as_maybe_account,
+				rootowner,
+				recipient,
+				royalty,
+				metadata,
+			};
+
+			NFTs::<T>::insert(collection_id, nft_id, nft);
+			NftsByOwner::<T>::append(owner, (collection_id, nft_id));
 
 			Self::deposit_event(Event::NftMinted(
 				sender.unwrap_or_default(),
