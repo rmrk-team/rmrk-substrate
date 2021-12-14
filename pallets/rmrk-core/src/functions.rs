@@ -1,5 +1,4 @@
 use super::*;
-use frame_support::traits::IsType;
 
 impl<T: Config> Pallet<T> {
 	pub fn is_x_descendent_of_y(
@@ -26,25 +25,5 @@ impl<T: Config> Pallet<T> {
 			}
 		}
 		found_child
-	}
-
-	pub fn recursive_update_rootowner(
-		collection_id: T::CollectionId,
-		nft_id: T::NftId,
-		new_rootowner: T::AccountId,
-	) -> DispatchResult {
-		NFTs::<T>::try_mutate_exists(collection_id, nft_id, |nft| -> DispatchResult {
-			println!("exists");
-			if let Some(n) = nft.into_mut() {
-				n.rootowner = new_rootowner.clone();
-			}
-			Ok(())
-		})?;
-		if let Some(children) = Children::<T>::get(collection_id, nft_id) {
-			for child in children {
-				Pallet::<T>::recursive_update_rootowner(child.0, child.1, new_rootowner.clone())?;
-			}
-		}
-		Ok(())
 	}
 }
