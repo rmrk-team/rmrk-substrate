@@ -355,7 +355,7 @@ fn burn_nft_works() {
 #[test]
 fn burn_nft_with_great_grandchildren_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		
+
 		assert_ok!(basic_collection());
 		// Alice mints (0, 0)
 		assert_ok!(RMRKCore::mint_nft(
@@ -426,7 +426,6 @@ fn burn_nft_with_great_grandchildren_works() {
 #[test]
 fn send_to_grandchild_fails() {
 	ExtBuilder::default().build().execute_with(|| {
-		
 		assert_ok!(basic_collection());
 		// Alice mints (0, 0)
 		assert_ok!(RMRKCore::mint_nft(
@@ -569,12 +568,12 @@ fn create_resource_works() {
 			Origin::signed(ALICE),
 			0,
 			0,
-			Some(stv("i-am-a-base")),
-			Some(stv("i-am-a-src")),
-			Some(stv("i-am-metadata")),
-			Some(stv("i-am-a-slot")),
-			Some(stv("i-am-a-license")),
-			Some(stv("i-am-a-thumb")),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
 		));
 	});
 }
