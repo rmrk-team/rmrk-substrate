@@ -605,8 +605,17 @@ fn create_resource_works() {
 #[test]
 fn create_empty_resource_fails() {
 	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(basic_collection());
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20]
+		));		
 		assert_noop!(
-			RMRKCore::add_resource(Origin::signed(ALICE), 0, 0, None, None, None, None, None, None),
+			RMRKCore::add_resource(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, None, None, None, None, None, None),
 			Error::<Test>::EmptyResource
 		);
 	});
