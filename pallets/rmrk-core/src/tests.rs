@@ -48,7 +48,7 @@ fn create_collection_works() {
 			),
 			Error::<Test>::TooLong
 		);
-		NextCollectionId::<Test>::mutate(|id| *id = <Test as UNQ::Config>::ClassId::max_value());
+		CollectionIndex::<Test>::mutate(|id| *id = <Test as Config>::CollectionId::max_value());
 		assert_noop!(
 			RMRKCore::create_collection(
 				Origin::signed(ALICE),

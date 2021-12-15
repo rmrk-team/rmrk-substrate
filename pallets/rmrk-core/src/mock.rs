@@ -43,7 +43,6 @@ impl pallet_rmrk_core::Config for Test {
 	// type Currency = Balances;
 	type Event = Event;
 	type CollectionId = u32;
-	type CollectionTwoId = u32;
 	type NftId = u32;
 	type ResourceId = u32;
 	type ProtocolOrigin = EnsureRoot<AccountId>;

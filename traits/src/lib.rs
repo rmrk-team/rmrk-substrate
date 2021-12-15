@@ -1,8 +1,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-pub mod collectiontwo;
+pub mod collection;
 
-pub use collectiontwo::{CollectionTwo, CollectionTwoInfo};
+pub use collection::{Collection, CollectionInfo};
 
 // use codec::{Decode, Encode};
 // use impl_trait_for_tuples::impl_for_tuples;
