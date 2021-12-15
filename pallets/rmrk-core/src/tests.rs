@@ -554,6 +554,8 @@ fn lock_collection_works() {
 	});
 }
 
+
+
 #[test]
 fn create_resource_works() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -598,6 +600,7 @@ fn create_resource_works() {
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 	});
 }
+
 
 #[test]
 fn set_property_works() {

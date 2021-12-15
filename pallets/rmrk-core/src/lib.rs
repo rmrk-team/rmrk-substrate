@@ -83,6 +83,8 @@ pub mod pallet {
 			+ Into<Self::InstanceId>;
 
 		type ResourceId: Member + Parameter + Default + Copy + HasCompact + AtLeast32BitUnsigned;
+
+		type MaxRecursions: Get<u32>;
 	}
 
 	/// Next available collection ID.
@@ -228,6 +230,7 @@ pub mod pallet {
 		CollectionNotEmpty,
 		CollectionFullOrLocked,
 		CannotSendToDescendent,
+		TooManyRecursions,
 	}
 
 	#[pallet::call]
@@ -365,12 +368,9 @@ pub mod pallet {
 			pallet_uniques::Pallet::<T>::do_burn(collection_id.into(), nft_id.into(), |_, _| {
 				Ok(())
 			})?;
-			NFTs::<T>::remove(collection_id, nft_id);
-			if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
-				for child in kids {
-					Pallet::<T>::burn_nft(origin.clone(), child.0, child.1)?;
-				}
-			}
+
+			Pallet::<T>::recursive_burn(collection_id, nft_id, T::MaxRecursions::get())?;
+
 			Self::deposit_event(Event::NFTBurned(sender, nft_id));
 			Ok(())
 		}
@@ -437,6 +437,12 @@ pub mod pallet {
 						}
 					}
 					sending_nft.rootowner = account_id.clone();
+					Pallet::<T>::recursive_update_rootowner(
+						collection_id,
+						nft_id,
+						account_id.clone(),
+						T::MaxRecursions::get(),
+					)?;
 				}
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 					let recipient_nft =
@@ -459,7 +465,14 @@ pub mod pallet {
 						}
 					}
 					if sending_nft.rootowner != recipient_nft.rootowner {
-						sending_nft.rootowner = recipient_nft.rootowner
+						sending_nft.rootowner = recipient_nft.rootowner.clone();
+
+						Pallet::<T>::recursive_update_rootowner(
+							collection_id,
+							nft_id,
+							recipient_nft.rootowner,
+							T::MaxRecursions::get(),
+						)?;
 					}
 					match Children::<T>::take(cid, nid) {
 						None => Children::<T>::insert(cid, nid, vec![(collection_id, nft_id)]),
