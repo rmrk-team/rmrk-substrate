@@ -604,9 +604,24 @@ pub mod pallet {
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
 
+			let mut pending = false;
+			let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+			if nft.rootowner != sender.unwrap_or_default() {
+				pending = true;
+			}
+
 			let resource_id = Self::get_next_resource_id()?;
 
-			let res = ResourceInfo { id: resource_id, base, src, metadata, slot, license, thumb };
+			let res = ResourceInfo {
+				id: resource_id,
+				base,
+				src,
+				metadata,
+				slot,
+				license,
+				thumb,
+				pending,
+			};
 			Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
 			Self::deposit_event(Event::ResourceAdded(nft_id, resource_id));
@@ -617,6 +632,7 @@ pub mod pallet {
 		#[transactional]
 		pub fn accept(
 			origin: OriginFor<T>,
+			collection_id: T::CollectionId,
 			nft_id: T::NftId,
 			resource_id: T::ResourceId,
 		) -> DispatchResult {
@@ -624,6 +640,20 @@ pub mod pallet {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
+
+			let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+			ensure!(nft.rootowner == sender.unwrap_or_default(), Error::<T>::NoPermission);
+
+			Resources::<T>::try_mutate_exists(
+				(collection_id, nft_id, resource_id),
+				|resource| -> DispatchResult {
+					if let Some(res) = resource.into_mut() {
+						res.pending = false;
+					}
+					Ok(())
+				},
+			)?;
+
 			Self::deposit_event(Event::ResourceAccepted(nft_id, resource_id));
 			Ok(())
 		}

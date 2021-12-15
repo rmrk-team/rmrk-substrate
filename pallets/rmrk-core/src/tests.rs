@@ -32,12 +32,7 @@ macro_rules! bvec {
 }
 
 fn basic_collection() -> DispatchResult {
-	RMRKCore::create_collection(
-		Origin::signed(ALICE),
-		bvec![0u8; 20],
-		Some(5),
-		bvec![0u8; 15],
-	)
+	RMRKCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], Some(5), bvec![0u8; 15])
 }
 #[test]
 fn create_collection_works() {
@@ -49,7 +44,7 @@ fn create_collection_works() {
 		// 		Origin::signed(ALICE),
 		// 		bvec![0; <Test as UNQ::Config>::StringLimit::get() as usize + 1],
 		// 		None,
-		// 		bvec![0u8; 10],				
+		// 		bvec![0u8; 10],
 		// 	),
 		// 	Error::<Test>::TooLong
 		// );
@@ -59,7 +54,7 @@ fn create_collection_works() {
 				Origin::signed(ALICE),
 				bvec![0u8; 20],
 				None,
-				bvec![0u8; 15],				
+				bvec![0u8; 15],
 			),
 			Error::<Test>::NoAvailableCollectionId
 		);
@@ -559,9 +554,37 @@ fn lock_collection_works() {
 	});
 }
 
+
+
 #[test]
 fn create_resource_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Creating a resource for non-existent NFT fails
+		assert_noop!(
+			RMRKCore::add_resource(
+				Origin::signed(ALICE),
+				0,
+				0,
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+			),
+			Error::<Test>::NoAvailableNftId
+		);
+		// Create collection and NFT
+		assert_ok!(basic_collection());
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+		// Add resource works
 		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(ALICE),
 			0,
@@ -573,8 +596,11 @@ fn create_resource_works() {
 			Some(bvec![0u8; 20]),
 			Some(bvec![0u8; 20]),
 		));
+		// Since ALICE rootowns NFT (0, 0), pending should be false
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 	});
 }
+
 
 #[test]
 fn set_property_works() {
@@ -625,218 +651,62 @@ fn set_priority_works() {
 	});
 }
 
-// Sending NFT to Account updates descendant's recursively
 #[test]
-fn send_multigenerational_nft_to_account_updates_rootowners() {
+fn add_resource_pending_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		let nft_metadata = stv("testing");
 		assert_ok!(basic_collection());
-		// Alice mints NFT (0, 0)
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
-			0,
+			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
-		// Alice mints NFT (0, 1)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
-		// Alice mints NFT (0, 2)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
-		// Alice mints NFT (0, 3)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
-
-		// Alice sends NFT (0, 1) to NFT (0, 0)
-		assert_ok!(RMRKCore::send(
-			Origin::signed(ALICE),
-			0,
-			1,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
-		));
-		// Alice sends NFT (0, 2) to NFT (0, 1)
-		assert_ok!(RMRKCore::send(
-			Origin::signed(ALICE),
-			0,
-			2,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
-		));
-		// Alice sends NFT (0, 3) to NFT (0, 2)
-		assert_ok!(RMRKCore::send(
-			Origin::signed(ALICE),
-			0,
-			3,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
-		));
-
-		println!("sending to bob");
-		// Alice sends NFT (0, 0) to Bob
-		assert_ok!(RMRKCore::send(
-			Origin::signed(ALICE),
-			0,
-			0,
-			AccountIdOrCollectionNftTuple::AccountId(BOB),
-		));
-		// Bob now rootowns (0, 2)
-		assert_eq!(RMRKCore::nfts(0, 2).unwrap().rootowner, BOB);
-	});
-}
-
-// Sending to NFT with different rootowner updates all of the NFT's descendant rootowners
-#[test]
-fn send_multigenerational_nft_to_nft_updates_rootowners() {
-	ExtBuilder::default().build().execute_with(|| {
-		let nft_metadata = stv("testing");
-		assert_ok!(basic_collection());
-		// Alice mints NFT (0, 0)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
-		// Alice mints NFT (0, 1)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
-		// Alice mints NFT (0, 2)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
-
-		// Alice sends NFT (0, 1) to NFT (0, 0)
-		assert_ok!(RMRKCore::send(
-			Origin::signed(ALICE),
-			0,
-			1,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
-		));
-		// Alice sends NFT (0, 2) to NFT (0, 0)
-		assert_ok!(RMRKCore::send(
-			Origin::signed(ALICE),
-			0,
-			2,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
-		));
-
-		// Alice sends NFT (0, 0) to Bob
-		assert_ok!(RMRKCore::send(
-			Origin::signed(ALICE),
-			0,
-			0,
-			AccountIdOrCollectionNftTuple::AccountId(BOB),
-		));
-		// Bob now rootowns (0, 2)
-		assert_eq!(RMRKCore::nfts(0, 2).unwrap().rootowner, BOB);
-
-		// Alice mints NFT (0, 3)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
-
-		// Bob sends NFT (0, 0) [with children] to NFT (0, 3)
-		assert_ok!(RMRKCore::send(
+		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(BOB),
 			0,
 			0,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 3),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
 		));
-
-		// Alice now rootowns (0, 2) again
-		assert_eq!(RMRKCore::nfts(0, 2).unwrap().rootowner, ALICE);
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, true);
 	});
 }
 
-// Testing recursion over MaxRecursion (send NFT)
 #[test]
-fn recursion_above_max_fails() {
+fn accept_resource_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		// Create collection with 500 max members
-		assert_ok!(RMRKCore::create_collection(
-			Origin::signed(ALICE),
-			bvec![0u8; 20],
-			Some(500),
-			bvec![0u8; 15]
-		));
-		// Mint NFT (0,0) which will be the genesis parent
+		assert_ok!(basic_collection());
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
-			0,
+			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
-		for i in 1..12 {
-			// Mint NFT's (0,1) thru (0,11)
-			assert_ok!(RMRKCore::mint_nft(
-				Origin::signed(ALICE),
-				ALICE,
-				0,
-				Some(ALICE),
-				Some(Permill::from_float(0.0)),
-				bvec![0u8; 20]
-			));
-			// Send NFT to it's parent, (0, 1) -> (0, 0); (0, 2) -> (0, 1); etc.
-			assert_ok!(RMRKCore::send(
-				Origin::signed(ALICE),
-				0,
-				i,
-				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, i - 1)
-			));
-		}
-		// Chain of 11-gen parent (0,0) -> (0,1) -> (0,2) ... should fail recursion
-		assert_noop!(
-			RMRKCore::send(
-				Origin::signed(ALICE),
-				0,
-				1,
-				AccountIdOrCollectionNftTuple::AccountId(BOB)
-			),
-			Error::<Test>::TooManyRecursions
-		);
-		// Burning this 11-gen parent (0, 0) should fail too
-		assert_noop!(
-			RMRKCore::burn_nft(Origin::signed(ALICE), 0, 0),
-			Error::<Test>::TooManyRecursions
-		);
+		assert_ok!(RMRKCore::add_resource(
+			Origin::signed(BOB),
+			0,
+			0,
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+		));
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, true);
+		// Bob can't accept Alice's NFT's resource
+		assert_noop!(RMRKCore::accept(Origin::signed(BOB), 0, 0, 0), Error::<Test>::NoPermission);
+		// Alice can accept her own NFT's resource
+		assert_ok!(RMRKCore::accept(Origin::signed(ALICE), 0, 0, 0));
+		// Resource should now be pending = false
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 	});
 }
