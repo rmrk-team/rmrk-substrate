@@ -355,7 +355,6 @@ fn burn_nft_works() {
 #[test]
 fn burn_nft_with_great_grandchildren_works() {
 	ExtBuilder::default().build().execute_with(|| {
-
 		assert_ok!(basic_collection());
 		// Alice mints (0, 0)
 		assert_ok!(RMRKCore::mint_nft(
@@ -534,7 +533,6 @@ fn mint_beyond_collection_max_fails() {
 #[test]
 fn lock_collection_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		
 		assert_ok!(basic_collection());
 		for _ in 0..3 {
 			assert_ok!(RMRKCore::mint_nft(
@@ -602,7 +600,6 @@ fn set_property_works() {
 		assert_eq!(RMRKCore::properties((0, Some(0), key)).unwrap(), value);
 	});
 }
-    
 #[test]
 fn set_priority_works() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -624,6 +621,222 @@ fn set_priority_works() {
 		assert_eq!(
 			RMRKCore::priorities(COLLECTION_ID_0, NFT_ID_0).unwrap(),
 			vec![stv("hello"), stv("world")]
+		);
+	});
+}
+
+// Sending NFT to Account updates descendant's recursively
+#[test]
+fn send_multigenerational_nft_to_account_updates_rootowners() {
+	ExtBuilder::default().build().execute_with(|| {
+		let nft_metadata = stv("testing");
+		assert_ok!(basic_collection());
+		// Alice mints NFT (0, 0)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+		// Alice mints NFT (0, 1)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+		// Alice mints NFT (0, 2)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+		// Alice mints NFT (0, 3)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+
+		// Alice sends NFT (0, 1) to NFT (0, 0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+		// Alice sends NFT (0, 2) to NFT (0, 1)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			2,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
+		));
+		// Alice sends NFT (0, 3) to NFT (0, 2)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			3,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
+		));
+
+		println!("sending to bob");
+		// Alice sends NFT (0, 0) to Bob
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			0,
+			AccountIdOrCollectionNftTuple::AccountId(BOB),
+		));
+		// Bob now rootowns (0, 2)
+		assert_eq!(RMRKCore::nfts(0, 2).unwrap().rootowner, BOB);
+	});
+}
+
+// Sending to NFT with different rootowner updates all of the NFT's descendant rootowners
+#[test]
+fn send_multigenerational_nft_to_nft_updates_rootowners() {
+	ExtBuilder::default().build().execute_with(|| {
+		let nft_metadata = stv("testing");
+		assert_ok!(basic_collection());
+		// Alice mints NFT (0, 0)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+		// Alice mints NFT (0, 1)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+		// Alice mints NFT (0, 2)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+
+		// Alice sends NFT (0, 1) to NFT (0, 0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+		// Alice sends NFT (0, 2) to NFT (0, 0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			2,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+
+		// Alice sends NFT (0, 0) to Bob
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			0,
+			AccountIdOrCollectionNftTuple::AccountId(BOB),
+		));
+		// Bob now rootowns (0, 2)
+		assert_eq!(RMRKCore::nfts(0, 2).unwrap().rootowner, BOB);
+
+		// Alice mints NFT (0, 3)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+
+		// Bob sends NFT (0, 0) [with children] to NFT (0, 3)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(BOB),
+			0,
+			0,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 3),
+		));
+
+		// Alice now rootowns (0, 2) again
+		assert_eq!(RMRKCore::nfts(0, 2).unwrap().rootowner, ALICE);
+	});
+}
+
+// Testing recursion over MaxRecursion (send NFT)
+#[test]
+fn recursion_above_max_fails() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create collection with 500 max members
+		assert_ok!(RMRKCore::create_collection(
+			Origin::signed(ALICE),
+			bvec![0u8; 20],
+			Some(500),
+			bvec![0u8; 15]
+		));
+		// Mint NFT (0,0) which will be the genesis parent
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
+			bvec![0u8; 20]
+		));
+		for i in 1..12 {
+			// Mint NFT's (0,1) thru (0,11)
+			assert_ok!(RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				ALICE,
+				0,
+				Some(ALICE),
+				Some(Permill::from_float(0.0)),
+				bvec![0u8; 20]
+			));
+			// Send NFT to it's parent, (0, 1) -> (0, 0); (0, 2) -> (0, 1); etc.
+			assert_ok!(RMRKCore::send(
+				Origin::signed(ALICE),
+				0,
+				i,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, i - 1)
+			));
+		}
+		// Chain of 11-gen parent (0,0) -> (0,1) -> (0,2) ... should fail recursion
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(ALICE),
+				0,
+				1,
+				AccountIdOrCollectionNftTuple::AccountId(BOB)
+			),
+			Error::<Test>::TooManyRecursions
+		);
+		// Burning this 11-gen parent (0, 0) should fail too
+		assert_noop!(
+			RMRKCore::burn_nft(Origin::signed(ALICE), 0, 0),
+			Error::<Test>::TooManyRecursions
 		);
 	});
 }
