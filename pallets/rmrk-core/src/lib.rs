@@ -230,6 +230,8 @@ pub mod pallet {
 		CollectionNotEmpty,
 		CollectionFullOrLocked,
 		CannotSendToDescendent,
+		ResourceAlreadyExists,
+		EmptyResource,
 		TooManyRecursions,
 	}
 
@@ -611,6 +613,17 @@ pub mod pallet {
 			}
 
 			let resource_id = Self::get_next_resource_id()?;
+			ensure!(
+				Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
+				Error::<T>::ResourceAlreadyExists
+			);
+
+			let empty = base.is_none()
+				&& src.is_none() && metadata.is_none()
+				&& slot.is_none()
+				&& license.is_none()
+				&& thumb.is_none();
+			ensure!(!empty, Error::<T>::EmptyResource);
 
 			let res = ResourceInfo {
 				id: resource_id,
