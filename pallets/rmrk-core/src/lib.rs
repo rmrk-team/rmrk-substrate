@@ -64,7 +64,6 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-
 		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
 
 		type NftId: Member
@@ -269,9 +268,7 @@ pub mod pallet {
 				Error::<T>::CollectionFullOrLocked
 			);
 
-
 			let nft_id: T::NftId = Self::get_next_nft_id(collection_id)?;
-
 
 			let metadata_bounded = Self::to_bounded_string(metadata)?;
 			let recipient = recipient.ok_or(Error::<T>::RecipientNotSet)?;
@@ -474,12 +471,10 @@ pub mod pallet {
 				Error::<T>::NoAvailableCollectionId
 			);
 
-			Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
-				if let Some(col) = collection.into_mut() {
-					col.issuer = new_issuer.clone();
-				}
-				Ok(())
-			})?;
+			let (new_issuer, collection_id) = <Self as Collection<
+				StringLimitOf<T>,
+				T::AccountId,
+			>>::change_issuer(collection_id, new_issuer)?;
 
 			Self::deposit_event(Event::IssuerChanged(
 				sender.unwrap_or_default(),
@@ -692,5 +687,21 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		);
 		Collections::<T>::remove(collection_id);
 		Ok(())
+	}
+
+	fn change_issuer(
+		collection_id: T::CollectionId,
+		new_issuer: T::AccountId,
+	) -> sp_std::result::Result<(T::AccountId, Self::CollectionId), DispatchError> {
+		ensure!(Collections::<T>::contains_key(collection_id), Error::<T>::NoAvailableCollectionId);
+
+		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
+			if let Some(col) = collection {
+				col.issuer = new_issuer.clone();
+			}
+			Ok(())
+		})?;
+
+		Ok((new_issuer, collection_id))
 	}
 }

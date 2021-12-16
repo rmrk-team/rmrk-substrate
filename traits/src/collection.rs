@@ -31,6 +31,10 @@ pub trait Collection<BoundedString, AccountId> {
 		id: BoundedString,
 	) -> sp_std::result::Result<Self::CollectionId, DispatchError>;
 	fn burn_collection(issuer: AccountId, collection_id: Self::CollectionId) -> DispatchResult;
+	fn change_issuer(
+		collection_id: Self::CollectionId,
+		new_issuer: AccountId,
+	) -> sp_std::result::Result<(AccountId, Self::CollectionId), DispatchError>;
 }
 
 // #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
