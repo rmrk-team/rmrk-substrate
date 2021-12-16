@@ -288,6 +288,10 @@ impl pallet_template::Config for Runtime {
 	type Event = Event;
 }
 
+parameter_types! {
+	pub const MaxRecursions: u32 = 10;
+}
+
 impl pallet_rmrk_core::Config for Runtime {
 	// type Currency = Balances;
 	type Event = Event;
@@ -296,6 +300,7 @@ impl pallet_rmrk_core::Config for Runtime {
 	type NftId = u32;
 	type ResourceId = u32;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
+	type MaxRecursions = MaxRecursions;
 }
 
 parameter_types! {

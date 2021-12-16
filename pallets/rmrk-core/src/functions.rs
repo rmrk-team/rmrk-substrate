@@ -26,4 +26,45 @@ impl<T: Config> Pallet<T> {
 		}
 		found_child
 	}
+
+	pub fn recursive_update_rootowner(
+		collection_id: T::CollectionId,
+		nft_id: T::NftId,
+		new_rootowner: T::AccountId,
+		max_recursions: u32,
+	) -> DispatchResult {
+		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
+		NFTs::<T>::try_mutate_exists(collection_id, nft_id, |nft| -> DispatchResult {
+			if let Some(n) = nft {
+				n.rootowner = new_rootowner.clone();
+			}
+			Ok(())
+		})?;
+		if let Some(children) = Children::<T>::get(collection_id, nft_id) {
+			for child in children {
+				Pallet::<T>::recursive_update_rootowner(
+					child.0,
+					child.1,
+					new_rootowner.clone(),
+					max_recursions - 1,
+				)?;
+			}
+		}
+		Ok(())
+	}
+
+	pub fn recursive_burn(
+		collection_id: T::CollectionId,
+		nft_id: T::NftId,
+		max_recursions: u32,
+	) -> DispatchResult {
+		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
+		NFTs::<T>::remove(collection_id, nft_id);
+		if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
+			for child in kids {
+				Pallet::<T>::recursive_burn(child.0, child.1, max_recursions - 1)?;
+			}
+		}
+		Ok(())
+	}
 }

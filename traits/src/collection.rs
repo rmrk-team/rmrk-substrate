@@ -12,7 +12,6 @@ pub struct CollectionInfo<BoundedString, AccountId> {
 	pub metadata: BoundedString,
 	pub max: u32,
 	pub symbol: BoundedString,
-	pub id: BoundedString,
 }
 
 /// Abstraction over a Collection system.
@@ -28,7 +27,6 @@ pub trait Collection<BoundedString, AccountId> {
 		metadata: BoundedString,
 		max: u32,
 		symbol: BoundedString,
-		id: BoundedString,
 	) -> sp_std::result::Result<Self::CollectionId, DispatchError>;
 	fn burn_collection(issuer: AccountId, collection_id: Self::CollectionId) -> DispatchResult;
 	fn change_issuer(

@@ -37,6 +37,7 @@ frame_support::construct_runtime!(
 parameter_types! {
 	pub ClassBondAmount: Balance = 100;
 	pub MaxMetadataLength: u32 = 256;
+	pub const MaxRecursions: u32 = 10;
 }
 
 impl pallet_rmrk_core::Config for Test {
@@ -46,6 +47,7 @@ impl pallet_rmrk_core::Config for Test {
 	type NftId = u32;
 	type ResourceId = u32;
 	type ProtocolOrigin = EnsureRoot<AccountId>;
+	type MaxRecursions = MaxRecursions;
 }
 
 parameter_types! {
@@ -148,7 +150,11 @@ impl ExtBuilder {
 		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
 		pallet_balances::GenesisConfig::<Test> {
-			balances: vec![(ALICE, 20_000 * RMRK), (BOB, 15_000 * RMRK), (CHARLIE, 150_000 * RMRK)],
+			balances: vec![
+				(ALICE, 20_000_000 * RMRK),
+				(BOB, 15_000 * RMRK),
+				(CHARLIE, 150_000 * RMRK),
+			],
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();

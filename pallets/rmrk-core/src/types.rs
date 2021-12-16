@@ -21,7 +21,6 @@ pub struct ClassInfo<BoundedString, AccountId> {
 	pub metadata: BoundedString,
 	pub max: u32,
 	pub symbol: BoundedString,
-	pub id: BoundedString,
 }
 
 #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
@@ -45,6 +44,9 @@ pub struct ResourceInfo<ResourceId, BoundedString> {
 	/// id is a 5-character string of reasonable uniqueness.
 	/// The combination of base ID and resource id should be unique across the entire RMRK ecosystem which
 	pub id: ResourceId,
+
+	/// If resource is sent to non-rootowned NFT, pending will be false and need to be accepted
+	pub pending: bool,
 
 	/// A Base is uniquely identified by the combination of the word `base`, its minting block number,
 	/// and user provided symbol during Base creation, glued by dashes `-`, e.g. base-4477293-kanaria_superbird.
