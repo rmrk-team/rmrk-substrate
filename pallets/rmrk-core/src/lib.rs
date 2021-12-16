@@ -528,12 +528,12 @@ pub mod pallet {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
-			Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
-				let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
-				let currently_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
-				collection.max = currently_minted.try_into().unwrap();
-				Ok(())
-			})?;
+
+			let collection_id =
+				<Self as Collection<StringLimitOf<T>, T::AccountId>>::lock_collection(
+					collection_id,
+				)?;
+
 			Self::deposit_event(Event::CollectionLocked(sender.unwrap_or_default(), collection_id));
 			Ok(())
 		}
@@ -703,5 +703,17 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		})?;
 
 		Ok((new_issuer, collection_id))
+	}
+
+	fn lock_collection(
+		collection_id: T::CollectionId,
+	) -> sp_std::result::Result<Self::CollectionId, DispatchError> {
+		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
+			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
+			let currently_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
+			collection.max = currently_minted.try_into().unwrap();
+			Ok(())
+		})?;
+		Ok(collection_id)
 	}
 }

@@ -35,6 +35,9 @@ pub trait Collection<BoundedString, AccountId> {
 		collection_id: Self::CollectionId,
 		new_issuer: AccountId,
 	) -> sp_std::result::Result<(AccountId, Self::CollectionId), DispatchError>;
+	fn lock_collection(
+		collection_id: Self::CollectionId,
+	) -> sp_std::result::Result<Self::CollectionId, DispatchError>;
 }
 
 // #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
