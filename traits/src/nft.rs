@@ -37,6 +37,8 @@ pub struct NftInfo<AccountId, BoundedString, CollectionId, NftId> {
 pub trait Nft<AccountId, BoundedString> {
 	type NftId: Default + Copy;
 	type CollectionId: Default + Copy;
+	type MaxNftRecursions: Get<u32>;
+
 	fn mint_nft(
 		sender: AccountId,
 		owner: AccountId,
@@ -44,5 +46,10 @@ pub trait Nft<AccountId, BoundedString> {
 		recipient: Option<AccountId>,
 		royalty: Option<Permill>,
 		metadata: BoundedString,
+	) -> sp_std::result::Result<(Self::CollectionId, Self::NftId), DispatchError>;
+	fn burn_nft(
+		collection_id: Self::CollectionId,
+		nft_id: Self::NftId,
+		max_recursions: u32,
 	) -> sp_std::result::Result<(Self::CollectionId, Self::NftId), DispatchError>;
 }

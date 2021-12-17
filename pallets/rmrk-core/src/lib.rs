@@ -342,19 +342,12 @@ pub mod pallet {
 			nft_id: T::NftId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-
-			// NFTs::<T>::remove(collection_id, nft_id);
-			// if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
-			// 	for child in kids {
-			// 		Pallet::<T>::burn_nft(origin.clone(), child.0, child.1)?;
-			// 	}
-			// }
-
-			// pallet_uniques::Pallet::<T>::do_burn(collection_id.into(), nft_id.into(), |_, _| {
-			// 	Ok(())
-			// })?;
-
-			Pallet::<T>::recursive_burn(collection_id, nft_id, T::MaxRecursions::get())?;
+			let max_recursions = T::MaxRecursions::get();
+			let (_collection_id, nft_id) = <Self as Nft<T::AccountId, StringLimitOf<T>>>::burn_nft(
+				collection_id,
+				nft_id,
+				max_recursions,
+			)?;
 
 			Self::deposit_event(Event::NFTBurned(sender, nft_id));
 			Ok(())
@@ -766,6 +759,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 	type CollectionId = T::CollectionId;
 	type NftId = T::NftId;
+	type MaxNftRecursions = T::MaxRecursions;
 
 	fn mint_nft(
 		sender: T::AccountId,
@@ -805,6 +799,25 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		NFTs::<T>::insert(collection_id, nft_id, nft);
 		NftsByOwner::<T>::append(owner, (collection_id, nft_id));
 
+		Ok((collection_id, nft_id))
+	}
+
+	fn burn_nft(
+		collection_id: T::CollectionId,
+		nft_id: T::NftId,
+		max_recursions: u32,
+	) -> sp_std::result::Result<(T::CollectionId, T::NftId), DispatchError> {
+		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
+		NFTs::<T>::remove(collection_id, nft_id);
+		if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
+			for child in kids {
+				<Self as Nft<T::AccountId, StringLimitOf<T>>>::burn_nft(
+					child.0,
+					child.1,
+					max_recursions - 1,
+				)?;
+			}
+		}
 		Ok((collection_id, nft_id))
 	}
 }
