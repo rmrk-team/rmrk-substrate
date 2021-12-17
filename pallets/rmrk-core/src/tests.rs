@@ -48,7 +48,8 @@ fn create_collection_works() {
 		// 	),
 		// 	Error::<Test>::TooLong
 		// );
-		NextCollectionId::<Test>::mutate(|id| *id = <Test as UNQ::Config>::ClassId::max_value());
+		// NextCollectionId::<Test>::mutate(|id| *id = <Test as UNQ::Config>::ClassId::max_value());
+		CollectionIndex::<Test>::mutate(|id| *id = <Test as Config>::CollectionId::max_value());
 		assert_noop!(
 			RMRKCore::create_collection(
 				Origin::signed(ALICE),
@@ -554,8 +555,6 @@ fn lock_collection_works() {
 	});
 }
 
-
-
 #[test]
 fn create_resource_works() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -601,7 +600,6 @@ fn create_resource_works() {
 	});
 }
 
-
 #[test]
 fn create_empty_resource_fails() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -613,9 +611,19 @@ fn create_empty_resource_fails() {
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20]
-		));		
+		));
 		assert_noop!(
-			RMRKCore::add_resource(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, None, None, None, None, None, None),
+			RMRKCore::add_resource(
+				Origin::signed(ALICE),
+				COLLECTION_ID_0,
+				NFT_ID_0,
+				None,
+				None,
+				None,
+				None,
+				None,
+				None
+			),
 			Error::<Test>::EmptyResource
 		);
 	});

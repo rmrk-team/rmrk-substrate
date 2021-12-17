@@ -1,5 +1,4 @@
 use super::*;
-use frame_support::traits::IsType;
 
 impl<T: Config> Pallet<T> {
 	pub fn is_x_descendent_of_y(
@@ -36,7 +35,7 @@ impl<T: Config> Pallet<T> {
 	) -> DispatchResult {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		NFTs::<T>::try_mutate_exists(collection_id, nft_id, |nft| -> DispatchResult {
-			if let Some(n) = nft.into_mut() {
+			if let Some(n) = nft {
 				n.rootowner = new_rootowner.clone();
 			}
 			Ok(())
