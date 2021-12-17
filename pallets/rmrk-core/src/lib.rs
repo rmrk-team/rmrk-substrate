@@ -18,9 +18,9 @@ use sp_runtime::traits::{AtLeast32BitUnsigned, Bounded, CheckedAdd, One, StaticL
 use sp_runtime::{DispatchError, Permill};
 use sp_std::{convert::TryInto, vec, vec::Vec};
 
-use types::{AccountIdOrCollectionNftTuple, ClassInfo, InstanceInfo, ResourceInfo};
+use types::{ClassInfo, ResourceInfo};
 
-use rmrk_traits::{Collection, CollectionInfo};
+use rmrk_traits::{AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo};
 
 mod functions;
 
@@ -33,7 +33,7 @@ mod tests;
 // pub type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as
 // frame_system::Config>::AccountId>>::Balance;
 
-pub type InstanceInfoOf<T> = InstanceInfo<
+pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 	<T as pallet::Config>::CollectionId,
@@ -90,11 +90,9 @@ pub mod pallet {
 			+ codec::FullCodec;
 	}
 
-	/// Next available NFT ID.
 	#[pallet::storage]
 	#[pallet::getter(fn next_nft_id)]
-	pub type NextNftId<T: Config> =
-		StorageMap<_, Twox64Concat, T::CollectionId, T::NftId, ValueQuery>;
+	pub type NftIndex<T: Config> = StorageValue<_, T::NftId, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn collection_index)]
@@ -268,47 +266,16 @@ pub mod pallet {
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
 
-			let collection =
-				Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-
-			let nfts_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
-			let max: u32 = collection.max.try_into().unwrap();
-
-			ensure!(
-				nfts_minted < max.try_into().unwrap() || max == max - max, //Probably a better way to do "max == 0"
-				Error::<T>::CollectionFullOrLocked
-			);
-
-			let nft_id: T::NftId = Self::get_next_nft_id(collection_id)?;
-
-			// let metadata_bounded = Self::to_bounded_string(metadata)?;
-			// if let Some(r) = royalty {
-			// 	ensure!(r < 1000, Error::<T>::NotInRange);
-			// }
-
-			// pallet_uniques::Pallet::<T>::do_mint(
-			// 	collection_id.into(),
-			// 	nft_id.into(),
-			// 	sender.clone().unwrap_or_default(),
-			// 	|_details| Ok(()),
-			// )?;
-
-			let recipient = recipient.ok_or(Error::<T>::RecipientNotSet)?;
-			let royalty = royalty.ok_or(Error::<T>::RoyaltyNotSet)?;
-
 			let rootowner = owner.clone();
-			let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
 
-			let nft = InstanceInfo {
-				owner: owner_as_maybe_account,
-				rootowner,
+			let (collection_id, nft_id) = <Self as Nft<T::AccountId, StringLimitOf<T>>>::mint_nft(
+				sender.clone().unwrap_or_default(),
+				owner,
+				collection_id,
 				recipient,
 				royalty,
 				metadata,
-			};
-
-			NFTs::<T>::insert(collection_id, nft_id, nft);
-			NftsByOwner::<T>::append(owner, (collection_id, nft_id));
+			)?;
 
 			Self::deposit_event(Event::NftMinted(
 				sender.unwrap_or_default(),
@@ -723,13 +690,6 @@ pub mod pallet {
 			}
 		}
 
-		pub fn get_next_nft_id(collection_id: T::CollectionId) -> Result<T::NftId, Error<T>> {
-			NextNftId::<T>::try_mutate(collection_id, |id| {
-				let current_id = *id;
-				*id = id.checked_add(&One::one()).ok_or(Error::<T>::NoAvailableNftId)?;
-				Ok(current_id)
-			})
-		}
 		pub fn get_next_resource_id() -> Result<T::ResourceId, Error<T>> {
 			NextResourceId::<T>::try_mutate(|id| {
 				let current_id = *id;
@@ -800,5 +760,51 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 			Ok(())
 		})?;
 		Ok(collection_id)
+	}
+}
+
+impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
+	type CollectionId = T::CollectionId;
+	type NftId = T::NftId;
+
+	fn mint_nft(
+		sender: T::AccountId,
+		owner: T::AccountId,
+		collection_id: T::CollectionId,
+		recipient: Option<T::AccountId>,
+		royalty: Option<Permill>,
+		metadata: StringLimitOf<T>,
+	) -> sp_std::result::Result<(Self::CollectionId, Self::NftId), DispatchError> {
+		let nft_id =
+			<NftIndex<T>>::try_mutate(|n| -> sp_std::result::Result<Self::NftId, DispatchError> {
+				let id = *n;
+				ensure!(id != Self::NftId::max_value(), Error::<T>::NoAvailableNftId);
+				*n += One::one();
+				Ok(id)
+			})?;
+
+		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+
+		let nfts_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
+		let max: u32 = collection.max.try_into().unwrap();
+
+		ensure!(
+			nfts_minted < max.try_into().unwrap() || max == max - max, //Probably a better way to do "max == 0"
+			Error::<T>::CollectionFullOrLocked
+		);
+
+		let recipient = recipient.ok_or(Error::<T>::RecipientNotSet)?;
+		let royalty = royalty.ok_or(Error::<T>::RoyaltyNotSet)?;
+
+		let rootowner = owner.clone();
+		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
+
+		let nft =
+			NftInfo { owner: owner_as_maybe_account, rootowner, recipient, royalty, metadata };
+
+		NFTs::<T>::insert(collection_id, nft_id, nft);
+		NftsByOwner::<T>::append(owner, (collection_id, nft_id));
+
+		Ok((collection_id, nft_id))
 	}
 }
