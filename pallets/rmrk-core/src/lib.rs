@@ -78,7 +78,7 @@ pub mod pallet {
 
 		type ResourceId: Member + Parameter + Default + Copy + HasCompact + AtLeast32BitUnsigned;
 
-		type MaxRecursions: Get<u32>;
+		type MaxNftRecursions: Get<u32>;
 
 		/// The auction ID type.
 		type CollectionId: Parameter
@@ -342,7 +342,7 @@ pub mod pallet {
 			nft_id: T::NftId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			let max_recursions = T::MaxRecursions::get();
+			let max_recursions = T::MaxNftRecursions::get();
 			let (_collection_id, nft_id) = <Self as Nft<T::AccountId, StringLimitOf<T>>>::burn_nft(
 				collection_id,
 				nft_id,
@@ -389,86 +389,19 @@ pub mod pallet {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
 				Err(origin) => Some(ensure_signed(origin)?),
-			};
+			}
+			.unwrap_or_default();
 
-			let mut sending_nft =
-				NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-			ensure!(
-				sending_nft.rootowner == sender.clone().unwrap_or_default(),
-				Error::<T>::NoPermission
-			);
-
-			match new_owner.clone() {
-				AccountIdOrCollectionNftTuple::AccountId(account_id) => {
-					// Remove previous parental relationship
-					if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =
-						sending_nft.owner
-					{
-						if let Some(mut kids) = Children::<T>::take(cid, nid) {
-							kids.retain(|&kid| kid != (collection_id, nft_id));
-							Children::<T>::insert(cid, nid, kids);
-						}
-					}
-					sending_nft.rootowner = account_id.clone();
-
-					// Pallet::<T>::recursive_update_rootowner(
-					// 	collection_id,
-					// 	nft_id,
-					// 	account_id.clone(),
-					// 	T::MaxRecursions::get(),
-					// )?;
-				}
-				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
-					let recipient_nft =
-						NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
-					// Check if sending NFT is already a child of recipient NFT
-					ensure!(
-						!Pallet::<T>::is_x_descendent_of_y(cid, nid, collection_id, nft_id),
-						Error::<T>::CannotSendToDescendent
-					);
-
-					// Remove parent if exists: first we only care if the owner is a non-AccountId)
-					if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =
-						sending_nft.owner
-					{
-						// second we only care if the parent has children (it should)
-						if let Some(mut kids) = Children::<T>::take(cid, nid) {
-							// third we only "retain" the other children
-							kids.retain(|&kid| kid != (collection_id, nft_id));
-							Children::<T>::insert(cid, nid, kids);
-						}
-					}
-					if sending_nft.rootowner != recipient_nft.rootowner {
-						// sending_nft.rootowner = recipient_nft.rootowner
-						sending_nft.rootowner = recipient_nft.rootowner.clone();
-
-						Pallet::<T>::recursive_update_rootowner(
-							collection_id,
-							nft_id,
-							recipient_nft.rootowner,
-							T::MaxRecursions::get(),
-						)?;
-					}
-					match Children::<T>::take(cid, nid) {
-						None => Children::<T>::insert(cid, nid, vec![(collection_id, nft_id)]),
-						Some(mut kids) => {
-							kids.push((collection_id, nft_id));
-							Children::<T>::insert(cid, nid, kids);
-						}
-					}
-				}
-			};
-			sending_nft.owner = new_owner.clone();
-
-			NFTs::<T>::remove(collection_id, nft_id);
-			NFTs::<T>::insert(collection_id, nft_id, sending_nft);
-
-			Self::deposit_event(Event::NFTSent(
-				sender.unwrap_or_default(),
-				new_owner,
+			let max_recursions = T::MaxNftRecursions::get();
+			<Self as Nft<T::AccountId, StringLimitOf<T>>>::send(
+				sender.clone(),
 				collection_id,
 				nft_id,
-			));
+				new_owner.clone(),
+				max_recursions,
+			)?;
+
+			Self::deposit_event(Event::NFTSent(sender, new_owner, collection_id, nft_id));
 			Ok(())
 		}
 
@@ -759,7 +692,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 	type CollectionId = T::CollectionId;
 	type NftId = T::NftId;
-	type MaxNftRecursions = T::MaxRecursions;
+	type MaxNftRecursions = T::MaxNftRecursions;
 
 	fn mint_nft(
 		sender: T::AccountId,
@@ -818,6 +751,77 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 				)?;
 			}
 		}
+		Ok((collection_id, nft_id))
+	}
+
+	fn send(
+		sender: T::AccountId,
+		collection_id: T::CollectionId,
+		nft_id: T::NftId,
+		new_owner: AccountIdOrCollectionNftTuple<T::AccountId, T::CollectionId, T::NftId>,
+		max_recursions: u32,
+	) -> sp_std::result::Result<(T::CollectionId, T::NftId), DispatchError> {
+		let mut sending_nft =
+			NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+		ensure!(sending_nft.rootowner == sender.clone(), Error::<T>::NoPermission);
+
+		match new_owner.clone() {
+			AccountIdOrCollectionNftTuple::AccountId(account_id) => {
+				// Remove previous parental relationship
+				if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =
+					sending_nft.owner
+				{
+					if let Some(mut kids) = Children::<T>::take(cid, nid) {
+						kids.retain(|&kid| kid != (collection_id, nft_id));
+						Children::<T>::insert(cid, nid, kids);
+					}
+				}
+				sending_nft.rootowner = account_id.clone();
+			}
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
+				let recipient_nft = NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
+				// Check if sending NFT is already a child of recipient NFT
+				ensure!(
+					!Pallet::<T>::is_x_descendent_of_y(cid, nid, collection_id, nft_id),
+					Error::<T>::CannotSendToDescendent
+				);
+
+				// Remove parent if exists: first we only care if the owner is a non-AccountId)
+				if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =
+					sending_nft.owner
+				{
+					// second we only care if the parent has children (it should)
+					if let Some(mut kids) = Children::<T>::take(cid, nid) {
+						// third we only "retain" the other children
+						kids.retain(|&kid| kid != (collection_id, nft_id));
+						Children::<T>::insert(cid, nid, kids);
+					}
+				}
+				if sending_nft.rootowner != recipient_nft.rootowner {
+					// sending_nft.rootowner = recipient_nft.rootowner
+					sending_nft.rootowner = recipient_nft.rootowner.clone();
+
+					Pallet::<T>::recursive_update_rootowner(
+						collection_id,
+						nft_id,
+						recipient_nft.rootowner,
+						max_recursions,
+					)?;
+				}
+				match Children::<T>::take(cid, nid) {
+					None => Children::<T>::insert(cid, nid, vec![(collection_id, nft_id)]),
+					Some(mut kids) => {
+						kids.push((collection_id, nft_id));
+						Children::<T>::insert(cid, nid, kids);
+					}
+				}
+			}
+		};
+		sending_nft.owner = new_owner.clone();
+
+		NFTs::<T>::remove(collection_id, nft_id);
+		NFTs::<T>::insert(collection_id, nft_id, sending_nft);
+
 		Ok((collection_id, nft_id))
 	}
 }

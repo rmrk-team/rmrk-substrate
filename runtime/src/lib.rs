@@ -289,7 +289,7 @@ impl pallet_template::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MaxRecursions: u32 = 10;
+	pub const MaxNftRecursions: u32 = 10;
 }
 
 impl pallet_rmrk_core::Config for Runtime {
@@ -299,7 +299,7 @@ impl pallet_rmrk_core::Config for Runtime {
 	type NftId = u32;
 	type ResourceId = u32;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
-	type MaxRecursions = MaxRecursions;
+	type MaxNftRecursions = MaxNftRecursions;
 }
 
 parameter_types! {

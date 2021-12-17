@@ -52,4 +52,11 @@ pub trait Nft<AccountId, BoundedString> {
 		nft_id: Self::NftId,
 		max_recursions: u32,
 	) -> sp_std::result::Result<(Self::CollectionId, Self::NftId), DispatchError>;
+	fn send(
+		sender: AccountId,
+		collection_id: Self::CollectionId,
+		nft_id: Self::NftId,
+		new_owner: AccountIdOrCollectionNftTuple<AccountId, Self::CollectionId, Self::NftId>,
+		max_recursions: u32,
+	) -> sp_std::result::Result<(Self::CollectionId, Self::NftId), DispatchError>;
 }
