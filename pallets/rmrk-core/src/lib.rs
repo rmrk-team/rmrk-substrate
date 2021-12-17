@@ -721,7 +721,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		);
 
 		let recipient = recipient.unwrap_or(owner.clone());
-		let royalty = royalty.unwrap_or(Permill::from_float(0.0));
+		let royalty = royalty.unwrap_or(Permill::default());
 
 		let rootowner = owner.clone();
 		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
