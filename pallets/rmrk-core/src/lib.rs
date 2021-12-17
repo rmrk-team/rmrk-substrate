@@ -21,6 +21,7 @@ use sp_std::{convert::TryInto, vec, vec::Vec};
 use types::{ClassInfo, ResourceInfo};
 
 use rmrk_traits::{AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo};
+use sp_std::result::Result;
 
 mod functions;
 
@@ -711,16 +712,15 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		metadata: StringLimitOf<T>,
 		max: u32,
 		symbol: StringLimitOf<T>,
-	) -> sp_std::result::Result<Self::CollectionId, DispatchError> {
+	) -> Result<Self::CollectionId, DispatchError> {
 		let collection = CollectionInfo { issuer: issuer.clone(), metadata, max, symbol };
-		let collection_id = <CollectionIndex<T>>::try_mutate(
-			|n| -> sp_std::result::Result<Self::CollectionId, DispatchError> {
+		let collection_id =
+			<CollectionIndex<T>>::try_mutate(|n| -> Result<Self::CollectionId, DispatchError> {
 				let id = *n;
 				ensure!(id != Self::CollectionId::max_value(), Error::<T>::NoAvailableCollectionId);
 				*n += One::one();
 				Ok(id)
-			},
-		)?;
+			})?;
 		Collections::<T>::insert(collection_id, collection);
 		Ok(collection_id)
 	}
@@ -737,7 +737,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	fn change_issuer(
 		collection_id: T::CollectionId,
 		new_issuer: T::AccountId,
-	) -> sp_std::result::Result<(T::AccountId, Self::CollectionId), DispatchError> {
+	) -> Result<(T::AccountId, Self::CollectionId), DispatchError> {
 		ensure!(Collections::<T>::contains_key(collection_id), Error::<T>::NoAvailableCollectionId);
 
 		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
@@ -752,7 +752,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 
 	fn lock_collection(
 		collection_id: T::CollectionId,
-	) -> sp_std::result::Result<Self::CollectionId, DispatchError> {
+	) -> Result<Self::CollectionId, DispatchError> {
 		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
 			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
 			let currently_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
@@ -793,8 +793,8 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 			Error::<T>::CollectionFullOrLocked
 		);
 
-		let recipient = recipient.ok_or(Error::<T>::RecipientNotSet)?;
-		let royalty = royalty.ok_or(Error::<T>::RoyaltyNotSet)?;
+		let recipient = recipient.unwrap_or(owner.clone());
+		let royalty = royalty.unwrap_or(Permill::from_float(0.0));
 
 		let rootowner = owner.clone();
 		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
