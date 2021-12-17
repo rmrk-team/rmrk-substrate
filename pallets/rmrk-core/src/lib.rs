@@ -213,7 +213,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T>
 	where
-		T: pallet_uniques::Config<ClassId = u32, InstanceId = u32>,
+		T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 	{
 		/// Mints an NFT in the specified collection
 		/// Sets metadata and the royalty attribute
