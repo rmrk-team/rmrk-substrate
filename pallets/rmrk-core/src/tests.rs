@@ -320,7 +320,8 @@ fn send_nft_removes_existing_parent() {
 
 // #[test]
 // TODO fn cannot send to its own descendent?  this should be easy enough to check
-// TODO fn cannot send to its own grandparent?  this seems difficult to check without implementing a new Parent storage struct
+// TODO fn cannot send to its own grandparent?  this seems difficult to check without implementing a
+// new Parent storage struct
 
 #[test]
 fn change_issuer_works() {

@@ -14,13 +14,15 @@ use frame_support::{
 };
 use frame_system::ensure_signed;
 
-use sp_runtime::traits::{AtLeast32BitUnsigned, Bounded, CheckedAdd, One, StaticLookup, Zero};
-use sp_runtime::{DispatchError, Permill};
+use sp_runtime::{
+	traits::{AtLeast32BitUnsigned, Bounded, CheckedAdd, One, StaticLookup, Zero},
+	DispatchError, Permill,
+};
 use sp_std::{convert::TryInto, vec, vec::Vec};
 
 use types::{AccountIdOrCollectionNftTuple, ClassInfo, InstanceInfo, ResourceInfo};
 
-use rmrk_traits::{Collection, CollectionInfo, primitives::*};
+use rmrk_traits::{primitives::*, Collection, CollectionInfo};
 use sp_std::result::Result;
 
 mod functions;
@@ -40,10 +42,8 @@ pub type InstanceInfoOf<T> = InstanceInfo<
 	CollectionId,
 	<T as pallet::Config>::NftId,
 >;
-pub type ResourceOf<T> = ResourceInfo<
-	ResourceId,
-	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
->;
+pub type ResourceOf<T> =
+	ResourceInfo<ResourceId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
 
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
@@ -82,8 +82,7 @@ pub mod pallet {
 	/// Next available NFT ID.
 	#[pallet::storage]
 	#[pallet::getter(fn next_nft_id)]
-	pub type NextNftId<T: Config> =
-		StorageMap<_, Twox64Concat, CollectionId, T::NftId, ValueQuery>;
+	pub type NextNftId<T: Config> = StorageMap<_, Twox64Concat, CollectionId, T::NftId, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn collection_index)]
@@ -97,12 +96,8 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn collections)]
 	/// Stores collections info
-	pub type Collections<T: Config> = StorageMap<
-		_,
-		Twox64Concat,
-		CollectionId,
-		CollectionInfo<StringLimitOf<T>, T::AccountId>,
-	>;
+	pub type Collections<T: Config> =
+		StorageMap<_, Twox64Concat, CollectionId, CollectionInfo<StringLimitOf<T>, T::AccountId>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_nfts_by_owner)]
@@ -113,14 +108,8 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn nfts)]
 	/// Stores nft info
-	pub type NFTs<T: Config> = StorageDoubleMap<
-		_,
-		Twox64Concat,
-		CollectionId,
-		Twox64Concat,
-		T::NftId,
-		InstanceInfoOf<T>,
-	>;
+	pub type NFTs<T: Config> =
+		StorageDoubleMap<_, Twox64Concat, CollectionId, Twox64Concat, T::NftId, InstanceInfoOf<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn priorities)]
@@ -264,7 +253,8 @@ pub mod pallet {
 			let max: u32 = collection.max.try_into().unwrap();
 
 			ensure!(
-				nfts_minted < max.try_into().unwrap() || max == max - max, //Probably a better way to do "max == 0"
+				// Probably a better way to do "max == 0"
+				nfts_minted < max.try_into().unwrap() || max == max - max,
 				Error::<T>::CollectionFullOrLocked
 			);
 
@@ -442,7 +432,7 @@ pub mod pallet {
 					// 	account_id.clone(),
 					// 	T::MaxRecursions::get(),
 					// )?;
-				}
+				},
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 					let recipient_nft =
 						NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
@@ -479,9 +469,9 @@ pub mod pallet {
 						Some(mut kids) => {
 							kids.push((collection_id, nft_id));
 							Children::<T>::insert(cid, nid, kids);
-						}
+						},
 					}
-				}
+				},
 			};
 			sending_nft.owner = new_owner.clone();
 
@@ -614,11 +604,10 @@ pub mod pallet {
 				Error::<T>::ResourceAlreadyExists
 			);
 
-			let empty = base.is_none()
-				&& src.is_none() && metadata.is_none()
-				&& slot.is_none()
-				&& license.is_none()
-				&& thumb.is_none();
+			let empty = base.is_none() &&
+				src.is_none() && metadata.is_none() &&
+				slot.is_none() && license.is_none() &&
+				thumb.is_none();
 			ensure!(!empty, Error::<T>::EmptyResource);
 
 			let res = ResourceInfo {
@@ -703,8 +692,8 @@ pub mod pallet {
 			match name {
 				Some(n) => {
 					let bounded_string = Self::to_bounded_string(n)?;
-					return Ok(Some(bounded_string));
-				}
+					return Ok(Some(bounded_string))
+				},
 				None => return Ok(None),
 			}
 		}
@@ -737,14 +726,13 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		symbol: StringLimitOf<T>,
 	) -> Result<CollectionId, DispatchError> {
 		let collection = CollectionInfo { issuer: issuer.clone(), metadata, max, symbol };
-		let collection_id = <CollectionIndex<T>>::try_mutate(
-			|n| -> Result<CollectionId, DispatchError> {
+		let collection_id =
+			<CollectionIndex<T>>::try_mutate(|n| -> Result<CollectionId, DispatchError> {
 				let id = *n;
 				ensure!(id != CollectionId::max_value(), Error::<T>::NoAvailableCollectionId);
 				*n += 1;
 				Ok(id)
-			},
-		)?;
+			})?;
 		Collections::<T>::insert(collection_id, collection);
 		Ok(collection_id)
 	}
@@ -774,9 +762,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		Ok((new_issuer, collection_id))
 	}
 
-	fn lock_collection(
-		collection_id: CollectionId,
-	) -> Result<CollectionId, DispatchError> {
+	fn lock_collection(collection_id: CollectionId) -> Result<CollectionId, DispatchError> {
 		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
 			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
 			let currently_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
