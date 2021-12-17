@@ -293,9 +293,7 @@ parameter_types! {
 }
 
 impl pallet_rmrk_core::Config for Runtime {
-	// type Currency = Balances;
 	type Event = Event;
-	type NftId = u32;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
 	type MaxRecursions = MaxRecursions;
 }

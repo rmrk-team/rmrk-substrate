@@ -15,7 +15,7 @@ use frame_support::{
 use frame_system::ensure_signed;
 
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, Bounded, CheckedAdd, One, StaticLookup, Zero},
+	traits::{AtLeast32BitUnsigned, Bounded, CheckedAdd, StaticLookup, Zero},
 	DispatchError, Permill,
 };
 use sp_std::{convert::TryInto, vec, vec::Vec};
@@ -40,7 +40,7 @@ pub type InstanceInfoOf<T> = InstanceInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 	CollectionId,
-	<T as pallet::Config>::NftId,
+	NftId,
 >;
 pub type ResourceOf<T> =
 	ResourceInfo<ResourceId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
@@ -66,23 +66,13 @@ pub mod pallet {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
 		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
-
-		type NftId: Member
-			+ Parameter
-			+ Default
-			+ Copy
-			+ HasCompact
-			+ AtLeast32BitUnsigned
-			+ From<Self::InstanceId>
-			+ Into<Self::InstanceId>;
-
 		type MaxRecursions: Get<u32>;
 	}
 
 	/// Next available NFT ID.
 	#[pallet::storage]
 	#[pallet::getter(fn next_nft_id)]
-	pub type NextNftId<T: Config> = StorageMap<_, Twox64Concat, CollectionId, T::NftId, ValueQuery>;
+	pub type NextNftId<T: Config> = StorageMap<_, Twox64Concat, CollectionId, NftId, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn collection_index)]
@@ -103,13 +93,13 @@ pub mod pallet {
 	#[pallet::getter(fn get_nfts_by_owner)]
 	/// Stores collections info
 	pub type NftsByOwner<T: Config> =
-		StorageMap<_, Twox64Concat, T::AccountId, Vec<(CollectionId, T::NftId)>>;
+		StorageMap<_, Twox64Concat, T::AccountId, Vec<(CollectionId, NftId)>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn nfts)]
 	/// Stores nft info
 	pub type NFTs<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, CollectionId, Twox64Concat, T::NftId, InstanceInfoOf<T>>;
+		StorageDoubleMap<_, Twox64Concat, CollectionId, Twox64Concat, NftId, InstanceInfoOf<T>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn priorities)]
@@ -119,7 +109,7 @@ pub mod pallet {
 		Twox64Concat,
 		CollectionId,
 		Twox64Concat,
-		T::NftId,
+		NftId,
 		Vec<BoundedVec<u8, T::StringLimit>>,
 	>;
 
@@ -131,8 +121,8 @@ pub mod pallet {
 		Twox64Concat,
 		CollectionId,
 		Twox64Concat,
-		T::NftId,
-		Vec<(CollectionId, T::NftId)>,
+		NftId,
+		Vec<(CollectionId, NftId)>,
 	>;
 
 	#[pallet::storage]
@@ -142,7 +132,7 @@ pub mod pallet {
 		_,
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
-			NMapKey<Blake2_128Concat, T::NftId>,
+			NMapKey<Blake2_128Concat, NftId>,
 			NMapKey<Blake2_128Concat, ResourceId>,
 		),
 		ResourceOf<T>,
@@ -156,7 +146,7 @@ pub mod pallet {
 		_,
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
-			NMapKey<Blake2_128Concat, Option<T::NftId>>,
+			NMapKey<Blake2_128Concat, Option<NftId>>,
 			NMapKey<Blake2_128Concat, BoundedVec<u8, T::KeyLimit>>,
 		),
 		BoundedVec<u8, T::ValueLimit>,
@@ -173,26 +163,26 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		CollectionCreated(T::AccountId, CollectionId),
-		NftMinted(T::AccountId, CollectionId, T::NftId),
-		NFTBurned(T::AccountId, T::NftId),
+		NftMinted(T::AccountId, CollectionId, NftId),
+		NFTBurned(T::AccountId, NftId),
 		CollectionDestroyed(T::AccountId, CollectionId),
 		NFTSent(
 			T::AccountId,
-			AccountIdOrCollectionNftTuple<T::AccountId, CollectionId, T::NftId>,
+			AccountIdOrCollectionNftTuple<T::AccountId, CollectionId, NftId>,
 			CollectionId,
-			T::NftId,
+			NftId,
 		),
 		IssuerChanged(T::AccountId, T::AccountId, CollectionId),
 		PropertySet(
 			CollectionId,
-			Option<T::NftId>,
+			Option<NftId>,
 			BoundedVec<u8, T::KeyLimit>,
 			BoundedVec<u8, T::ValueLimit>,
 		),
 		CollectionLocked(T::AccountId, CollectionId),
-		ResourceAdded(T::NftId, ResourceId),
-		ResourceAccepted(T::NftId, ResourceId),
-		PrioritySet(CollectionId, T::NftId),
+		ResourceAdded(NftId, ResourceId),
+		ResourceAccepted(NftId, ResourceId),
+		PrioritySet(CollectionId, NftId),
 	}
 
 	// Errors inform users that something went wrong.
@@ -221,7 +211,10 @@ pub mod pallet {
 	}
 
 	#[pallet::call]
-	impl<T: Config> Pallet<T> {
+	impl<T: Config> Pallet<T>
+	where
+		T: pallet_uniques::Config<ClassId = u32, InstanceId = u32>,
+	{
 		/// Mints an NFT in the specified collection
 		/// Sets metadata and the royalty attribute
 		///
@@ -258,7 +251,7 @@ pub mod pallet {
 				Error::<T>::CollectionFullOrLocked
 			);
 
-			let nft_id: T::NftId = Self::get_next_nft_id(collection_id)?;
+			let nft_id: NftId = Self::get_next_nft_id(collection_id)?;
 
 			// let metadata_bounded = Self::to_bounded_string(metadata)?;
 			// if let Some(r) = royalty {
@@ -266,8 +259,8 @@ pub mod pallet {
 			// }
 
 			// pallet_uniques::Pallet::<T>::do_mint(
-			// 	collection_id.into(),
-			// 	nft_id.into(),
+			// 	collection_id,
+			// 	nft_id,
 			// 	sender.clone().unwrap_or_default(),
 			// 	|_details| Ok(()),
 			// )?;
@@ -347,7 +340,7 @@ pub mod pallet {
 		pub fn burn_nft(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
-			nft_id: T::NftId,
+			nft_id: NftId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
@@ -358,7 +351,7 @@ pub mod pallet {
 			// 	}
 			// }
 
-			// pallet_uniques::Pallet::<T>::do_burn(collection_id.into(), nft_id.into(), |_, _| {
+			// pallet_uniques::Pallet::<T>::do_burn(collection_id, nft_id, |_, _| {
 			// 	Ok(())
 			// })?;
 
@@ -398,8 +391,8 @@ pub mod pallet {
 		pub fn send(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
-			nft_id: T::NftId,
-			new_owner: AccountIdOrCollectionNftTuple<T::AccountId, CollectionId, T::NftId>,
+			nft_id: NftId,
+			new_owner: AccountIdOrCollectionNftTuple<T::AccountId, CollectionId, NftId>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
@@ -525,7 +518,7 @@ pub mod pallet {
 		pub fn set_property(
 			origin: OriginFor<T>,
 			#[pallet::compact] collection_id: CollectionId,
-			maybe_nft_id: Option<T::NftId>,
+			maybe_nft_id: Option<NftId>,
 			key: BoundedVec<u8, T::KeyLimit>,
 			value: BoundedVec<u8, T::ValueLimit>,
 		) -> DispatchResult {
@@ -579,7 +572,7 @@ pub mod pallet {
 		pub fn add_resource(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
-			nft_id: T::NftId,
+			nft_id: NftId,
 			base: Option<BoundedVec<u8, T::StringLimit>>,
 			src: Option<BoundedVec<u8, T::StringLimit>>,
 			metadata: Option<BoundedVec<u8, T::StringLimit>>,
@@ -631,7 +624,7 @@ pub mod pallet {
 		pub fn accept(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
-			nft_id: T::NftId,
+			nft_id: NftId,
 			resource_id: ResourceId,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
@@ -662,7 +655,7 @@ pub mod pallet {
 		pub fn set_priority(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
-			nft_id: T::NftId,
+			nft_id: NftId,
 			priorities: Vec<Vec<u8>>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
@@ -698,10 +691,10 @@ pub mod pallet {
 			}
 		}
 
-		pub fn get_next_nft_id(collection_id: CollectionId) -> Result<T::NftId, Error<T>> {
+		pub fn get_next_nft_id(collection_id: CollectionId) -> Result<NftId, Error<T>> {
 			NextNftId::<T>::try_mutate(collection_id, |id| {
 				let current_id = *id;
-				*id = id.checked_add(&One::one()).ok_or(Error::<T>::NoAvailableNftId)?;
+				*id = id.checked_add(1).ok_or(Error::<T>::NoAvailableNftId)?;
 				Ok(current_id)
 			})
 		}

@@ -43,7 +43,6 @@ parameter_types! {
 impl pallet_rmrk_core::Config for Test {
 	// type Currency = Balances;
 	type Event = Event;
-	type NftId = u32;
 	type ProtocolOrigin = EnsureRoot<AccountId>;
 	type MaxRecursions = MaxRecursions;
 }

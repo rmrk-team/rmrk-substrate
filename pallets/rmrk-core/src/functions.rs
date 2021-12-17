@@ -3,9 +3,9 @@ use super::*;
 impl<T: Config> Pallet<T> {
 	pub fn is_x_descendent_of_y(
 		child_collection_id: CollectionId,
-		child_nft_id: T::NftId,
+		child_nft_id: NftId,
 		parent_collection_id: CollectionId,
-		parent_nft_id: T::NftId,
+		parent_nft_id: NftId,
 	) -> bool {
 		let mut found_child = false;
 		if let Some(children) = Children::<T>::get(parent_collection_id, parent_nft_id) {
@@ -29,7 +29,7 @@ impl<T: Config> Pallet<T> {
 
 	pub fn recursive_update_rootowner(
 		collection_id: CollectionId,
-		nft_id: T::NftId,
+		nft_id: NftId,
 		new_rootowner: T::AccountId,
 		max_recursions: u32,
 	) -> DispatchResult {
@@ -55,7 +55,7 @@ impl<T: Config> Pallet<T> {
 
 	pub fn recursive_burn(
 		collection_id: CollectionId,
-		nft_id: T::NftId,
+		nft_id: NftId,
 		max_recursions: u32,
 	) -> DispatchResult {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
