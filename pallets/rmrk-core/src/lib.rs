@@ -260,8 +260,8 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			owner: T::AccountId,
 			collection_id: T::CollectionId,
-			recipient: Option<T::AccountId>,
-			royalty: Option<Permill>,
+			recipient: T::AccountId,
+			royalty: Permill,
 			metadata: BoundedVec<u8, T::StringLimit>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
@@ -293,9 +293,6 @@ pub mod pallet {
 			// 	sender.clone().unwrap_or_default(),
 			// 	|_details| Ok(()),
 			// )?;
-
-			let recipient = recipient.ok_or(Error::<T>::RecipientNotSet)?;
-			let royalty = royalty.ok_or(Error::<T>::RoyaltyNotSet)?;
 
 			let rootowner = owner.clone();
 			let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
