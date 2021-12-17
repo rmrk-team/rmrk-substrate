@@ -2,9 +2,9 @@ use super::*;
 
 impl<T: Config> Pallet<T> {
 	pub fn is_x_descendent_of_y(
-		child_collection_id: T::CollectionId,
+		child_collection_id: CollectionId,
 		child_nft_id: T::NftId,
-		parent_collection_id: T::CollectionId,
+		parent_collection_id: CollectionId,
 		parent_nft_id: T::NftId,
 	) -> bool {
 		let mut found_child = false;
@@ -28,7 +28,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn recursive_update_rootowner(
-		collection_id: T::CollectionId,
+		collection_id: CollectionId,
 		nft_id: T::NftId,
 		new_rootowner: T::AccountId,
 		max_recursions: u32,
@@ -54,7 +54,7 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn recursive_burn(
-		collection_id: T::CollectionId,
+		collection_id: CollectionId,
 		nft_id: T::NftId,
 		max_recursions: u32,
 	) -> DispatchResult {

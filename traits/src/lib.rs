@@ -4,6 +4,11 @@ pub mod collection;
 
 pub use collection::{Collection, CollectionInfo};
 
+pub mod primitives {
+	pub type CollectionId = u32;
+	pub type ResourceId = u32;
+}
+
 // use codec::{Decode, Encode};
 // use impl_trait_for_tuples::impl_for_tuples;
 // use sp_runtime::{DispatchResult, RuntimeDebug};
