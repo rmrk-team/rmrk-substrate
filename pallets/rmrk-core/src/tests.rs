@@ -49,7 +49,7 @@ fn create_collection_works() {
 		// 	Error::<Test>::TooLong
 		// );
 		// NextCollectionId::<Test>::mutate(|id| *id = <Test as UNQ::Config>::ClassId::max_value());
-		CollectionIndex::<Test>::mutate(|id| *id = <Test as Config>::CollectionId::max_value());
+		CollectionIndex::<Test>::mutate(|id| *id = CollectionId::max_value());
 		assert_noop!(
 			RMRKCore::create_collection(
 				Origin::signed(ALICE),
@@ -320,7 +320,8 @@ fn send_nft_removes_existing_parent() {
 
 // #[test]
 // TODO fn cannot send to its own descendent?  this should be easy enough to check
-// TODO fn cannot send to its own grandparent?  this seems difficult to check without implementing a new Parent storage struct
+// TODO fn cannot send to its own grandparent?  this seems difficult to check without implementing a
+// new Parent storage struct
 
 #[test]
 fn change_issuer_works() {
