@@ -160,7 +160,10 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		CollectionCreated(T::AccountId, CollectionId),
+		CollectionCreated {
+			issuer: T::AccountId,
+			collection_id: CollectionId,
+		},
 		NftMinted(T::AccountId, CollectionId, NftId),
 		NFTBurned(T::AccountId, NftId),
 		CollectionDestroyed(T::AccountId, CollectionId),
@@ -301,10 +304,10 @@ pub mod pallet {
 				),
 			);
 
-			Self::deposit_event(Event::CollectionCreated(
-				sender.clone().unwrap_or_default(),
+			Self::deposit_event(Event::CollectionCreated {
+				issuer: sender.clone().unwrap_or_default(),
 				collection_id,
-			));
+			});
 			Ok(())
 		}
 

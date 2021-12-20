@@ -4,6 +4,7 @@ use sp_runtime::Permill;
 // use crate::types::ClassType;
 
 use super::*;
+use mock::Event as MockEvent;
 use mock::*;
 use pallet_uniques as UNQ;
 use sp_std::{convert::TryInto, vec::Vec};
@@ -59,6 +60,10 @@ fn create_collection_works() {
 			),
 			Error::<Test>::NoAvailableCollectionId
 		);
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::CollectionCreated {
+			issuer: ALICE,
+			collection_id: 0,
+		}));
 	});
 }
 
