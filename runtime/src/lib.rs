@@ -295,7 +295,7 @@ parameter_types! {
 impl pallet_rmrk_core::Config for Runtime {
 	type Event = Event;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
-	type MaxNftRecursions = MaxNftRecursions;
+	type MaxRecursions = MaxRecursions;
 }
 
 parameter_types! {
