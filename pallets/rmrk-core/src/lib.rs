@@ -248,6 +248,13 @@ pub mod pallet {
 				metadata,
 			)?;
 
+			pallet_uniques::Pallet::<T>::do_mint(
+				collection_id.into(),
+				nft_id.into(),
+				sender.clone().unwrap_or_default(),
+				|_details| Ok(()),
+			)?;
+
 			Self::deposit_event(Event::NftMinted(
 				sender.unwrap_or_default(),
 				collection_id,
@@ -281,6 +288,19 @@ pub mod pallet {
 					symbol,
 				)?;
 
+			pallet_uniques::Pallet::<T>::do_create_class(
+				collection_id.into(),
+				sender.clone().unwrap_or_default(),
+				sender.clone().unwrap_or_default(),
+				T::ClassDeposit::get(),
+				false,
+				pallet_uniques::Event::Created(
+					collection_id.into(),
+					sender.clone().unwrap_or_default(),
+					sender.clone().unwrap_or_default(),
+				),
+			);
+
 			Self::deposit_event(Event::CollectionCreated(
 				sender.clone().unwrap_or_default(),
 				collection_id,
@@ -304,6 +324,10 @@ pub mod pallet {
 				max_recursions,
 			)?;
 
+			pallet_uniques::Pallet::<T>::do_burn(collection_id.into(), nft_id.into(), |_, _| {
+				Ok(())
+			})?;
+
 			Self::deposit_event(Event::NFTBurned(sender, nft_id));
 			Ok(())
 		}
@@ -324,6 +348,16 @@ pub mod pallet {
 				sender.clone().unwrap_or_default(),
 				collection_id,
 			)?;
+
+			let witness = pallet_uniques::Pallet::<T>::get_destroy_witness(&collection_id.into())
+				.ok_or(Error::<T>::NoWitness)?;
+			ensure!(witness.instances == 0u32, Error::<T>::CollectionNotEmpty);
+
+			pallet_uniques::Pallet::<T>::do_destroy_class(
+				collection_id.into(),
+				witness,
+				sender.clone(),
+			);
 
 			Self::deposit_event(Event::CollectionDestroyed(
 				sender.unwrap_or_default(),
