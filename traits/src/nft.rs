@@ -37,7 +37,7 @@ pub struct NftInfo<AccountId, BoundedString, CollectionId, NftId> {
 pub trait Nft<AccountId, BoundedString> {
 	type NftId: Default + Copy;
 	type CollectionId: Default + Copy;
-	type MaxNftRecursions: Get<u32>;
+	type MaxRecursions: Get<u32>;
 
 	fn mint_nft(
 		sender: AccountId,
