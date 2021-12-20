@@ -3,6 +3,8 @@ use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
 use sp_std::{cmp::Eq, result};
 
+use crate::primitives::*;
+
 /// Collection info.
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
@@ -17,25 +19,24 @@ pub struct CollectionInfo<BoundedString, AccountId> {
 /// Abstraction over a Collection system.
 #[allow(clippy::upper_case_acronyms)]
 pub trait Collection<BoundedString, AccountId> {
-	type CollectionId: Default + Copy;
 	// fn collection_two_info(
 	// 	id: Self::CollectionTwoId,
 	// ) -> Option<CollectionTwoInfo<AccountId, BoundedString>>;
-	fn issuer(collection_id: Self::CollectionId) -> Option<AccountId>;
+	fn issuer(collection_id: CollectionId) -> Option<AccountId>;
 	fn create_collection(
 		issuer: AccountId,
 		metadata: BoundedString,
 		max: u32,
 		symbol: BoundedString,
-	) -> sp_std::result::Result<Self::CollectionId, DispatchError>;
-	fn burn_collection(issuer: AccountId, collection_id: Self::CollectionId) -> DispatchResult;
+	) -> sp_std::result::Result<CollectionId, DispatchError>;
+	fn burn_collection(issuer: AccountId, collection_id: CollectionId) -> DispatchResult;
 	fn change_issuer(
-		collection_id: Self::CollectionId,
+		collection_id: CollectionId,
 		new_issuer: AccountId,
-	) -> sp_std::result::Result<(AccountId, Self::CollectionId), DispatchError>;
+	) -> sp_std::result::Result<(AccountId, CollectionId), DispatchError>;
 	fn lock_collection(
-		collection_id: Self::CollectionId,
-	) -> sp_std::result::Result<Self::CollectionId, DispatchError>;
+		collection_id: CollectionId,
+	) -> sp_std::result::Result<CollectionId, DispatchError>;
 }
 
 // #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
