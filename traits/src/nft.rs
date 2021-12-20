@@ -1,7 +1,7 @@
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
-use sp_std::{cmp::Eq, result};
+use sp_runtime::{DispatchError, RuntimeDebug};
+use sp_std::cmp::Eq;
 
 use frame_support::pallet_prelude::*;
 use sp_runtime::Permill;
