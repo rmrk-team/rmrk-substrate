@@ -35,9 +35,6 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-// pub type BalanceOf<T> = <<T as Config>::Currency as Currency<<T as
-// frame_system::Config>::AccountId>>::Balance;
-
 pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
@@ -274,11 +271,6 @@ pub mod pallet {
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
 
-			// let metadata_bounded = Self::to_bounded_string(metadata)?;
-			// let symbol_bounded = Self::to_bounded_string(symbol)?;
-			// let id_bounded = Self::to_bounded_string(id)?;
-			// let collection_id = Self::get_next_collection_id()?;
-
 			let max = max.unwrap_or_default();
 
 			let collection_id =
@@ -288,16 +280,6 @@ pub mod pallet {
 					max,
 					symbol,
 				)?;
-
-			// Collections::<T>::insert(
-			// 	collection_id,
-			// 	ClassInfo {
-			// 		issuer: sender.clone().unwrap_or_default(),
-			// 		metadata,
-			// 		max,
-			// 		symbol,
-			// 	},
-			// );
 
 			Self::deposit_event(Event::CollectionCreated(
 				sender.clone().unwrap_or_default(),
