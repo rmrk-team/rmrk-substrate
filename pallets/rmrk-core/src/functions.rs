@@ -262,13 +262,10 @@ impl<T: Config> Pallet<T> {
 	pub fn to_optional_bounded_string(
 		name: Option<Vec<u8>>,
 	) -> Result<Option<BoundedVec<u8, T::StringLimit>>, Error<T>> {
-		match name {
-			Some(n) => {
-				let bounded_string = Self::to_bounded_string(n)?;
-				return Ok(Some(bounded_string))
-			},
-			None => return Ok(None),
-		}
+		Ok(match name {
+			Some(n) => Some(Self::to_bounded_string(n)?),
+			None => None,
+		})		
 	}
 
 	pub fn get_next_nft_id(collection_id: CollectionId) -> Result<NftId, Error<T>> {
@@ -286,4 +283,5 @@ impl<T: Config> Pallet<T> {
 			Ok(current_id)
 		})
 	}
+
 }
