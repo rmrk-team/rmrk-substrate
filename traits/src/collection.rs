@@ -21,18 +21,16 @@ pub struct CollectionInfo<BoundedString, AccountId> {
 #[allow(clippy::upper_case_acronyms)]
 pub trait Collection<BoundedString, AccountId> {
 	fn issuer(collection_id: CollectionId) -> Option<AccountId>;
-	fn create_collection(
+	fn collection_create(
 		issuer: AccountId,
 		metadata: BoundedString,
 		max: u32,
 		symbol: BoundedString,
 	) -> Result<CollectionId, DispatchError>;
-	fn burn_collection(issuer: AccountId, collection_id: CollectionId) -> DispatchResult;
-	fn change_issuer(
+	fn collection_burn(issuer: AccountId, collection_id: CollectionId) -> DispatchResult;
+	fn collection_change_issuer(
 		collection_id: CollectionId,
 		new_issuer: AccountId,
 	) -> Result<(AccountId, CollectionId), DispatchError>;
-	fn lock_collection(
-		collection_id: CollectionId,
-	) -> Result<CollectionId, DispatchError>;
+	fn collection_lock(collection_id: CollectionId) -> Result<CollectionId, DispatchError>;
 }

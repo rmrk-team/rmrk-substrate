@@ -4,7 +4,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	fn issuer(collection_id: CollectionId) -> Option<T::AccountId> {
 		None
 	}
-	fn create_collection(
+	fn collection_create(
 		issuer: T::AccountId,
 		metadata: StringLimitOf<T>,
 		max: u32,
@@ -22,7 +22,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		Ok(collection_id)
 	}
 
-	fn burn_collection(issuer: T::AccountId, collection_id: CollectionId) -> DispatchResult {
+	fn collection_burn(issuer: T::AccountId, collection_id: CollectionId) -> DispatchResult {
 		ensure!(
 			NFTs::<T>::iter_prefix_values(collection_id).count() == 0,
 			Error::<T>::CollectionNotEmpty
@@ -31,7 +31,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	fn change_issuer(
+	fn collection_change_issuer(
 		collection_id: CollectionId,
 		new_issuer: T::AccountId,
 	) -> Result<(T::AccountId, CollectionId), DispatchError> {
@@ -47,7 +47,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		Ok((new_issuer, collection_id))
 	}
 
-	fn lock_collection(collection_id: CollectionId) -> Result<CollectionId, DispatchError> {
+	fn collection_lock(collection_id: CollectionId) -> Result<CollectionId, DispatchError> {
 		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
 			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
 			let currently_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
@@ -61,7 +61,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 	type MaxRecursions = T::MaxRecursions;
 
-	fn mint_nft(
+	fn nft_mint(
 		sender: T::AccountId,
 		owner: T::AccountId,
 		collection_id: CollectionId,
@@ -96,7 +96,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		Ok((collection_id, nft_id))
 	}
 
-	fn burn_nft(
+	fn nft_burn(
 		collection_id: CollectionId,
 		nft_id: NftId,
 		max_recursions: u32,
@@ -105,7 +105,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		NFTs::<T>::remove(collection_id, nft_id);
 		if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
 			for child in kids {
-				<Self as Nft<T::AccountId, StringLimitOf<T>>>::burn_nft(
+				Self::nft_burn(
 					child.0,
 					child.1,
 					max_recursions - 1,
@@ -115,7 +115,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		Ok((collection_id, nft_id))
 	}
 
-	fn send(
+	fn nft_send(
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
@@ -138,7 +138,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 					}
 				}
 				sending_nft.rootowner = account_id.clone();
-			}
+			},
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				let recipient_nft = NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
 				// Check if sending NFT is already a child of recipient NFT
@@ -174,9 +174,9 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 					Some(mut kids) => {
 						kids.push((collection_id, nft_id));
 						Children::<T>::insert(cid, nid, kids);
-					}
+					},
 				}
-			}
+			},
 		};
 		sending_nft.owner = new_owner.clone();
 
@@ -198,7 +198,7 @@ impl<T: Config> Pallet<T> {
 		if let Some(children) = Children::<T>::get(parent_collection_id, parent_nft_id) {
 			for child in children {
 				if child == (child_collection_id, child_nft_id) {
-					return true;
+					return true
 				} else {
 					if Pallet::<T>::is_x_descendent_of_y(
 						child_collection_id,
@@ -265,8 +265,8 @@ impl<T: Config> Pallet<T> {
 		match name {
 			Some(n) => {
 				let bounded_string = Self::to_bounded_string(n)?;
-				return Ok(Some(bounded_string));
-			}
+				return Ok(Some(bounded_string))
+			},
 			None => return Ok(None),
 		}
 	}

@@ -40,7 +40,7 @@ pub struct NftInfo<AccountId, BoundedString> {
 pub trait Nft<AccountId, BoundedString> {
 	type MaxRecursions: Get<u32>;
 
-	fn mint_nft(
+	fn nft_mint(
 		sender: AccountId,
 		owner: AccountId,
 		collection_id: CollectionId,
@@ -48,12 +48,12 @@ pub trait Nft<AccountId, BoundedString> {
 		royalty: Option<Permill>,
 		metadata: BoundedString,
 	) -> Result<(CollectionId, NftId), DispatchError>;
-	fn burn_nft(
+	fn nft_burn(
 		collection_id: CollectionId,
 		nft_id: NftId,
 		max_recursions: u32,
 	) -> Result<(CollectionId, NftId), DispatchError>;
-	fn send(
+	fn nft_send(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,

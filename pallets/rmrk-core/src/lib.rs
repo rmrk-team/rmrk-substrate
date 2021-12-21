@@ -162,12 +162,7 @@ pub mod pallet {
 		NftMinted(T::AccountId, CollectionId, NftId),
 		NFTBurned(T::AccountId, NftId),
 		CollectionDestroyed(T::AccountId, CollectionId),
-		NFTSent(
-			T::AccountId,
-			AccountIdOrCollectionNftTuple<T::AccountId>,
-			CollectionId,
-			NftId,
-		),
+		NFTSent(T::AccountId, AccountIdOrCollectionNftTuple<T::AccountId>, CollectionId, NftId),
 		IssuerChanged(T::AccountId, T::AccountId, CollectionId),
 		PropertySet(
 			CollectionId,
@@ -237,7 +232,7 @@ pub mod pallet {
 
 			let rootowner = owner.clone();
 
-			let (collection_id, nft_id) = <Self as Nft<T::AccountId, StringLimitOf<T>>>::mint_nft(
+			let (collection_id, nft_id) = Self::nft_mint(
 				sender.clone().unwrap_or_default(),
 				owner,
 				collection_id,
@@ -279,12 +274,7 @@ pub mod pallet {
 			let max = max.unwrap_or_default();
 
 			let collection_id =
-				<Self as Collection<StringLimitOf<T>, T::AccountId>>::create_collection(
-					sender.clone().unwrap_or_default(),
-					metadata,
-					max,
-					symbol,
-				)?;
+				Self::collection_create(sender.clone().unwrap_or_default(), metadata, max, symbol)?;
 
 			pallet_uniques::Pallet::<T>::do_create_class(
 				collection_id.into(),
@@ -316,11 +306,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			let max_recursions = T::MaxRecursions::get();
-			let (_collection_id, nft_id) = <Self as Nft<T::AccountId, StringLimitOf<T>>>::burn_nft(
-				collection_id,
-				nft_id,
-				max_recursions,
-			)?;
+			let (_collection_id, nft_id) = Self::nft_burn(collection_id, nft_id, max_recursions)?;
 
 			pallet_uniques::Pallet::<T>::do_burn(collection_id.into(), nft_id.into(), |_, _| {
 				Ok(())
@@ -342,10 +328,7 @@ pub mod pallet {
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
 
-			<Self as Collection<StringLimitOf<T>, T::AccountId>>::burn_collection(
-				sender.clone().unwrap_or_default(),
-				collection_id,
-			)?;
+			Self::collection_burn(sender.clone().unwrap_or_default(), collection_id)?;
 
 			let witness = pallet_uniques::Pallet::<T>::get_destroy_witness(&collection_id.into())
 				.ok_or(Error::<T>::NoWitness)?;
@@ -380,7 +363,7 @@ pub mod pallet {
 			.unwrap_or_default();
 
 			let max_recursions = T::MaxRecursions::get();
-			<Self as Nft<T::AccountId, StringLimitOf<T>>>::send(
+			Self::nft_send(
 				sender.clone(),
 				collection_id,
 				nft_id,
@@ -411,10 +394,8 @@ pub mod pallet {
 				Error::<T>::NoAvailableCollectionId
 			);
 
-			let (new_issuer, collection_id) = <Self as Collection<
-				StringLimitOf<T>,
-				T::AccountId,
-			>>::change_issuer(collection_id, new_issuer)?;
+			let (new_issuer, collection_id) =
+				Self::collection_change_issuer(collection_id, new_issuer)?;
 
 			Self::deposit_event(Event::IssuerChanged(
 				sender.unwrap_or_default(),
@@ -469,10 +450,7 @@ pub mod pallet {
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
 
-			let collection_id =
-				<Self as Collection<StringLimitOf<T>, T::AccountId>>::lock_collection(
-					collection_id,
-				)?;
+			let collection_id = Self::collection_lock(collection_id)?;
 
 			Self::deposit_event(Event::CollectionLocked(sender.unwrap_or_default(), collection_id));
 			Ok(())
@@ -509,11 +487,10 @@ pub mod pallet {
 				Error::<T>::ResourceAlreadyExists
 			);
 
-			let empty = base.is_none()
-				&& src.is_none() && metadata.is_none()
-				&& slot.is_none()
-				&& license.is_none()
-				&& thumb.is_none();
+			let empty = base.is_none() &&
+				src.is_none() && metadata.is_none() &&
+				slot.is_none() && license.is_none() &&
+				thumb.is_none();
 			ensure!(!empty, Error::<T>::EmptyResource);
 
 			let res = ResourceInfo {
@@ -585,6 +562,4 @@ pub mod pallet {
 			Ok(())
 		}
 	}
-
-	
 }

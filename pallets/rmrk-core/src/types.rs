@@ -1,13 +1,11 @@
 use frame_support::pallet_prelude::*;
 use sp_runtime::Permill;
 
+use scale_info::TypeInfo;
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
-use scale_info::TypeInfo;
 
-use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple
-};
+use rmrk_traits::{primitives::*, AccountIdOrCollectionNftTuple};
 
 #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
