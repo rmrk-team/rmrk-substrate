@@ -59,8 +59,6 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 }
 
 impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
-	type CollectionId = CollectionId;
-	type NftId = NftId;
 	type MaxRecursions = T::MaxRecursions;
 
 	fn mint_nft(
@@ -70,7 +68,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		recipient: Option<T::AccountId>,
 		royalty: Option<Permill>,
 		metadata: StringLimitOf<T>,
-	) -> sp_std::result::Result<(Self::CollectionId, Self::NftId), DispatchError> {
+	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
 
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;

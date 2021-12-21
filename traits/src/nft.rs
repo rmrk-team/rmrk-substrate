@@ -6,6 +6,8 @@ use sp_std::cmp::Eq;
 use frame_support::pallet_prelude::*;
 use sp_runtime::Permill;
 
+use crate::primitives::*;
+
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
 
@@ -35,28 +37,26 @@ pub struct NftInfo<AccountId, BoundedString, CollectionId, NftId> {
 /// Abstraction over a Nft system.
 #[allow(clippy::upper_case_acronyms)]
 pub trait Nft<AccountId, BoundedString> {
-	type NftId: Default + Copy;
-	type CollectionId: Default + Copy;
 	type MaxRecursions: Get<u32>;
 
 	fn mint_nft(
 		sender: AccountId,
 		owner: AccountId,
-		collection_id: Self::CollectionId,
+		collection_id: CollectionId,
 		recipient: Option<AccountId>,
 		royalty: Option<Permill>,
 		metadata: BoundedString,
-	) -> sp_std::result::Result<(Self::CollectionId, Self::NftId), DispatchError>;
+	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError>;
 	fn burn_nft(
-		collection_id: Self::CollectionId,
-		nft_id: Self::NftId,
+		collection_id: CollectionId,
+		nft_id: NftId,
 		max_recursions: u32,
-	) -> sp_std::result::Result<(Self::CollectionId, Self::NftId), DispatchError>;
+	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError>;
 	fn send(
 		sender: AccountId,
-		collection_id: Self::CollectionId,
-		nft_id: Self::NftId,
-		new_owner: AccountIdOrCollectionNftTuple<AccountId, Self::CollectionId, Self::NftId>,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		new_owner: AccountIdOrCollectionNftTuple<AccountId, CollectionId, NftId>,
 		max_recursions: u32,
-	) -> sp_std::result::Result<(Self::CollectionId, Self::NftId), DispatchError>;
+	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError>;
 }
