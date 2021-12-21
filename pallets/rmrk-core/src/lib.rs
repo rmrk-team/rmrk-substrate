@@ -38,8 +38,6 @@ mod tests;
 pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
-	CollectionId,
-	NftId,
 >;
 pub type ResourceOf<T> =
 	ResourceInfo<ResourceId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
@@ -166,7 +164,7 @@ pub mod pallet {
 		CollectionDestroyed(T::AccountId, CollectionId),
 		NFTSent(
 			T::AccountId,
-			AccountIdOrCollectionNftTuple<T::AccountId, CollectionId, NftId>,
+			AccountIdOrCollectionNftTuple<T::AccountId>,
 			CollectionId,
 			NftId,
 		),
@@ -373,7 +371,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			new_owner: AccountIdOrCollectionNftTuple<T::AccountId, CollectionId, NftId>,
+			new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 		) -> DispatchResult {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,

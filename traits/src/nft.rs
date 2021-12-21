@@ -13,7 +13,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum AccountIdOrCollectionNftTuple<AccountId, CollectionId, NftId> {
+pub enum AccountIdOrCollectionNftTuple<AccountId> {
 	AccountId(AccountId),
 	CollectionAndNftTuple(CollectionId, NftId),
 }
@@ -21,11 +21,11 @@ pub enum AccountIdOrCollectionNftTuple<AccountId, CollectionId, NftId> {
 /// Nft info.
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct NftInfo<AccountId, BoundedString, CollectionId, NftId> {
+pub struct NftInfo<AccountId, BoundedString> {
 	/// The rootowner of the account, must be an account
 	pub rootowner: AccountId,
 	/// The owner of the NFT, can be either an Account or a tuple (CollectionId, NftId)
-	pub owner: AccountIdOrCollectionNftTuple<AccountId, CollectionId, NftId>,
+	pub owner: AccountIdOrCollectionNftTuple<AccountId>,
 	/// The user account which receives the royalty
 	pub recipient: AccountId,
 	/// Royalty in per mille (1/1000)
@@ -56,7 +56,7 @@ pub trait Nft<AccountId, BoundedString> {
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		new_owner: AccountIdOrCollectionNftTuple<AccountId, CollectionId, NftId>,
+		new_owner: AccountIdOrCollectionNftTuple<AccountId>,
 		max_recursions: u32,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError>;
 }

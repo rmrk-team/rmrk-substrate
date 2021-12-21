@@ -119,7 +119,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		new_owner: AccountIdOrCollectionNftTuple<T::AccountId, CollectionId, NftId>,
+		new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 		max_recursions: u32,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let mut sending_nft =
