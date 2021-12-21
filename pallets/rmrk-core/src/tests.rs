@@ -79,6 +79,11 @@ fn mint_nft_works() {
 			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20]
 		));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NftMinted {
+			owner: ALICE,
+			collection_id: 0,
+			nft_id: 0,
+		}));
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
@@ -138,6 +143,12 @@ fn send_nft_to_minted_nft_works() {
 			0,
 			AccountIdOrCollectionNftTuple::AccountId(BOB),
 		));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTSent {
+			sender: ALICE,
+			recipient: AccountIdOrCollectionNftTuple::AccountId(BOB),
+			collection_id: 0,
+			nft_id: 0,
+		}));
 		// Alice sends NFT (0, 1) [child] to NFT (0, 0) [parent]
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -145,7 +156,12 @@ fn send_nft_to_minted_nft_works() {
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
-
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTSent {
+			sender: ALICE,
+			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+			collection_id: 0,
+			nft_id: 1,
+		}));
 		// Check that NFT (0,1) [child] is owned by NFT (0,0) [parent]
 		assert_eq!(
 			RMRKCore::nfts(0, 1).unwrap().owner,
@@ -333,6 +349,11 @@ fn change_issuer_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
 		assert_ok!(RMRKCore::change_issuer(Origin::signed(ALICE), 0, BOB));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::IssuerChanged {
+			old_issuer: ALICE,
+			new_issuer: BOB,
+			collection_id: 0,
+		}));
 		assert_eq!(RMRKCore::collections(0).unwrap().issuer, BOB);
 	});
 }
@@ -351,6 +372,10 @@ fn burn_nft_works() {
 		));
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0).is_none(), true);
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTBurned {
+			owner: ALICE,
+			nft_id: 0,
+		}));
 	});
 }
 
@@ -501,6 +526,10 @@ fn destroy_collection_works() {
 		);
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::CollectionDestroyed {
+			issuer: ALICE,
+			collection_id: COLLECTION_ID_0,
+		}));
 	});
 }
 
@@ -547,6 +576,10 @@ fn lock_collection_works() {
 			));
 		}
 		assert_ok!(RMRKCore::lock_collection(Origin::signed(ALICE), 0));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::CollectionLocked {
+			issuer: ALICE,
+			collection_id: 0,
+		}));
 		assert_noop!(
 			RMRKCore::mint_nft(
 				Origin::signed(ALICE),
@@ -601,6 +634,10 @@ fn create_resource_works() {
 			Some(bvec![0u8; 20]),
 			Some(bvec![0u8; 20]),
 		));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAdded {
+			nft_id: 0,
+			resource_id: 0,
+		}));
 		// Since ALICE rootowns NFT (0, 0), pending should be false
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 	});
@@ -656,6 +693,12 @@ fn set_property_works() {
 			key.clone(),
 			value.clone()
 		));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
+			collection_id: 0,
+			maybe_nft_id: Some(0),
+			key: key.clone(),
+			value: value.clone(),
+		}));
 		assert_eq!(RMRKCore::properties((0, Some(0), key)).unwrap(), value);
 	});
 }
@@ -677,6 +720,10 @@ fn set_priority_works() {
 			NFT_ID_0,
 			vec![stv("hello"), stv("world")]
 		));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PrioritySet {
+			collection_id: 0,
+			nft_id: 0,
+		}));
 		assert_eq!(
 			RMRKCore::priorities(COLLECTION_ID_0, NFT_ID_0).unwrap(),
 			vec![stv("hello"), stv("world")]
@@ -739,6 +786,10 @@ fn accept_resource_works() {
 		assert_noop!(RMRKCore::accept(Origin::signed(BOB), 0, 0, 0), Error::<Test>::NoPermission);
 		// Alice can accept her own NFT's resource
 		assert_ok!(RMRKCore::accept(Origin::signed(ALICE), 0, 0, 0));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAccepted {
+			nft_id: 0,
+			resource_id: 0,
+		}));
 		// Resource should now be pending = false
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 	});
