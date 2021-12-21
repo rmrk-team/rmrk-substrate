@@ -7,6 +7,7 @@ use frame_support::pallet_prelude::*;
 use sp_runtime::Permill;
 
 use crate::primitives::*;
+use sp_std::result::Result;
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -46,17 +47,17 @@ pub trait Nft<AccountId, BoundedString> {
 		recipient: Option<AccountId>,
 		royalty: Option<Permill>,
 		metadata: BoundedString,
-	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError>;
+	) -> Result<(CollectionId, NftId), DispatchError>;
 	fn burn_nft(
 		collection_id: CollectionId,
 		nft_id: NftId,
 		max_recursions: u32,
-	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError>;
+	) -> Result<(CollectionId, NftId), DispatchError>;
 	fn send(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
 		new_owner: AccountIdOrCollectionNftTuple<AccountId>,
 		max_recursions: u32,
-	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError>;
+	) -> Result<(CollectionId, NftId), DispatchError>;
 }
