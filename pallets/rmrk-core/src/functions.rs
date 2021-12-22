@@ -1,6 +1,23 @@
+use codec::Encode;
+use sp_core::blake2_256;
 use super::*;
 
 impl<T: Config> Pallet<T> {
+
+	pub fn nft_to_account_id(collection_id: CollectionId, nft_id: NftId) -> AccountId {
+		let preimage = (b"RmrkNft", collleciton_id, nft_id).encode();
+		let hash = blake2_256(&preimage);
+		AccountId::from(&hash)
+	}
+
+	fn lookup_root(collection_id: CollectionId, nft_id: NftId) -> (T::AccountId, (CollectionId,NftId)) {
+		let parent = pallet_unique::Pallet::<T>::owner_of(collection_id, nft_id);
+		match AccountPreimage::<T>::get(parent) {
+			None => (parent, (collection_id, nft_id)),
+			Some((collection_id, nft_id)) => lookup_root_owner(collection_id, nft_id),
+		}
+	}
+
 	pub fn is_x_descendent_of_y(
 		child_collection_id: CollectionId,
 		child_nft_id: NftId,
