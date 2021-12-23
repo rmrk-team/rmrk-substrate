@@ -18,7 +18,6 @@ pub struct ClassInfo<BoundedString, AccountId> {
 }
 
 #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
-#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct InstanceInfo<AccountId, BoundedString> {
 	/// The rootowner of the account, must be an account
 	pub rootowner: AccountId,
