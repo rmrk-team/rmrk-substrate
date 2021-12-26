@@ -242,16 +242,16 @@ pub mod pallet {
 			let collection =
 				Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
+			let nft_id: NftId = Self::get_next_nft_id(collection_id)?;
+
 			let nfts_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
 			let max: u32 = collection.max.try_into().unwrap();
 
 			ensure!(
 				// Probably a better way to do "max == 0"
-				nfts_minted < max.try_into().unwrap() || max == max - max,
+				nft_id < max.try_into().unwrap() || max == max - max,
 				Error::<T>::CollectionFullOrLocked
 			);
-
-			let nft_id: NftId = Self::get_next_nft_id(collection_id)?;
 
 			// let metadata_bounded = Self::to_bounded_string(metadata)?;
 			// if let Some(r) = royalty {
