@@ -69,7 +69,7 @@ fn mint_nft_works() {
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
-			0,
+			COLLECTION_ID_0,
 			ALICE,
 			Permill::from_float(20.525),
 			bvec![0u8; 20]
@@ -103,6 +103,34 @@ fn mint_nft_works() {
 		);
 	});
 }
+
+#[test]
+fn mint_collection_max_logic_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], Some(1), bvec![0u8; 15]));
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			ALICE,
+			Permill::from_float(20.525),
+			bvec![0u8; 20]
+		));
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, 0));
+		assert_noop!(
+			RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				ALICE,
+				COLLECTION_ID_0,
+				CHARLIE,
+				Permill::from_float(20.525),
+				bvec![0u8; 20]
+			),
+			Error::<Test>::CollectionFullOrLocked
+		);
+	});
+}
+
 #[test]
 fn send_nft_to_minted_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
