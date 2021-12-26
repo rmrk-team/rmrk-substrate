@@ -243,8 +243,6 @@ pub mod pallet {
 				Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
 			let nft_id: NftId = Self::get_next_nft_id(collection_id)?;
-
-			let nfts_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
 			let max: u32 = collection.max.try_into().unwrap();
 
 			ensure!(
