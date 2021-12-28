@@ -124,7 +124,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let mut sending_nft =
 			NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-		ensure!(sending_nft.rootowner == sender.clone(), Error::<T>::NoPermission);
+		ensure!(&sending_nft.rootowner == &sender, Error::<T>::NoPermission);
 
 		match new_owner.clone() {
 			AccountIdOrCollectionNftTuple::AccountId(account_id) => {
