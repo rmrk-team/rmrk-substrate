@@ -158,22 +158,57 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		CollectionCreated(T::AccountId, CollectionId),
-		NftMinted(T::AccountId, CollectionId, NftId),
-		NFTBurned(T::AccountId, NftId),
-		CollectionDestroyed(T::AccountId, CollectionId),
-		NFTSent(T::AccountId, AccountIdOrCollectionNftTuple<T::AccountId>, CollectionId, NftId),
-		IssuerChanged(T::AccountId, T::AccountId, CollectionId),
-		PropertySet(
-			CollectionId,
-			Option<NftId>,
-			BoundedVec<u8, T::KeyLimit>,
-			BoundedVec<u8, T::ValueLimit>,
-		),
-		CollectionLocked(T::AccountId, CollectionId),
-		ResourceAdded(NftId, ResourceId),
-		ResourceAccepted(NftId, ResourceId),
-		PrioritySet(CollectionId, NftId),
+		CollectionCreated {
+			issuer: T::AccountId,
+			collection_id: CollectionId,
+		},
+		// NftMinted(T::AccountId, CollectionId, NftId),
+		NftMinted {
+			owner: T::AccountId,
+			collection_id: CollectionId,
+			nft_id: NftId,
+		},
+		NFTBurned {
+			owner: T::AccountId,
+			nft_id: NftId,
+		},
+		CollectionDestroyed {
+			issuer: T::AccountId,
+			collection_id: CollectionId,
+		},
+		NFTSent {
+			sender: T::AccountId,
+			recipient: AccountIdOrCollectionNftTuple<T::AccountId>,
+			collection_id: CollectionId,
+			nft_id: NftId,
+		},
+		IssuerChanged {
+			old_issuer: T::AccountId,
+			new_issuer: T::AccountId,
+			collection_id: CollectionId,
+		},
+		PropertySet {
+			collection_id: CollectionId,
+			maybe_nft_id: Option<NftId>,
+			key: BoundedVec<u8, T::KeyLimit>,
+			value: BoundedVec<u8, T::ValueLimit>,
+		},
+		CollectionLocked {
+			issuer: T::AccountId,
+			collection_id: CollectionId,
+		},
+		ResourceAdded {
+			nft_id: NftId,
+			resource_id: ResourceId,
+		},
+		ResourceAccepted {
+			nft_id: NftId,
+			resource_id: ResourceId,
+		},
+		PrioritySet {
+			collection_id: CollectionId,
+			nft_id: NftId,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -246,11 +281,11 @@ pub mod pallet {
 				|_details| Ok(()),
 			)?;
 
-			Self::deposit_event(Event::NftMinted(
-				sender.unwrap_or_default(),
+			Self::deposit_event(Event::NftMinted {
+				owner: sender.unwrap_or_default(),
 				collection_id,
 				nft_id,
-			));
+			});
 
 			Ok(())
 		}
@@ -287,10 +322,10 @@ pub mod pallet {
 				),
 			)?;
 
-			Self::deposit_event(Event::CollectionCreated(
-				sender.clone().unwrap_or_default(),
+			Self::deposit_event(Event::CollectionCreated {
+				issuer: sender.clone().unwrap_or_default(),
 				collection_id,
-			));
+			});
 			Ok(())
 		}
 
@@ -310,7 +345,7 @@ pub mod pallet {
 				Ok(())
 			})?;
 
-			Self::deposit_event(Event::NFTBurned(sender, nft_id));
+			Self::deposit_event(Event::NFTBurned { owner: sender, nft_id });
 			Ok(())
 		}
 
@@ -338,10 +373,10 @@ pub mod pallet {
 				sender.clone(),
 			)?;
 
-			Self::deposit_event(Event::CollectionDestroyed(
-				sender.unwrap_or_default(),
+			Self::deposit_event(Event::CollectionDestroyed {
+				issuer: sender.unwrap_or_default(),
 				collection_id,
-			));
+			});
 			Ok(())
 		}
 
@@ -369,7 +404,12 @@ pub mod pallet {
 				max_recursions,
 			)?;
 
-			Self::deposit_event(Event::NFTSent(sender, new_owner, collection_id, nft_id));
+			Self::deposit_event(Event::NFTSent {
+				sender,
+				recipient: new_owner,
+				collection_id,
+				nft_id,
+			});
 			Ok(())
 		}
 
@@ -395,11 +435,11 @@ pub mod pallet {
 			let (new_issuer, collection_id) =
 				Self::collection_change_issuer(collection_id, new_issuer)?;
 
-			Self::deposit_event(Event::IssuerChanged(
-				sender.unwrap_or_default(),
+			Self::deposit_event(Event::IssuerChanged {
+				old_issuer: sender.unwrap_or_default(),
 				new_issuer,
 				collection_id,
-			));
+			});
 			Ok(())
 		}
 
@@ -433,7 +473,7 @@ pub mod pallet {
 			}
 			Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
 
-			Self::deposit_event(Event::PropertySet(collection_id, maybe_nft_id, key, value));
+			Self::deposit_event(Event::PropertySet { collection_id, maybe_nft_id, key, value });
 			Ok(())
 		}
 		/// lock collection
@@ -450,7 +490,10 @@ pub mod pallet {
 
 			let collection_id = Self::collection_lock(collection_id)?;
 
-			Self::deposit_event(Event::CollectionLocked(sender.unwrap_or_default(), collection_id));
+			Self::deposit_event(Event::CollectionLocked {
+				issuer: sender.unwrap_or_default(),
+				collection_id,
+			});
 			Ok(())
 		}
 
@@ -503,7 +546,7 @@ pub mod pallet {
 			};
 			Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
-			Self::deposit_event(Event::ResourceAdded(nft_id, resource_id));
+			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
 			Ok(())
 		}
 		/// accept the addition of a new resource to an existing NFT
@@ -533,7 +576,7 @@ pub mod pallet {
 				},
 			)?;
 
-			Self::deposit_event(Event::ResourceAccepted(nft_id, resource_id));
+			Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
 			Ok(())
 		}
 
@@ -556,7 +599,7 @@ pub mod pallet {
 				bounded_priorities.push(bounded_priority);
 			}
 			Priorities::<T>::insert(collection_id, nft_id, bounded_priorities);
-			Self::deposit_event(Event::PrioritySet(collection_id, nft_id));
+			Self::deposit_event(Event::PrioritySet { collection_id, nft_id });
 			Ok(())
 		}
 	}
