@@ -70,24 +70,24 @@ fn mint_nft_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(20.525),
+			Some(ALICE),
+			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(20.525),
+			Some(ALICE),
+			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(BOB),
 			BOB,
 			COLLECTION_ID_0,
-			CHARLIE,
-			Permill::from_float(20.525),
+			Some(CHARLIE),
+			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20]
 		));
 		assert_noop!(
@@ -95,8 +95,8 @@ fn mint_nft_works() {
 				Origin::signed(ALICE),
 				ALICE,
 				NOT_EXISTING_CLASS_ID,
-				CHARLIE,
-				Permill::from_float(20.525),
+				Some(CHARLIE),
+				Some(Permill::from_float(20.525)),
 				bvec![0u8; 20]
 			),
 			Error::<Test>::CollectionUnknown
@@ -113,8 +113,8 @@ fn send_nft_to_minted_nft_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(1.525),
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 1) [will be the child]
@@ -122,8 +122,8 @@ fn send_nft_to_minted_nft_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(1.525),
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
 			nft_metadata
 		));
 		// Alice sends NFT (0, 0) [parent] to Bob
@@ -203,8 +203,8 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 1)
@@ -212,8 +212,8 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 2)
@@ -221,8 +221,8 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			nft_metadata
 		));
 
@@ -255,8 +255,8 @@ fn send_nft_removes_existing_parent() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 1)
@@ -264,8 +264,8 @@ fn send_nft_removes_existing_parent() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 2)
@@ -273,8 +273,8 @@ fn send_nft_removes_existing_parent() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 3)
@@ -282,8 +282,8 @@ fn send_nft_removes_existing_parent() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			nft_metadata
 		));
 
@@ -340,12 +340,12 @@ fn burn_nft_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
-		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0), None);
+		assert!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0).is_none());
 	});
 }
 
@@ -358,8 +358,8 @@ fn burn_nft_with_great_grandchildren_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints (0, 1)
@@ -367,8 +367,8 @@ fn burn_nft_with_great_grandchildren_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints (0, 2)
@@ -376,8 +376,8 @@ fn burn_nft_with_great_grandchildren_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints (0, 3)
@@ -385,8 +385,8 @@ fn burn_nft_with_great_grandchildren_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice sends NFT (0, 1) to NFT (0, 0)
@@ -415,7 +415,7 @@ fn burn_nft_with_great_grandchildren_works() {
 		// Burn great-grandfather
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		// Child is dead
-		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3), None);
+		assert!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_none())
 	});
 }
 
@@ -428,8 +428,8 @@ fn send_to_grandchild_fails() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints (0, 1)
@@ -437,8 +437,8 @@ fn send_to_grandchild_fails() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints (0, 2)
@@ -446,8 +446,8 @@ fn send_to_grandchild_fails() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice sends NFT (0, 1) to NFT (0, 0)
@@ -486,8 +486,8 @@ fn destroy_collection_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(1.525),
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20]
 		));
 		assert_noop!(
@@ -508,8 +508,8 @@ fn mint_beyond_collection_max_fails() {
 				Origin::signed(ALICE),
 				ALICE,
 				COLLECTION_ID_0,
-				ALICE,
-				Permill::from_float(0.0),
+				Some(ALICE),
+				Some(Permill::from_float(0.0)),
 				bvec![0u8; 20]
 			));
 		}
@@ -518,8 +518,8 @@ fn mint_beyond_collection_max_fails() {
 				Origin::signed(ALICE),
 				ALICE,
 				COLLECTION_ID_0,
-				ALICE,
-				Permill::from_float(0.0),
+				Some(ALICE),
+				Some(Permill::from_float(0.0)),
 				bvec![0u8; 20]
 			),
 			Error::<Test>::CollectionFullOrLocked
@@ -536,8 +536,8 @@ fn lock_collection_works() {
 				Origin::signed(ALICE),
 				ALICE,
 				COLLECTION_ID_0,
-				ALICE,
-				Permill::from_float(0.0),
+				Some(ALICE),
+				Some(Permill::from_float(0.0)),
 				bvec![0u8; 20]
 			));
 		}
@@ -547,8 +547,8 @@ fn lock_collection_works() {
 				Origin::signed(ALICE),
 				ALICE,
 				COLLECTION_ID_0,
-				ALICE,
-				Permill::from_float(0.0),
+				Some(ALICE),
+				Some(Permill::from_float(0.0)),
 				bvec![0u8; 20]
 			),
 			Error::<Test>::CollectionFullOrLocked
@@ -580,8 +580,8 @@ fn create_resource_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Add resource works
@@ -609,8 +609,8 @@ fn create_empty_resource_fails() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(1.525),
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20]
 		));
 		assert_noop!(
@@ -640,8 +640,8 @@ fn set_property_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(1.525),
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::set_property(
@@ -662,8 +662,8 @@ fn set_priority_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::set_priority(
@@ -687,8 +687,8 @@ fn add_resource_pending_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::add_resource(
@@ -714,8 +714,8 @@ fn accept_resource_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::add_resource(
