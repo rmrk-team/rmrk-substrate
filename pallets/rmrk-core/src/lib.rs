@@ -230,8 +230,6 @@ pub mod pallet {
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
 
-			let rootowner = owner.clone();
-
 			let (collection_id, nft_id) = Self::nft_mint(
 				sender.clone().unwrap_or_default(),
 				owner,
@@ -242,8 +240,8 @@ pub mod pallet {
 			)?;
 
 			pallet_uniques::Pallet::<T>::do_mint(
-				collection_id.into(),
-				nft_id.into(),
+				collection_id,
+				nft_id,
 				sender.clone().unwrap_or_default(),
 				|_details| Ok(()),
 			)?;
@@ -277,17 +275,17 @@ pub mod pallet {
 				Self::collection_create(sender.clone().unwrap_or_default(), metadata, max, symbol)?;
 
 			pallet_uniques::Pallet::<T>::do_create_class(
-				collection_id.into(),
+				collection_id,
 				sender.clone().unwrap_or_default(),
 				sender.clone().unwrap_or_default(),
 				T::ClassDeposit::get(),
 				false,
 				pallet_uniques::Event::Created(
-					collection_id.into(),
+					collection_id,
 					sender.clone().unwrap_or_default(),
 					sender.clone().unwrap_or_default(),
 				),
-			);
+			)?;
 
 			Self::deposit_event(Event::CollectionCreated(
 				sender.clone().unwrap_or_default(),
@@ -308,7 +306,7 @@ pub mod pallet {
 			let max_recursions = T::MaxRecursions::get();
 			let (_collection_id, nft_id) = Self::nft_burn(collection_id, nft_id, max_recursions)?;
 
-			pallet_uniques::Pallet::<T>::do_burn(collection_id.into(), nft_id.into(), |_, _| {
+			pallet_uniques::Pallet::<T>::do_burn(collection_id, nft_id, |_, _| {
 				Ok(())
 			})?;
 
@@ -330,15 +328,15 @@ pub mod pallet {
 
 			Self::collection_burn(sender.clone().unwrap_or_default(), collection_id)?;
 
-			let witness = pallet_uniques::Pallet::<T>::get_destroy_witness(&collection_id.into())
+			let witness = pallet_uniques::Pallet::<T>::get_destroy_witness(&collection_id)
 				.ok_or(Error::<T>::NoWitness)?;
 			ensure!(witness.instances == 0u32, Error::<T>::CollectionNotEmpty);
 
 			pallet_uniques::Pallet::<T>::do_destroy_class(
-				collection_id.into(),
+				collection_id,
 				witness,
 				sender.clone(),
-			);
+			)?;
 
 			Self::deposit_event(Event::CollectionDestroyed(
 				sender.unwrap_or_default(),
