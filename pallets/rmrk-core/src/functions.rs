@@ -104,10 +104,10 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		NFTs::<T>::remove(collection_id, nft_id);
 		if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
-			for child in kids {
+			for (child_collection_id, child_nft_id) in kids {
 				Self::nft_burn(
-					child.0,
-					child.1,
+					child_collection_id,
+					child_nft_id,
 					max_recursions - 1,
 				)?;
 			}
@@ -247,8 +247,8 @@ impl<T: Config> Pallet<T> {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		NFTs::<T>::remove(collection_id, nft_id);
 		if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
-			for child in kids {
-				Pallet::<T>::recursive_burn(child.0, child.1, max_recursions - 1)?;
+			for (child_collection_id, child_nft_id) in kids {
+				Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 			}
 		}
 		Ok(())
