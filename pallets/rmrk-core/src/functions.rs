@@ -4,7 +4,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	fn issuer(collection_id: CollectionId) -> Option<T::AccountId> {
 		None
 	}
-	fn create_collection(
+	fn collection_create(
 		issuer: T::AccountId,
 		metadata: StringLimitOf<T>,
 		max: u32,
@@ -22,7 +22,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		Ok(collection_id)
 	}
 
-	fn burn_collection(issuer: T::AccountId, collection_id: CollectionId) -> DispatchResult {
+	fn collection_burn(issuer: T::AccountId, collection_id: CollectionId) -> DispatchResult {
 		ensure!(
 			NFTs::<T>::iter_prefix_values(collection_id).count() == 0,
 			Error::<T>::CollectionNotEmpty
@@ -31,7 +31,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		Ok(())
 	}
 
-	fn change_issuer(
+	fn collection_change_issuer(
 		collection_id: CollectionId,
 		new_issuer: T::AccountId,
 	) -> Result<(T::AccountId, CollectionId), DispatchError> {
@@ -47,7 +47,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		Ok((new_issuer, collection_id))
 	}
 
-	fn lock_collection(collection_id: CollectionId) -> Result<CollectionId, DispatchError> {
+	fn collection_lock(collection_id: CollectionId) -> Result<CollectionId, DispatchError> {
 		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
 			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
 			let currently_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
@@ -59,18 +59,16 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 }
 
 impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
-	type CollectionId = CollectionId;
-	type NftId = NftId;
 	type MaxRecursions = T::MaxRecursions;
 
-	fn mint_nft(
+	fn nft_mint(
 		sender: T::AccountId,
 		owner: T::AccountId,
 		collection_id: CollectionId,
 		recipient: Option<T::AccountId>,
 		royalty: Option<Permill>,
 		metadata: StringLimitOf<T>,
-	) -> sp_std::result::Result<(Self::CollectionId, Self::NftId), DispatchError> {
+	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
 
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
@@ -98,7 +96,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		Ok((collection_id, nft_id))
 	}
 
-	fn burn_nft(
+	fn nft_burn(
 		collection_id: CollectionId,
 		nft_id: NftId,
 		max_recursions: u32,
@@ -106,10 +104,10 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		NFTs::<T>::remove(collection_id, nft_id);
 		if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
-			for child in kids {
-				<Self as Nft<T::AccountId, StringLimitOf<T>>>::burn_nft(
-					child.0,
-					child.1,
+			for (child_collection_id, child_nft_id) in kids {
+				Self::nft_burn(
+					child_collection_id,
+					child_nft_id,
 					max_recursions - 1,
 				)?;
 			}
@@ -117,16 +115,16 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		Ok((collection_id, nft_id))
 	}
 
-	fn send(
+	fn nft_send(
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		new_owner: AccountIdOrCollectionNftTuple<T::AccountId, CollectionId, NftId>,
+		new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 		max_recursions: u32,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let mut sending_nft =
 			NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-		ensure!(sending_nft.rootowner == sender.clone(), Error::<T>::NoPermission);
+		ensure!(&sending_nft.rootowner == &sender, Error::<T>::NoPermission);
 
 		match new_owner.clone() {
 			AccountIdOrCollectionNftTuple::AccountId(account_id) => {
@@ -140,7 +138,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 					}
 				}
 				sending_nft.rootowner = account_id.clone();
-			}
+			},
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				let recipient_nft = NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
 				// Check if sending NFT is already a child of recipient NFT
@@ -176,13 +174,12 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 					Some(mut kids) => {
 						kids.push((collection_id, nft_id));
 						Children::<T>::insert(cid, nid, kids);
-					}
+					},
 				}
-			}
+			},
 		};
 		sending_nft.owner = new_owner.clone();
 
-		NFTs::<T>::remove(collection_id, nft_id);
 		NFTs::<T>::insert(collection_id, nft_id, sending_nft);
 
 		Ok((collection_id, nft_id))
@@ -200,7 +197,7 @@ impl<T: Config> Pallet<T> {
 		if let Some(children) = Children::<T>::get(parent_collection_id, parent_nft_id) {
 			for child in children {
 				if child == (child_collection_id, child_nft_id) {
-					return true;
+					return true
 				} else {
 					if Pallet::<T>::is_x_descendent_of_y(
 						child_collection_id,
@@ -250,8 +247,8 @@ impl<T: Config> Pallet<T> {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		NFTs::<T>::remove(collection_id, nft_id);
 		if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
-			for child in kids {
-				Pallet::<T>::recursive_burn(child.0, child.1, max_recursions - 1)?;
+			for (child_collection_id, child_nft_id) in kids {
+				Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 			}
 		}
 		Ok(())
@@ -264,13 +261,10 @@ impl<T: Config> Pallet<T> {
 	pub fn to_optional_bounded_string(
 		name: Option<Vec<u8>>,
 	) -> Result<Option<BoundedVec<u8, T::StringLimit>>, Error<T>> {
-		match name {
-			Some(n) => {
-				let bounded_string = Self::to_bounded_string(n)?;
-				return Ok(Some(bounded_string));
-			}
-			None => return Ok(None),
-		}
+		Ok(match name {
+			Some(n) => Some(Self::to_bounded_string(n)?),
+			None => None,
+		})		
 	}
 
 	pub fn get_next_nft_id(collection_id: CollectionId) -> Result<NftId, Error<T>> {
@@ -288,4 +282,5 @@ impl<T: Config> Pallet<T> {
 			Ok(current_id)
 		})
 	}
+
 }

@@ -4,6 +4,7 @@ use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
 use sp_std::cmp::Eq;
 
 use crate::primitives::*;
+use sp_std::result::Result;
 
 /// Collection info.
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
@@ -20,18 +21,16 @@ pub struct CollectionInfo<BoundedString, AccountId> {
 #[allow(clippy::upper_case_acronyms)]
 pub trait Collection<BoundedString, AccountId> {
 	fn issuer(collection_id: CollectionId) -> Option<AccountId>;
-	fn create_collection(
+	fn collection_create(
 		issuer: AccountId,
 		metadata: BoundedString,
 		max: u32,
 		symbol: BoundedString,
-	) -> sp_std::result::Result<CollectionId, DispatchError>;
-	fn burn_collection(issuer: AccountId, collection_id: CollectionId) -> DispatchResult;
-	fn change_issuer(
+	) -> Result<CollectionId, DispatchError>;
+	fn collection_burn(issuer: AccountId, collection_id: CollectionId) -> DispatchResult;
+	fn collection_change_issuer(
 		collection_id: CollectionId,
 		new_issuer: AccountId,
-	) -> sp_std::result::Result<(AccountId, CollectionId), DispatchError>;
-	fn lock_collection(
-		collection_id: CollectionId,
-	) -> sp_std::result::Result<CollectionId, DispatchError>;
+	) -> Result<(AccountId, CollectionId), DispatchError>;
+	fn collection_lock(collection_id: CollectionId) -> Result<CollectionId, DispatchError>;
 }

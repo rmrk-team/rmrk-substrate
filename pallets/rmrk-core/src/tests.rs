@@ -445,7 +445,7 @@ fn burn_nft_with_great_grandchildren_works() {
 		// Burn great-grandfather
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		// Child is dead
-		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_none(), true);
+		assert!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_none())
 	});
 }
 
