@@ -180,7 +180,6 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		};
 		sending_nft.owner = new_owner.clone();
 
-		NFTs::<T>::remove(collection_id, nft_id);
 		NFTs::<T>::insert(collection_id, nft_id, sending_nft);
 
 		Ok((collection_id, nft_id))
