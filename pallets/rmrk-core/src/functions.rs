@@ -70,14 +70,12 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		metadata: StringLimitOf<T>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
-
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-
-		let nfts_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
 		let max: u32 = collection.max.try_into().unwrap();
 
+		// Prevent minting when next NFT id is greater than the collection max.
 		ensure!(
-			nfts_minted < max.try_into().unwrap() || max == 0,
+			nft_id < max.try_into().unwrap() || max == max - max,
 			Error::<T>::CollectionFullOrLocked
 		);
 
