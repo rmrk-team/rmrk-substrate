@@ -4,6 +4,7 @@ use sp_runtime::Permill;
 // use crate::types::ClassType;
 
 use super::*;
+use mock::Event as MockEvent;
 use mock::*;
 use pallet_uniques as UNQ;
 use sp_std::{convert::TryInto, vec::Vec};
@@ -59,6 +60,10 @@ fn create_collection_works() {
 			),
 			Error::<Test>::NoAvailableCollectionId
 		);
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::CollectionCreated {
+			issuer: ALICE,
+			collection_id: 0,
+		}));
 	});
 }
 
@@ -69,25 +74,30 @@ fn mint_nft_works() {
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
-			0,
-			ALICE,
-			Permill::from_float(20.525),
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20]
 		));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NftMinted {
+			owner: ALICE,
+			collection_id: 0,
+			nft_id: 0,
+		}));
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(20.525),
+			Some(ALICE),
+			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(BOB),
 			BOB,
 			COLLECTION_ID_0,
-			CHARLIE,
-			Permill::from_float(20.525),
+			Some(CHARLIE),
+			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20]
 		));
 		assert_noop!(
@@ -95,14 +105,42 @@ fn mint_nft_works() {
 				Origin::signed(ALICE),
 				ALICE,
 				NOT_EXISTING_CLASS_ID,
-				CHARLIE,
-				Permill::from_float(20.525),
+				Some(CHARLIE),
+				Some(Permill::from_float(20.525)),
 				bvec![0u8; 20]
 			),
 			Error::<Test>::CollectionUnknown
 		);
 	});
 }
+
+#[test]
+fn mint_collection_max_logic_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], Some(1), bvec![0u8; 15]));
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(20.525)),
+			bvec![0u8; 20]
+		));
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, 0));
+		assert_noop!(
+			RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				ALICE,
+				COLLECTION_ID_0,
+				Some(CHARLIE),
+				Some(Permill::from_float(20.525)),
+				bvec![0u8; 20]
+			),
+			Error::<Test>::CollectionFullOrLocked
+		);
+	});
+}
+
 #[test]
 fn send_nft_to_minted_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -113,8 +151,8 @@ fn send_nft_to_minted_nft_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(1.525),
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 1) [will be the child]
@@ -122,8 +160,8 @@ fn send_nft_to_minted_nft_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(1.525),
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
 			nft_metadata
 		));
 		// Alice sends NFT (0, 0) [parent] to Bob
@@ -133,6 +171,12 @@ fn send_nft_to_minted_nft_works() {
 			0,
 			AccountIdOrCollectionNftTuple::AccountId(BOB),
 		));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTSent {
+			sender: ALICE,
+			recipient: AccountIdOrCollectionNftTuple::AccountId(BOB),
+			collection_id: 0,
+			nft_id: 0,
+		}));
 		// Alice sends NFT (0, 1) [child] to NFT (0, 0) [parent]
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -140,7 +184,12 @@ fn send_nft_to_minted_nft_works() {
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
-
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTSent {
+			sender: ALICE,
+			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+			collection_id: 0,
+			nft_id: 1,
+		}));
 		// Check that NFT (0,1) [child] is owned by NFT (0,0) [parent]
 		assert_eq!(
 			RMRKCore::nfts(0, 1).unwrap().owner,
@@ -203,8 +252,8 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 1)
@@ -212,8 +261,8 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 2)
@@ -221,8 +270,8 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			nft_metadata
 		));
 
@@ -255,8 +304,8 @@ fn send_nft_removes_existing_parent() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 1)
@@ -264,8 +313,8 @@ fn send_nft_removes_existing_parent() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 2)
@@ -273,8 +322,8 @@ fn send_nft_removes_existing_parent() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints NFT (0, 3)
@@ -282,8 +331,8 @@ fn send_nft_removes_existing_parent() {
 			Origin::signed(ALICE),
 			ALICE,
 			0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			nft_metadata
 		));
 
@@ -328,6 +377,11 @@ fn change_issuer_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
 		assert_ok!(RMRKCore::change_issuer(Origin::signed(ALICE), 0, BOB));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::IssuerChanged {
+			old_issuer: ALICE,
+			new_issuer: BOB,
+			collection_id: 0,
+		}));
 		assert_eq!(RMRKCore::collections(0).unwrap().issuer, BOB);
 	});
 }
@@ -340,12 +394,16 @@ fn burn_nft_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
-		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0), None);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0).is_none(), true);
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTBurned {
+			owner: ALICE,
+			nft_id: 0,
+		}));
 	});
 }
 
@@ -358,8 +416,8 @@ fn burn_nft_with_great_grandchildren_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints (0, 1)
@@ -367,8 +425,8 @@ fn burn_nft_with_great_grandchildren_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints (0, 2)
@@ -376,8 +434,8 @@ fn burn_nft_with_great_grandchildren_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints (0, 3)
@@ -385,8 +443,8 @@ fn burn_nft_with_great_grandchildren_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice sends NFT (0, 1) to NFT (0, 0)
@@ -415,7 +473,7 @@ fn burn_nft_with_great_grandchildren_works() {
 		// Burn great-grandfather
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		// Child is dead
-		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3), None);
+		assert!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_none())
 	});
 }
 
@@ -428,8 +486,8 @@ fn send_to_grandchild_fails() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints (0, 1)
@@ -437,8 +495,8 @@ fn send_to_grandchild_fails() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice mints (0, 2)
@@ -446,8 +504,8 @@ fn send_to_grandchild_fails() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Alice sends NFT (0, 1) to NFT (0, 0)
@@ -486,8 +544,8 @@ fn destroy_collection_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(1.525),
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20]
 		));
 		assert_noop!(
@@ -496,6 +554,10 @@ fn destroy_collection_works() {
 		);
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::CollectionDestroyed {
+			issuer: ALICE,
+			collection_id: COLLECTION_ID_0,
+		}));
 	});
 }
 
@@ -508,8 +570,8 @@ fn mint_beyond_collection_max_fails() {
 				Origin::signed(ALICE),
 				ALICE,
 				COLLECTION_ID_0,
-				ALICE,
-				Permill::from_float(0.0),
+				Some(ALICE),
+				Some(Permill::from_float(0.0)),
 				bvec![0u8; 20]
 			));
 		}
@@ -518,8 +580,8 @@ fn mint_beyond_collection_max_fails() {
 				Origin::signed(ALICE),
 				ALICE,
 				COLLECTION_ID_0,
-				ALICE,
-				Permill::from_float(0.0),
+				Some(ALICE),
+				Some(Permill::from_float(0.0)),
 				bvec![0u8; 20]
 			),
 			Error::<Test>::CollectionFullOrLocked
@@ -536,19 +598,23 @@ fn lock_collection_works() {
 				Origin::signed(ALICE),
 				ALICE,
 				COLLECTION_ID_0,
-				ALICE,
-				Permill::from_float(0.0),
+				Some(ALICE),
+				Some(Permill::from_float(0.0)),
 				bvec![0u8; 20]
 			));
 		}
 		assert_ok!(RMRKCore::lock_collection(Origin::signed(ALICE), 0));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::CollectionLocked {
+			issuer: ALICE,
+			collection_id: 0,
+		}));
 		assert_noop!(
 			RMRKCore::mint_nft(
 				Origin::signed(ALICE),
 				ALICE,
 				COLLECTION_ID_0,
-				ALICE,
-				Permill::from_float(0.0),
+				Some(ALICE),
+				Some(Permill::from_float(0.0)),
 				bvec![0u8; 20]
 			),
 			Error::<Test>::CollectionFullOrLocked
@@ -580,8 +646,8 @@ fn create_resource_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		// Add resource works
@@ -596,6 +662,10 @@ fn create_resource_works() {
 			Some(bvec![0u8; 20]),
 			Some(bvec![0u8; 20]),
 		));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAdded {
+			nft_id: 0,
+			resource_id: 0,
+		}));
 		// Since ALICE rootowns NFT (0, 0), pending should be false
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 	});
@@ -609,8 +679,8 @@ fn create_empty_resource_fails() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(1.525),
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20]
 		));
 		assert_noop!(
@@ -640,8 +710,8 @@ fn set_property_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(1.525),
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::set_property(
@@ -651,6 +721,12 @@ fn set_property_works() {
 			key.clone(),
 			value.clone()
 		));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
+			collection_id: 0,
+			maybe_nft_id: Some(0),
+			key: key.clone(),
+			value: value.clone(),
+		}));
 		assert_eq!(RMRKCore::properties((0, Some(0), key)).unwrap(), value);
 	});
 }
@@ -662,8 +738,8 @@ fn set_priority_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::set_priority(
@@ -672,6 +748,10 @@ fn set_priority_works() {
 			NFT_ID_0,
 			vec![stv("hello"), stv("world")]
 		));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PrioritySet {
+			collection_id: 0,
+			nft_id: 0,
+		}));
 		assert_eq!(
 			RMRKCore::priorities(COLLECTION_ID_0, NFT_ID_0).unwrap(),
 			vec![stv("hello"), stv("world")]
@@ -687,8 +767,8 @@ fn add_resource_pending_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::add_resource(
@@ -714,8 +794,8 @@ fn accept_resource_works() {
 			Origin::signed(ALICE),
 			ALICE,
 			COLLECTION_ID_0,
-			ALICE,
-			Permill::from_float(0.0),
+			Some(ALICE),
+			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::add_resource(
@@ -734,6 +814,10 @@ fn accept_resource_works() {
 		assert_noop!(RMRKCore::accept(Origin::signed(BOB), 0, 0, 0), Error::<Test>::NoPermission);
 		// Alice can accept her own NFT's resource
 		assert_ok!(RMRKCore::accept(Origin::signed(ALICE), 0, 0, 0));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAccepted {
+			nft_id: 0,
+			resource_id: 0,
+		}));
 		// Resource should now be pending = false
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 	});

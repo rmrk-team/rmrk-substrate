@@ -1,9 +1,10 @@
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
-use sp_std::{cmp::Eq, result};
+use sp_std::cmp::Eq;
 
 use crate::primitives::*;
+use sp_std::result::Result;
 
 /// Collection info.
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
@@ -19,41 +20,17 @@ pub struct CollectionInfo<BoundedString, AccountId> {
 /// Abstraction over a Collection system.
 #[allow(clippy::upper_case_acronyms)]
 pub trait Collection<BoundedString, AccountId> {
-	// fn collection_two_info(
-	// 	id: Self::CollectionTwoId,
-	// ) -> Option<CollectionTwoInfo<AccountId, BoundedString>>;
 	fn issuer(collection_id: CollectionId) -> Option<AccountId>;
-	fn create_collection(
+	fn collection_create(
 		issuer: AccountId,
 		metadata: BoundedString,
 		max: u32,
 		symbol: BoundedString,
-	) -> sp_std::result::Result<CollectionId, DispatchError>;
-	fn burn_collection(issuer: AccountId, collection_id: CollectionId) -> DispatchResult;
-	fn change_issuer(
+	) -> Result<CollectionId, DispatchError>;
+	fn collection_burn(issuer: AccountId, collection_id: CollectionId) -> DispatchResult;
+	fn collection_change_issuer(
 		collection_id: CollectionId,
 		new_issuer: AccountId,
-	) -> sp_std::result::Result<(AccountId, CollectionId), DispatchError>;
-	fn lock_collection(
-		collection_id: CollectionId,
-	) -> sp_std::result::Result<CollectionId, DispatchError>;
-}
-
-// #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
-// #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-// pub struct ClassInfo<BoundedString, AccountId> {
-// 	/// Arbitrary data about a class, e.g. IPFS hash
-// 	pub issuer: AccountId,
-// }
-
-/// Auction info.
-#[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct AuctionInfo<AccountId, Balance, BlockNumber> {
-	/// Current bidder and bid price.
-	pub bid: Option<(AccountId, Balance)>,
-	/// Define which block this auction will be started.
-	pub start: BlockNumber,
-	/// Define which block this auction will be ended.
-	pub end: Option<BlockNumber>,
+	) -> Result<(AccountId, CollectionId), DispatchError>;
+	fn collection_lock(collection_id: CollectionId) -> Result<CollectionId, DispatchError>;
 }
