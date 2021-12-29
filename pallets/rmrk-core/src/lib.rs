@@ -260,10 +260,7 @@ pub mod pallet {
 			royalty: Option<Permill>,
 			metadata: BoundedVec<u8, T::StringLimit>,
 		) -> DispatchResult {
-			let sender = match T::ProtocolOrigin::try_origin(origin) {
-				Ok(_) => None,
-				Err(origin) => Some(ensure_signed(origin)?),
-			};
+			let sender = Self::ensure_protocol_or_signed(origin)?;
 
 			let (collection_id, nft_id) = Self::nft_mint(
 				sender.clone().unwrap_or_default(),
@@ -299,10 +296,7 @@ pub mod pallet {
 			max: Option<u32>,
 			symbol: BoundedVec<u8, T::StringLimit>,
 		) -> DispatchResult {
-			let sender = match T::ProtocolOrigin::try_origin(origin) {
-				Ok(_) => None,
-				Err(origin) => Some(ensure_signed(origin)?),
-			};
+			let sender = Self::ensure_protocol_or_signed(origin)?;
 
 			let max = max.unwrap_or_default();
 
@@ -356,10 +350,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 		) -> DispatchResult {
-			let sender = match T::ProtocolOrigin::try_origin(origin) {
-				Ok(_) => None,
-				Err(origin) => Some(ensure_signed(origin)?),
-			};
+			let sender = Self::ensure_protocol_or_signed(origin)?;
 
 			Self::collection_burn(sender.clone().unwrap_or_default(), collection_id)?;
 
@@ -389,11 +380,8 @@ pub mod pallet {
 			nft_id: NftId,
 			new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 		) -> DispatchResult {
-			let sender = match T::ProtocolOrigin::try_origin(origin) {
-				Ok(_) => None,
-				Err(origin) => Some(ensure_signed(origin)?),
-			}
-			.unwrap_or_default();
+			let sender = Self::ensure_protocol_or_signed(origin)?
+				.unwrap_or_default();
 
 			let max_recursions = T::MaxRecursions::get();
 			Self::nft_send(
@@ -421,10 +409,7 @@ pub mod pallet {
 			collection_id: CollectionId,
 			new_issuer: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
-			let sender = match T::ProtocolOrigin::try_origin(origin) {
-				Ok(_) => None,
-				Err(origin) => Some(ensure_signed(origin)?),
-			};
+			let sender = Self::ensure_protocol_or_signed(origin)?;
 			let new_issuer = T::Lookup::lookup(new_issuer)?;
 
 			ensure!(
@@ -453,10 +438,7 @@ pub mod pallet {
 			key: BoundedVec<u8, T::KeyLimit>,
 			value: BoundedVec<u8, T::ValueLimit>,
 		) -> DispatchResult {
-			let sender = match T::ProtocolOrigin::try_origin(origin) {
-				Ok(_) => None,
-				Err(origin) => Some(ensure_signed(origin)?),
-			};
+			let sender = Self::ensure_protocol_or_signed(origin)?;
 
 			let collection =
 				Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
@@ -483,10 +465,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 		) -> DispatchResult {
-			let sender = match T::ProtocolOrigin::try_origin(origin) {
-				Ok(_) => None,
-				Err(origin) => Some(ensure_signed(origin)?),
-			};
+			let sender = Self::ensure_protocol_or_signed(origin)?;
 
 			let collection_id = Self::collection_lock(collection_id)?;
 
@@ -511,10 +490,7 @@ pub mod pallet {
 			license: Option<BoundedVec<u8, T::StringLimit>>,
 			thumb: Option<BoundedVec<u8, T::StringLimit>>,
 		) -> DispatchResult {
-			let sender = match T::ProtocolOrigin::try_origin(origin) {
-				Ok(_) => None,
-				Err(origin) => Some(ensure_signed(origin)?),
-			};
+			let sender = Self::ensure_protocol_or_signed(origin)?;
 
 			let mut pending = false;
 			let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
@@ -558,10 +534,7 @@ pub mod pallet {
 			nft_id: NftId,
 			resource_id: ResourceId,
 		) -> DispatchResult {
-			let sender = match T::ProtocolOrigin::try_origin(origin) {
-				Ok(_) => None,
-				Err(origin) => Some(ensure_signed(origin)?),
-			};
+			let sender = Self::ensure_protocol_or_signed(origin)?;
 
 			let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 			ensure!(nft.rootowner == sender.unwrap_or_default(), Error::<T>::NoPermission);
@@ -589,10 +562,7 @@ pub mod pallet {
 			nft_id: NftId,
 			priorities: Vec<Vec<u8>>,
 		) -> DispatchResult {
-			let sender = match T::ProtocolOrigin::try_origin(origin) {
-				Ok(_) => None,
-				Err(origin) => Some(ensure_signed(origin)?),
-			};
+			let sender = Self::ensure_protocol_or_signed(origin)?;
 			let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
 			for priority in priorities {
 				let bounded_priority = Self::to_bounded_string(priority)?;
@@ -602,5 +572,18 @@ pub mod pallet {
 			Self::deposit_event(Event::PrioritySet { collection_id, nft_id });
 			Ok(())
 		}
+	}
+
+	// Helpers
+	impl<T: Config> Pallet<T> 
+	where T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>, {
+		pub(super) fn ensure_protocol_or_signed(origin: OriginFor<T>) -> Result<Option<T::AccountId>, sp_runtime::DispatchError> {
+			let sender = match T::ProtocolOrigin::try_origin(origin) {
+				Ok(_) => None,
+				Err(origin) => Some(ensure_signed(origin)?),
+			};
+			Ok(sender)
+		}
+		
 	}
 }
