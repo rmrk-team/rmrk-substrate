@@ -575,8 +575,7 @@ pub mod pallet {
 	}
 
 	// Helpers
-	impl<T: Config> Pallet<T> 
-	where T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>, {
+	impl<T: Config> Pallet<T> {
 		pub(super) fn ensure_protocol_or_signed(origin: OriginFor<T>) -> Result<Option<T::AccountId>, sp_runtime::DispatchError> {
 			let sender = match T::ProtocolOrigin::try_origin(origin) {
 				Ok(_) => None,
