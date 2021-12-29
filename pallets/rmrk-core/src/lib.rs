@@ -562,7 +562,7 @@ pub mod pallet {
 			nft_id: NftId,
 			priorities: Vec<Vec<u8>>,
 		) -> DispatchResult {
-			let sender = Self::ensure_protocol_or_signed(origin)?;
+			let _ = Self::ensure_protocol_or_signed(origin)?;
 			let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
 			for priority in priorities {
 				let bounded_priority = Self::to_bounded_string(priority)?;
