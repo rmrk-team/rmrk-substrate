@@ -122,6 +122,16 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn account_preimage)]
+	/// Stores reverse map of nft's root account owner
+	pub type AccountPreimage<T: Config> = StorageMap<
+		_,
+		T::AccountId,
+		Twox64Concat,
+		(CollectionId, NftId),
+	>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn resources)]
 	/// Stores resource info
 	pub type Resources<T: Config> = StorageNMap<
@@ -338,6 +348,9 @@ pub mod pallet {
 			nft_id: NftId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
+			let (root_owner, _) = Pallet::<T>::lookup_root(collection_id, nft_id);
+			// Check ownership
+			ensure!(sender == root_owner, Error::BadOrigin);
 			let max_recursions = T::MaxRecursions::get();
 			let (_collection_id, nft_id) = Self::nft_burn(collection_id, nft_id, max_recursions)?;
 

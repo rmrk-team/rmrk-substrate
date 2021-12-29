@@ -399,6 +399,7 @@ fn burn_nft_works() {
 			bvec![0u8; 20]
 		));
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+		assert_noop!(RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::BadOrigin);
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0).is_none(), true);
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTBurned {
 			owner: ALICE,
