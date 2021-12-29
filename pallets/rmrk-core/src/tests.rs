@@ -4,8 +4,7 @@ use sp_runtime::Permill;
 // use crate::types::ClassType;
 
 use super::*;
-use mock::Event as MockEvent;
-use mock::*;
+use mock::{Event as MockEvent, *};
 use pallet_uniques as UNQ;
 use sp_std::{convert::TryInto, vec::Vec};
 
@@ -117,7 +116,12 @@ fn mint_nft_works() {
 #[test]
 fn mint_collection_max_logic_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], Some(1), bvec![0u8; 15]));
+		assert_ok!(RMRKCore::create_collection(
+			Origin::signed(ALICE),
+			bvec![0u8; 20],
+			Some(1),
+			bvec![0u8; 15]
+		));
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
