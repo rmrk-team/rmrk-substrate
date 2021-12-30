@@ -43,7 +43,7 @@ pub struct ResourceInfo<ResourceId, BoundedString> {
 	pub thumb: Option<BoundedString>,
 }
 
-/// Abstraction over a Collection system.
+/// Abstraction over a Resource system.
 #[allow(clippy::upper_case_acronyms)]
 pub trait Resource<BoundedString, AccountId> {
 	fn resource_add(
