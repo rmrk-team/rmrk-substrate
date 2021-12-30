@@ -20,10 +20,11 @@ use sp_runtime::{
 };
 use sp_std::{convert::TryInto, vec, vec::Vec};
 
-use types::{ClassInfo, ResourceInfo};
+use types::ClassInfo;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
+	Resource, ResourceInfo,
 };
 use sp_std::result::Result;
 
@@ -490,37 +491,19 @@ pub mod pallet {
 			license: Option<BoundedVec<u8, T::StringLimit>>,
 			thumb: Option<BoundedVec<u8, T::StringLimit>>,
 		) -> DispatchResult {
-			let sender = Self::ensure_protocol_or_signed(origin)?;
+			let sender = Self::ensure_protocol_or_signed(origin)?.unwrap_or_default();
 
-			let mut pending = false;
-			let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-			if nft.rootowner != sender.unwrap_or_default() {
-				pending = true;
-			}
-
-			let resource_id = Self::get_next_resource_id()?;
-			ensure!(
-				Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
-				Error::<T>::ResourceAlreadyExists
-			);
-
-			let empty = base.is_none() &&
-				src.is_none() && metadata.is_none() &&
-				slot.is_none() && license.is_none() &&
-				thumb.is_none();
-			ensure!(!empty, Error::<T>::EmptyResource);
-
-			let res = ResourceInfo {
-				id: resource_id,
+			let resource_id = Self::resource_add(
+				sender,
+				collection_id,
+				nft_id,
 				base,
 				src,
 				metadata,
 				slot,
 				license,
 				thumb,
-				pending,
-			};
-			Resources::<T>::insert((collection_id, nft_id, resource_id), res);
+			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
 			Ok(())
