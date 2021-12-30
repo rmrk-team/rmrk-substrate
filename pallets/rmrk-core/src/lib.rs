@@ -2,25 +2,15 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
-use codec::HasCompact;
 use frame_support::{
-	dispatch::DispatchResult,
-	ensure,
-	traits::{
-		tokens::nonfungibles::*, BalanceStatus, Currency, NamedReservableCurrency,
-		ReservableCurrency,
-	},
-	transactional, BoundedVec,
+	dispatch::DispatchResult, ensure, traits::tokens::nonfungibles::*, transactional, BoundedVec,
 };
 use frame_system::ensure_signed;
 
-use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, Bounded, CheckedAdd, StaticLookup, Zero},
-	DispatchError, Permill,
-};
+use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
 use sp_std::{convert::TryInto, vec, vec::Vec};
 
-use types::{ClassInfo, ResourceInfo};
+use types::ResourceInfo;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
@@ -260,10 +250,10 @@ pub mod pallet {
 			royalty: Option<Permill>,
 			metadata: BoundedVec<u8, T::StringLimit>,
 		) -> DispatchResult {
-			let sender = Self::ensure_protocol_or_signed(origin)?;
+			let sender = ensure_signed(origin.clone())?;
 
 			let (collection_id, nft_id) = Self::nft_mint(
-				sender.clone().unwrap_or_default(),
+				sender.clone(),
 				owner,
 				collection_id,
 				recipient,
@@ -274,12 +264,12 @@ pub mod pallet {
 			pallet_uniques::Pallet::<T>::do_mint(
 				collection_id,
 				nft_id,
-				sender.clone().unwrap_or_default(),
+				sender.clone(),
 				|_details| Ok(()),
 			)?;
 
 			Self::deposit_event(Event::NftMinted {
-				owner: sender.unwrap_or_default(),
+				owner: sender,
 				collection_id,
 				nft_id,
 			});
@@ -296,28 +286,28 @@ pub mod pallet {
 			max: Option<u32>,
 			symbol: BoundedVec<u8, T::StringLimit>,
 		) -> DispatchResult {
-			let sender = Self::ensure_protocol_or_signed(origin)?;
+			let sender = ensure_signed(origin.clone())?;
 
 			let max = max.unwrap_or_default();
 
 			let collection_id =
-				Self::collection_create(sender.clone().unwrap_or_default(), metadata, max, symbol)?;
+				Self::collection_create(sender.clone(), metadata, max, symbol)?;
 
 			pallet_uniques::Pallet::<T>::do_create_class(
 				collection_id,
-				sender.clone().unwrap_or_default(),
-				sender.clone().unwrap_or_default(),
+				sender.clone(),
+				sender.clone(),
 				T::ClassDeposit::get(),
 				false,
 				pallet_uniques::Event::Created(
 					collection_id,
-					sender.clone().unwrap_or_default(),
-					sender.clone().unwrap_or_default(),
+					sender.clone(),
+					sender.clone(),
 				),
 			)?;
 
 			Self::deposit_event(Event::CollectionCreated {
-				issuer: sender.clone().unwrap_or_default(),
+				issuer: sender.clone(),
 				collection_id,
 			});
 			Ok(())
@@ -335,9 +325,7 @@ pub mod pallet {
 			let max_recursions = T::MaxRecursions::get();
 			let (_collection_id, nft_id) = Self::nft_burn(collection_id, nft_id, max_recursions)?;
 
-			pallet_uniques::Pallet::<T>::do_burn(collection_id, nft_id, |_, _| {
-				Ok(())
-			})?;
+			pallet_uniques::Pallet::<T>::do_burn(collection_id, nft_id, |_, _| Ok(()))?;
 
 			Self::deposit_event(Event::NFTBurned { owner: sender, nft_id });
 			Ok(())
@@ -350,22 +338,18 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 		) -> DispatchResult {
-			let sender = Self::ensure_protocol_or_signed(origin)?;
+			let sender = ensure_signed(origin.clone())?;
 
-			Self::collection_burn(sender.clone().unwrap_or_default(), collection_id)?;
+			Self::collection_burn(sender.clone(), collection_id)?;
 
 			let witness = pallet_uniques::Pallet::<T>::get_destroy_witness(&collection_id)
 				.ok_or(Error::<T>::NoWitness)?;
 			ensure!(witness.instances == 0u32, Error::<T>::CollectionNotEmpty);
 
-			pallet_uniques::Pallet::<T>::do_destroy_class(
-				collection_id,
-				witness,
-				sender.clone(),
-			)?;
+			pallet_uniques::Pallet::<T>::do_destroy_class(collection_id, witness, sender.clone().into())?;
 
 			Self::deposit_event(Event::CollectionDestroyed {
-				issuer: sender.unwrap_or_default(),
+				issuer: sender,
 				collection_id,
 			});
 			Ok(())
@@ -380,8 +364,7 @@ pub mod pallet {
 			nft_id: NftId,
 			new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 		) -> DispatchResult {
-			let sender = Self::ensure_protocol_or_signed(origin)?
-				.unwrap_or_default();
+			let sender = ensure_signed(origin.clone())?;
 
 			let max_recursions = T::MaxRecursions::get();
 			Self::nft_send(
@@ -409,7 +392,7 @@ pub mod pallet {
 			collection_id: CollectionId,
 			new_issuer: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
-			let sender = Self::ensure_protocol_or_signed(origin)?;
+			let sender = ensure_signed(origin.clone())?;
 			let new_issuer = T::Lookup::lookup(new_issuer)?;
 
 			ensure!(
@@ -421,7 +404,7 @@ pub mod pallet {
 				Self::collection_change_issuer(collection_id, new_issuer)?;
 
 			Self::deposit_event(Event::IssuerChanged {
-				old_issuer: sender.unwrap_or_default(),
+				old_issuer: sender,
 				new_issuer,
 				collection_id,
 			});
@@ -438,11 +421,11 @@ pub mod pallet {
 			key: BoundedVec<u8, T::KeyLimit>,
 			value: BoundedVec<u8, T::ValueLimit>,
 		) -> DispatchResult {
-			let sender = Self::ensure_protocol_or_signed(origin)?;
+			let sender = ensure_signed(origin.clone())?;
 
 			let collection =
 				Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
-			ensure!(collection.issuer == sender.unwrap_or_default(), Error::<T>::NoPermission);
+			ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 
 			if let Some(nft_id) = &maybe_nft_id {
 				ensure!(
@@ -465,12 +448,12 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 		) -> DispatchResult {
-			let sender = Self::ensure_protocol_or_signed(origin)?;
+			let sender = ensure_signed(origin.clone())?;
 
 			let collection_id = Self::collection_lock(collection_id)?;
 
 			Self::deposit_event(Event::CollectionLocked {
-				issuer: sender.unwrap_or_default(),
+				issuer: sender,
 				collection_id,
 			});
 			Ok(())
@@ -490,13 +473,9 @@ pub mod pallet {
 			license: Option<BoundedVec<u8, T::StringLimit>>,
 			thumb: Option<BoundedVec<u8, T::StringLimit>>,
 		) -> DispatchResult {
-			let sender = Self::ensure_protocol_or_signed(origin)?;
+			let sender = ensure_signed(origin.clone())?;
 
-			let mut pending = false;
 			let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-			if nft.rootowner != sender.unwrap_or_default() {
-				pending = true;
-			}
 
 			let resource_id = Self::get_next_resource_id()?;
 			ensure!(
@@ -518,7 +497,7 @@ pub mod pallet {
 				slot,
 				license,
 				thumb,
-				pending,
+				pending: nft.rootowner != sender,
 			};
 			Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
@@ -534,10 +513,10 @@ pub mod pallet {
 			nft_id: NftId,
 			resource_id: ResourceId,
 		) -> DispatchResult {
-			let sender = Self::ensure_protocol_or_signed(origin)?;
+			let sender = ensure_signed(origin.clone())?;
 
 			let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-			ensure!(nft.rootowner == sender.unwrap_or_default(), Error::<T>::NoPermission);
+			ensure!(nft.rootowner == sender, Error::<T>::NoPermission);
 
 			Resources::<T>::try_mutate_exists(
 				(collection_id, nft_id, resource_id),
@@ -562,7 +541,7 @@ pub mod pallet {
 			nft_id: NftId,
 			priorities: Vec<Vec<u8>>,
 		) -> DispatchResult {
-			let _ = Self::ensure_protocol_or_signed(origin)?;
+			let _sender = ensure_signed(origin.clone())?;
 			let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
 			for priority in priorities {
 				let bounded_priority = Self::to_bounded_string(priority)?;
@@ -572,17 +551,5 @@ pub mod pallet {
 			Self::deposit_event(Event::PrioritySet { collection_id, nft_id });
 			Ok(())
 		}
-	}
-
-	// Helpers
-	impl<T: Config> Pallet<T> {
-		pub(super) fn ensure_protocol_or_signed(origin: OriginFor<T>) -> Result<Option<T::AccountId>, sp_runtime::DispatchError> {
-			let sender = match T::ProtocolOrigin::try_origin(origin) {
-				Ok(_) => None,
-				Err(origin) => Some(ensure_signed(origin)?),
-			};
-			Ok(sender)
-		}
-		
 	}
 }
