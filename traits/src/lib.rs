@@ -2,9 +2,11 @@
 
 pub mod collection;
 pub mod nft;
+pub mod priority;
 
 pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo};
+pub use priority::Priority;
 
 pub mod primitives {
 	pub type CollectionId = u32;

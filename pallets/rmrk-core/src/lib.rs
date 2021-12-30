@@ -14,6 +14,7 @@ use types::ResourceInfo;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
+	Priority,
 };
 use sp_std::result::Result;
 
@@ -542,12 +543,7 @@ pub mod pallet {
 			priorities: Vec<Vec<u8>>,
 		) -> DispatchResult {
 			let _sender = ensure_signed(origin.clone())?;
-			let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
-			for priority in priorities {
-				let bounded_priority = Self::to_bounded_string(priority)?;
-				bounded_priorities.push(bounded_priority);
-			}
-			Priorities::<T>::insert(collection_id, nft_id, bounded_priorities);
+			Self::priority_set(_sender, collection_id, nft_id, priorities)?;
 			Self::deposit_event(Event::PrioritySet { collection_id, nft_id });
 			Ok(())
 		}

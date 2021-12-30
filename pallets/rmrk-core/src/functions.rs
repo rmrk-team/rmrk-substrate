@@ -1,5 +1,23 @@
 use super::*;
 
+impl<T: Config> Priority<StringLimitOf<T>, T::AccountId> for Pallet<T> {
+	fn priority_set(
+		sender: T::AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		priorities: Vec<Vec<u8>>,
+	) -> DispatchResult {
+		let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
+		for priority in priorities {
+			let bounded_priority = Self::to_bounded_string(priority)?;
+			bounded_priorities.push(bounded_priority);
+		}
+		Priorities::<T>::insert(collection_id, nft_id, bounded_priorities);
+		Self::deposit_event(Event::PrioritySet { collection_id, nft_id });
+		Ok(())
+	}
+}
+
 impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	fn issuer(collection_id: CollectionId) -> Option<T::AccountId> {
 		None
