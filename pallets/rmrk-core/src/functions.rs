@@ -167,11 +167,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		NFTs::<T>::remove(collection_id, nft_id);
 		if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
 			for (child_collection_id, child_nft_id) in kids {
-				Self::nft_burn(
-					child_collection_id,
-					child_nft_id,
-					max_recursions - 1,
-				)?;
+				Self::nft_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 			}
 		}
 		Ok((collection_id, nft_id))
@@ -326,7 +322,7 @@ impl<T: Config> Pallet<T> {
 		Ok(match name {
 			Some(n) => Some(Self::to_bounded_string(n)?),
 			None => None,
-		})		
+		})
 	}
 
 	pub fn get_next_nft_id(collection_id: CollectionId) -> Result<NftId, Error<T>> {
