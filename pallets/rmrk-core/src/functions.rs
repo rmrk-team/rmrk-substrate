@@ -12,11 +12,7 @@ impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		license: Option<BoundedVec<u8, T::StringLimit>>,
 		thumb: Option<BoundedVec<u8, T::StringLimit>>,
 	) -> Result<ResourceId, DispatchError> {
-		let mut pending = false;
 		let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-		if nft.rootowner != sender {
-			pending = true;
-		}
 
 		let resource_id = Self::get_next_resource_id()?;
 		ensure!(
@@ -32,11 +28,18 @@ impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 			&& thumb.is_none();
 		ensure!(!empty, Error::<T>::EmptyResource);
 
-		let res =
-			ResourceInfo { id: resource_id, base, src, metadata, slot, license, thumb, pending };
+		let res = ResourceInfo {
+			id: resource_id,
+			base,
+			src,
+			metadata,
+			slot,
+			license,
+			thumb,
+			pending: nft.rootowner != sender,
+		};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
-		// Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
 		Ok(resource_id)
 	}
 
@@ -196,7 +199,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 					}
 				}
 				sending_nft.rootowner = account_id.clone();
-			},
+			}
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				let recipient_nft = NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
 				// Check if sending NFT is already a child of recipient NFT
@@ -232,9 +235,9 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 					Some(mut kids) => {
 						kids.push((collection_id, nft_id));
 						Children::<T>::insert(cid, nid, kids);
-					},
+					}
 				}
-			},
+			}
 		};
 		sending_nft.owner = new_owner.clone();
 
@@ -255,7 +258,7 @@ impl<T: Config> Pallet<T> {
 		if let Some(children) = Children::<T>::get(parent_collection_id, parent_nft_id) {
 			for child in children {
 				if child == (child_collection_id, child_nft_id) {
-					return true
+					return true;
 				} else {
 					if Pallet::<T>::is_x_descendent_of_y(
 						child_collection_id,
@@ -340,5 +343,4 @@ impl<T: Config> Pallet<T> {
 			Ok(current_id)
 		})
 	}
-
 }
