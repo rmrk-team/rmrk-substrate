@@ -61,7 +61,6 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + pallet_uniques::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-
 		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
 		type MaxRecursions: Get<u32>;
 	}
@@ -126,8 +125,8 @@ pub mod pallet {
 	/// Stores reverse map of nft's root account owner
 	pub type AccountPreimage<T: Config> = StorageMap<
 		_,
-		T::AccountId,
 		Twox64Concat,
+		T::AccountId,
 		(CollectionId, NftId),
 	>;
 
@@ -348,9 +347,9 @@ pub mod pallet {
 			nft_id: NftId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			let (root_owner, _) = Pallet::<T>::lookup_root(collection_id, nft_id);
+			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 			// Check ownership
-			ensure!(sender == root_owner, Error::BadOrigin);
+			ensure!(sender == root_owner, Error::<T>::NoPermission);
 			let max_recursions = T::MaxRecursions::get();
 			let (_collection_id, nft_id) = Self::nft_burn(collection_id, nft_id, max_recursions)?;
 

@@ -15,7 +15,7 @@ mod nfc {
 	pub use super::super::*;
 }
 
-type AccountId = AccountId32;
+pub(crate) type AccountId = AccountId32;
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
 type Balance = u128;

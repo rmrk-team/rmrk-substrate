@@ -1,3 +1,4 @@
+use crate::mock::AccountId;
 use codec::{Decode, Encode};
 use sp_core::blake2_256;
 use super::*;
@@ -60,7 +61,10 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	}
 }
 
-impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
+impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T>
+where
+	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+{
 	type MaxRecursions = T::MaxRecursions;
 
 	fn nft_mint(
@@ -186,20 +190,27 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 	}
 }
 
-impl<T: Config> Pallet<T> {
+impl<T: Config> Pallet<T>
+where
+	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+{
 
-	pub fn nft_to_account_id(collection_id: CollectionId, nft_id: NftId) -> T::AccountId {
+	pub fn nft_to_account_id(collection_id: CollectionId, nft_id: NftId) -> AccountId {
 		let preimage = (b"RmrkNft", collection_id, nft_id).encode();
 		let hash = blake2_256(&preimage);
-		T::AccountId::from(&hash)
+		AccountId::from(hash)
 	}
 
-	pub fn lookup_root_owner(collection_id: CollectionId, nft_id: NftId) -> (T::AccountId, (CollectionId,NftId)) {
-		let mut lookup_nft =
-			NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-		let parent = lookup_nft.rootowner.clone();
-		match AccountPreimage::<T>::get(parent) {
-			None => (&parent, (collection_id, nft_id)),
+	pub fn lookup_root_owner(collection_id: CollectionId, nft_id: NftId) -> Result<(T::AccountId, (CollectionId, NftId)), Error<T>> {
+		let parent =
+			pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
+		// Check if parent returns None which indicates the NFT is not available
+		if parent.is_none() {
+			return Err(Error::<T>::NoAvailableNftId)
+		}
+		let owner = parent.as_ref().unwrap();
+		match AccountPreimage::<T>::get(owner) {
+			None => Ok((parent.unwrap(), (collection_id, nft_id))),
 			Some((collection_id, nft_id)) => Pallet::<T>::lookup_root_owner(collection_id, nft_id),
 		}
 	}
