@@ -14,6 +14,7 @@ use types::ResourceInfo;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
+	Property,
 };
 use sp_std::result::Result;
 
@@ -33,6 +34,10 @@ pub type ResourceOf<T> =
 	ResourceInfo<ResourceId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
 
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
+
+pub type KeyLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::KeyLimit>;
+
+pub type ValueLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::ValueLimit>;
 
 pub mod types;
 
@@ -133,9 +138,9 @@ pub mod pallet {
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
 			NMapKey<Blake2_128Concat, Option<NftId>>,
-			NMapKey<Blake2_128Concat, BoundedVec<u8, T::KeyLimit>>,
+			NMapKey<Blake2_128Concat, KeyLimitOf<T>>,
 		),
-		BoundedVec<u8, T::ValueLimit>,
+		ValueLimitOf<T>,
 		OptionQuery,
 	>;
 
@@ -180,8 +185,8 @@ pub mod pallet {
 		PropertySet {
 			collection_id: CollectionId,
 			maybe_nft_id: Option<NftId>,
-			key: BoundedVec<u8, T::KeyLimit>,
-			value: BoundedVec<u8, T::ValueLimit>,
+			key: KeyLimitOf<T>,
+			value: ValueLimitOf<T>,
 		},
 		CollectionLocked {
 			issuer: T::AccountId,
@@ -418,25 +423,12 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			#[pallet::compact] collection_id: CollectionId,
 			maybe_nft_id: Option<NftId>,
-			key: BoundedVec<u8, T::KeyLimit>,
-			value: BoundedVec<u8, T::ValueLimit>,
+			key: KeyLimitOf<T>,
+			value: ValueLimitOf<T>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let collection =
-				Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
-			ensure!(collection.issuer == sender, Error::<T>::NoPermission);
-
-			if let Some(nft_id) = &maybe_nft_id {
-				ensure!(
-					NFTs::<T>::contains_key(collection_id, nft_id),
-					Error::<T>::NoAvailableNftId
-				);
-				if let Some(nft) = NFTs::<T>::get(collection_id, nft_id) {
-					ensure!(nft.rootowner == collection.issuer, Error::<T>::NoPermission);
-				}
-			}
-			Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
+			Self::property_set(sender, collection_id, maybe_nft_id, key.clone(), value.clone())?;
 
 			Self::deposit_event(Event::PropertySet { collection_id, maybe_nft_id, key, value });
 			Ok(())
