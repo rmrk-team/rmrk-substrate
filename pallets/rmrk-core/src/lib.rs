@@ -252,14 +252,8 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let (collection_id, nft_id) = Self::nft_mint(
-				sender.clone(),
-				owner,
-				collection_id,
-				recipient,
-				royalty,
-				metadata,
-			)?;
+			let (collection_id, nft_id) =
+				Self::nft_mint(sender.clone(), owner, collection_id, recipient, royalty, metadata)?;
 
 			pallet_uniques::Pallet::<T>::do_mint(
 				collection_id,
@@ -268,11 +262,7 @@ pub mod pallet {
 				|_details| Ok(()),
 			)?;
 
-			Self::deposit_event(Event::NftMinted {
-				owner: sender,
-				collection_id,
-				nft_id,
-			});
+			Self::deposit_event(Event::NftMinted { owner: sender, collection_id, nft_id });
 
 			Ok(())
 		}
@@ -290,8 +280,7 @@ pub mod pallet {
 
 			let max = max.unwrap_or_default();
 
-			let collection_id =
-				Self::collection_create(sender.clone(), metadata, max, symbol)?;
+			let collection_id = Self::collection_create(sender.clone(), metadata, max, symbol)?;
 
 			pallet_uniques::Pallet::<T>::do_create_class(
 				collection_id,
@@ -299,17 +288,10 @@ pub mod pallet {
 				sender.clone(),
 				T::ClassDeposit::get(),
 				false,
-				pallet_uniques::Event::Created(
-					collection_id,
-					sender.clone(),
-					sender.clone(),
-				),
+				pallet_uniques::Event::Created(collection_id, sender.clone(), sender.clone()),
 			)?;
 
-			Self::deposit_event(Event::CollectionCreated {
-				issuer: sender.clone(),
-				collection_id,
-			});
+			Self::deposit_event(Event::CollectionCreated { issuer: sender.clone(), collection_id });
 			Ok(())
 		}
 
@@ -346,12 +328,13 @@ pub mod pallet {
 				.ok_or(Error::<T>::NoWitness)?;
 			ensure!(witness.instances == 0u32, Error::<T>::CollectionNotEmpty);
 
-			pallet_uniques::Pallet::<T>::do_destroy_class(collection_id, witness, sender.clone().into())?;
-
-			Self::deposit_event(Event::CollectionDestroyed {
-				issuer: sender,
+			pallet_uniques::Pallet::<T>::do_destroy_class(
 				collection_id,
-			});
+				witness,
+				sender.clone().into(),
+			)?;
+
+			Self::deposit_event(Event::CollectionDestroyed { issuer: sender, collection_id });
 			Ok(())
 		}
 
@@ -452,10 +435,7 @@ pub mod pallet {
 
 			let collection_id = Self::collection_lock(collection_id)?;
 
-			Self::deposit_event(Event::CollectionLocked {
-				issuer: sender,
-				collection_id,
-			});
+			Self::deposit_event(Event::CollectionLocked { issuer: sender, collection_id });
 			Ok(())
 		}
 
