@@ -55,6 +55,7 @@ pub mod pallet {
 	use super::*;
 	use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
+	use rmrk_traits::AccountIdOrCollectionNftTuple::AccountId;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -118,16 +119,6 @@ pub mod pallet {
 		Twox64Concat,
 		NftId,
 		Vec<(CollectionId, NftId)>,
-	>;
-
-	#[pallet::storage]
-	#[pallet::getter(fn account_preimage)]
-	/// Stores reverse map of nft's root account owner
-	pub type AccountPreimage<T: Config> = StorageMap<
-		_,
-		Twox64Concat,
-		T::AccountId,
-		(CollectionId, NftId),
 	>;
 
 	#[pallet::storage]
@@ -243,6 +234,7 @@ pub mod pallet {
 		ResourceAlreadyExists,
 		EmptyResource,
 		TooManyRecursions,
+		CircleDetected,
 	}
 
 	#[pallet::call]
@@ -407,6 +399,21 @@ pub mod pallet {
 			}
 			.unwrap_or_default();
 
+			let (root_owner, root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			// Check ownership
+			ensure!(sender == root_owner, Error::<T>::NoPermission);
+			// Prepare transfer
+			let new_owner_account = match new_owner.clone() {
+				AccountIdOrCollectionNftTuple::AccountId(id) => id,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
+					// Circle detection
+					let (_, new_owner_root_nft) = Pallet::<T>::lookup_root_owner(cid, nid)?;
+					ensure!(root_nft != new_owner_root_nft, Error::<T>::CircleDetected);
+					// Convert to virtual account
+					Pallet::<T>::nft_to_account_id::<T::AccountId>(cid, nid)
+				},
+			};
+
 			let max_recursions = T::MaxRecursions::get();
 			Self::nft_send(
 				sender.clone(),
@@ -415,10 +422,34 @@ pub mod pallet {
 				new_owner.clone(),
 				max_recursions,
 			)?;
+			// Check if root owner is a nft & call pallet_uniques::do_tranfer w/ actual account owner
+			let col_nft_tuple = Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone());
+			if col_nft_tuple.is_none() {
+				pallet_uniques::Pallet::<T>::do_transfer(
+					collection_id,
+					nft_id,
+					new_owner_account.clone(),
+					|class_details, details|
+						Ok(())
+				)?;
+			} else {
+				let (dest, _) =
+					Pallet::<T>::lookup_root_owner(
+						col_nft_tuple.unwrap().0,
+						col_nft_tuple.unwrap().1
+					)?;
+				pallet_uniques::Pallet::<T>::do_transfer(
+					collection_id,
+					nft_id,
+					dest.clone(),
+					|class_details, details|
+						Ok(())
+				)?;
+			}
 
 			Self::deposit_event(Event::NFTSent {
 				sender,
-				recipient: new_owner,
+				recipient: new_owner.clone(),
 				collection_id,
 				nft_id,
 			});

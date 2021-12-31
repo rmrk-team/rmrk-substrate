@@ -196,6 +196,17 @@ fn send_nft_to_minted_nft_works() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		);
 
+		// Error if trying to assign send a nft to self nft
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(BOB),
+				0,
+				0,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)
+			),
+			Error::<Test>::CircleDetected
+		);
+
 		// Check that Bob now root-owns NFT (0, 1) [child] since he wasn't originally rootowner
 		assert_eq!(RMRKCore::nfts(0, 1).unwrap().rootowner, BOB);
 

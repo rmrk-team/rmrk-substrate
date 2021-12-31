@@ -1,7 +1,7 @@
-use crate::mock::AccountId;
-use codec::{Decode, Encode};
-use sp_core::blake2_256;
 use super::*;
+use codec::{Codec, Decode, Encode};
+use sp_runtime::traits::TrailingZeroInput;
+use rmrk_traits::AccountIdOrCollectionNftTuple::AccountId;
 
 impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	fn issuer(collection_id: CollectionId) -> Option<T::AccountId> {
@@ -195,10 +195,26 @@ where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
 
-	pub fn nft_to_account_id(collection_id: CollectionId, nft_id: NftId) -> AccountId {
-		let preimage = (b"RmrkNft", collection_id, nft_id).encode();
-		let hash = blake2_256(&preimage);
-		AccountId::from(hash)
+	pub fn nft_to_account_id<AccountId: Codec>(collection_id: CollectionId, nft_id: NftId) -> AccountId {
+		(b"RmrkNft/", collection_id, nft_id)
+			.using_encoded(|b| AccountId::decode(&mut TrailingZeroInput::new(b)))
+			.expect("Decoding with trailing zero never fails; qed.")
+	}
+
+	pub fn decode_nft_account_id<AccountId: Codec>(account_id: T::AccountId) -> Option<(CollectionId, NftId)> {
+		let (prefix, tuple, suffix) = account_id
+			.using_encoded(|mut b| {
+				let slice = &mut b;
+				let r = <([u8; 8], (CollectionId, NftId))>::decode(slice);
+				r.map(|(prefix, tuple)| (prefix, tuple, slice.to_vec()))
+			})
+			.ok()?;
+		// Check prefix and suffix to avoid collision attack
+		if &prefix == b"RmrkNft/" && suffix.iter().all(|&x| x == 0) {
+			Some(tuple)
+		} else {
+			None
+		}
 	}
 
 	pub fn lookup_root_owner(collection_id: CollectionId, nft_id: NftId) -> Result<(T::AccountId, (CollectionId, NftId)), Error<T>> {
@@ -209,9 +225,9 @@ where
 			return Err(Error::<T>::NoAvailableNftId)
 		}
 		let owner = parent.as_ref().unwrap();
-		match AccountPreimage::<T>::get(owner) {
-			None => Ok((parent.unwrap(), (collection_id, nft_id))),
-			Some((collection_id, nft_id)) => Pallet::<T>::lookup_root_owner(collection_id, nft_id),
+		match Self::decode_nft_account_id::<T::AccountId>(owner.clone()) {
+			None => Ok((owner.clone(), (collection_id, nft_id))),
+			Some((cid, nid)) => Pallet::<T>::lookup_root_owner(cid, nid),
 		}
 	}
 
