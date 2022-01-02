@@ -2,6 +2,24 @@ use sp_runtime::{traits::Saturating, ArithmeticError};
 
 use super::*;
 
+impl<T: Config> Priority<StringLimitOf<T>, T::AccountId> for Pallet<T> {
+	fn priority_set(
+		sender: T::AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		priorities: Vec<Vec<u8>>,
+	) -> DispatchResult {
+		let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
+		for priority in priorities {
+			let bounded_priority = Self::to_bounded_string(priority)?;
+			bounded_priorities.push(bounded_priority);
+		}
+		Priorities::<T>::insert(collection_id, nft_id, bounded_priorities);
+		Self::deposit_event(Event::PrioritySet { collection_id, nft_id });
+		Ok(())
+	}
+}
+
 impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId> for Pallet<T> {
 	fn property_set(
 		sender: T::AccountId,
@@ -45,12 +63,11 @@ impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 			Error::<T>::ResourceAlreadyExists
 		);
 
-		let empty = base.is_none()
-			&& src.is_none()
-			&& metadata.is_none()
-			&& slot.is_none()
-			&& license.is_none()
-			&& thumb.is_none();
+		let empty =
+			base.is_none() &&
+				src.is_none() && metadata.is_none() &&
+				slot.is_none() && license.is_none() &&
+				thumb.is_none();
 		ensure!(!empty, Error::<T>::EmptyResource);
 
 		let res = ResourceInfo {
@@ -238,7 +255,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 					}
 				}
 				sending_nft.rootowner = account_id.clone();
-			}
+			},
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				let recipient_nft = NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
 				// Check if sending NFT is already a child of recipient NFT
@@ -274,9 +291,9 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 					Some(mut kids) => {
 						kids.push((collection_id, nft_id));
 						Children::<T>::insert(cid, nid, kids);
-					}
+					},
 				}
-			}
+			},
 		};
 		sending_nft.owner = new_owner.clone();
 
@@ -297,7 +314,7 @@ impl<T: Config> Pallet<T> {
 		if let Some(children) = Children::<T>::get(parent_collection_id, parent_nft_id) {
 			for child in children {
 				if child == (child_collection_id, child_nft_id) {
-					return true;
+					return true
 				} else {
 					if Pallet::<T>::is_x_descendent_of_y(
 						child_collection_id,
