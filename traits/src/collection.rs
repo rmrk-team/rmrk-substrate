@@ -15,6 +15,7 @@ pub struct CollectionInfo<BoundedString, AccountId> {
 	pub metadata: BoundedString,
 	pub max: u32,
 	pub symbol: BoundedString,
+	pub nfts_count: u32,
 }
 
 /// Abstraction over a Collection system.

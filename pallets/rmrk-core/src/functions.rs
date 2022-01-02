@@ -1,3 +1,5 @@
+use sp_runtime::{traits::Saturating, ArithmeticError};
+
 use super::*;
 
 impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId> for Pallet<T> {
@@ -91,7 +93,7 @@ impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 }
 
 impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
-	fn issuer(collection_id: CollectionId) -> Option<T::AccountId> {
+	fn issuer(_collection_id: CollectionId) -> Option<T::AccountId> {
 		None
 	}
 	fn collection_create(
@@ -100,7 +102,8 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		max: u32,
 		symbol: StringLimitOf<T>,
 	) -> Result<CollectionId, DispatchError> {
-		let collection = CollectionInfo { issuer: issuer.clone(), metadata, max, symbol };
+		let collection =
+			CollectionInfo { issuer: issuer.clone(), metadata, max, symbol, nfts_count: 0 };
 		let collection_id =
 			<CollectionIndex<T>>::try_mutate(|n| -> Result<CollectionId, DispatchError> {
 				let id = *n;
@@ -112,11 +115,9 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		Ok(collection_id)
 	}
 
-	fn collection_burn(issuer: T::AccountId, collection_id: CollectionId) -> DispatchResult {
-		ensure!(
-			NFTs::<T>::iter_prefix_values(collection_id).count() == 0,
-			Error::<T>::CollectionNotEmpty
-		);
+	fn collection_burn(_issuer: T::AccountId, collection_id: CollectionId) -> DispatchResult {
+		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+		ensure!(collection.nfts_count == 0, Error::<T>::CollectionNotEmpty);
 		Collections::<T>::remove(collection_id);
 		Ok(())
 	}
@@ -140,8 +141,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	fn collection_lock(collection_id: CollectionId) -> Result<CollectionId, DispatchError> {
 		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
 			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
-			let currently_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
-			collection.max = currently_minted.try_into().unwrap();
+			collection.max = collection.nfts_count.try_into().unwrap();
 			Ok(())
 		})?;
 		Ok(collection_id)
@@ -152,7 +152,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 	type MaxRecursions = T::MaxRecursions;
 
 	fn nft_mint(
-		sender: T::AccountId,
+		_sender: T::AccountId,
 		owner: T::AccountId,
 		collection_id: CollectionId,
 		recipient: Option<T::AccountId>,
@@ -181,6 +181,14 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		NFTs::<T>::insert(collection_id, nft_id, nft);
 		NftsByOwner::<T>::append(owner, (collection_id, nft_id));
 
+		// increment nfts counter
+		let nfts_count = collection.nfts_count.checked_add(1).ok_or(ArithmeticError::Overflow)?;
+		Collections::<T>::try_mutate(collection_id, |collection| -> DispatchResult {
+			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
+			collection.nfts_count = nfts_count;
+			Ok(())
+		})?;
+
 		Ok((collection_id, nft_id))
 	}
 
@@ -196,6 +204,14 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 				Self::nft_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 			}
 		}
+
+		// decrement nfts counter
+		Collections::<T>::try_mutate(collection_id, |collection| -> DispatchResult {
+			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
+			collection.nfts_count.saturating_dec();
+			Ok(())
+		})?;
+
 		Ok((collection_id, nft_id))
 	}
 
