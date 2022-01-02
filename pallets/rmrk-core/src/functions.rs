@@ -63,12 +63,11 @@ impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 			Error::<T>::ResourceAlreadyExists
 		);
 
-		let empty = base.is_none()
-			&& src.is_none()
-			&& metadata.is_none()
-			&& slot.is_none()
-			&& license.is_none()
-			&& thumb.is_none();
+		let empty =
+			base.is_none() &&
+				src.is_none() && metadata.is_none() &&
+				slot.is_none() && license.is_none() &&
+				thumb.is_none();
 		ensure!(!empty, Error::<T>::EmptyResource);
 
 		let res = ResourceInfo {
@@ -256,7 +255,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 					}
 				}
 				sending_nft.rootowner = account_id.clone();
-			}
+			},
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				let recipient_nft = NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
 				// Check if sending NFT is already a child of recipient NFT
@@ -292,9 +291,9 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 					Some(mut kids) => {
 						kids.push((collection_id, nft_id));
 						Children::<T>::insert(cid, nid, kids);
-					}
+					},
 				}
-			}
+			},
 		};
 		sending_nft.owner = new_owner.clone();
 
@@ -315,7 +314,7 @@ impl<T: Config> Pallet<T> {
 		if let Some(children) = Children::<T>::get(parent_collection_id, parent_nft_id) {
 			for child in children {
 				if child == (child_collection_id, child_nft_id) {
-					return true;
+					return true
 				} else {
 					if Pallet::<T>::is_x_descendent_of_y(
 						child_collection_id,

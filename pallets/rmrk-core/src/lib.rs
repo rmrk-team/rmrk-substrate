@@ -14,8 +14,7 @@ use types::ClassInfo;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
-	Property,
-	Resource, ResourceInfo, Priority
+	Priority, Property, Resource, ResourceInfo,
 };
 use sp_std::result::Result;
 
