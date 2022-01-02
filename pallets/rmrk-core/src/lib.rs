@@ -10,11 +10,12 @@ use frame_system::ensure_signed;
 use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
 use sp_std::{convert::TryInto, vec, vec::Vec};
 
-use types::ResourceInfo;
+use types::ClassInfo;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
 	Property,
+	Resource, ResourceInfo,
 };
 use sp_std::result::Result;
 
@@ -257,14 +258,8 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let (collection_id, nft_id) = Self::nft_mint(
-				sender.clone(),
-				owner,
-				collection_id,
-				recipient,
-				royalty,
-				metadata,
-			)?;
+			let (collection_id, nft_id) =
+				Self::nft_mint(sender.clone(), owner, collection_id, recipient, royalty, metadata)?;
 
 			pallet_uniques::Pallet::<T>::do_mint(
 				collection_id,
@@ -273,11 +268,7 @@ pub mod pallet {
 				|_details| Ok(()),
 			)?;
 
-			Self::deposit_event(Event::NftMinted {
-				owner: sender,
-				collection_id,
-				nft_id,
-			});
+			Self::deposit_event(Event::NftMinted { owner: sender, collection_id, nft_id });
 
 			Ok(())
 		}
@@ -295,8 +286,7 @@ pub mod pallet {
 
 			let max = max.unwrap_or_default();
 
-			let collection_id =
-				Self::collection_create(sender.clone(), metadata, max, symbol)?;
+			let collection_id = Self::collection_create(sender.clone(), metadata, max, symbol)?;
 
 			pallet_uniques::Pallet::<T>::do_create_class(
 				collection_id,
@@ -304,17 +294,10 @@ pub mod pallet {
 				sender.clone(),
 				T::ClassDeposit::get(),
 				false,
-				pallet_uniques::Event::Created(
-					collection_id,
-					sender.clone(),
-					sender.clone(),
-				),
+				pallet_uniques::Event::Created(collection_id, sender.clone(), sender.clone()),
 			)?;
 
-			Self::deposit_event(Event::CollectionCreated {
-				issuer: sender.clone(),
-				collection_id,
-			});
+			Self::deposit_event(Event::CollectionCreated { issuer: sender.clone(), collection_id });
 			Ok(())
 		}
 
@@ -351,12 +334,13 @@ pub mod pallet {
 				.ok_or(Error::<T>::NoWitness)?;
 			ensure!(witness.instances == 0u32, Error::<T>::CollectionNotEmpty);
 
-			pallet_uniques::Pallet::<T>::do_destroy_class(collection_id, witness, sender.clone().into())?;
-
-			Self::deposit_event(Event::CollectionDestroyed {
-				issuer: sender,
+			pallet_uniques::Pallet::<T>::do_destroy_class(
 				collection_id,
-			});
+				witness,
+				sender.clone().into(),
+			)?;
+
+			Self::deposit_event(Event::CollectionDestroyed { issuer: sender, collection_id });
 			Ok(())
 		}
 
@@ -444,10 +428,7 @@ pub mod pallet {
 
 			let collection_id = Self::collection_lock(collection_id)?;
 
-			Self::deposit_event(Event::CollectionLocked {
-				issuer: sender,
-				collection_id,
-			});
+			Self::deposit_event(Event::CollectionLocked { issuer: sender, collection_id });
 			Ok(())
 		}
 
@@ -467,31 +448,17 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-
-			let resource_id = Self::get_next_resource_id()?;
-			ensure!(
-				Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
-				Error::<T>::ResourceAlreadyExists
-			);
-
-			let empty = base.is_none() &&
-				src.is_none() && metadata.is_none() &&
-				slot.is_none() && license.is_none() &&
-				thumb.is_none();
-			ensure!(!empty, Error::<T>::EmptyResource);
-
-			let res = ResourceInfo {
-				id: resource_id,
+			let resource_id = Self::resource_add(
+				sender,
+				collection_id,
+				nft_id,
 				base,
 				src,
 				metadata,
 				slot,
 				license,
 				thumb,
-				pending: nft.rootowner != sender,
-			};
-			Resources::<T>::insert((collection_id, nft_id, resource_id), res);
+			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
 			Ok(())
