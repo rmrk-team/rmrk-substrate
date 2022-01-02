@@ -1,3 +1,5 @@
+use sp_runtime::{traits::Saturating, ArithmeticError};
+
 use super::*;
 
 impl<T: Config> Priority<StringLimitOf<T>, T::AccountId> for Pallet<T> {
@@ -18,8 +20,98 @@ impl<T: Config> Priority<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	}
 }
 
+impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId> for Pallet<T> {
+	fn property_set(
+		sender: T::AccountId,
+		collection_id: CollectionId,
+		maybe_nft_id: Option<NftId>,
+		key: KeyLimitOf<T>,
+		value: ValueLimitOf<T>,
+	) -> DispatchResult {
+		let collection =
+			Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
+		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
+		if let Some(nft_id) = &maybe_nft_id {
+			ensure!(NFTs::<T>::contains_key(collection_id, nft_id), Error::<T>::NoAvailableNftId);
+			if let Some(nft) = NFTs::<T>::get(collection_id, nft_id) {
+				ensure!(nft.rootowner == collection.issuer, Error::<T>::NoPermission);
+			}
+		}
+		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
+		Self::deposit_event(Event::PropertySet { collection_id, maybe_nft_id, key, value });
+		Ok(())
+	}
+}
+
+impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T> {
+	fn resource_add(
+		sender: T::AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		base: Option<BoundedVec<u8, T::StringLimit>>,
+		src: Option<BoundedVec<u8, T::StringLimit>>,
+		metadata: Option<BoundedVec<u8, T::StringLimit>>,
+		slot: Option<BoundedVec<u8, T::StringLimit>>,
+		license: Option<BoundedVec<u8, T::StringLimit>>,
+		thumb: Option<BoundedVec<u8, T::StringLimit>>,
+	) -> Result<ResourceId, DispatchError> {
+		let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+
+		let resource_id = Self::get_next_resource_id()?;
+		ensure!(
+			Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
+			Error::<T>::ResourceAlreadyExists
+		);
+
+		let empty = base.is_none()
+			&& src.is_none()
+			&& metadata.is_none()
+			&& slot.is_none()
+			&& license.is_none()
+			&& thumb.is_none();
+		ensure!(!empty, Error::<T>::EmptyResource);
+
+		let res = ResourceInfo {
+			id: resource_id,
+			base,
+			src,
+			metadata,
+			slot,
+			license,
+			thumb,
+			pending: nft.rootowner != sender,
+		};
+		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
+
+		Ok(resource_id)
+	}
+
+	fn accept(
+		sender: T::AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		resource_id: ResourceId,
+	) -> DispatchResult {
+		let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+		ensure!(nft.rootowner == sender, Error::<T>::NoPermission);
+
+		Resources::<T>::try_mutate_exists(
+			(collection_id, nft_id, resource_id),
+			|resource| -> DispatchResult {
+				if let Some(res) = resource {
+					res.pending = false;
+				}
+				Ok(())
+			},
+		)?;
+
+		Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
+		Ok(())
+	}
+}
+
 impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
-	fn issuer(collection_id: CollectionId) -> Option<T::AccountId> {
+	fn issuer(_collection_id: CollectionId) -> Option<T::AccountId> {
 		None
 	}
 	fn collection_create(
@@ -28,7 +120,8 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		max: u32,
 		symbol: StringLimitOf<T>,
 	) -> Result<CollectionId, DispatchError> {
-		let collection = CollectionInfo { issuer: issuer.clone(), metadata, max, symbol };
+		let collection =
+			CollectionInfo { issuer: issuer.clone(), metadata, max, symbol, nfts_count: 0 };
 		let collection_id =
 			<CollectionIndex<T>>::try_mutate(|n| -> Result<CollectionId, DispatchError> {
 				let id = *n;
@@ -40,11 +133,9 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		Ok(collection_id)
 	}
 
-	fn collection_burn(issuer: T::AccountId, collection_id: CollectionId) -> DispatchResult {
-		ensure!(
-			NFTs::<T>::iter_prefix_values(collection_id).count() == 0,
-			Error::<T>::CollectionNotEmpty
-		);
+	fn collection_burn(_issuer: T::AccountId, collection_id: CollectionId) -> DispatchResult {
+		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+		ensure!(collection.nfts_count == 0, Error::<T>::CollectionNotEmpty);
 		Collections::<T>::remove(collection_id);
 		Ok(())
 	}
@@ -68,8 +159,7 @@ impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	fn collection_lock(collection_id: CollectionId) -> Result<CollectionId, DispatchError> {
 		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
 			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
-			let currently_minted = NFTs::<T>::iter_prefix_values(collection_id).count();
-			collection.max = currently_minted.try_into().unwrap();
+			collection.max = collection.nfts_count.try_into().unwrap();
 			Ok(())
 		})?;
 		Ok(collection_id)
@@ -80,7 +170,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 	type MaxRecursions = T::MaxRecursions;
 
 	fn nft_mint(
-		sender: T::AccountId,
+		_sender: T::AccountId,
 		owner: T::AccountId,
 		collection_id: CollectionId,
 		recipient: Option<T::AccountId>,
@@ -109,6 +199,14 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 		NFTs::<T>::insert(collection_id, nft_id, nft);
 		NftsByOwner::<T>::append(owner, (collection_id, nft_id));
 
+		// increment nfts counter
+		let nfts_count = collection.nfts_count.checked_add(1).ok_or(ArithmeticError::Overflow)?;
+		Collections::<T>::try_mutate(collection_id, |collection| -> DispatchResult {
+			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
+			collection.nfts_count = nfts_count;
+			Ok(())
+		})?;
+
 		Ok((collection_id, nft_id))
 	}
 
@@ -124,6 +222,14 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 				Self::nft_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 			}
 		}
+
+		// decrement nfts counter
+		Collections::<T>::try_mutate(collection_id, |collection| -> DispatchResult {
+			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
+			collection.nfts_count.saturating_dec();
+			Ok(())
+		})?;
+
 		Ok((collection_id, nft_id))
 	}
 
@@ -150,7 +256,7 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 					}
 				}
 				sending_nft.rootowner = account_id.clone();
-			},
+			}
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				let recipient_nft = NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
 				// Check if sending NFT is already a child of recipient NFT
@@ -186,9 +292,9 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T> {
 					Some(mut kids) => {
 						kids.push((collection_id, nft_id));
 						Children::<T>::insert(cid, nid, kids);
-					},
+					}
 				}
-			},
+			}
 		};
 		sending_nft.owner = new_owner.clone();
 
@@ -209,7 +315,7 @@ impl<T: Config> Pallet<T> {
 		if let Some(children) = Children::<T>::get(parent_collection_id, parent_nft_id) {
 			for child in children {
 				if child == (child_collection_id, child_nft_id) {
-					return true
+					return true;
 				} else {
 					if Pallet::<T>::is_x_descendent_of_y(
 						child_collection_id,
@@ -294,5 +400,4 @@ impl<T: Config> Pallet<T> {
 			Ok(current_id)
 		})
 	}
-
 }
