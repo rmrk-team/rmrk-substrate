@@ -1,5 +1,28 @@
 use super::*;
 
+impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId> for Pallet<T> {
+	fn property_set(
+		sender: T::AccountId,
+		collection_id: CollectionId,
+		maybe_nft_id: Option<NftId>,
+		key: KeyLimitOf<T>,
+		value: ValueLimitOf<T>,
+	) -> DispatchResult {
+		let collection =
+			Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
+		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
+		if let Some(nft_id) = &maybe_nft_id {
+			ensure!(NFTs::<T>::contains_key(collection_id, nft_id), Error::<T>::NoAvailableNftId);
+			if let Some(nft) = NFTs::<T>::get(collection_id, nft_id) {
+				ensure!(nft.rootowner == collection.issuer, Error::<T>::NoPermission);
+			}
+		}
+		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
+		Self::deposit_event(Event::PropertySet { collection_id, maybe_nft_id, key, value });
+		Ok(())
+	}
+}
+
 impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	fn resource_add(
 		sender: T::AccountId,

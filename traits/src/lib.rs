@@ -3,10 +3,12 @@
 pub mod collection;
 pub mod nft;
 pub mod resource;
+pub mod property;
 
 pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo};
 pub use resource::{Resource, ResourceInfo};
+pub use property::Property;
 
 pub mod primitives {
 	pub type CollectionId = u32;
