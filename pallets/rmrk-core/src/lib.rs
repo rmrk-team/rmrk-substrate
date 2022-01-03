@@ -422,29 +422,27 @@ pub mod pallet {
 				new_owner.clone(),
 				max_recursions,
 			)?;
-			// Check if root owner is a nft & call pallet_uniques::do_tranfer w/ actual account owner
-			let col_nft_tuple = Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone());
-			if col_nft_tuple.is_none() {
-				pallet_uniques::Pallet::<T>::do_transfer(
-					collection_id,
-					nft_id,
-					new_owner_account.clone(),
-					|class_details, details|
-						Ok(())
-				)?;
-			} else {
-				let (dest, _) =
-					Pallet::<T>::lookup_root_owner(
-						col_nft_tuple.unwrap().0,
-						col_nft_tuple.unwrap().1
+			// Check if root owner is a nft & call pallet_uniques::do_transfer w/ actual account owner
+			match Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone()) {
+				None => {
+					pallet_uniques::Pallet::<T>::do_transfer(
+						collection_id,
+						nft_id,
+						new_owner_account.clone(),
+						|class_details, details|
+							Ok(())
 					)?;
-				pallet_uniques::Pallet::<T>::do_transfer(
-					collection_id,
-					nft_id,
-					dest.clone(),
-					|class_details, details|
-						Ok(())
-				)?;
+				},
+				Some((cid, nid)) => {
+					let (dest, _) = Pallet::<T>::lookup_root_owner(cid, nid)?;
+					pallet_uniques::Pallet::<T>::do_transfer(
+						collection_id,
+						nft_id,
+						dest.clone(),
+						|class_details, details|
+							Ok(())
+					)?;
+				}
 			}
 
 			Self::deposit_event(Event::NFTSent {
