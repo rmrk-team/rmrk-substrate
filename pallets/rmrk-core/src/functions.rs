@@ -3,6 +3,9 @@ use codec::{Codec, Decode, Encode};
 use sp_runtime::traits::TrailingZeroInput;
 use rmrk_traits::AccountIdOrCollectionNftTuple::AccountId;
 
+// Randomness to generate NFT virtual accounts
+pub const RANDOMNESS_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
+
 impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	fn issuer(collection_id: CollectionId) -> Option<T::AccountId> {
 		None
@@ -88,11 +91,10 @@ where
 		let recipient = recipient.unwrap_or(owner.clone());
 		let royalty = royalty.unwrap_or(Permill::default());
 
-		let rootowner = owner.clone();
 		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
 
 		let nft =
-			NftInfo { owner: owner_as_maybe_account, rootowner, recipient, royalty, metadata };
+			NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata };
 
 		NFTs::<T>::insert(collection_id, nft_id, nft);
 		NftsByOwner::<T>::append(owner, (collection_id, nft_id));
@@ -107,7 +109,7 @@ where
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		NFTs::<T>::remove(collection_id, nft_id);
-		if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
+		if let kids = Children::<T>::take((collection_id, nft_id)) {
 			for (child_collection_id, child_nft_id) in kids {
 				Self::nft_burn(
 					child_collection_id,
@@ -125,68 +127,37 @@ where
 		nft_id: NftId,
 		new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 		max_recursions: u32,
-	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
+	) -> sp_std::result::Result<T::AccountId, DispatchError> {
+
+		let (root_owner, root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		// Check ownership
+		ensure!(sender == root_owner, Error::<T>::NoPermission);
+		// Get NFT info
 		let mut sending_nft =
 			NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-		ensure!(&sending_nft.rootowner == &sender, Error::<T>::NoPermission);
 
-		match new_owner.clone() {
-			AccountIdOrCollectionNftTuple::AccountId(account_id) => {
-				// Remove previous parental relationship
-				if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =
-					sending_nft.owner
-				{
-					if let Some(mut kids) = Children::<T>::take(cid, nid) {
-						kids.retain(|&kid| kid != (collection_id, nft_id));
-						Children::<T>::insert(cid, nid, kids);
-					}
-				}
-				sending_nft.rootowner = account_id.clone();
-			},
+		// Prepare transfer
+		let new_owner_account = match new_owner.clone() {
+			AccountIdOrCollectionNftTuple::AccountId(id) => id,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
-				let recipient_nft = NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
-				// Check if sending NFT is already a child of recipient NFT
+				// Check if NFT target exists
+				NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
+				// Check if sending to self
+				ensure!((collection_id, nft_id) != (cid, nid), Error::<T>::CannotSendToDescendentOrSelf);
+				// Check if collection_id & nft_id are descendent of cid & nid
 				ensure!(
 					!Pallet::<T>::is_x_descendent_of_y(cid, nid, collection_id, nft_id),
-					Error::<T>::CannotSendToDescendent
+					Error::<T>::CannotSendToDescendentOrSelf
 				);
-
-				// Remove parent if exists: first we only care if the owner is a non-AccountId)
-				if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =
-					sending_nft.owner
-				{
-					// second we only care if the parent has children (it should)
-					if let Some(mut kids) = Children::<T>::take(cid, nid) {
-						// third we only "retain" the other children
-						kids.retain(|&kid| kid != (collection_id, nft_id));
-						Children::<T>::insert(cid, nid, kids);
-					}
-				}
-				if sending_nft.rootowner != recipient_nft.rootowner {
-					// sending_nft.rootowner = recipient_nft.rootowner
-					sending_nft.rootowner = recipient_nft.rootowner.clone();
-
-					Pallet::<T>::recursive_update_rootowner(
-						collection_id,
-						nft_id,
-						recipient_nft.rootowner,
-						max_recursions,
-					)?;
-				}
-				match Children::<T>::take(cid, nid) {
-					None => Children::<T>::insert(cid, nid, vec![(collection_id, nft_id)]),
-					Some(mut kids) => {
-						kids.push((collection_id, nft_id));
-						Children::<T>::insert(cid, nid, kids);
-					},
-				}
+				// Convert to virtual account
+				Pallet::<T>::nft_to_account_id::<T::AccountId>(cid, nid)
 			},
 		};
-		sending_nft.owner = new_owner.clone();
 
+		sending_nft.owner = new_owner.clone();
 		NFTs::<T>::insert(collection_id, nft_id, sending_nft);
 
-		Ok((collection_id, nft_id))
+		Ok(new_owner_account.clone())
 	}
 }
 
@@ -195,12 +166,47 @@ where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
 
+	/// Encodes a RMRK NFT with randomness + `collection_id` + `nft_id` into a virtual account
+	/// then returning the `AccountId`
+	///
+	/// Parameters:
+	/// - `collection_id`: Collection ID that the NFT is contained in
+	/// - `nft_id`: NFT ID to be encoded into a virtual account
+	///
+	/// Output:
+	/// `AccountId`: Encoded virtual account that represents the NFT
+	///
+	/// # Example
+	/// ```
+	/// let collection_id = 0;
+	/// let nft_id = 0;
+	///
+	/// assert_eq!(nft_to_account_id(collection_id, nft_id), "5Co5sje8foechzYWmKU7PgQsBX349YhqaMb8kZHu19HyYNEQ");
+	/// ```
 	pub fn nft_to_account_id<AccountId: Codec>(collection_id: CollectionId, nft_id: NftId) -> AccountId {
-		(b"RmrkNft/", collection_id, nft_id)
+		(RANDOMNESS_RMRK_NFT, collection_id, nft_id)
 			.using_encoded(|b| AccountId::decode(&mut TrailingZeroInput::new(b)))
 			.expect("Decoding with trailing zero never fails; qed.")
 	}
 
+	/// Decodes a RMRK NFT a suspected virtual account
+	/// then returns an `Option<(CollectionId, NftId)>
+	/// where `None` is returned when there is an actual account
+	/// and `Some(tuple)` returns tuple of `CollectionId` & `NftId`
+	///
+	/// Parameters:
+	/// - `account_id`: Encoded NFT virtual account or account owner
+	///
+	/// Output:
+	/// `Option<(CollectionId, NftId)>`
+	/// # Example
+	/// ```
+	/// let virtual_account = "5Co5sje8foechzYWmKU7PgQsBX349YhqaMb8kZHu19HyYNEQ";
+	/// let collection_id = 0;
+	/// let nft_id = 0;
+	///
+	/// assert_eq!(decode_nft_account_id(virtual_account), Some((collection_id, nft_id)));
+	/// ```
 	pub fn decode_nft_account_id<AccountId: Codec>(account_id: T::AccountId) -> Option<(CollectionId, NftId)> {
 		let (prefix, tuple, suffix) = account_id
 			.using_encoded(|mut b| {
@@ -210,13 +216,36 @@ where
 			})
 			.ok()?;
 		// Check prefix and suffix to avoid collision attack
-		if &prefix == b"RmrkNft/" && suffix.iter().all(|&x| x == 0) {
+		if &prefix == RANDOMNESS_RMRK_NFT && suffix.iter().all(|&x| x == 0) {
 			Some(tuple)
 		} else {
 			None
 		}
 	}
 
+	/// Looks up the root owner of an NFT and returns a `Result` with an AccountId and
+	/// a tuple of the root `(CollectionId, NftId)`
+	/// or an `Error::<T>::NoAvailableNftId` in the case that the NFT is already burned
+	///
+	/// Parameters:
+	/// - `collection_id`: Collection ID of the NFT to lookup the root owner
+	/// - `nft_id`: NFT ID that is to be looked up for the root owner
+	///
+	/// Output:
+	/// - `Result<(T::AcccountId, (CollectionId, NftId)), Error<T>>`
+	///
+	/// # Example
+	/// ```
+	/// let parent = Origin::signed(ALICE);
+	/// // Alice mints NFTs (0,0) and (0,1) then send (0,1) to (0,0)
+	/// let virtual_account = "5Co5sje8foechzYWmKU7PgQsBX349YhqaMb8kZHu19HyYNEQ";
+	/// let collection_id = 0;
+	/// let nft_id = 1;
+	/// let cid = 0;
+	/// let nid = 0;
+	///
+	/// assert_eq!(lookup_root_owner(collection_id, nft_id), Ok((parent, (collection_id, nft_id))));
+	/// ```
 	pub fn lookup_root_owner(collection_id: CollectionId, nft_id: NftId) -> Result<(T::AccountId, (CollectionId, NftId)), Error<T>> {
 		let parent =
 			pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
@@ -231,6 +260,46 @@ where
 		}
 	}
 
+	/// Add a child to a parent NFT
+	///
+	/// Parameters:
+	/// - `parent`: Tuple of (CollectionId, NftId) of the parent NFT
+	/// - `child`: Tuple of (CollectionId, NftId) of the child NFT to be added
+	///
+	/// Output:
+	/// - Adding a `child` to the Children StorageMap of the `parent`
+	pub fn add_child(parent: (CollectionId, NftId), child: (CollectionId, NftId)) {
+		Children::<T>::mutate(parent, |v| {
+			v.push(child)
+		});
+	}
+
+	/// Remove a child from a parent NFT
+	///
+	/// Parameters:
+	/// - `parent`: Tuple of (CollectionId, NftId) of the parent NFT
+	/// - `child`: Tuple of (CollectionId, NftId) of the child NFT to be removed
+	///
+	/// Output:
+	/// - Removing a `child` from the Children StorageMap of the `parent`
+	pub fn remove_child(parent: (CollectionId, NftId), child: (CollectionId, NftId)) {
+		Children::<T>::mutate(parent, |v| {
+			*v = v.iter().filter(|&nft| *nft != child).cloned().collect();
+		});
+	}
+
+	/// Has a child NFT present in the Children StorageMap of the parent NFT
+	///
+	/// Parameters:
+	/// - `collection_id`: Collection ID of the NFT to lookup the root owner
+	/// - `nft_id`: NFT ID that is to be looked up for the root owner
+	///
+	/// Output:
+	/// - `bool`
+	pub fn has_child(parent: (CollectionId, NftId)) -> bool {
+		Children::<T>::try_get(parent).unwrap().len() != 0
+	}
+
 	pub fn is_x_descendent_of_y(
 		child_collection_id: CollectionId,
 		child_nft_id: NftId,
@@ -238,7 +307,7 @@ where
 		parent_nft_id: NftId,
 	) -> bool {
 		let mut found_child = false;
-		if let Some(children) = Children::<T>::get(parent_collection_id, parent_nft_id) {
+		if let children = Children::<T>::get((parent_collection_id, parent_nft_id)) {
 			for child in children {
 				if child == (child_collection_id, child_nft_id) {
 					return true
@@ -257,31 +326,6 @@ where
 		found_child
 	}
 
-	pub fn recursive_update_rootowner(
-		collection_id: CollectionId,
-		nft_id: NftId,
-		new_rootowner: T::AccountId,
-		max_recursions: u32,
-	) -> DispatchResult {
-		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
-		NFTs::<T>::try_mutate_exists(collection_id, nft_id, |nft| -> DispatchResult {
-			if let Some(n) = nft {
-				n.rootowner = new_rootowner.clone();
-			}
-			Ok(())
-		})?;
-		if let Some(children) = Children::<T>::get(collection_id, nft_id) {
-			for child in children {
-				Pallet::<T>::recursive_update_rootowner(
-					child.0,
-					child.1,
-					new_rootowner.clone(),
-					max_recursions - 1,
-				)?;
-			}
-		}
-		Ok(())
-	}
 
 	pub fn recursive_burn(
 		collection_id: CollectionId,
@@ -290,7 +334,7 @@ where
 	) -> DispatchResult {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		NFTs::<T>::remove(collection_id, nft_id);
-		if let Some(kids) = Children::<T>::take(collection_id, nft_id) {
+		if let kids = Children::<T>::take((collection_id, nft_id)) {
 			for (child_collection_id, child_nft_id) in kids {
 				Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 			}

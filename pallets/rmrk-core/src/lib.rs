@@ -111,14 +111,13 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn children)]
-	/// Stores nft info
-	pub type Children<T: Config> = StorageDoubleMap<
+	/// Stores nft children info
+	pub type Children<T: Config> = StorageMap<
 		_,
 		Twox64Concat,
-		CollectionId,
-		Twox64Concat,
-		NftId,
+		(CollectionId, NftId),
 		Vec<(CollectionId, NftId)>,
+		ValueQuery
 	>;
 
 	#[pallet::storage]
@@ -230,11 +229,10 @@ pub mod pallet {
 		NoWitness,
 		CollectionNotEmpty,
 		CollectionFullOrLocked,
-		CannotSendToDescendent,
+		CannotSendToDescendentOrSelf,
 		ResourceAlreadyExists,
 		EmptyResource,
 		TooManyRecursions,
-		CircleDetected,
 	}
 
 	#[pallet::call]
@@ -399,50 +397,40 @@ pub mod pallet {
 			}
 			.unwrap_or_default();
 
-			let (root_owner, root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-			// Check ownership
-			ensure!(sender == root_owner, Error::<T>::NoPermission);
-			// Prepare transfer
-			let new_owner_account = match new_owner.clone() {
-				AccountIdOrCollectionNftTuple::AccountId(id) => id,
-				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
-					// Circle detection
-					let (_, new_owner_root_nft) = Pallet::<T>::lookup_root_owner(cid, nid)?;
-					ensure!(root_nft != new_owner_root_nft, Error::<T>::CircleDetected);
-					// Convert to virtual account
-					Pallet::<T>::nft_to_account_id::<T::AccountId>(cid, nid)
-				},
-			};
+			// Get current owner for child removal later
+			let parent =
+				pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
+			// Check if parent returns None which indicates the NFT is not available
+			ensure!(parent.is_some(),Error::<T>::NoAvailableNftId);
+			let current_owner = parent.as_ref().unwrap();
 
 			let max_recursions = T::MaxRecursions::get();
-			Self::nft_send(
+			let new_owner_account = Self::nft_send(
 				sender.clone(),
 				collection_id,
 				nft_id,
 				new_owner.clone(),
 				max_recursions,
 			)?;
-			// Check if root owner is a nft & call pallet_uniques::do_transfer w/ actual account owner
-			match Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone()) {
-				None => {
-					pallet_uniques::Pallet::<T>::do_transfer(
-						collection_id,
-						nft_id,
-						new_owner_account.clone(),
-						|class_details, details|
-							Ok(())
-					)?;
-				},
-				Some((cid, nid)) => {
-					let (dest, _) = Pallet::<T>::lookup_root_owner(cid, nid)?;
-					pallet_uniques::Pallet::<T>::do_transfer(
-						collection_id,
-						nft_id,
-						dest.clone(),
-						|class_details, details|
-							Ok(())
-					)?;
-				}
+
+			pallet_uniques::Pallet::<T>::do_transfer(
+				collection_id,
+				nft_id,
+				new_owner_account.clone(),
+				|class_details, details|
+					Ok(())
+			)?;
+
+			// Handle Children StorageMap for NFTs
+			let current_cid_nid =  Pallet::<T>::decode_nft_account_id::<T::AccountId>(current_owner.clone());
+			if current_cid_nid.is_some() {
+				// remove child from parent
+				Pallet::<T>::remove_child((current_cid_nid.unwrap().0, current_cid_nid.unwrap().1), (collection_id, nft_id));
+			}
+			// add child to new parent if NFT virtual address
+			let new_cid_nid = Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone());
+			if new_cid_nid.is_some() {
+				Pallet::<T>::add_child((new_cid_nid.unwrap().0, new_cid_nid.unwrap().1), (collection_id, nft_id));
 			}
 
 			Self::deposit_event(Event::NFTSent {
@@ -508,9 +496,8 @@ pub mod pallet {
 					NFTs::<T>::contains_key(collection_id, nft_id),
 					Error::<T>::NoAvailableNftId
 				);
-				if let Some(nft) = NFTs::<T>::get(collection_id, nft_id) {
-					ensure!(nft.rootowner == collection.issuer, Error::<T>::NoPermission);
-				}
+				let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id)?;
+				ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
 			}
 			Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
 
@@ -558,8 +545,9 @@ pub mod pallet {
 			};
 
 			let mut pending = false;
-			let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-			if nft.rootowner != sender.unwrap_or_default() {
+			let (owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+
+			if owner != sender.unwrap_or_default() {
 				pending = true;
 			}
 
@@ -604,8 +592,8 @@ pub mod pallet {
 				Err(origin) => Some(ensure_signed(origin)?),
 			};
 
-			let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-			ensure!(nft.rootowner == sender.unwrap_or_default(), Error::<T>::NoPermission);
+			let (owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			ensure!(owner == sender.unwrap_or_default(), Error::<T>::NoPermission);
 
 			Resources::<T>::try_mutate_exists(
 				(collection_id, nft_id, resource_id),

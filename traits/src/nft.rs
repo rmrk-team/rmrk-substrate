@@ -23,8 +23,6 @@ pub enum AccountIdOrCollectionNftTuple<AccountId> {
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
 pub struct NftInfo<AccountId, BoundedString> {
-	/// The rootowner of the account, must be an account
-	pub rootowner: AccountId,
 	/// The owner of the NFT, can be either an Account or a tuple (CollectionId, NftId)
 	pub owner: AccountIdOrCollectionNftTuple<AccountId>,
 	/// The user account which receives the royalty
@@ -59,5 +57,5 @@ pub trait Nft<AccountId, BoundedString> {
 		nft_id: NftId,
 		new_owner: AccountIdOrCollectionNftTuple<AccountId>,
 		max_recursions: u32,
-	) -> Result<(CollectionId, NftId), DispatchError>;
+	) -> Result<AccountId, DispatchError>;
 }
