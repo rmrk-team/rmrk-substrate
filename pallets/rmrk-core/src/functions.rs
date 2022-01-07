@@ -1,10 +1,9 @@
 use super::*;
 use codec::{Codec, Decode, Encode};
 use sp_runtime::traits::TrailingZeroInput;
-use rmrk_traits::AccountIdOrCollectionNftTuple::AccountId;
 
 // Randomness to generate NFT virtual accounts
-pub const RANDOMNESS_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
+pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
 
 impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	fn issuer(collection_id: CollectionId) -> Option<T::AccountId> {
@@ -111,6 +110,11 @@ where
 		NFTs::<T>::remove(collection_id, nft_id);
 		if let kids = Children::<T>::take((collection_id, nft_id)) {
 			for (child_collection_id, child_nft_id) in kids {
+				// Remove child from Children StorageMap
+				Pallet::<T>::remove_child(
+					(collection_id, nft_id),
+					(child_collection_id, child_nft_id)
+				);
 				Self::nft_burn(
 					child_collection_id,
 					child_nft_id,
@@ -141,7 +145,7 @@ where
 			AccountIdOrCollectionNftTuple::AccountId(id) => id,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				// Check if NFT target exists
-				NFTs::<T>::get(cid, nid).ok_or(Error::<T>::NoAvailableNftId)?;
+				ensure!(NFTs::<T>::contains_key(cid, nid), Error::<T>::NoAvailableNftId);
 				// Check if sending to self
 				ensure!((collection_id, nft_id) != (cid, nid), Error::<T>::CannotSendToDescendentOrSelf);
 				// Check if collection_id & nft_id are descendent of cid & nid
@@ -154,10 +158,9 @@ where
 			},
 		};
 
-		sending_nft.owner = new_owner.clone();
 		NFTs::<T>::insert(collection_id, nft_id, sending_nft);
 
-		Ok(new_owner_account.clone())
+		Ok(new_owner_account)
 	}
 }
 
@@ -167,7 +170,9 @@ where
 {
 
 	/// Encodes a RMRK NFT with randomness + `collection_id` + `nft_id` into a virtual account
-	/// then returning the `AccountId`
+	/// then returning the `AccountId`. Note that we must be careful of the size of `AccountId`
+	/// as it must be wide enough to keep the size of the prefix as well as the `collection_id`
+	/// and `nft_id`.
 	///
 	/// Parameters:
 	/// - `collection_id`: Collection ID that the NFT is contained in
@@ -184,7 +189,7 @@ where
 	/// assert_eq!(nft_to_account_id(collection_id, nft_id), "5Co5sje8foechzYWmKU7PgQsBX349YhqaMb8kZHu19HyYNEQ");
 	/// ```
 	pub fn nft_to_account_id<AccountId: Codec>(collection_id: CollectionId, nft_id: NftId) -> AccountId {
-		(RANDOMNESS_RMRK_NFT, collection_id, nft_id)
+		(SALT_RMRK_NFT, collection_id, nft_id)
 			.using_encoded(|b| AccountId::decode(&mut TrailingZeroInput::new(b)))
 			.expect("Decoding with trailing zero never fails; qed.")
 	}
@@ -216,7 +221,7 @@ where
 			})
 			.ok()?;
 		// Check prefix and suffix to avoid collision attack
-		if &prefix == RANDOMNESS_RMRK_NFT && suffix.iter().all(|&x| x == 0) {
+		if &prefix == SALT_RMRK_NFT && suffix.iter().all(|&x| x == 0) {
 			Some(tuple)
 		} else {
 			None
@@ -297,9 +302,19 @@ where
 	/// Output:
 	/// - `bool`
 	pub fn has_child(parent: (CollectionId, NftId)) -> bool {
-		Children::<T>::try_get(parent).unwrap().len() != 0
+		!Children::<T>::get(parent).is_empty()
 	}
 
+	/// Check whether a NFT is descends from a suspected parent NFT
+	/// and return a `bool` if NFT is or not
+	///
+	/// Parameters:
+	/// - `child_collection_id`: Collection ID of the NFT to lookup the root owner
+	/// - `child_nft_id`: NFT ID that is to be looked up for the root owner
+	/// - `parent_collection_id`: Collection ID of the NFT to lookup the root owner
+	/// - `parent_nft_id`: NFT ID that is to be looked up for the root owner
+	/// Output:
+	/// - `bool`
 	pub fn is_x_descendent_of_y(
 		child_collection_id: CollectionId,
 		child_nft_id: NftId,
@@ -307,25 +322,31 @@ where
 		parent_nft_id: NftId,
 	) -> bool {
 		let mut found_child = false;
-		if let children = Children::<T>::get((parent_collection_id, parent_nft_id)) {
-			for child in children {
-				if child == (child_collection_id, child_nft_id) {
-					return true
-				} else {
-					if Pallet::<T>::is_x_descendent_of_y(
-						child_collection_id,
-						child_nft_id,
-						child.0,
-						child.1,
-					) {
-						found_child = true;
-					}
-				}
-			}
-		}
-		found_child
-	}
 
+		let parent =
+			pallet_uniques::Pallet::<T>::owner(child_collection_id, child_nft_id);
+		// Check if parent returns None which indicates the NFT is not available
+		if parent.is_none() {
+			return found_child
+		}
+		let owner = parent.as_ref().unwrap();
+		return match Self::decode_nft_account_id::<T::AccountId>(owner.clone()) {
+			None => found_child,
+			Some((cid, nid)) => {
+				if (cid, nid) == (parent_collection_id, parent_nft_id) {
+					found_child = true
+				} else {
+					found_child = Pallet::<T>::is_x_descendent_of_y(
+						cid,
+						nid,
+						parent_collection_id,
+						parent_nft_id
+					)
+				}
+				found_child
+			},
+		}
+	}
 
 	pub fn recursive_burn(
 		collection_id: CollectionId,

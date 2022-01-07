@@ -164,6 +164,16 @@ fn send_nft_to_minted_nft_works() {
 			Some(Permill::from_float(1.525)),
 			nft_metadata
 		));
+		// Alice mints NFT (0, 2) [will be the child]
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20]
+		));
+
 		// Alice sends NFT (0, 0) [parent] to Bob
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -190,10 +200,23 @@ fn send_nft_to_minted_nft_works() {
 			collection_id: 0,
 			nft_id: 1,
 		}));
+		// Alice sends NFT (0, 2) [child] to NFT (0, 0) [parent]
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			2,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
+		));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTSent {
+			sender: ALICE,
+			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
+			collection_id: 0,
+			nft_id: 2,
+		}));
 		// Check that NFT (0,1) [child] is owned by NFT (0,0) [parent]
 		assert_eq!(
-			RMRKCore::nfts(0, 1).unwrap().owner,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+			UNQ::Pallet::<Test>::owner(0, 1),
+			Some(RMRKCore::nft_to_account_id(0, 0)),
 		);
 
 		// Check NFT (0,0) has NFT (0,1) in Children StorageMap
@@ -206,6 +229,17 @@ fn send_nft_to_minted_nft_works() {
 				0,
 				0,
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)
+			),
+			Error::<Test>::CannotSendToDescendentOrSelf
+		);
+
+		// Error if trying to assign send a nft creating circular reference
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(BOB),
+				0,
+				0,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2)
 			),
 			Error::<Test>::CannotSendToDescendentOrSelf
 		);

@@ -19,8 +19,6 @@ pub struct ClassInfo<BoundedString, AccountId> {
 
 #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct InstanceInfo<AccountId, BoundedString> {
-	/// The owner of the NFT, can be either an Account or a tuple (CollectionId, NftId)
-	pub owner: AccountIdOrCollectionNftTuple<AccountId>,
 	/// The user account which receives the royalty
 	pub recipient: AccountId,
 	/// Royalty in per mille (1/1000)
