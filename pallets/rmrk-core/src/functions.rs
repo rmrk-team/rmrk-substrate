@@ -108,19 +108,18 @@ where
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		NFTs::<T>::remove(collection_id, nft_id);
-		if let kids = Children::<T>::take((collection_id, nft_id)) {
-			for (child_collection_id, child_nft_id) in kids {
-				// Remove child from Children StorageMap
-				Pallet::<T>::remove_child(
-					(collection_id, nft_id),
-					(child_collection_id, child_nft_id)
-				);
-				Self::nft_burn(
-					child_collection_id,
-					child_nft_id,
-					max_recursions - 1,
-				)?;
-			}
+		let kids = Children::<T>::take((collection_id, nft_id));
+		for (child_collection_id, child_nft_id) in kids {
+			// Remove child from Children StorageMap
+			Pallet::<T>::remove_child(
+				(collection_id, nft_id),
+				(child_collection_id, child_nft_id)
+			);
+			Self::nft_burn(
+				child_collection_id,
+				child_nft_id,
+				max_recursions - 1,
+			)?;
 		}
 		Ok((collection_id, nft_id))
 	}
@@ -355,10 +354,9 @@ where
 	) -> DispatchResult {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		NFTs::<T>::remove(collection_id, nft_id);
-		if let kids = Children::<T>::take((collection_id, nft_id)) {
-			for (child_collection_id, child_nft_id) in kids {
-				Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
-			}
+		let kids = Children::<T>::take((collection_id, nft_id));
+		for (child_collection_id, child_nft_id) in kids {
+			Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 		}
 		Ok(())
 	}
