@@ -7,7 +7,10 @@ use sp_runtime::traits::TrailingZeroInput;
 // Randomness to generate NFT virtual accounts
 pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
 
-impl<T: Config> Priority<StringLimitOf<T>, T::AccountId> for Pallet<T> {
+impl<T: Config> Priority<StringLimitOf<T>, T::AccountId> for Pallet<T>
+where
+	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+{
 	fn priority_set(
 		sender: T::AccountId,
 		collection_id: CollectionId,
@@ -25,7 +28,10 @@ impl<T: Config> Priority<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	}
 }
 
-impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId> for Pallet<T> {
+impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId> for Pallet<T>
+where
+	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+{
 	fn property_set(
 		sender: T::AccountId,
 		collection_id: CollectionId,
@@ -37,10 +43,8 @@ impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId> for Palle
 			Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		if let Some(nft_id) = &maybe_nft_id {
-			ensure!(NFTs::<T>::contains_key(collection_id, nft_id), Error::<T>::NoAvailableNftId);
-			if let Some(nft) = NFTs::<T>::get(collection_id, nft_id) {
-				ensure!(nft.rootowner == collection.issuer, Error::<T>::NoPermission);
-			}
+			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id)?;
+			ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
 		}
 		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
 		Self::deposit_event(Event::PropertySet { collection_id, maybe_nft_id, key, value });
@@ -48,7 +52,10 @@ impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId> for Palle
 	}
 }
 
-impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T> {
+impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T>
+where
+	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+{
 	fn resource_add(
 		sender: T::AccountId,
 		collection_id: CollectionId,
@@ -60,7 +67,7 @@ impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		license: Option<BoundedVec<u8, T::StringLimit>>,
 		thumb: Option<BoundedVec<u8, T::StringLimit>>,
 	) -> Result<ResourceId, DispatchError> {
-		let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
 		let resource_id = Self::get_next_resource_id()?;
 		ensure!(
@@ -83,7 +90,7 @@ impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 			slot,
 			license,
 			thumb,
-			pending: nft.rootowner != sender,
+			pending: root_owner != sender,
 		};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
@@ -96,8 +103,8 @@ impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 		nft_id: NftId,
 		resource_id: ResourceId,
 	) -> DispatchResult {
-		let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-		ensure!(nft.rootowner == sender, Error::<T>::NoPermission);
+		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		ensure!(root_owner == sender, Error::<T>::NoPermission);
 
 		Resources::<T>::try_mutate_exists(
 			(collection_id, nft_id, resource_id),
@@ -114,7 +121,10 @@ impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T> {
 	}
 }
 
-impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T> {
+impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T>
+where
+	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+{
 	fn issuer(_collection_id: CollectionId) -> Option<T::AccountId> {
 		None
 	}
