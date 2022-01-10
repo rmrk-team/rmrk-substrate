@@ -312,14 +312,6 @@ where
 	///
 	/// Output:
 	/// `AccountId`: Encoded virtual account that represents the NFT
-	///
-	/// # Example
-	/// ```
-	/// let collection_id = 0;
-	/// let nft_id = 0;
-	///
-	/// assert_eq!(nft_to_account_id(collection_id, nft_id), "5Co5sje8foechzYWmKU7PgQsBX349YhqaMb8kZHu19HyYNEQ");
-	/// ```
 	pub fn nft_to_account_id<AccountId: Codec>(collection_id: CollectionId, nft_id: NftId) -> AccountId {
 		(SALT_RMRK_NFT, collection_id, nft_id)
 			.using_encoded(|b| AccountId::decode(&mut TrailingZeroInput::new(b)))
@@ -336,14 +328,6 @@ where
 	///
 	/// Output:
 	/// `Option<(CollectionId, NftId)>`
-	/// # Example
-	/// ```
-	/// let virtual_account = "5Co5sje8foechzYWmKU7PgQsBX349YhqaMb8kZHu19HyYNEQ";
-	/// let collection_id = 0;
-	/// let nft_id = 0;
-	///
-	/// assert_eq!(decode_nft_account_id(virtual_account), Some((collection_id, nft_id)));
-	/// ```
 	pub fn decode_nft_account_id<AccountId: Codec>(account_id: T::AccountId) -> Option<(CollectionId, NftId)> {
 		let (prefix, tuple, suffix) = account_id
 			.using_encoded(|mut b| {
@@ -370,19 +354,6 @@ where
 	///
 	/// Output:
 	/// - `Result<(T::AcccountId, (CollectionId, NftId)), Error<T>>`
-	///
-	/// # Example
-	/// ```
-	/// let parent = Origin::signed(ALICE);
-	/// // Alice mints NFTs (0,0) and (0,1) then send (0,1) to (0,0)
-	/// let virtual_account = "5Co5sje8foechzYWmKU7PgQsBX349YhqaMb8kZHu19HyYNEQ";
-	/// let collection_id = 0;
-	/// let nft_id = 1;
-	/// let cid = 0;
-	/// let nid = 0;
-	///
-	/// assert_eq!(lookup_root_owner(collection_id, nft_id), Ok((parent, (collection_id, nft_id))));
-	/// ```
 	pub fn lookup_root_owner(collection_id: CollectionId, nft_id: NftId) -> Result<(T::AccountId, (CollectionId, NftId)), Error<T>> {
 		let parent =
 			pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
