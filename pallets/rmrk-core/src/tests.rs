@@ -4,8 +4,7 @@ use sp_runtime::Permill;
 // use crate::types::ClassType;
 
 use super::*;
-use mock::Event as MockEvent;
-use mock::*;
+use mock::{Event as MockEvent, *};
 use pallet_uniques as UNQ;
 use sp_std::{convert::TryInto, vec::Vec};
 
@@ -84,6 +83,7 @@ fn mint_nft_works() {
 			collection_id: 0,
 			nft_id: 0,
 		}));
+		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
@@ -100,6 +100,7 @@ fn mint_nft_works() {
 			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20]
 		));
+		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 3);
 		assert_noop!(
 			RMRKCore::mint_nft(
 				Origin::signed(ALICE),
@@ -117,7 +118,12 @@ fn mint_nft_works() {
 #[test]
 fn mint_collection_max_logic_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(RMRKCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], Some(1), bvec![0u8; 15]));
+		assert_ok!(RMRKCore::create_collection(
+			Origin::signed(ALICE),
+			bvec![0u8; 20],
+			Some(1),
+			bvec![0u8; 15]
+		));
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
@@ -445,6 +451,7 @@ fn change_issuer_works() {
 fn burn_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
+		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
@@ -453,9 +460,13 @@ fn burn_nft_works() {
 			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
+
 		assert_noop!(RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::NoPermission);
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
-		assert_noop!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::NoAvailableNftId);
+		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
+    assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
+    assert_noop!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::NoAvailableNftId);
+		
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0).is_none(), true);
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTBurned {
 			owner: ALICE,
