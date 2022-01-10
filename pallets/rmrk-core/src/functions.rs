@@ -290,6 +290,7 @@ where
 			},
 		};
 
+		sending_nft.owner = new_owner.clone();
 		NFTs::<T>::insert(collection_id, nft_id, sending_nft);
 
 		Ok(new_owner_account)
