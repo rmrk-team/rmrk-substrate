@@ -23,16 +23,16 @@ jobs:
           ~/.cargo/git
           target
         key: ${{ runner.os }}-cargo
-    
+
     - name: Install toolchain
       # hacky way to install rust. Rustup is pre-installed on runners. Calling rustup show will detect the rust-toolchain.toml, and subsequently
-      # download the needed toolchain and components. 
+      # download the needed toolchain and components.
       run: |
         rustup show
-    
+
     - name: Check
       run: cargo check --workspace --all-features
-    
+
     - name: Lint
       run: cargo clippy --workspace --all-features
 
