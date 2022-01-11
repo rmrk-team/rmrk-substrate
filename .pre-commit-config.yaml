@@ -17,3 +17,9 @@ repos:
       args: [--branch, main]
     - id: mixed-line-ending
       args: [--fix=lf]
+    - id: check-toml
+  - repo: https://github.com/doublify/pre-commit-rust
+    rev: master
+    hooks:
+    - id: cargo-check
+    - id: clippy
