@@ -170,6 +170,16 @@ fn send_nft_to_minted_nft_works() {
 			Some(Permill::from_float(1.525)),
 			nft_metadata
 		));
+		// Alice mints NFT (0, 2) [will be the child]
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20]
+		));
+
 		// Alice sends NFT (0, 0) [parent] to Bob
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -196,14 +206,54 @@ fn send_nft_to_minted_nft_works() {
 			collection_id: 0,
 			nft_id: 1,
 		}));
+		// Alice sends NFT (0, 2) [child] to NFT (0, 0) [parent]
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			2,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
+		));
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTSent {
+			sender: ALICE,
+			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
+			collection_id: 0,
+			nft_id: 2,
+		}));
 		// Check that NFT (0,1) [child] is owned by NFT (0,0) [parent]
 		assert_eq!(
-			RMRKCore::nfts(0, 1).unwrap().owner,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+			UNQ::Pallet::<Test>::owner(0, 1),
+			Some(RMRKCore::nft_to_account_id(0, 0)),
+		);
+
+		// Check NFT (0,0) has NFT (0,1) in Children StorageMap
+		assert_eq!(RMRKCore::children((0, 0)), vec![(0,1)]);
+
+		// Error if trying to assign send a nft to self nft
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(BOB),
+				0,
+				0,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)
+			),
+			Error::<Test>::CannotSendToDescendentOrSelf
+		);
+
+		// Error if trying to assign send a nft creating circular reference
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(BOB),
+				0,
+				0,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2)
+			),
+			Error::<Test>::CannotSendToDescendentOrSelf
 		);
 
 		// Check that Bob now root-owns NFT (0, 1) [child] since he wasn't originally rootowner
-		assert_eq!(RMRKCore::nfts(0, 1).unwrap().rootowner, BOB);
+		if let Ok((root_owner, _)) = RMRKCore::lookup_root_owner(0, 1) {
+			assert_eq!(root_owner, BOB);
+		}
 
 		// Error if sender doesn't root-own sending NFT
 		assert_noop!(
@@ -288,6 +338,10 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
+
+		// Check NFT (0,0) has NFT (0,1) in Children StorageMap
+		assert_eq!(RMRKCore::children((0, 0)), vec![(0,1)]);
+
 		// Alice sends NFT (0, 2) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -295,8 +349,9 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			2,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
-		// Children for NFT (0, 0) contains (0, 1) and (0, 2)
-		assert_eq!(RMRKCore::children(0, 0).unwrap(), vec![(0, 1), (0, 2)]);
+
+		// Check NFT (0,0) has NFT (0,1) & (0,2) in Children StorageMap
+		assert_eq!(RMRKCore::children((0, 0)), vec![(0,1), (0,2)]);
 	});
 }
 
@@ -358,7 +413,7 @@ fn send_nft_removes_existing_parent() {
 		));
 
 		// NFT (0, 0) is parent of NFT (0, 1)
-		assert_eq!(RMRKCore::children(0, 0).unwrap(), vec![(0, 1), (0, 2)]);
+		assert_eq!(RMRKCore::children((0, 0)), vec![(0, 1), (0, 2)]);
 
 		// Alice sends NFT (0, 1) to NFT (0, 2)
 		assert_ok!(RMRKCore::send(
@@ -369,7 +424,7 @@ fn send_nft_removes_existing_parent() {
 		));
 
 		// NFT (0, 0) is not parent of NFT (0, 1)
-		assert_eq!(RMRKCore::children(0, 0).unwrap(), vec![(0, 2)]);
+		assert_eq!(RMRKCore::children((0, 0)), vec![(0, 2)]);
 	});
 }
 
@@ -405,9 +460,13 @@ fn burn_nft_works() {
 			Some(Permill::from_float(0.0)),
 			bvec![0u8; 20]
 		));
+
+		assert_noop!(RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::NoPermission);
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+    assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
+    assert_noop!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::NoAvailableNftId);
+		
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0).is_none(), true);
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTBurned {
 			owner: ALICE,
@@ -540,7 +599,7 @@ fn send_to_grandchild_fails() {
 				0,
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
 			),
-			Error::<Test>::CannotSendToDescendent
+			Error::<Test>::CannotSendToDescendentOrSelf
 		);
 	});
 }
@@ -736,6 +795,16 @@ fn set_property_works() {
 			key: key.clone(),
 			value: value.clone(),
 		}));
+		// Error when set_property with BOB
+		assert_noop!(RMRKCore::set_property(
+			Origin::signed(BOB),
+			0,
+			Some(0),
+			key.clone(),
+			value.clone()
+			),
+			Error::<Test>::NoPermission
+		);
 		assert_eq!(RMRKCore::properties((0, Some(0), key)).unwrap(), value);
 	});
 }

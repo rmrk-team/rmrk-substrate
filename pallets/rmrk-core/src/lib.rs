@@ -50,13 +50,13 @@ pub mod pallet {
 	use super::*;
 	use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
+	use rmrk_traits::AccountIdOrCollectionNftTuple::AccountId;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_uniques::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-
 		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
 		type MaxRecursions: Get<u32>;
 	}
@@ -106,14 +106,13 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn children)]
-	/// Stores nft info
-	pub type Children<T: Config> = StorageDoubleMap<
+	/// Stores nft children info
+	pub type Children<T: Config> = StorageMap<
 		_,
 		Twox64Concat,
-		CollectionId,
-		Twox64Concat,
-		NftId,
+		(CollectionId, NftId),
 		Vec<(CollectionId, NftId)>,
+		ValueQuery
 	>;
 
 	#[pallet::storage]
@@ -225,7 +224,7 @@ pub mod pallet {
 		NoWitness,
 		CollectionNotEmpty,
 		CollectionFullOrLocked,
-		CannotSendToDescendent,
+		CannotSendToDescendentOrSelf,
 		ResourceAlreadyExists,
 		EmptyResource,
 		TooManyRecursions,
@@ -309,6 +308,9 @@ pub mod pallet {
 			nft_id: NftId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
+			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			// Check ownership
+			ensure!(sender == root_owner, Error::<T>::NoPermission);
 			let max_recursions = T::MaxRecursions::get();
 			let (_collection_id, nft_id) = Self::nft_burn(collection_id, nft_id, max_recursions)?;
 
@@ -354,8 +356,15 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
+			// Get current owner for child removal later
+			let parent =
+				pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
+			// Check if parent returns None which indicates the NFT is not available
+			ensure!(parent.is_some(),Error::<T>::NoAvailableNftId);
+			let current_owner = parent.as_ref().unwrap();
+
 			let max_recursions = T::MaxRecursions::get();
-			Self::nft_send(
+			let new_owner_account = Self::nft_send(
 				sender.clone(),
 				collection_id,
 				nft_id,
@@ -363,9 +372,29 @@ pub mod pallet {
 				max_recursions,
 			)?;
 
+			pallet_uniques::Pallet::<T>::do_transfer(
+				collection_id,
+				nft_id,
+				new_owner_account.clone(),
+				|class_details, details|
+					Ok(())
+			)?;
+
+			// Handle Children StorageMap for NFTs
+			let current_cid_nid =  Pallet::<T>::decode_nft_account_id::<T::AccountId>(current_owner.clone());
+			if current_cid_nid.is_some() {
+				// remove child from parent
+				Pallet::<T>::remove_child((current_cid_nid.unwrap().0, current_cid_nid.unwrap().1), (collection_id, nft_id));
+			}
+			// add child to new parent if NFT virtual address
+			let new_cid_nid = Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone());
+			if new_cid_nid.is_some() {
+				Pallet::<T>::add_child((new_cid_nid.unwrap().0, new_cid_nid.unwrap().1), (collection_id, nft_id));
+			}
+
 			Self::deposit_event(Event::NFTSent {
 				sender,
-				recipient: new_owner,
+				recipient: new_owner.clone(),
 				collection_id,
 				nft_id,
 			});
@@ -473,8 +502,8 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let nft = NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-			ensure!(nft.rootowner == sender, Error::<T>::NoPermission);
+			let (owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			ensure!(owner == sender, Error::<T>::NoPermission);
 
 			Resources::<T>::try_mutate_exists(
 				(collection_id, nft_id, resource_id),

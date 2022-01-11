@@ -22,7 +22,7 @@ use frame_support::{ensure, traits::Get};
 use sp_runtime::{DispatchError, DispatchResult};
 
 impl<T: Config<I>, I: 'static> Pallet<T, I> {
-	pub(crate) fn do_transfer(
+	pub fn do_transfer(
 		class: T::ClassId,
 		instance: T::InstanceId,
 		dest: T::AccountId,
