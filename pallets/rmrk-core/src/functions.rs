@@ -12,7 +12,7 @@ where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
 	fn priority_set(
-		sender: T::AccountId,
+		_sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
 		priorities: Vec<Vec<u8>>,
@@ -269,7 +269,7 @@ where
 		// Check if parent returns None which indicates the NFT is not available
 		ensure!(parent.is_some(),Error::<T>::NoAvailableNftId);
 
-		let (root_owner, root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		// Check ownership
 		ensure!(sender == root_owner, Error::<T>::NoPermission);
 		// Get NFT info

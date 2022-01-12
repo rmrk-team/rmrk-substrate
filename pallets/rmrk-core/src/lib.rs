@@ -8,9 +8,7 @@ use frame_support::{
 use frame_system::ensure_signed;
 
 use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
-use sp_std::{convert::TryInto, vec, vec::Vec};
-
-use types::ClassInfo;
+use sp_std::{convert::TryInto, vec::Vec};
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
@@ -46,11 +44,9 @@ pub use pallet::*;
 
 #[frame_support::pallet]
 pub mod pallet {
-	use std::ops::Deref;
 	use super::*;
 	use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
-	use rmrk_traits::AccountIdOrCollectionNftTuple::AccountId;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -369,7 +365,7 @@ pub mod pallet {
 				collection_id,
 				nft_id,
 				new_owner_account.clone(),
-				|class_details, details|
+				|_class_details, _details|
 					Ok(())
 			)?;
 
