@@ -46,7 +46,7 @@ pub use pallet::*;
 
 #[frame_support::pallet]
 pub mod pallet {
-
+	use std::ops::Deref;
 	use super::*;
 	use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
@@ -358,13 +358,6 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			// Get current owner for child removal later
-			let parent =
-				pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
-			// Check if parent returns None which indicates the NFT is not available
-			ensure!(parent.is_some(),Error::<T>::NoAvailableNftId);
-			let current_owner = parent.as_ref().unwrap();
-
 			let new_owner_account = Self::nft_send(
 				sender.clone(),
 				collection_id,
@@ -379,18 +372,6 @@ pub mod pallet {
 				|class_details, details|
 					Ok(())
 			)?;
-
-			// Handle Children StorageMap for NFTs
-			let current_cid_nid =  Pallet::<T>::decode_nft_account_id::<T::AccountId>(current_owner.clone());
-			if let Some(current_cid_nid) = current_cid_nid {
-				// remove child from parent
-				Pallet::<T>::remove_child(current_cid_nid, (collection_id, nft_id));
-			}
-			// add child to new parent if NFT virtual address
-			let new_cid_nid = Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone());
-			if let Some(new_cid_nid) = new_cid_nid {
-				Pallet::<T>::add_child(new_cid_nid, (collection_id, nft_id));
-			}
 
 			Self::deposit_event(Event::NFTSent {
 				sender,
