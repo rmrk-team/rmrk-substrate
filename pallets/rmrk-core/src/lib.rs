@@ -44,6 +44,15 @@ pub mod types;
 // Re-export pallet items so that they can be accessed from the crate namespace.
 pub use pallet::*;
 
+use jsonrpc_derive::rpc;
+
+#[rpc]
+// sp_api::decl_runtime_apis! {
+pub trait Nothing {
+	fn nada();
+}
+// }
+
 #[frame_support::pallet]
 pub mod pallet {
 

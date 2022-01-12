@@ -51,6 +51,11 @@ version = '1.0'
 default-features = false
 path = '../uniques'
 
+[dependencies.sp-api]
+git = "https://github.com/paritytech/substrate"
+branch = "polkadot-v0.9.11"
+default-features = false
+
 [dependencies.rmrk-traits]
 default-features = false
 path = '../../traits'
@@ -97,6 +102,11 @@ git = 'https://github.com/paritytech/substrate.git'
 tag = 'monthly-2021-11-1'
 version = '4.0.0-dev'
 
+[dependencies]
+jsonrpc-derive = { default-features = false, version = "18.0.0" }
+jsonrpc-core = { default-features = false, version = "18.0.0" }
+jsonrpc-core-client = { default-features = false, version = "18.0.0" }
+
 [features]
 default = ['std']
 runtime-benchmarks = ['frame-benchmarking']
@@ -111,5 +121,6 @@ std = [
 	'sp-runtime/std',
 	'sp-std/std',
     'pallet-balances/std',
+    'sp-api/std',
 ]
 try-runtime = ['frame-support/try-runtime']
