@@ -346,6 +346,8 @@ pub mod pallet {
 		}
 
 		/// transfer NFT from account A to (account B or NFT)
+		/// if `nft_send` and `do_transfer` complete successfully
+		/// update the `Children` StorageMap indexes
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn send(
@@ -363,13 +365,11 @@ pub mod pallet {
 			ensure!(parent.is_some(),Error::<T>::NoAvailableNftId);
 			let current_owner = parent.as_ref().unwrap();
 
-			let max_recursions = T::MaxRecursions::get();
 			let new_owner_account = Self::nft_send(
 				sender.clone(),
 				collection_id,
 				nft_id,
 				new_owner.clone(),
-				max_recursions,
 			)?;
 
 			pallet_uniques::Pallet::<T>::do_transfer(
@@ -382,14 +382,14 @@ pub mod pallet {
 
 			// Handle Children StorageMap for NFTs
 			let current_cid_nid =  Pallet::<T>::decode_nft_account_id::<T::AccountId>(current_owner.clone());
-			if current_cid_nid.is_some() {
+			if let Some(current_cid_nid) = current_cid_nid {
 				// remove child from parent
-				Pallet::<T>::remove_child((current_cid_nid.unwrap().0, current_cid_nid.unwrap().1), (collection_id, nft_id));
+				Pallet::<T>::remove_child(current_cid_nid, (collection_id, nft_id));
 			}
 			// add child to new parent if NFT virtual address
 			let new_cid_nid = Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone());
-			if new_cid_nid.is_some() {
-				Pallet::<T>::add_child((new_cid_nid.unwrap().0, new_cid_nid.unwrap().1), (collection_id, nft_id));
+			if let Some(new_cid_nid) = new_cid_nid {
+				Pallet::<T>::add_child(new_cid_nid, (collection_id, nft_id));
 			}
 
 			Self::deposit_event(Event::NFTSent {

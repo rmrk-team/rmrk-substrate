@@ -262,9 +262,7 @@ where
 		collection_id: CollectionId,
 		nft_id: NftId,
 		new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
-		max_recursions: u32,
 	) -> sp_std::result::Result<T::AccountId, DispatchError> {
-
 		let (root_owner, root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		// Check ownership
 		ensure!(sender == root_owner, Error::<T>::NoPermission);
@@ -359,12 +357,10 @@ where
 		let parent =
 			pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
 		// Check if parent returns None which indicates the NFT is not available
-		if parent.is_none() {
-			return Err(Error::<T>::NoAvailableNftId)
-		}
-		let owner = parent.as_ref().unwrap();
+		parent.as_ref().ok_or(Error::<T>::NoAvailableNftId)?;
+		let owner = parent.unwrap();
 		match Self::decode_nft_account_id::<T::AccountId>(owner.clone()) {
-			None => Ok((owner.clone(), (collection_id, nft_id))),
+			None => Ok((owner, (collection_id, nft_id))),
 			Some((cid, nid)) => Pallet::<T>::lookup_root_owner(cid, nid),
 		}
 	}
@@ -461,7 +457,10 @@ where
 		NFTs::<T>::remove(collection_id, nft_id);
 		let kids = Children::<T>::take((collection_id, nft_id));
 		for (child_collection_id, child_nft_id) in kids {
-			Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
+			match Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1) {
+				Ok(_) => {},
+				Err(e) => return Err(e),
+			}
 		}
 		Ok(())
 	}
