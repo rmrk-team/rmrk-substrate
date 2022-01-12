@@ -199,6 +199,10 @@ git = 'https://github.com/paritytech/substrate.git'
 tag = 'monthly-2021-11-1'
 version = '4.0.0-dev'
 
+[dependencies.pallet-xyk-rpc-runtime-api]
+default-features = false
+path = "../pallets/rmrk-core/rpc"
+
 [features]
 default = ['std']
 runtime-benchmarks = [
@@ -242,4 +246,5 @@ std = [
     'sp-std/std',
     'sp-transaction-pool/std',
     'sp-version/std',
+    'pallet-xyk-rpc-runtime-api/std',
 ]

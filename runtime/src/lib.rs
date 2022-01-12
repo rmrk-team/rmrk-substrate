@@ -45,6 +45,8 @@ pub use pallet_template;
 
 pub use pallet_rmrk_core;
 
+use pallet_xyk_rpc_runtime_api as xyk_rpc;
+
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -376,6 +378,11 @@ pub type Executive = frame_executive::Executive<
 >;
 
 impl_runtime_apis! {
+	impl xyk_rpc::Nothing<Block> for Runtime {
+		fn nada()  {
+		}
+	}
+	
 	impl sp_api::Core<Block> for Runtime {
 		fn version() -> RuntimeVersion {
 			VERSION
