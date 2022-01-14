@@ -299,17 +299,17 @@ where
 
 		if let Some(current_owner) = parent {
 			// Handle Children StorageMap for NFTs
-			let current_cid_nid =  Pallet::<T>::decode_nft_account_id::<T::AccountId>(current_owner);
-			if let Some(current_cid_nid) = current_cid_nid {
-				// remove child from parent
-				Pallet::<T>::remove_child(current_cid_nid, (collection_id, nft_id));
+			let current_owner_cid_nid = Pallet::<T>::decode_nft_account_id::<T::AccountId>(current_owner);
+			if let Some(current_owner_cid_nid) = current_owner_cid_nid {
+				// Remove child from parent
+				Pallet::<T>::remove_child(current_owner_cid_nid, (collection_id, nft_id));
 			}
 		}
 
 		// add child to new parent if NFT virtual address
-		let new_cid_nid = Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone());
-		if let Some(new_cid_nid) = new_cid_nid {
-			Pallet::<T>::add_child(new_cid_nid, (collection_id, nft_id));
+		let new_owner_cid_nid = Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone());
+		if let Some(new_owner_cid_nid) = new_owner_cid_nid {
+			Pallet::<T>::add_child(new_owner_cid_nid, (collection_id, nft_id));
 		}
 
 		Ok(new_owner_account)
@@ -469,6 +469,13 @@ where
 		}
 	}
 
+	/// `recursive_burn` function will recursively call itself to burn the NFT and all the children
+	/// of the NFT. Any caller functions must be #[transactional]
+	///
+	/// Parameters:
+	/// - `collection_id`: Collection ID of the NFT to be burned
+	/// - `nft_id`: NFT ID that is to be burned
+	/// - `max_recursion`: Maximum number of recursion allowed
 	pub fn recursive_burn(
 		collection_id: CollectionId,
 		nft_id: NftId,
@@ -478,10 +485,7 @@ where
 		NFTs::<T>::remove(collection_id, nft_id);
 		let kids = Children::<T>::take((collection_id, nft_id));
 		for (child_collection_id, child_nft_id) in kids {
-			match Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1) {
-				Ok(_) => {},
-				Err(e) => return Err(e),
-			}
+			Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 		}
 		Ok(())
 	}

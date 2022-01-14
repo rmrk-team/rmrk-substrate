@@ -341,9 +341,13 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// transfer NFT from account A to (account B or NFT)
-		/// if `nft_send` and `do_transfer` complete successfully
-		/// update the `Children` StorageMap indexes
+		/// Transfers a NFT from an Account or NFT A to another Account or NFT B
+		///
+		/// Parameters:
+		/// - `origin`: sender of the transaction
+		/// - `collection_id`: collection id of the nft to be transferred
+		/// - `nft_id`: nft id of the nft to be transferred
+		/// - `new_owner`: new owner of the nft which can be either an account or a NFT
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn send(
