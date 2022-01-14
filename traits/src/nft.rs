@@ -56,6 +56,5 @@ pub trait Nft<AccountId, BoundedString> {
 		collection_id: CollectionId,
 		nft_id: NftId,
 		new_owner: AccountIdOrCollectionNftTuple<AccountId>,
-		max_recursions: u32,
 	) -> Result<AccountId, DispatchError>;
 }
