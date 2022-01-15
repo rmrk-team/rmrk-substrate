@@ -424,17 +424,16 @@ fn send_nft_removes_existing_parent() {
 	});
 }
 
-//SEND (nft)
+/// NFT: Send tests, multi-generational circular testing (RMRK2.0 spec: SEND)
 #[test]
 fn send_to_grandchild_fails() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
 		assert_ok!(basic_collection());
-		// Alice mints (0, 0)
-		assert_ok!(basic_mint());
-		// Alice mints (0, 1)
-		assert_ok!(basic_mint());
-		// Alice mints (0, 2)
-		assert_ok!(basic_mint());
+		// Mint NFTs (0, 0), (0, 1), (0, 2)
+		for _ in 0..3 {
+			assert_ok!(basic_mint());
+		}
 		// Alice sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -449,8 +448,7 @@ fn send_to_grandchild_fails() {
 			2,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
 		));
-
-		// Alice sends (0, 0) to (0, 2)
+		// Sending NFT to its own grandchild should fail
 		assert_noop!(
 			RMRKCore::send(
 				Origin::signed(ALICE),
