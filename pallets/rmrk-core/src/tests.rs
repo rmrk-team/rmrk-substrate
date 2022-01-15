@@ -625,14 +625,19 @@ fn add_resource_pending_works() {
 	});
 }
 
-//SETPROPERTY (property)
+/// Property: Setting property tests (RMRK2.0 spec: SETPROPERTY)
 #[test]
 fn set_property_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Define property key
 		let key = stbk("test-key");
+		// Define property value
 		let value = stb("test-value");
+		// Create a basic collection
 		assert_ok!(basic_collection());
+		// Mint NFT
 		assert_ok!(basic_mint());
+		// ALICE sets property on NFT
 		assert_ok!(RMRKCore::set_property(
 			Origin::signed(ALICE),
 			0,
@@ -640,13 +645,16 @@ fn set_property_works() {
 			key.clone(),
 			value.clone()
 		));
+		// Successful property setting should trigger a PropertySet event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
 			collection_id: 0,
 			maybe_nft_id: Some(0),
 			key: key.clone(),
 			value: value.clone(),
 		}));
-		// Error when set_property with BOB
+		// Property value now exists
+		assert_eq!(RMRKCore::properties((0, Some(0), key)).unwrap(), value);
+		// BOB does not own NFT so attempt to set property should fail
 		assert_noop!(RMRKCore::set_property(
 			Origin::signed(BOB),
 			0,
@@ -656,7 +664,6 @@ fn set_property_works() {
 			),
 			Error::<Test>::NoPermission
 		);
-		assert_eq!(RMRKCore::properties((0, Some(0), key)).unwrap(), value);
 	});
 }
 
