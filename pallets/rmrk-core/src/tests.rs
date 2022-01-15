@@ -552,6 +552,21 @@ fn create_resource_works() {
 		assert_ok!(basic_collection());
 		// Mint NFT
 		assert_ok!(basic_mint());
+		// Adding an empty resource should fail
+		assert_noop!(
+			RMRKCore::add_resource(
+				Origin::signed(ALICE),
+				COLLECTION_ID_0,
+				NFT_ID_0,
+				None,
+				None,
+				None,
+				None,
+				None,
+				None
+			),
+			Error::<Test>::EmptyResource
+		);
 		// Add resource to NFT
 		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(ALICE),
@@ -571,29 +586,6 @@ fn create_resource_works() {
 		}));
 		// Since ALICE rootowns NFT, pending status of resource should be false
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
-	});
-}
-
-//RESADD (resource)
-#[test]
-fn create_empty_resource_fails() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(basic_collection());
-		assert_ok!(basic_mint());
-		assert_noop!(
-			RMRKCore::add_resource(
-				Origin::signed(ALICE),
-				COLLECTION_ID_0,
-				NFT_ID_0,
-				None,
-				None,
-				None,
-				None,
-				None,
-				None
-			),
-			Error::<Test>::EmptyResource
-		);
 	});
 }
 
