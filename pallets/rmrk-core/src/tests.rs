@@ -667,32 +667,30 @@ fn set_property_works() {
 	});
 }
 
-//SETPRIORITY (priority)
+/// Priority: Setting priority tests (RMRK2.0 spec: SETPRIORITY)
 #[test]
 fn set_priority_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
 		assert_ok!(basic_collection());
+		// Mint NFT
 		assert_ok!(basic_mint());
+		// ALICE sets priority on NFT
 		assert_ok!(RMRKCore::set_priority(
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			vec![stv("hello"), stv("world")]
 		));
+		// Successful priority set should trigger PrioritySet event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PrioritySet {
 			collection_id: 0,
 			nft_id: 0,
 		}));
+		// Priorities exist
 		assert_eq!(
 			RMRKCore::priorities(COLLECTION_ID_0, NFT_ID_0).unwrap(),
 			vec![stv("hello"), stv("world")]
 		);
 	});
 }
-
-
-
-// #[test]
-// TODO fn cannot send to its own descendent?  this should be easy enough to check
-// TODO fn cannot send to its own grandparent?  this seems difficult to check without implementing a
-// new Parent storage struct
