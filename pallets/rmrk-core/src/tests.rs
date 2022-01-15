@@ -211,14 +211,20 @@ fn mint_nft_works() {
 #[test]
 fn mint_collection_max_logic_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(RMRKCore::create_collection(
-			Origin::signed(ALICE),
-			bvec![0u8; 20],
-			Some(1),
-			bvec![0u8; 15]
-		));
-		assert_ok!(basic_mint());
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint 5 NFTs (filling collection)
+		for _ in 0..5 {
+			assert_ok!(basic_mint());
+		}
+		// Minting beyond collection max (5) should fail
+		assert_noop!(
+			basic_mint(),
+			Error::<Test>::CollectionFullOrLocked
+		);
+		// Burn an NFT
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, 0));
+		// Minting should still fail, as burning should not affect "fullness" of collection
 		assert_noop!(
 			basic_mint(),
 			Error::<Test>::CollectionFullOrLocked
