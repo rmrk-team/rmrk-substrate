@@ -115,18 +115,24 @@ fn lock_collection_works() {
 	});
 }
 
-//DESTROY (collection)
+/// Collection: Destroy collection tests (RMRK2.0 spec: doesn't exist)
 #[test]
 fn destroy_collection_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection (has 5 max)
 		assert_ok!(basic_collection());
+		// Mint an NFT
 		assert_ok!(basic_mint());
+		// Non-empty collection should not be able to be destroyed
 		assert_noop!(
 			RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0),
 			Error::<Test>::CollectionNotEmpty
 		);
+		// Burn the single NFT in collection
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+		// Empty collection can be destroyed
 		assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
+		// Destroy event is triggered by successful destroy_collection
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::CollectionDestroyed {
 			issuer: ALICE,
 			collection_id: COLLECTION_ID_0,
