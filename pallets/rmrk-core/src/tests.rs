@@ -386,48 +386,40 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 	});
 }
 
-//SEND (nft)
+/// NFT: Send tests, removing parent (RMRK2.0 spec: SEND)
 #[test]
 fn send_nft_removes_existing_parent() {
 	ExtBuilder::default().build().execute_with(|| {
-		// let nft_metadata = bvec![0u8; 20];
+		// Create a basic collection
 		assert_ok!(basic_collection());
-		// Alice mints NFT (0, 0)
-		assert_ok!(basic_mint());
-		// Alice mints NFT (0, 1)
-		assert_ok!(basic_mint());
-		// Alice mints NFT (0, 2)
-		assert_ok!(basic_mint());
-		// Alice mints NFT (0, 3)
-		assert_ok!(basic_mint());
-
-		// Alice sends NFT (0, 1) to NFT (0, 0)
+		// Mint NFTs (0, 0), (0, 1), (0, 2), (0, 3)
+		for _ in 0..4 {
+			assert_ok!(basic_mint());
+		}
+		// ALICE sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
-		// Alice sends NFT (0, 2) to NFT (0, 0)
+		// ALICE sends NFT (0, 2) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			2,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
-
 		// NFT (0, 0) is parent of NFT (0, 1)
 		assert_eq!(RMRKCore::children((0, 0)), vec![(0, 1), (0, 2)]);
-
-		// Alice sends NFT (0, 1) to NFT (0, 2)
+		// ALICE sends NFT (0, 1) to NFT (0, 2)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
 		));
-
-		// NFT (0, 0) is not parent of NFT (0, 1)
+		// NFT (0, 0) is no longer parent of NFT (0, 1)
 		assert_eq!(RMRKCore::children((0, 0)), vec![(0, 2)]);
 	});
 }
