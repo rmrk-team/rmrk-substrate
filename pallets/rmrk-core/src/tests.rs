@@ -365,7 +365,6 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 		for _ in 0..3 {
 			assert_ok!(basic_mint());
 		}
-
 		// ALICE sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
