@@ -159,17 +159,21 @@ fn change_issuer_works() {
 	});
 }
 
-//MINT (nft)
+/// NFT: Basic Mint tests (RMRK2.0 spec: MINT)
 #[test]
 fn mint_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
 		assert_ok!(basic_collection());
+		// Mint an NFT
 		assert_ok!(basic_mint());
+		// Minting an NFT should trigger an NftMinted event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NftMinted {
 			owner: ALICE,
 			collection_id: 0,
 			nft_id: 0,
 		}));
+		// Minting an NFT should cause nfts_count to increase to 1
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
@@ -179,6 +183,7 @@ fn mint_nft_works() {
 			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20]
 		));
+		//TODO BOB shouldn't be able to mint in ALICE's collection?!
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(BOB),
 			BOB,
