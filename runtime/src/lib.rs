@@ -326,6 +326,12 @@ impl pallet_uniques::Config for Runtime {
 	type WeightInfo = ();
 }
 
+impl pallet_utility::Config for Runtime {
+    type Event = Event;
+    type Call = Call;
+    type WeightInfo = ();
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -345,6 +351,7 @@ construct_runtime!(
 		TemplateModule: pallet_template,
 		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
 		Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
+		Utility: pallet_utility::{Pallet, Call, Storage, Event},
 	}
 );
 
