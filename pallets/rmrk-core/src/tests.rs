@@ -31,14 +31,21 @@ macro_rules! bvec {
 	}
 }
 
-// issuer: T::AccountId,
-// 		metadata: StringLimitOf<T>,
-// 		max: u32,
-// 		symbol: StringLimitOf
-
 /// Shortcut for a test collection creation (Alice is issue, max NFTs is 5)
 fn basic_collection() -> DispatchResult {
 	RMRKCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], Some(5), bvec![0u8; 15])
+}
+
+/// Shortcut for a basic mint (Alice owner, Collection ID 0, Royalty 1.525)
+fn basic_mint() -> DispatchResult {
+	RMRKCore::mint_nft(
+		Origin::signed(ALICE),
+		ALICE,
+		COLLECTION_ID_0,
+		Some(ALICE),
+		Some(Permill::from_float(1.525)),
+		bvec![0u8; 20]
+	)
 }
 
 // Tests ordered as follows:
@@ -82,14 +89,7 @@ fn lock_collection_works() {
 		assert_ok!(basic_collection());
 		// Mint 4 NFTs
 		for _ in 0..4 {
-			assert_ok!(RMRKCore::mint_nft(
-				Origin::signed(ALICE),
-				ALICE,
-				COLLECTION_ID_0,
-				Some(ALICE),
-				Some(Permill::from_float(0.0)),
-				bvec![0u8; 20]
-			));
+			assert_ok!(basic_mint());
 		}
 		// Lock collection
 		assert_ok!(RMRKCore::lock_collection(Origin::signed(ALICE), 0));
@@ -100,14 +100,7 @@ fn lock_collection_works() {
 		}));
 		// Attempt to mint in a locked collection should fail
 		assert_noop!(
-			RMRKCore::mint_nft(
-				Origin::signed(ALICE),
-				ALICE,
-				COLLECTION_ID_0,
-				Some(ALICE),
-				Some(Permill::from_float(0.0)),
-				bvec![0u8; 20]
-			),
+			basic_mint(),
 			Error::<Test>::CollectionFullOrLocked
 		);
 		// Burn an NFT
@@ -116,14 +109,7 @@ fn lock_collection_works() {
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 3);
 		// Still we should be unable to mint another NFT
 		assert_noop!(
-			RMRKCore::mint_nft(
-				Origin::signed(ALICE),
-				ALICE,
-				COLLECTION_ID_0,
-				Some(ALICE),
-				Some(Permill::from_float(0.0)),
-				bvec![0u8; 20]
-			),
+			basic_mint(),
 			Error::<Test>::CollectionFullOrLocked
 		);
 	});
@@ -134,14 +120,7 @@ fn lock_collection_works() {
 fn destroy_collection_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(1.525)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		assert_noop!(
 			RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0),
 			Error::<Test>::CollectionNotEmpty
@@ -176,14 +155,7 @@ fn change_issuer_works() {
 fn mint_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(20.525)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NftMinted {
 			owner: ALICE,
 			collection_id: 0,
@@ -231,24 +203,10 @@ fn mint_collection_max_logic_works() {
 			Some(1),
 			bvec![0u8; 15]
 		));
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(20.525)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, 0));
 		assert_noop!(
-			RMRKCore::mint_nft(
-				Origin::signed(ALICE),
-				ALICE,
-				COLLECTION_ID_0,
-				Some(CHARLIE),
-				Some(Permill::from_float(20.525)),
-				bvec![0u8; 20]
-			),
+			basic_mint(),
 			Error::<Test>::CollectionFullOrLocked
 		);
 	});
@@ -260,24 +218,10 @@ fn mint_beyond_collection_max_fails() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
 		for _ in 0..5 {
-			assert_ok!(RMRKCore::mint_nft(
-				Origin::signed(ALICE),
-				ALICE,
-				COLLECTION_ID_0,
-				Some(ALICE),
-				Some(Permill::from_float(0.0)),
-				bvec![0u8; 20]
-			));
+			assert_ok!(basic_mint());
 		}
 		assert_noop!(
-			RMRKCore::mint_nft(
-				Origin::signed(ALICE),
-				ALICE,
-				COLLECTION_ID_0,
-				Some(ALICE),
-				Some(Permill::from_float(0.0)),
-				bvec![0u8; 20]
-			),
+			basic_mint(),
 			Error::<Test>::CollectionFullOrLocked
 		);
 	});
@@ -287,35 +231,14 @@ fn mint_beyond_collection_max_fails() {
 #[test]
 fn send_nft_to_minted_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		let nft_metadata = bvec![0u8; 20];
+		// let nft_metadata = bvec![0u8; 20];
 		assert_ok!(basic_collection());
 		// Alice mints NFT (0, 0) [will be the parent]
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(1.525)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice mints NFT (0, 1) [will be the child]
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(1.525)),
-			nft_metadata
-		));
+		assert_ok!(basic_mint());
 		// Alice mints NFT (0, 2) [will be the child]
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(1.525)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 
 		// Alice sends NFT (0, 0) [parent] to Bob
 		assert_ok!(RMRKCore::send(
@@ -439,35 +362,14 @@ fn send_nft_to_minted_nft_works() {
 #[test]
 fn send_two_nfts_to_same_nft_creates_two_children() {
 	ExtBuilder::default().build().execute_with(|| {
-		let nft_metadata = bvec![0u8; 20];
+		// let nft_metadata = bvec![0u8; 20];
 		assert_ok!(basic_collection());
 		// Alice mints NFT (0, 0)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice mints NFT (0, 1)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice mints NFT (0, 2)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			nft_metadata
-		));
+		assert_ok!(basic_mint());
 
 		// Alice sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
@@ -497,44 +399,16 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 #[test]
 fn send_nft_removes_existing_parent() {
 	ExtBuilder::default().build().execute_with(|| {
-		let nft_metadata = bvec![0u8; 20];
+		// let nft_metadata = bvec![0u8; 20];
 		assert_ok!(basic_collection());
 		// Alice mints NFT (0, 0)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice mints NFT (0, 1)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice mints NFT (0, 2)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice mints NFT (0, 3)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			nft_metadata
-		));
+		assert_ok!(basic_mint());
 
 		// Alice sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
@@ -573,32 +447,11 @@ fn send_to_grandchild_fails() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
 		// Alice mints (0, 0)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice mints (0, 1)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice mints (0, 2)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -633,14 +486,7 @@ fn burn_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 
 		assert_noop!(RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::NoPermission);
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
@@ -662,41 +508,13 @@ fn burn_nft_with_great_grandchildren_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
 		// Alice mints (0, 0)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice mints (0, 1)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice mints (0, 2)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice mints (0, 3)
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Alice sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -748,14 +566,7 @@ fn create_resource_works() {
 		);
 		// Create collection and NFT
 		assert_ok!(basic_collection());
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		// Add resource works
 		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(ALICE),
@@ -782,14 +593,7 @@ fn create_resource_works() {
 fn create_empty_resource_fails() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(1.525)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		assert_noop!(
 			RMRKCore::add_resource(
 				Origin::signed(ALICE),
@@ -812,14 +616,7 @@ fn create_empty_resource_fails() {
 fn add_resource_pending_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(BOB),
 			0,
@@ -840,14 +637,7 @@ fn add_resource_pending_works() {
 fn accept_resource_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(BOB),
 			0,
@@ -880,14 +670,7 @@ fn set_property_works() {
 		let key = stbk("test-key");
 		let value = stb("test-value");
 		assert_ok!(basic_collection());
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(1.525)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		assert_ok!(RMRKCore::set_property(
 			Origin::signed(ALICE),
 			0,
@@ -920,14 +703,7 @@ fn set_property_works() {
 fn set_priority_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
-		assert_ok!(RMRKCore::mint_nft(
-			Origin::signed(ALICE),
-			ALICE,
-			COLLECTION_ID_0,
-			Some(ALICE),
-			Some(Permill::from_float(0.0)),
-			bvec![0u8; 20]
-		));
+		assert_ok!(basic_mint());
 		assert_ok!(RMRKCore::set_priority(
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
