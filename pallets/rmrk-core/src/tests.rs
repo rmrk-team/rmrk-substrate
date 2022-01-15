@@ -232,68 +232,66 @@ fn mint_collection_max_logic_works() {
 	});
 }
 
-//SEND (nft)
+/// NFT: Send tests (RMRK2.0 spec: SEND)
 #[test]
 fn send_nft_to_minted_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		// let nft_metadata = bvec![0u8; 20];
+		// Create a basic collection
 		assert_ok!(basic_collection());
-		// Alice mints NFT (0, 0) [will be the parent]
-		assert_ok!(basic_mint());
-		// Alice mints NFT (0, 1) [will be the child]
-		assert_ok!(basic_mint());
-		// Alice mints NFT (0, 2) [will be the child]
-		assert_ok!(basic_mint());
-
-		// Alice sends NFT (0, 0) [parent] to Bob
+		// Mint NFTs (0, 0), (0, 1), (0, 2)
+		for _ in 0..3 {
+			assert_ok!(basic_mint());
+		}
+		// ALICE sends NFT (0, 0) [parent] to Bob
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			0,
 			AccountIdOrCollectionNftTuple::AccountId(BOB),
 		));
+		// Successful send triggers NFTSent event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTSent {
 			sender: ALICE,
 			recipient: AccountIdOrCollectionNftTuple::AccountId(BOB),
 			collection_id: 0,
 			nft_id: 0,
 		}));
-		// Alice sends NFT (0, 1) [child] to NFT (0, 0) [parent]
+		// ALICE sends NFT (0, 1) [child] to BOB-owned NFT (0, 0) [parent]
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
+		// Successful send to NFT triggers NFTSent event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTSent {
 			sender: ALICE,
 			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 			collection_id: 0,
 			nft_id: 1,
 		}));
-		// Alice sends NFT (0, 2) [child] to NFT (0, 0) [parent]
+		// ALICE sends NFT (0, 2) [child] to BOB-owned NFT (0, 0) [parent]
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			2,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
 		));
+		// Successful send to NFT triggers NFTSent event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTSent {
 			sender: ALICE,
 			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
 			collection_id: 0,
 			nft_id: 2,
 		}));
-		// Check that NFT (0,1) [child] is owned by NFT (0,0) [parent]
+		// Bob-rootowned NFT (0,1) [child] is owned by Bob-rootowned NFT (0,0) [parent]
 		assert_eq!(
 			UNQ::Pallet::<Test>::owner(0, 1),
 			Some(RMRKCore::nft_to_account_id(0, 0)),
 		);
-
-		// Check NFT (0,0) has NFT (0,1) in Children StorageMap
+		// NFT (0,0) has NFT (0,1) in Children StorageMap
 		assert_eq!(RMRKCore::children((0, 0)), vec![(0,1)]);
-
-		// Error if trying to assign send a nft to self nft
+		// Attempt to send NFT to self should fail
 		assert_noop!(
 			RMRKCore::send(
 				Origin::signed(BOB),
@@ -303,8 +301,7 @@ fn send_nft_to_minted_nft_works() {
 			),
 			Error::<Test>::CannotSendToDescendentOrSelf
 		);
-
-		// Error if trying to assign send a nft creating circular reference
+		// Attempt to send NFT to its own descendent should fail
 		assert_noop!(
 			RMRKCore::send(
 				Origin::signed(BOB),
@@ -314,13 +311,11 @@ fn send_nft_to_minted_nft_works() {
 			),
 			Error::<Test>::CannotSendToDescendentOrSelf
 		);
-
-		// Check that Bob now root-owns NFT (0, 1) [child] since he wasn't originally rootowner
+		// BOB now root-owns NFT (0, 1) [child] (originally was ALICE)
 		if let Ok((root_owner, _)) = RMRKCore::lookup_root_owner(0, 1) {
 			assert_eq!(root_owner, BOB);
 		}
-
-		// Error if sender doesn't root-own sending NFT
+		// Sending NFT that is not root-owned should fail
 		assert_noop!(
 			RMRKCore::send(
 				Origin::signed(CHARLIE),
@@ -330,8 +325,7 @@ fn send_nft_to_minted_nft_works() {
 			),
 			Error::<Test>::NoPermission
 		);
-
-		// Error if sending NFT doesn't exist
+		// Sending non-existent NFT should fail
 		assert_noop!(
 			RMRKCore::send(
 				Origin::signed(ALICE),
@@ -341,16 +335,14 @@ fn send_nft_to_minted_nft_works() {
 			),
 			Error::<Test>::NoAvailableNftId
 		);
-
-		// BOB can send back child NFT to ALICE
+		// Root-owner (Bob) can send child NFT to another account
 		assert_ok!(RMRKCore::send(
 			Origin::signed(BOB),
 			0,
 			1,
 			AccountIdOrCollectionNftTuple::AccountId(ALICE)
 		));
-
-		// Error if recipient is NFT and that NFT doesn't exist
+		// Sending to non-existent NFT should fail
 		assert_noop!(
 			RMRKCore::send(
 				Origin::signed(ALICE),
