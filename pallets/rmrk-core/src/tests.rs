@@ -529,11 +529,11 @@ fn burn_nft_with_great_grandchildren_works() {
 	});
 }
 
-//RESADD (resource)
+/// Resource: Basic resource addition (RMRK2.0 spec: RESADD)
 #[test]
 fn create_resource_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		// Creating a resource for non-existent NFT fails
+		// Adding a resource to non-existent NFT should fail
 		assert_noop!(
 			RMRKCore::add_resource(
 				Origin::signed(ALICE),
@@ -548,10 +548,11 @@ fn create_resource_works() {
 			),
 			Error::<Test>::NoAvailableNftId
 		);
-		// Create collection and NFT
+		// Create a basic collection
 		assert_ok!(basic_collection());
+		// Mint NFT
 		assert_ok!(basic_mint());
-		// Add resource works
+		// Add resource to NFT
 		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(ALICE),
 			0,
@@ -563,11 +564,12 @@ fn create_resource_works() {
 			Some(bvec![0u8; 20]),
 			Some(bvec![0u8; 20]),
 		));
+		// Successful resource addition should trigger ResourceAdded event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAdded {
 			nft_id: 0,
 			resource_id: 0,
 		}));
-		// Since ALICE rootowns NFT (0, 0), pending should be false
+		// Since ALICE rootowns NFT, pending status of resource should be false
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 	});
 }
