@@ -38,17 +38,6 @@ fn basic_collection() -> DispatchResult {
 fn create_collection_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		assert_ok!(basic_collection());
-		// FIXME: panick
-		// assert_noop!(
-		// 	RMRKCore::create_collection(
-		// 		Origin::signed(ALICE),
-		// 		bvec![0; <Test as UNQ::Config>::StringLimit::get() as usize + 1],
-		// 		None,
-		// 		bvec![0u8; 10],
-		// 	),
-		// 	Error::<Test>::TooLong
-		// );
-		// NextCollectionId::<Test>::mutate(|id| *id = <Test as UNQ::Config>::ClassId::max_value());
 		CollectionIndex::<Test>::mutate(|id| *id = CollectionId::max_value());
 		assert_noop!(
 			RMRKCore::create_collection(
