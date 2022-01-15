@@ -35,10 +35,14 @@ fn basic_collection() -> DispatchResult {
 	RMRKCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], Some(5), bvec![0u8; 15])
 }
 #[test]
+// Basic Collection tests
 fn create_collection_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
 		assert_ok!(basic_collection());
+		// Reassign CollectionIndex to max value
 		CollectionIndex::<Test>::mutate(|id| *id = CollectionId::max_value());
+		// Creating collection above max_value should fail
 		assert_noop!(
 			RMRKCore::create_collection(
 				Origin::signed(ALICE),
@@ -48,6 +52,7 @@ fn create_collection_works() {
 			),
 			Error::<Test>::NoAvailableCollectionId
 		);
+		// Check for event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::CollectionCreated {
 			issuer: ALICE,
 			collection_id: 0,
