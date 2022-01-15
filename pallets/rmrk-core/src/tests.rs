@@ -232,21 +232,6 @@ fn mint_collection_max_logic_works() {
 	});
 }
 
-//MINT (nft)
-#[test]
-fn mint_beyond_collection_max_fails() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(basic_collection());
-		for _ in 0..5 {
-			assert_ok!(basic_mint());
-		}
-		assert_noop!(
-			basic_mint(),
-			Error::<Test>::CollectionFullOrLocked
-		);
-	});
-}
-
 //SEND (nft)
 #[test]
 fn send_nft_to_minted_nft_works() {
