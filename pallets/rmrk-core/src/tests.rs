@@ -589,7 +589,7 @@ fn create_resource_works() {
 	});
 }
 
-/// Resource: Resource addition with pending (RMRK2.0 spec: RESADD)
+/// Resource: Resource addition with pending and accept (RMRK2.0 spec: ACCEPT)
 #[test]
 fn add_resource_pending_works() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -611,36 +611,16 @@ fn add_resource_pending_works() {
 		));
 		// Since BOB doesn't root-own NFT, resource's pending status should be true
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, true);
-	});
-}
-
-//ACCEPT (resource)
-#[test]
-fn accept_resource_works() {
-	ExtBuilder::default().build().execute_with(|| {
-		assert_ok!(basic_collection());
-		assert_ok!(basic_mint());
-		assert_ok!(RMRKCore::add_resource(
-			Origin::signed(BOB),
-			0,
-			0,
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-		));
-		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, true);
-		// Bob can't accept Alice's NFT's resource
+		// BOB doesn't own ALICES's NFT, so accept should fail
 		assert_noop!(RMRKCore::accept(Origin::signed(BOB), 0, 0, 0), Error::<Test>::NoPermission);
-		// Alice can accept her own NFT's resource
+		// ALICE can accept her own NFT's pending resource
 		assert_ok!(RMRKCore::accept(Origin::signed(ALICE), 0, 0, 0));
+		// Valid resource acceptance should trigger a ResourceAccepted event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAccepted {
 			nft_id: 0,
 			resource_id: 0,
 		}));
-		// Resource should now be pending = false
+		// Resource should now have false pending status
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 	});
 }
