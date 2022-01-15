@@ -489,45 +489,42 @@ fn burn_nft_works() {
 	});
 }
 
-//BURN (nft)
+/// NFT: Burn complex multi-generational tests (RMRK2.0 spec: BURN)
 #[test]
 fn burn_nft_with_great_grandchildren_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
 		assert_ok!(basic_collection());
-		// Alice mints (0, 0)
-		assert_ok!(basic_mint());
-		// Alice mints (0, 1)
-		assert_ok!(basic_mint());
-		// Alice mints (0, 2)
-		assert_ok!(basic_mint());
-		// Alice mints (0, 3)
-		assert_ok!(basic_mint());
-		// Alice sends NFT (0, 1) to NFT (0, 0)
+		// Mint NFTs (0, 0), (0, 1), (0, 2), (0, 3)
+		for _ in 0..4 {
+			assert_ok!(basic_mint());
+		}
+		// ALICE sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
-		// Alice sends NFT (0, 2) to NFT (0, 1)
+		// ALICE sends NFT (0, 2) to NFT (0, 1)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			2,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
 		));
-		// Alice sends NFT (0, 3) to NFT (0, 2)
+		// ALICE sends NFT (0, 3) to NFT (0, 2)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			3,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
 		));
-		// Child is alive
+		// Great-grandchild NFT (0, 3) exists
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_some(), true);
-		// Burn great-grandfather
+		// Burn great-grandparent NFT (0, 0)
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
-		// Child is dead
+		// Great-grandchild NFT (0, 3) is dead :'-(
 		assert!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_none())
 	});
 }
