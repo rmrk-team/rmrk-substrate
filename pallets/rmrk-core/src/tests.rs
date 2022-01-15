@@ -165,6 +165,8 @@ fn mint_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
+		// Collection nfts_count should be 0 prior to minting
+		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		// Mint an NFT
 		assert_ok!(basic_mint());
 		// Minting an NFT should trigger an NftMinted event
@@ -461,12 +463,12 @@ fn send_to_grandchild_fails() {
 	});
 }
 
-//BURN (nft)
+/// NFT: Burn simple tests (RMRK2.0 spec: BURN)
 #[test]
 fn burn_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
 		assert_ok!(basic_collection());
-		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		assert_ok!(basic_mint());
 
 		assert_noop!(RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::NoPermission);
