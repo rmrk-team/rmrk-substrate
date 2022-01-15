@@ -469,19 +469,23 @@ fn burn_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
+		// Mint an NFT
 		assert_ok!(basic_mint());
-
+		// BOB should not be able to burn ALICE's NFT
 		assert_noop!(RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::NoPermission);
-		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
-    assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
-		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
-    assert_noop!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::NoAvailableNftId);
-		
-		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0).is_none(), true);
+		// ALICE burns her NFT
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+		// Successful burn creates NFTBurned event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTBurned {
 			owner: ALICE,
 			nft_id: 0,
 		}));
+		// NFT count of collection is now 0
+		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
+		// ALICE can't burn an NFT twice
+		assert_noop!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::NoAvailableNftId);
+		// Burned NFT no longer exists
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0).is_none(), true);
 	});
 }
 
