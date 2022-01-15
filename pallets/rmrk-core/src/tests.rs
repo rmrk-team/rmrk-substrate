@@ -140,18 +140,21 @@ fn destroy_collection_works() {
 	});
 }
 
-
-//CHANGEISSUER (collection)
+/// Collection: Change issuer tests (RMRK2.0 spec: CHANGEISSUER)=
 #[test]
 fn change_issuer_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
 		assert_ok!(basic_collection());
+		// Change issuer from ALICE to BOB
 		assert_ok!(RMRKCore::change_issuer(Origin::signed(ALICE), 0, BOB));
+		// Changing issuer should trigger IssuerChanged event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::IssuerChanged {
 			old_issuer: ALICE,
 			new_issuer: BOB,
 			collection_id: 0,
 		}));
+		// New issuer should be Bob
 		assert_eq!(RMRKCore::collections(0).unwrap().issuer, BOB);
 	});
 }
