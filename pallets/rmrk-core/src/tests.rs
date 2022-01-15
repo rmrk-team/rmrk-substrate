@@ -31,6 +31,12 @@ macro_rules! bvec {
 	}
 }
 
+// issuer: T::AccountId,
+// 		metadata: StringLimitOf<T>,
+// 		max: u32,
+// 		symbol: StringLimitOf
+
+/// Shortcut for a test collection creation (Alice is issue, max NFTs is 5)
 fn basic_collection() -> DispatchResult {
 	RMRKCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], Some(5), bvec![0u8; 15])
 }
@@ -42,16 +48,20 @@ fn basic_collection() -> DispatchResult {
 // Property: set
 // Priority: set
 
-//CREATE (collection)
+/// Collection: Basic collection tests (RMRK2.0 spec: CREATE)
 #[test]
-// Basic Collection tests
 fn create_collection_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
+		// Creating collection should trigger CollectionCreated event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::CollectionCreated {
+			issuer: ALICE,
+			collection_id: 0,
+		}));
 		// Reassign CollectionIndex to max value
 		CollectionIndex::<Test>::mutate(|id| *id = CollectionId::max_value());
-		// Creating collection above max_value should fail
+		// Creating collection above max_value of CollectionId (4294967295) should fail
 		assert_noop!(
 			RMRKCore::create_collection(
 				Origin::signed(ALICE),
@@ -60,12 +70,7 @@ fn create_collection_works() {
 				bvec![0u8; 15],
 			),
 			Error::<Test>::NoAvailableCollectionId
-		);
-		// Check for event
-		System::assert_last_event(MockEvent::RmrkCore(crate::Event::CollectionCreated {
-			issuer: ALICE,
-			collection_id: 0,
-		}));
+		);	
 	});
 }
 
@@ -128,6 +133,7 @@ fn destroy_collection_works() {
 		}));
 	});
 }
+
 
 //CHANGEISSUER (collection)
 #[test]
