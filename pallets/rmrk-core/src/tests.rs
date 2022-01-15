@@ -589,12 +589,15 @@ fn create_resource_works() {
 	});
 }
 
-//RESADD (resource)
+/// Resource: Resource addition with pending (RMRK2.0 spec: RESADD)
 #[test]
 fn add_resource_pending_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
 		assert_ok!(basic_collection());
+		// Mint NFT
 		assert_ok!(basic_mint());
+		// BOB adds a resource to ALICE's NFT
 		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(BOB),
 			0,
@@ -606,6 +609,7 @@ fn add_resource_pending_works() {
 			Some(bvec![0u8; 20]),
 			Some(bvec![0u8; 20]),
 		));
+		// Since BOB doesn't root-own NFT, resource's pending status should be true
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, true);
 	});
 }
