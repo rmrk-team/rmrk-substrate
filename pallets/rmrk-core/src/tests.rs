@@ -74,12 +74,14 @@ fn create_collection_works() {
 	});
 }
 
-//LOCK (collection)
+/// Collection: Locking collection tests (RMRK2.0 spec: LOCK)
 #[test]
 fn lock_collection_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection (has 5 max)
 		assert_ok!(basic_collection());
-		for _ in 0..3 {
+		// Mint 4 NFTs
+		for _ in 0..4 {
 			assert_ok!(RMRKCore::mint_nft(
 				Origin::signed(ALICE),
 				ALICE,
@@ -89,11 +91,30 @@ fn lock_collection_works() {
 				bvec![0u8; 20]
 			));
 		}
+		// Lock collection
 		assert_ok!(RMRKCore::lock_collection(Origin::signed(ALICE), 0));
+		// Locking collection should trigger CollectionLocked event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::CollectionLocked {
 			issuer: ALICE,
 			collection_id: 0,
 		}));
+		// Attempt to mint in a locked collection should fail
+		assert_noop!(
+			RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				ALICE,
+				COLLECTION_ID_0,
+				Some(ALICE),
+				Some(Permill::from_float(0.0)),
+				bvec![0u8; 20]
+			),
+			Error::<Test>::CollectionFullOrLocked
+		);
+		// Burn an NFT
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+		// Should now have only three NFTS in collection
+		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 3);
+		// Still we should be unable to mint another NFT
 		assert_noop!(
 			RMRKCore::mint_nft(
 				Origin::signed(ALICE),
