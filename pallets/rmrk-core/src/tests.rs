@@ -207,7 +207,7 @@ fn mint_nft_works() {
 	});
 }
 
-//MINT (nft)
+/// NFT: Mint tests with max (RMRK2.0 spec: MINT)
 #[test]
 fn mint_collection_max_logic_works() {
 	ExtBuilder::default().build().execute_with(|| {
