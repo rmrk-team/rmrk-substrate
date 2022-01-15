@@ -653,7 +653,7 @@ fn set_property_works() {
 			value: value.clone(),
 		}));
 		// Property value now exists
-		assert_eq!(RMRKCore::properties((0, Some(0), key)).unwrap(), value);
+		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())).unwrap(), value.clone());
 		// BOB does not own NFT so attempt to set property should fail
 		assert_noop!(RMRKCore::set_property(
 			Origin::signed(BOB),
