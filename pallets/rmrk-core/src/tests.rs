@@ -355,39 +355,34 @@ fn send_nft_to_minted_nft_works() {
 	});
 }
 
-//SEND (nft)
+/// NFT: Send tests, siblings (RMRK2.0 spec: SEND)
 #[test]
 fn send_two_nfts_to_same_nft_creates_two_children() {
 	ExtBuilder::default().build().execute_with(|| {
-		// let nft_metadata = bvec![0u8; 20];
+		// Create a basic collection
 		assert_ok!(basic_collection());
-		// Alice mints NFT (0, 0)
-		assert_ok!(basic_mint());
-		// Alice mints NFT (0, 1)
-		assert_ok!(basic_mint());
-		// Alice mints NFT (0, 2)
-		assert_ok!(basic_mint());
+		// Mint NFTs (0, 0), (0, 1), (0, 2)
+		for _ in 0..3 {
+			assert_ok!(basic_mint());
+		}
 
-		// Alice sends NFT (0, 1) to NFT (0, 0)
+		// ALICE sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
-
-		// Check NFT (0,0) has NFT (0,1) in Children StorageMap
+		// NFT (0,0) has NFT (0,1) in Children StorageMap
 		assert_eq!(RMRKCore::children((0, 0)), vec![(0,1)]);
-
-		// Alice sends NFT (0, 2) to NFT (0, 0)
+		// ALICE sends NFT (0, 2) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			2,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
-
-		// Check NFT (0,0) has NFT (0,1) & (0,2) in Children StorageMap
+		// NFT (0,0) has NFT (0,1) & (0,2) in Children StorageMap
 		assert_eq!(RMRKCore::children((0, 0)), vec![(0,1), (0,2)]);
 	});
 }
