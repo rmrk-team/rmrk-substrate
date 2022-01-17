@@ -29,8 +29,12 @@ jobs:
       # download the needed toolchain and components.
       run: |
         rustup show
+
     - name: Check
       run: cargo check --workspace --all-features
+
+    - name: Lint
+      run: cargo clippy --workspace --all-features
 
     - name: Test
       run: cargo test --workspace --all-features
