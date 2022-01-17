@@ -12,7 +12,7 @@ where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
 	fn priority_set(
-		sender: T::AccountId,
+		_sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
 		priorities: Vec<Vec<u8>>,
@@ -262,10 +262,14 @@ where
 		collection_id: CollectionId,
 		nft_id: NftId,
 		new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
-		max_recursions: u32,
 	) -> sp_std::result::Result<T::AccountId, DispatchError> {
+		// Get current owner for child removal later
+		let parent =
+			pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
+		// Check if parent returns None which indicates the NFT is not available
+		ensure!(parent.is_some(),Error::<T>::NoAvailableNftId);
 
-		let (root_owner, root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		// Check ownership
 		ensure!(sender == root_owner, Error::<T>::NoPermission);
 		// Get NFT info
@@ -292,6 +296,21 @@ where
 
 		sending_nft.owner = new_owner.clone();
 		NFTs::<T>::insert(collection_id, nft_id, sending_nft);
+
+		if let Some(current_owner) = parent {
+			// Handle Children StorageMap for NFTs
+			let current_owner_cid_nid = Pallet::<T>::decode_nft_account_id::<T::AccountId>(current_owner);
+			if let Some(current_owner_cid_nid) = current_owner_cid_nid {
+				// Remove child from parent
+				Pallet::<T>::remove_child(current_owner_cid_nid, (collection_id, nft_id));
+			}
+		}
+
+		// add child to new parent if NFT virtual address
+		let new_owner_cid_nid = Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone());
+		if let Some(new_owner_cid_nid) = new_owner_cid_nid {
+			Pallet::<T>::add_child(new_owner_cid_nid, (collection_id, nft_id));
+		}
 
 		Ok(new_owner_account)
 	}
@@ -359,12 +378,10 @@ where
 		let parent =
 			pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
 		// Check if parent returns None which indicates the NFT is not available
-		if parent.is_none() {
-			return Err(Error::<T>::NoAvailableNftId)
-		}
-		let owner = parent.as_ref().unwrap();
+		parent.as_ref().ok_or(Error::<T>::NoAvailableNftId)?;
+		let owner = parent.unwrap();
 		match Self::decode_nft_account_id::<T::AccountId>(owner.clone()) {
-			None => Ok((owner.clone(), (collection_id, nft_id))),
+			None => Ok((owner, (collection_id, nft_id))),
 			Some((cid, nid)) => Pallet::<T>::lookup_root_owner(cid, nid),
 		}
 	}
@@ -452,6 +469,13 @@ where
 		}
 	}
 
+	/// `recursive_burn` function will recursively call itself to burn the NFT and all the children
+	/// of the NFT. Any caller functions must be #[transactional]
+	///
+	/// Parameters:
+	/// - `collection_id`: Collection ID of the NFT to be burned
+	/// - `nft_id`: NFT ID that is to be burned
+	/// - `max_recursion`: Maximum number of recursion allowed
 	pub fn recursive_burn(
 		collection_id: CollectionId,
 		nft_id: NftId,

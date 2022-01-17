@@ -1,7 +1,6 @@
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
-use sp_std::cmp::Eq;
 
 use crate::primitives::*;
 use sp_std::result::Result;
