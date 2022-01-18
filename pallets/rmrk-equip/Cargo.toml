@@ -1,7 +1,7 @@
 [package]
-name = 'pallet-rmrk-core'
+name = 'pallet-rmrk-equip'
 version = '4.0.0-dev'
-description = 'RMRK Core'
+description = 'RMRK Equip'
 authors = ['RMRK Team']
 homepage = ''
 edition = '2021'

@@ -45,6 +45,8 @@ pub use pallet_template;
 
 pub use pallet_rmrk_core;
 
+pub use pallet_rmrk_equip;
+
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -309,6 +311,10 @@ parameter_types! {
 	pub const UniquesStringLimit: u32 = 128;
 }
 
+impl pallet_rmrk_equip::Config for Runtime {
+	type Event = Event;
+}
+
 impl pallet_uniques::Config for Runtime {
 	type Event = Event;
 	type ClassId = u32;
@@ -349,6 +355,7 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
+		RmrkEquip: pallet_rmrk_equip::{Pallet, Call, Event<T>, Storage},
 		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
 		Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
 		Utility: pallet_utility::{Pallet, Call, Storage, Event},

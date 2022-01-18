@@ -20,12 +20,14 @@ version = '4.0.0-dev'
 [dependencies.pallet-uniques]
 default-features = false
 path = '../pallets/uniques'
-version = '4.0.0-dev'
 
 [dependencies.pallet-rmrk-core]
 default-features = false
 path = '../pallets/rmrk-core'
-version = '4.0.0-dev'
+
+[dependencies.pallet-rmrk-equip]
+default-features = false
+path = '../pallets/rmrk-equip'
 
 [build-dependencies.substrate-wasm-builder]
 git = 'https://github.com/paritytech/substrate.git'
