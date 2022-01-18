@@ -44,7 +44,7 @@ fn basic_mint() -> DispatchResult {
 		COLLECTION_ID_0,
 		Some(ALICE),
 		Some(Permill::from_float(1.525)),
-		bvec![0u8; 20]
+		bvec![0u8; 20],
 	)
 }
 
@@ -77,7 +77,7 @@ fn create_collection_works() {
 				bvec![0u8; 15],
 			),
 			Error::<Test>::NoAvailableCollectionId
-		);	
+		);
 	});
 }
 
@@ -99,19 +99,13 @@ fn lock_collection_works() {
 			collection_id: 0,
 		}));
 		// Attempt to mint in a locked collection should fail
-		assert_noop!(
-			basic_mint(),
-			Error::<Test>::CollectionFullOrLocked
-		);
+		assert_noop!(basic_mint(), Error::<Test>::CollectionFullOrLocked);
 		// Burn an NFT
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		// Should now have only three NFTS in collection
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 3);
 		// Still we should be unable to mint another NFT
-		assert_noop!(
-			basic_mint(),
-			Error::<Test>::CollectionFullOrLocked
-		);
+		assert_noop!(basic_mint(), Error::<Test>::CollectionFullOrLocked);
 	});
 }
 
@@ -220,17 +214,11 @@ fn mint_collection_max_logic_works() {
 			assert_ok!(basic_mint());
 		}
 		// Minting beyond collection max (5) should fail
-		assert_noop!(
-			basic_mint(),
-			Error::<Test>::CollectionFullOrLocked
-		);
+		assert_noop!(basic_mint(), Error::<Test>::CollectionFullOrLocked);
 		// Burn an NFT
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, 0));
 		// Minting should still fail, as burning should not affect "fullness" of collection
-		assert_noop!(
-			basic_mint(),
-			Error::<Test>::CollectionFullOrLocked
-		);
+		assert_noop!(basic_mint(), Error::<Test>::CollectionFullOrLocked);
 	});
 }
 
@@ -287,12 +275,9 @@ fn send_nft_to_minted_nft_works() {
 			nft_id: 2,
 		}));
 		// Bob-rootowned NFT (0,1) [child] is owned by Bob-rootowned NFT (0,0) [parent]
-		assert_eq!(
-			UNQ::Pallet::<Test>::owner(0, 1),
-			Some(RMRKCore::nft_to_account_id(0, 0)),
-		);
+		assert_eq!(UNQ::Pallet::<Test>::owner(0, 1), Some(RMRKCore::nft_to_account_id(0, 0)),);
 		// NFT (0,0) has NFT (0,1) in Children StorageMap
-		assert_eq!(RMRKCore::children((0, 0)), vec![(0,1)]);
+		assert_eq!(RMRKCore::children((0, 0)), vec![(0, 1)]);
 		// Attempt to send NFT to self should fail
 		assert_noop!(
 			RMRKCore::send(
@@ -375,7 +360,7 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
 		// NFT (0,0) has NFT (0,1) in Children StorageMap
-		assert_eq!(RMRKCore::children((0, 0)), vec![(0,1)]);
+		assert_eq!(RMRKCore::children((0, 0)), vec![(0, 1)]);
 		// ALICE sends NFT (0, 2) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -384,7 +369,7 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
 		// NFT (0,0) has NFT (0,1) & (0,2) in Children StorageMap
-		assert_eq!(RMRKCore::children((0, 0)), vec![(0,1), (0,2)]);
+		assert_eq!(RMRKCore::children((0, 0)), vec![(0, 1), (0, 2)]);
 	});
 }
 
@@ -472,7 +457,10 @@ fn burn_nft_works() {
 		// Mint an NFT
 		assert_ok!(basic_mint());
 		// BOB should not be able to burn ALICE's NFT
-		assert_noop!(RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::NoPermission);
+		assert_noop!(
+			RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0),
+			Error::<Test>::NoPermission
+		);
 		// ALICE burns her NFT
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		// Successful burn creates NFTBurned event
@@ -483,7 +471,10 @@ fn burn_nft_works() {
 		// NFT count of collection is now 0
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		// ALICE can't burn an NFT twice
-		assert_noop!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::NoAvailableNftId);
+		assert_noop!(
+			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0),
+			Error::<Test>::NoAvailableNftId
+		);
 		// Burned NFT no longer exists
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0).is_none(), true);
 	});
@@ -655,13 +646,8 @@ fn set_property_works() {
 		// Property value now exists
 		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())).unwrap(), value.clone());
 		// BOB does not own NFT so attempt to set property should fail
-		assert_noop!(RMRKCore::set_property(
-			Origin::signed(BOB),
-			0,
-			Some(0),
-			key.clone(),
-			value.clone()
-			),
+		assert_noop!(
+			RMRKCore::set_property(Origin::signed(BOB), 0, Some(0), key.clone(), value.clone()),
 			Error::<Test>::NoPermission
 		);
 	});

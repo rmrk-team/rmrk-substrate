@@ -327,9 +327,9 @@ impl pallet_uniques::Config for Runtime {
 }
 
 impl pallet_utility::Config for Runtime {
-    type Event = Event;
-    type Call = Call;
-    type WeightInfo = ();
+	type Event = Event;
+	type Call = Call;
+	type WeightInfo = ();
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.

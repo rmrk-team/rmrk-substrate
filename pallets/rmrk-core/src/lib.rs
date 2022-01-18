@@ -103,13 +103,8 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn children)]
 	/// Stores nft children info
-	pub type Children<T: Config> = StorageMap<
-		_,
-		Twox64Concat,
-		(CollectionId, NftId),
-		Vec<(CollectionId, NftId)>,
-		ValueQuery
-	>;
+	pub type Children<T: Config> =
+		StorageMap<_, Twox64Concat, (CollectionId, NftId), Vec<(CollectionId, NftId)>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn resources)]
@@ -291,7 +286,7 @@ pub mod pallet {
 				pallet_uniques::Event::Created(collection_id, sender.clone(), sender.clone()),
 			)?;
 
-			Self::deposit_event(Event::CollectionCreated { issuer: sender.clone(), collection_id });
+			Self::deposit_event(Event::CollectionCreated { issuer: sender, collection_id });
 			Ok(())
 		}
 
@@ -358,19 +353,14 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let new_owner_account = Self::nft_send(
-				sender.clone(),
-				collection_id,
-				nft_id,
-				new_owner.clone(),
-			)?;
+			let new_owner_account =
+				Self::nft_send(sender.clone(), collection_id, nft_id, new_owner.clone())?;
 
 			pallet_uniques::Pallet::<T>::do_transfer(
 				collection_id,
 				nft_id,
-				new_owner_account.clone(),
-				|_class_details, _details|
-					Ok(())
+				new_owner_account,
+				|_class_details, _details| Ok(()),
 			)?;
 
 			Self::deposit_event(Event::NFTSent {
