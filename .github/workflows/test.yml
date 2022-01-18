@@ -33,8 +33,8 @@ jobs:
     - name: Check
       run: cargo check --workspace --all-features
 
+    - name: Test
+      run: cargo test --workspace --all-features      
+
     - name: Lint
       run: cargo clippy --workspace --all-features
-
-    - name: Test
-      run: cargo test --workspace --all-features
