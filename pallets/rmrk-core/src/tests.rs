@@ -179,7 +179,7 @@ fn mint_nft_works() {
 			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20]
 		));
-		//TODO BOB shouldn't be able to mint in ALICE's collection?!
+		// BOB shouldn't be able to mint in ALICE's collection
 		assert_noop!(RMRKCore::mint_nft(
 			Origin::signed(BOB),
 			BOB,
