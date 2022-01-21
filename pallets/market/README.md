@@ -14,7 +14,7 @@ Market pallet design for the RMRK NFT Market. The Market pallet should extend [N
 #[pallet::getter(fn listed_nfts)]
 /// Stores listed NFTs info
 pub type ListedNfts<T: Config> =
-	StorageDoubleMap<_, Twox64Concat, CollectionId, Twox64Concat, NftId, ListingInfoOf<T>>;
+	StorageMap<_, Twox64Concat, (CollectionId, NftId), ListingInfoOf<T>>;
 ```
 
 ## Types
@@ -26,10 +26,10 @@ TBD
 pub enum Event<T: Config> {
     /// The price for a token was updated \[owner, collection_id, nft_id, price\]
     TokenPriceUpdated {
-	owner: T::AccountId,
-	collection_id: CollectionId,
-	nft_id: NftId,
-	price: Option<BalanceOf<T>>
+        owner: T::AccountId,
+        collection_id: CollectionId,
+        nft_id: NftId,
+        price: Option<BalanceOf<T>>
     },
     /// Token was sold to a new owner \[owner, buyer, collection_id, nft_id, price, author, royalty, royalty_amount\]
     TokenSold {
@@ -43,37 +43,37 @@ pub enum Event<T: Config> {
     },
     /// Token listed on Marketplace \[owner, collection_id, nft_id, author royalty\]
     TokenListed {
-	owner: T::AccountId,
-	collection_id: CollectionId, 
-	nft_id: NftId,
-	price: BalanceOf<T>, 
-	royalty: Option<(T::AccountId, u8)>,
+        owner: T::AccountId,
+        collection_id: CollectionId, 
+        nft_id: NftId,
+        price: BalanceOf<T>, 
+        royalty: Option<(T::AccountId, u8)>,
     },
     /// Token unlisted on Marketplace \[collection_id, nft_id\]
     TokenUnlisted {
-	owner: T::AccountId, 
-	collection_id: CollectionId,
-	nft_id: NftId,
+        owner: T::AccountId, 
+        collection_id: CollectionId,
+        nft_id: NftId,
     },
     /// Offer was placed on a token \[offerer, collection_id, nft_id, price\]
     OfferPlaced {
-	offerer: T::AccountId,
-	collection_id: CollectionId, 
-	nft_id: NftId, 
-	price: BalanceOf<T>,
+        offerer: T::AccountId,
+        collection_id: CollectionId, 
+        nft_id: NftId, 
+        price: BalanceOf<T>,
     },
     /// Offer was withdrawn \[sender, collection_id, nft_id\]
     OfferWithdrawn {
-	sender: T::AccountId, 
-	collection_id: CollectionId, 
-	nft_id: NftId,
+        sender: T::AccountId, 
+        collection_id: CollectionId, 
+        nft_id: NftId,
     },
     /// Offer was accepted \[owner, buyer, collection_id, nft_id\]
     OfferAccepted {
-	owner: T::AccountId,
-	buyer: T::AccountId,
-	collection_id: CollectionId,
-	nft_id: NftId
+        owner: T::AccountId,
+        buyer: T::AccountId,
+        collection_id: CollectionId,
+        nft_id: NftId
     },
 }
 ```

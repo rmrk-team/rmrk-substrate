@@ -3482,6 +3482,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-market"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-rmrk-core",
+ "pallet-uniques",
+ "parity-scale-codec",
+ "rmrk-traits",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-randomness-collective-flip"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate.git?tag=monthly-2022-01#1ca6b68cf8cd35a1c58f790c28e51ae726272ee9"
@@ -4463,6 +4483,7 @@ dependencies = [
  "pallet-aura",
  "pallet-balances",
  "pallet-grandpa",
+ "pallet-market",
  "pallet-randomness-collective-flip",
  "pallet-rmrk-core",
  "pallet-sudo",
