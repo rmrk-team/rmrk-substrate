@@ -27,6 +27,11 @@ default-features = false
 path = '../pallets/rmrk-core'
 version = '4.0.0-dev'
 
+[dependencies.pallet-market]
+default-features = false
+path = '../pallets/market'
+version = '4.0.0-dev'
+
 [build-dependencies.substrate-wasm-builder]
 git = 'https://github.com/paritytech/substrate.git'
 tag = 'monthly-2021-11-1'
@@ -216,6 +221,7 @@ runtime-benchmarks = [
     'pallet-balances/runtime-benchmarks',
     'pallet-template/runtime-benchmarks',
     'pallet-timestamp/runtime-benchmarks',
+    'pallet-market/runtime-benchmarks',
     'pallet-uniques/runtime-benchmarks',
     'sp-runtime/runtime-benchmarks',
 ]
@@ -234,6 +240,7 @@ std = [
     'pallet-template/std',
     'pallet-uniques/std',
     'pallet-rmrk-core/std',
+    'pallet-market/std',
     'pallet-timestamp/std',
     'pallet-transaction-payment-rpc-runtime-api/std',
     'pallet-transaction-payment/std',
