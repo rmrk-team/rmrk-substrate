@@ -283,7 +283,7 @@ pub mod pallet {
 				sender.clone(),
 				T::ClassDeposit::get(),
 				false,
-				pallet_uniques::Event::Created(collection_id, sender.clone(), sender.clone()),
+				pallet_uniques::Event::Created { class: collection_id, creator: sender.clone(), owner: sender.clone() },
 			)?;
 
 			Self::deposit_event(Event::CollectionCreated { issuer: sender, collection_id });
