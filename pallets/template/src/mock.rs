@@ -1,5 +1,5 @@
 use crate as pallet_template;
-use frame_support::parameter_types;
+use frame_support::{parameter_types, traits::{ConstU32}};
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
@@ -51,6 +51,7 @@ impl system::Config for Test {
 	type SystemWeightInfo = ();
 	type SS58Prefix = SS58Prefix;
 	type OnSetCode = ();
+	type MaxConsumers = ConstU32<2>;
 }
 
 impl pallet_template::Config for Test {

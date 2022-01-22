@@ -20,13 +20,13 @@ version = '2.0.0'
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
 optional = true
-tag = 'monthly-2021-11-1'
+tag = 'monthly-2022-01'
 version = '4.0.0-dev'
 
 [dependencies.frame-support]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
+tag = 'monthly-2022-01'
 version = '4.0.0-dev'
 
 [dependencies.serde]
@@ -37,7 +37,7 @@ version = '1.0.111'
 [dependencies.frame-system]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
+tag = 'monthly-2022-01'
 version = '4.0.0-dev'
 
 [dependencies.scale-info]
@@ -48,44 +48,44 @@ version = '1.0'
 [dependencies.pallet-balances]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
+tag = 'monthly-2022-01'
 version = '4.0.0-dev'
 
 [dev-dependencies.sp-core]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
+tag = 'monthly-2022-01'
+version = '4.1.0-dev'
 
 [dev-dependencies.sp-io]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
+tag = 'monthly-2022-01'
 version = '4.0.0-dev'
 
 [dependencies.sp-runtime]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
+tag = 'monthly-2022-01'
+version = '4.0.0'
 
 [dependencies.sp-std]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
+tag = 'monthly-2022-01'
+version = '4.0.0'
 
 [dev-dependencies.sp-runtime]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
+tag = 'monthly-2022-01'
+version = '4.0.0'
 
 [dev-dependencies.sp-std]
 default-features = false
 git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
+tag = 'monthly-2022-01'
+version = '4.0.0'
 
 [features]
 default = ['std']

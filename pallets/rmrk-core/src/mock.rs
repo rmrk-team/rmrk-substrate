@@ -1,7 +1,7 @@
 use super::*;
 use crate as pallet_rmrk_core;
 
-use frame_support::{parameter_types, traits::Everything, weights::Weight};
+use frame_support::{parameter_types, traits::{Everything, ConstU32}, weights::Weight};
 use frame_system::EnsureRoot;
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
@@ -107,6 +107,7 @@ impl frame_system::Config for Test {
 	type SystemWeightInfo = ();
 	type SS58Prefix = ();
 	type OnSetCode = ();
+	type MaxConsumers = ConstU32<2>;
 }
 
 parameter_types! {
