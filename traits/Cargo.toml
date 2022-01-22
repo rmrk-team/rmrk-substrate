@@ -1,104 +1,44 @@
 [package]
 name = "rmrk-traits"
-description = "Shared traits including `BasicCurrency`, `MultiCurrency`, `Auction` and more."
-repository = "https://github.com/open-web3-stack/open-runtime-module-library/tree/master/traits"
+description = "Shared traits"
+repository = "https://github.com/rmrk-team/rmrk-substrate"
 license = "Apache-2.0"
-version = "0.4.1-dev"
-authors = ["Laminar Developers <hello@laminar.one>"]
+version = "0.0.1"
+authors = ["RMRK Team"]
 edition = "2021"
 
 [package.metadata.docs.rs]
 targets = ['x86_64-unknown-linux-gnu']
 
-[dependencies.codec]
-default-features = false
-features = ['derive']
-package = 'parity-scale-codec'
-version = '2.0.0'
+[dependencies]
+serde = { version = "1.0.111", default-features = false, features = ["derive"] }
+sp-runtime = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = [
+	"derive",
+] }
+scale-info = { version = "1.0", default-features = false, features = ["derive"] }
+frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01"}
+frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01", optional = true }
 
-[dependencies.frame-benchmarking]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-optional = true
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
+pallet-balances = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 
-[dependencies.frame-support]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
-
-[dependencies.serde]
-default-features = false
-features = ['derive']
-version = '1.0.111'
-
-[dependencies.frame-system]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
-
-[dependencies.scale-info]
-default-features = false
-features = ['derive']
-version = '1.0'
-
-[dependencies.pallet-balances]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
-
-[dev-dependencies.sp-core]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
-
-[dev-dependencies.sp-io]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
-
-[dependencies.sp-runtime]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
-
-[dependencies.sp-std]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
-
-[dev-dependencies.sp-runtime]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
-
-[dev-dependencies.sp-std]
-default-features = false
-git = 'https://github.com/paritytech/substrate.git'
-tag = 'monthly-2021-11-1'
-version = '4.0.0-dev'
+[dev-dependencies]
+sp-runtime = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 
 [features]
-default = ['std']
-runtime-benchmarks = ['frame-benchmarking']
+default = ["std"]
 std = [
-    'serde/std',
-    'codec/std',
-    'scale-info/std',
-    'frame-support/std',
-    'frame-system/std',
-    'frame-benchmarking/std',
-	'sp-runtime/std',
-	'sp-std/std',
-    'pallet-balances/std',
+	"serde/std",
+	"codec/std",
+	"scale-info/std",
+	"frame-support/std",
+	"frame-system/std",
+	"frame-benchmarking/std",
+    "pallet-balances/std",
 ]
-try-runtime = ['frame-support/try-runtime']
+
+runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
+try-runtime = ["frame-support/try-runtime"]

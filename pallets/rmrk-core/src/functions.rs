@@ -1,5 +1,6 @@
-use sp_runtime::{traits::Saturating, ArithmeticError};
+#![allow(clippy::too_many_arguments)]
 
+use sp_runtime::{traits::Saturating, ArithmeticError};
 use super::*;
 use codec::{Codec, Decode, Encode};
 use sp_runtime::traits::TrailingZeroInput;
@@ -198,7 +199,8 @@ where
 		let max: u32 = collection.max;
 
 		// Prevent minting when next NFT id is greater than the collection max.
-		ensure!(nft_id < max || max == max - max, Error::<T>::CollectionFullOrLocked);
+		// TODO: do we need nft_id < max || max == max - max
+		ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 
 		let recipient = recipient.unwrap_or_else(|| owner.clone());
 		let royalty = royalty.unwrap_or_default();
@@ -370,6 +372,7 @@ where
 	///
 	/// Output:
 	/// - `Result<(T::AcccountId, (CollectionId, NftId)), Error<T>>`
+	#[allow(clippy::type_complexity)]
 	pub fn lookup_root_owner(
 		collection_id: CollectionId,
 		nft_id: NftId,

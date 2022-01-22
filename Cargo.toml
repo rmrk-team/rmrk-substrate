@@ -3,7 +3,6 @@ edition = "2021"
 members = [
     'node',
     'pallets/template',
-    'pallets/uniques',
     'pallets/rmrk-core',
     'runtime',
 ]
