@@ -1,5 +1,5 @@
 use crate as pallet_template;
-use frame_support::{parameter_types, traits::{ConstU32}};
+use frame_support::{parameter_types, traits::ConstU32};
 use frame_system as system;
 use sp_core::H256;
 use sp_runtime::{
