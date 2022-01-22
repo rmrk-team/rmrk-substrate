@@ -311,7 +311,7 @@ impl pallet_rmrk_core::Config for Runtime {
 
 parameter_types! {
 	pub const ClassDeposit: Balance = 100 * DOLLARS;
-	pub const InstanceDeposit: Balance = 1 * DOLLARS;
+	pub const InstanceDeposit: Balance = DOLLARS;
 	pub const KeyLimit: u32 = 32;
 	pub const ValueLimit: u32 = 256;
 	pub const UniquesMetadataDepositBase: Balance = 100 * DOLLARS;
@@ -546,7 +546,7 @@ impl_runtime_apis! {
 
 			let storage_info = AllPalletsWithSystem::storage_info();
 
-			return (list, storage_info)
+			(list, storage_info)
 		}
 
 		fn dispatch_benchmark(
