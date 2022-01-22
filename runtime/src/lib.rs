@@ -88,8 +88,7 @@ pub mod opaque {
 
 /// Constant values used within the runtime.
 pub mod constants;
-use constants::{currency::*, time::*};
-use sp_runtime::generic::Era;
+use constants::currency::*;
 
 // Make the WASM binary available.
 #[cfg(feature = "std")]
@@ -392,7 +391,7 @@ pub type Executive = frame_executive::Executive<
 	Block,
 	frame_system::ChainContext<Runtime>,
 	Runtime,
-	AllPallets,
+	AllPalletsWithSystem,
 >;
 
 impl_runtime_apis! {

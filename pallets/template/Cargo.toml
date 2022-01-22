@@ -24,7 +24,7 @@ frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "h
 [dev-dependencies]
 sp-core = { default-features = false, version = "4.1.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 sp-io = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
-sp-runtime = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+sp-runtime = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 
 [features]
 default = ["std"]
