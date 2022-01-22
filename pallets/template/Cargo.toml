@@ -4,10 +4,10 @@ version = "4.0.0-dev"
 description = "FRAME pallet template for defining custom runtime logic."
 authors = ["Substrate DevHub <https://github.com/substrate-developer-hub>"]
 homepage = "https://substrate.io/"
-edition = "2018"
+edition = "2021"
 license = "Unlicense"
 publish = false
-repository = 'https://github.com/rmrk-team/rmrk-substrate'
+repository = "https://github.com/rmrk-team/rmrk-substrate"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]

@@ -1,13 +1,13 @@
 [package]
-name = 'rmrk-substrate-runtime'
-version = '4.0.0-dev'
-description = ''
-authors = ['RMRK Team']
-homepage = 'https://rmrk.app'
-edition = '2021'
-license = ''
+name = "rmrk-substrate-runtime"
+version = "4.0.0-dev"
+description = ""
+authors = ["RMRK Team"]
+homepage = "https://rmrk.app"
+edition = "2021"
+license = ""
 publish = false
-repository = 'https://github.com/rmrk-team/rmrk-substrate'
+repository = "https://github.com/rmrk-team/rmrk-substrate"
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]
@@ -16,8 +16,8 @@ targets = ["x86_64-unknown-linux-gnu"]
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 
-pallet-uniques = { version = "4.0.0-dev", default-features = false, git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2022-01" }
-pallet-utility = { version = "4.0.0-dev", default-features = false, git = 'https://github.com/paritytech/substrate.git', tag = "monthly-2022-01" }
+pallet-uniques = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+pallet-utility = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 pallet-aura = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
@@ -40,7 +40,7 @@ sp-std = { version = "4.0.0", default-features = false, git = "https://github.co
 sp-transaction-pool = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 sp-version = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 
-# Used for the node template's RPCs
+# Used for the node template"s RPCs
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 pallet-transaction-payment-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 
