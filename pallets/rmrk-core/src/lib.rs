@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
-#![allow(clippy::upper_case_acronyms)]
+#![allow(clippy::too_many_arguments)]
 
 use frame_support::{
 	dispatch::DispatchResult, ensure, traits::tokens::nonfungibles::*, transactional, BoundedVec,
@@ -246,6 +246,11 @@ pub mod pallet {
 			metadata: BoundedVec<u8, T::StringLimit>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
+			if let Some(collection_issuer) = pallet_uniques::Pallet::<T>::class_owner(&collection_id) {
+				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
+			} else {
+				Err(Error::<T>::CollectionUnknown)?;
+			}
 
 			let (collection_id, nft_id) =
 				Self::nft_mint(sender.clone(), owner, collection_id, recipient, royalty, metadata)?;
@@ -283,7 +288,11 @@ pub mod pallet {
 				sender.clone(),
 				T::ClassDeposit::get(),
 				false,
-				pallet_uniques::Event::Created(collection_id, sender.clone(), sender.clone()),
+				pallet_uniques::Event::Created {
+					class: collection_id,
+					creator: sender.clone(),
+					owner: sender.clone(),
+				},
 			)?;
 
 			Self::deposit_event(Event::CollectionCreated { issuer: sender, collection_id });

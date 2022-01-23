@@ -1,3 +1,5 @@
+#![allow(clippy::too_many_arguments)]
+
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
@@ -44,7 +46,6 @@ pub struct ResourceInfo<ResourceId, BoundedString> {
 }
 
 /// Abstraction over a Resource system.
-#[allow(clippy::upper_case_acronyms)]
 pub trait Resource<BoundedString, AccountId> {
 	fn resource_add(
 		sender: AccountId,
