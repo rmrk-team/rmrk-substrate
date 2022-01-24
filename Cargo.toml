@@ -4,7 +4,7 @@ members = [
     'node',
     'pallets/template',
     'pallets/rmrk-core',
-    'pallets/market',
+    'pallets/rmrk-market',
     'runtime',
 ]
 [profile.release]

@@ -41,7 +41,7 @@ pub use pallet_template;
 
 pub use pallet_rmrk_core;
 
-pub use pallet_market;
+pub use pallet_rmrk_market;
 
 /// An index to a block.
 pub type BlockNumber = u32;
@@ -311,7 +311,7 @@ impl pallet_rmrk_core::Config for Runtime {
 	type MaxRecursions = MaxRecursions;
 }
 
-impl pallet_market::Config for Runtime {
+impl pallet_rmrk_market::Config for Runtime {
 	type Event = Event;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
 	type Currency = Balances;
@@ -370,7 +370,7 @@ construct_runtime!(
 		// Include the custom logic from the pallet-template in the runtime.
 		TemplateModule: pallet_template,
 		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
-		RmrkMarket: pallet_market::{Pallet, Call, Event<T>, Storage},
+		RmrkMarket: pallet_rmrk_market::{Pallet, Call, Storage, Event<T>},
 		Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
 		Utility: pallet_utility::{Pallet, Call, Storage, Event},
 	}

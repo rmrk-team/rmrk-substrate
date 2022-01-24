@@ -2,10 +2,12 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::upper_case_acronyms)]
 
-use frame_support::{
-	traits::Currency,
-};
+use frame_support::traits::Currency;
 
+use sp_std::prelude::*;
+
+pub use pallet::*;
+pub use pallet_rmrk_core::types::*;
 
 use rmrk_traits::{
 	primitives::*,
@@ -30,7 +32,7 @@ pub mod pallet {
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
-	pub trait Config: frame_system::Config + pallet_rmrk_core::Config + pallet_uniques::Config {
+	pub trait Config: frame_system::Config + pallet_rmrk_core::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 

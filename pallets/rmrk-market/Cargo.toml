@@ -1,5 +1,5 @@
 [package]
-name = "pallet-market"
+name = "pallet-rmrk-market"
 version = "4.0.0-dev"
 description = "RMRK Market"
 authors = ["RMRK Team"]
