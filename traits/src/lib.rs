@@ -7,7 +7,7 @@ pub mod priority;
 pub mod property;
 pub mod resource;
 
-pub use base::BaseInfo;
+pub use base::{BaseInfo, Base};
 pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo};
 pub use priority::Priority;

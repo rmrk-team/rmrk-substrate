@@ -1,9 +1,11 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::BoundedVec;
+use frame_support::dispatch::DispatchError;
+
 pub use pallet::*;
 
-use rmrk_traits::{primitives::*, BaseInfo};
+use rmrk_traits::{primitives::*, BaseInfo, Base};
 
 mod functions;
 
@@ -36,7 +38,7 @@ pub mod pallet {
 	#[pallet::getter(fn bases)]
 	/// Stores bases info
 	pub type Bases<T: Config> =
-		StorageMap<_, Twox64Concat, BaseId, BaseInfo<StringLimitOf<T>, T::AccountId>>;
+		StorageMap<_, Twox64Concat, BaseId, BaseInfo<T::AccountId, StringLimitOf<T>>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn next_base_id)]
@@ -94,11 +96,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let base_id = Self::get_next_base_id()?;
-
-			let base = BaseInfo { issuer: sender, base_type, symbol };
-
-			Bases::<T>::insert(base_id, base);
+			let base_id = Self::base_create(sender.clone(), base_type, symbol)?;
 
 			Self::deposit_event(Event::BaseCreated { issuer: sender, base_id });
 			Ok(())
