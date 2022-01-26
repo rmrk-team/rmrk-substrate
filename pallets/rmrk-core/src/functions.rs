@@ -1,9 +1,11 @@
 #![allow(clippy::too_many_arguments)]
 
-use sp_runtime::{traits::Saturating, ArithmeticError};
 use super::*;
 use codec::{Codec, Decode, Encode};
-use sp_runtime::traits::TrailingZeroInput;
+use sp_runtime::{
+	traits::{Saturating, TrailingZeroInput},
+	ArithmeticError,
+};
 
 // Randomness to generate NFT virtual accounts
 pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";

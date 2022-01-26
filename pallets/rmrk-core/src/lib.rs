@@ -246,7 +246,9 @@ pub mod pallet {
 			metadata: BoundedVec<u8, T::StringLimit>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			if let Some(collection_issuer) = pallet_uniques::Pallet::<T>::class_owner(&collection_id) {
+			if let Some(collection_issuer) =
+				pallet_uniques::Pallet::<T>::class_owner(&collection_id)
+			{
 				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
 			} else {
 				Err(Error::<T>::CollectionUnknown)?;

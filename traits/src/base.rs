@@ -1,6 +1,6 @@
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_runtime::{RuntimeDebug};
+use sp_runtime::RuntimeDebug;
 use sp_std::cmp::Eq;
 
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]

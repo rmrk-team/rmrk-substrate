@@ -1,9 +1,6 @@
 use super::*;
 
-impl<T: Config> Pallet<T>
-{
-
-
+impl<T: Config> Pallet<T> {
 	pub fn get_next_base_id() -> Result<BaseId, Error<T>> {
 		NextBaseId::<T>::try_mutate(|id| {
 			let current_id = *id;
@@ -11,5 +8,4 @@ impl<T: Config> Pallet<T>
 			Ok(current_id)
 		})
 	}
-
 }

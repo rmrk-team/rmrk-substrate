@@ -1,13 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use frame_support::{
-	BoundedVec,
-};
+use frame_support::BoundedVec;
 pub use pallet::*;
 
-use rmrk_traits::{
-	primitives::*, BaseInfo
-};
+use rmrk_traits::{primitives::*, BaseInfo};
 
 mod functions;
 
@@ -40,22 +36,19 @@ pub mod pallet {
 	#[pallet::getter(fn bases)]
 	/// Stores bases info
 	pub type Bases<T: Config> =
-		StorageMap<_, Twox64Concat, BaseId, BaseInfo<StringLimitOf<T>, T::AccountId>>;	
+		StorageMap<_, Twox64Concat, BaseId, BaseInfo<StringLimitOf<T>, T::AccountId>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn next_base_id)]
 	pub type NextBaseId<T: Config> = StorageValue<_, BaseId, ValueQuery>;
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
-	pub struct Pallet<T>(_);	
+	pub struct Pallet<T>(_);
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		BaseCreated {
-			issuer: T::AccountId,
-			base_id: BaseId,
-		},
+		BaseCreated { issuer: T::AccountId, base_id: BaseId },
 	}
 
 	#[pallet::error]
@@ -64,9 +57,7 @@ pub mod pallet {
 	}
 
 	#[pallet::call]
-	impl<T: Config> Pallet<T>
-	{
-
+	impl<T: Config> Pallet<T> {
 		// /// equip a child NFT into a parent's slot, or unequip
 		// #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		// pub fn equip(origin: OriginFor<T>, something: u32) -> DispatchResult {
@@ -102,22 +93,21 @@ pub mod pallet {
 
 		/// create a base. catalogue of parts. It is not an NFT
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn create_base(origin: OriginFor<T>, base_type: BoundedVec<u8, T::StringLimit>, symbol: BoundedVec<u8, T::StringLimit>) -> DispatchResult {
+		pub fn create_base(
+			origin: OriginFor<T>,
+			base_type: BoundedVec<u8, T::StringLimit>,
+			symbol: BoundedVec<u8, T::StringLimit>,
+		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
 			let base_id = Self::get_next_base_id()?;
 
-			let base = BaseInfo {
-				issuer: sender,
-				base_type,
-				symbol
-			};
+			let base = BaseInfo { issuer: sender, base_type, symbol };
 
 			Bases::<T>::insert(base_id, base);
 
 			Self::deposit_event(Event::BaseCreated { issuer: sender, base_id });
 			Ok(())
-		}			
-
+		}
 	}
 }
