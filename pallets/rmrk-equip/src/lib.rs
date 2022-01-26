@@ -58,38 +58,32 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		// /// equip a child NFT into a parent's slot, or unequip
-		// #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		// pub fn equip(origin: OriginFor<T>, something: u32) -> DispatchResult {
-		// 	let sender = ensure_signed(origin)?;
+		/// TODO: equip a child NFT into a parent's slot, or unequip
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn equip(origin: OriginFor<T>, something: u32) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
 
-		// 	<Something<T>>::put(something);
+			// Self::deposit_event(Event::SomethingStored(something, sender));
+			Ok(())
+		}
 
-		// 	Self::deposit_event(Event::SomethingStored(something, sender));
-		// 	Ok(())
-		// }
+		/// TODO: changes the list of equippable collections on a base's part
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn equippable(origin: OriginFor<T>, something: u32) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
 
-		// /// changes the list of equippable collections on a base's part
-		// #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		// pub fn equippable(origin: OriginFor<T>, something: u32) -> DispatchResult {
-		// 	let sender = ensure_signed(origin)?;
+			// Self::deposit_event(Event::SomethingStored(something, sender));
+			Ok(())
+		}
 
-		// 	<Something<T>>::put(something);
+		/// TODO: add a new theme to a base
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn theme_add(origin: OriginFor<T>, something: u32) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
 
-		// 	Self::deposit_event(Event::SomethingStored(something, sender));
-		// 	Ok(())
-		// }
-
-		// /// add a new theme to a base
-		// #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		// pub fn theme_add(origin: OriginFor<T>, something: u32) -> DispatchResult {
-		// 	let sender = ensure_signed(origin)?;
-
-		// 	<Something<T>>::put(something);
-
-		// 	Self::deposit_event(Event::SomethingStored(something, sender));
-		// 	Ok(())
-		// }
+			// Self::deposit_event(Event::SomethingStored(something, sender));
+			Ok(())
+		}
 
 		/// create a base. catalogue of parts. It is not an NFT
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
