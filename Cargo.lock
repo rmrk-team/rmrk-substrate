@@ -3522,6 +3522,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "pallet-balances",
+ "pallet-rmrk-core",
  "pallet-uniques",
  "parity-scale-codec",
  "rmrk-traits",

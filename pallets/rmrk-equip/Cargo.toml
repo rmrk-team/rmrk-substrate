@@ -28,7 +28,9 @@ pallet-uniques = { default-features = false, version = "4.0.0-dev", git = "https
 pallet-balances = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 
 # Local Dependencies
+pallet-rmrk-core = { default-features = false, version = "4.0.0-dev", path = "../rmrk-core" }
 rmrk-traits = { default-features = false, version = "0.0.1", path = "../../traits" }
+
 
 [dev-dependencies]
 sp-core = { default-features = false, version = "4.1.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
