@@ -311,10 +311,15 @@ impl pallet_rmrk_core::Config for Runtime {
 	type MaxRecursions = MaxRecursions;
 }
 
+parameter_types! {
+	pub const MinimumOfferAmount: Balance = 10000 * UNITS;
+}
+
 impl pallet_rmrk_market::Config for Runtime {
 	type Event = Event;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
 	type Currency = Balances;
+	type MinimumOfferAmount = MinimumOfferAmount;
 }
 
 parameter_types! {

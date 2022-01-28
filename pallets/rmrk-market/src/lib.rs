@@ -310,7 +310,6 @@ pub mod pallet {
 			// Ensure NFT exists & sender is not owner
 			let owner = pallet_uniques::Pallet::<T>::
 				owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
-			//ensure!(owner.is_none(), Error::<T>::TokenDoesNotExist);
 
 			ensure!(sender != owner, Error::<T>::CannotOfferOnOwnToken);
 			// If offer has already been made, must withdraw_offer first before making a new offer
@@ -327,6 +326,7 @@ pub mod pallet {
 					expires
 				},
 			);
+			// Reserve currency from offerer account
 			<T as pallet::Config>::Currency::reserve(&sender, amount)?;
 			// Emit OfferPlaced event
 			Self::deposit_event(Event::OfferPlaced {
@@ -355,9 +355,27 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			// TODO: Logic and create function to handle in functions.rs
+			let token_id = (collection_id, nft_id);
+			// Ensure that offer exists from sender that is withdrawing their offer
+			Offers::<T>::try_mutate_exists(token_id, sender.clone(), |maybe_offer| -> DispatchResult {
+				let offer = maybe_offer.take().ok_or(Error::<T>::UnknownOffer)?;
+				// Ensure NFT exists & sender is not owner
+				let owner = pallet_uniques::Pallet::<T>::
+				owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
+				// Cannot withdraw offer on own token
+				ensure!(sender == owner || sender == offer.maker, Error::<T>::CannotWithdrawOffer);
 
-			Ok(())
+				// Unreserve currency from offerer account
+				<T as pallet::Config>::Currency::unreserve(&sender, offer.amount);
+				// Emit OfferWithdrawn Event
+				Self::deposit_event(Event::OfferWithdrawn {
+					sender,
+					collection_id,
+					nft_id,
+				});
+
+				Ok(())
+			})
 		}
 
 		// TODO: Accept an offer on a RMRK NFT from a potential buyer.
