@@ -162,6 +162,10 @@ pub mod pallet {
 		CannotBuyOwnToken,
 		/// Offer is unknown
 		UnknownOffer,
+		/// Cannot list NFT owned by a NFT
+		CannotListNftOwnedByNft,
+		/// Cannot list a non-existing NFT
+		TokenDoesNotExist,
 	}
 
 	#[pallet::call]
@@ -188,7 +192,10 @@ pub mod pallet {
 			Self::do_buy(sender, collection_id, nft_id, false)
 		}
 
-		/// List a RMRK NFT on the Marketplace for purchase.
+		/// List a RMRK NFT on the Marketplace for purchase. A listing can be cancelled, and is
+		/// automatically considered cancelled when a `buy` is executed on top of a given listing.
+		/// An NFT that has another NFT as its owner CANNOT be listed. An NFT owned by a NFT must
+		/// first be sent to an account before being listed.
 		///
 		/// Parameters:
 		///	- `origin` - Account of owner of the RMRK NFT to be listed
@@ -205,21 +212,31 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			// Ensure sender is the root owner
-			let (root_owner, _) = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-			ensure!(sender == root_owner, Error::<T>::NoPermission);
+			let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
+			// Ensure that the NFT is not owned by an NFT
+			if let Some(current_owner) = owner {
+				let current_owner_cid_nid =
+					pallet_rmrk_core::Pallet::<T>::decode_nft_account_id::<T::AccountId>(current_owner.clone());
+				if let Some(_current_owner_cid_nid) = current_owner_cid_nid {
+					Err(Error::<T>::CannotListNftOwnedByNft)?;
+				}
+				// Ensure sender is not the owner
+				ensure!(sender == current_owner, Error::<T>::NoPermission);
 
-			ListedNfts::<T>::mutate_exists(collection_id, nft_id, |list_price| *list_price = Some(amount));
+				ListedNfts::<T>::mutate_exists(collection_id, nft_id, |list_price| *list_price = Some(amount));
 
-			// TODO: royalty info
+				// TODO: royalty info
 
-			Self::deposit_event(Event::TokenListed {
-				owner: root_owner,
-				collection_id,
-				nft_id,
-				price: amount,
-				royalty: None
-			});
+				Self::deposit_event(Event::TokenListed {
+					owner: current_owner,
+					collection_id,
+					nft_id,
+					price: amount,
+					royalty: None
+				});
+			} else {
+				Err(Error::<T>::TokenDoesNotExist)?;
+			}
 
 			Ok(())
 		}

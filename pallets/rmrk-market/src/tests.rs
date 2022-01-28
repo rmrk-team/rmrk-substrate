@@ -54,8 +54,10 @@ fn set_price_works() {
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		// Mint an NFT
 		assert_ok!(basic_mint());
+		// Mint another NFT
+		assert_ok!(basic_mint());
 		// Minting an NFT should cause nfts_count to increase to 1
-		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 2);
 		// BOB shouldn't be able to list ALICE's NFT
 		assert_noop!(RmrkMarket::list(
 			Origin::signed(BOB),
@@ -64,6 +66,38 @@ fn set_price_works() {
 			10u128,
 			),
 			Error::<Test>::NoPermission
+		);
+		// ALICE cannot list a non-existing NFT
+		assert_noop!(RmrkMarket::list(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NOT_EXISTING_NFT_ID,
+			10u128,
+			),
+			Error::<Test>::TokenDoesNotExist
+		);
+		// ALICE sends NFT [0,1] to NFT [0,0]
+		assert_ok!(RmrkCore::send(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_0),
+		));
+		// Successful send to NFT triggers NFTSent event
+		System::assert_last_event(MockEvent::RmrkCore(pallet_rmrk_core::Event::NFTSent {
+			sender: ALICE,
+			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_0),
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_1,
+		}));
+		// ALICE cannot list NFT [0,1] bc it is owned by NFT[0,0]
+		assert_noop!(RmrkMarket::list(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_1,
+			10u128,
+			),
+			Error::<Test>::CannotListNftOwnedByNft
 		);
 		// ALICE lists the NFT successfully
 		assert_ok!(RmrkMarket::list(
