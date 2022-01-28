@@ -13,5 +13,5 @@ pub struct Offer<AccountId, Balance, BlockNumber> {
     /// Offered amount
     pub(super) amount: Balance,
     /// After this block the offer can't be accepted
-    pub(super) expires: BlockNumber,
+    pub(super) expires: Option<BlockNumber>,
 }

@@ -3,7 +3,9 @@
 #![allow(clippy::upper_case_acronyms)]
 
 use frame_support::{
-	dispatch::DispatchResult, ensure, traits::{Currency, tokens::nonfungibles::*}, transactional, BoundedVec,
+	dispatch::DispatchResult, ensure,
+	traits::{Currency, BalanceStatus::Reserved, ReservableCurrency},
+	transactional, BoundedVec,
 };
 use frame_support::traits::ExistenceRequirement;
 use frame_system::{ensure_signed, RawOrigin};
@@ -52,7 +54,11 @@ pub mod pallet {
 		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
 
 		/// The market currency mechanism.
-		type Currency: Currency<Self::AccountId>;
+		type Currency: ReservableCurrency<Self::AccountId>;
+
+		/// Minimum offer amount as a valid offer
+		#[pallet::constant]
+		type MinimumOfferAmount: Get<BalanceOf<Self>>;
 
 		// TODO: Weight values for this pallet
 		// type WeightInfo: WeightInfo;
@@ -166,6 +172,10 @@ pub mod pallet {
 		CannotListNftOwnedByNft,
 		/// Cannot list a non-existing NFT
 		TokenDoesNotExist,
+		/// Offer is below the OfferMinimumAmount threshold
+		OfferTooLow,
+		/// Account cannot offer on a NFT again with an active offer
+		AlreadyOffered,
 	}
 
 	#[pallet::call]
@@ -256,9 +266,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			// Check if NFT is still in ListedNfts storage
-			if !Self::is_nft_listed(collection_id, nft_id) {
-				Err(Error::<T>::CannotUnlistToken)?;
-			}
+			ensure!(Self::is_nft_listed(collection_id, nft_id), Error::<T>::CannotUnlistToken);
 			let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
 			// Ensure owner of NFT is performing call to unlist
 			if let Some(current_owner) = owner {
@@ -294,11 +302,39 @@ pub mod pallet {
 			collection_id: CollectionId,
 			nft_id: NftId,
 			amount: BalanceOf<T>,
-			expiration: Option<T::BlockNumber>,
+			expires: Option<T::BlockNumber>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
+			// Ensure amount is above the minimum threshold
+			ensure!(amount >= T::MinimumOfferAmount::get(), Error::<T>::OfferTooLow);
+			// Ensure NFT exists & sender is not owner
+			let owner = pallet_uniques::Pallet::<T>::
+				owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
+			//ensure!(owner.is_none(), Error::<T>::TokenDoesNotExist);
 
-			// TODO: Logic and create function to handle in functions.rs
+			ensure!(sender != owner, Error::<T>::CannotOfferOnOwnToken);
+			// If offer has already been made, must withdraw_offer first before making a new offer
+			ensure!(!Self::has_active_offer(collection_id, nft_id, sender.clone()), Error::<T>::AlreadyOffered);
+
+			let token_id = (collection_id, nft_id);
+			// Insert new offer into Offers storage
+			Offers::<T>::insert(
+				token_id,
+				sender.clone(),
+				Offer {
+					maker: sender.clone(),
+					amount,
+					expires
+				},
+			);
+			<T as pallet::Config>::Currency::reserve(&sender, amount)?;
+			// Emit OfferPlaced event
+			Self::deposit_event(Event::OfferPlaced {
+				offerer: sender,
+				collection_id,
+				nft_id,
+				price: amount,
+			});
 
 			Ok(())
 		}
@@ -410,6 +446,20 @@ where
 		nft_id: NftId,
 	) -> bool {
 		ListedNfts::<T>::contains_key(collection_id, nft_id)
+	}
+
+	/// Helper function to check if an account has already submitted an offer on a RMRK NFT
+	///
+	/// Parameters:
+	/// - collection_id: The collection id of the RMRK NFT
+	/// - nft_id: The nft id of the RMRK NFT
+	/// - sender: The account that may or may not have already sent an offer
+	fn has_active_offer(
+		collection_id: CollectionId,
+		nft_id: NftId,
+		sender: T::AccountId,
+	) -> bool {
+		Offers::<T>::contains_key((collection_id, nft_id), sender)
 	}
 
 }

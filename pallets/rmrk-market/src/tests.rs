@@ -250,6 +250,75 @@ fn unlist_works() {
 }
 
 #[test]
+fn offer_works() {
+	new_test_ext().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Collection nfts_count should be 0 prior to minting
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
+		// ALICE cannot offer on a non-existing NFT
+		assert_noop!(RmrkMarket::make_offer(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			MIN_OFFER_ON_NFT,
+			None,
+			),
+			Error::<Test>::TokenDoesNotExist
+		);
+		// Mint an NFT
+		assert_ok!(basic_mint());
+		// Minting an NFT should cause nfts_count to increase to 1
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
+		// ALICE cannot offer on own NFT
+		assert_noop!(RmrkMarket::make_offer(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			MIN_OFFER_ON_NFT,
+			None,
+			),
+			Error::<Test>::CannotOfferOnOwnToken
+		);
+		// BOB cannot offer below the MinimumOfferAmount threshold
+		assert_noop!(RmrkMarket::make_offer(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			MIN_OFFER_ON_NFT - 1,
+			None,
+			),
+			Error::<Test>::OfferTooLow
+		);
+		// BOB successfully places offer
+		assert_ok!(RmrkMarket::make_offer(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			MIN_OFFER_ON_NFT,
+			None,
+		));
+		// Offer from BOB on ALICE's NFT should trigger OfferPlaced event
+		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::OfferPlaced {
+			offerer: BOB,
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_0,
+			price: MIN_OFFER_ON_NFT,
+		}));
+		// BOB cannot offer again on a NFT with an active offer
+		assert_noop!(RmrkMarket::make_offer(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			MIN_OFFER_ON_NFT + 50,
+			None,
+			),
+			Error::<Test>::AlreadyOffered
+		);
+	});
+}
+
+#[test]
 fn it_works_for_default_value() {
 	new_test_ext().execute_with(|| {
 		// TODO: test cases

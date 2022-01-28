@@ -133,10 +133,15 @@ impl pallet_uniques::Config for Test {
 	// type InstanceReserveStrategy = NFT;
 }
 
+parameter_types! {
+	pub const MinimumOfferAmount: Balance = 50 * UNITS;
+}
+
 impl Config for Test {
 	type Event = Event;
 	type ProtocolOrigin = EnsureRoot<AccountId>;
 	type Currency = Balances;
+	type MinimumOfferAmount = MinimumOfferAmount;
 }
 
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
@@ -149,6 +154,7 @@ pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::ClassId = 1;
 pub const NFT_ID_0: <Test as pallet_uniques::Config>::InstanceId = 0;
 pub const NFT_ID_1: <Test as pallet_uniques::Config>::InstanceId = 1;
 pub const NOT_EXISTING_NFT_ID: <Test as pallet_uniques::Config>::ClassId = 999;
+pub const MIN_OFFER_ON_NFT: Balance = 50 * UNITS;
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
