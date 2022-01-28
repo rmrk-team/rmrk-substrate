@@ -176,6 +176,8 @@ pub mod pallet {
 		OfferTooLow,
 		/// Account cannot offer on a NFT again with an active offer
 		AlreadyOffered,
+		/// Accepted offer has expired and cannot be accepted
+		OfferHasExpired,
 	}
 
 	#[pallet::call]
@@ -361,7 +363,7 @@ pub mod pallet {
 				let offer = maybe_offer.take().ok_or(Error::<T>::UnknownOffer)?;
 				// Ensure NFT exists & sender is not owner
 				let owner = pallet_uniques::Pallet::<T>::
-				owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
+					owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
 				// Cannot withdraw offer on own token
 				ensure!(sender == owner || sender == offer.maker, Error::<T>::CannotWithdrawOffer);
 
@@ -378,13 +380,54 @@ pub mod pallet {
 			})
 		}
 
-		// TODO: Accept an offer on a RMRK NFT from a potential buyer.
+		// Accept an offer on a RMRK NFT from a potential buyer.
 		//
 		// Parameters:
-		// - `origin` - Account of the potential buyer
+		// - `origin` - Account of the current owner that is accepting the offerer's offer
 		// - `collection_id` - Collection id of the RMRK NFT
 		// - `nft_id` - NFT id of the RMRK NFT
-		// - `offer_id` - Offer id of the offer to be accepted
+		// - `offerer` - Account that made the offer
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn accept_offer(
+			origin: OriginFor<T>,
+			collection_id: CollectionId,
+			nft_id: NftId,
+			offerer: T::AccountId,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin.clone())?;
+			// Ensure NFT exists & sender is not owner
+			let owner = pallet_uniques::Pallet::<T>::
+				owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
+			// Cannot accept offer if not the owner
+			ensure!(sender == owner, Error::<T>::NoPermission);
+
+			let token_id = (collection_id, nft_id);
+			Offers::<T>::try_mutate_exists(
+				token_id,
+				offerer.clone(),
+				|maybe_offer| -> DispatchResult {
+					let offer = maybe_offer.take().ok_or(Error::<T>::UnknownOffer)?;
+
+					if let Some(expires) = offer.expires {
+						if expires <= <frame_system::Pallet<T>>::block_number() {
+							Err(Error::<T>::OfferHasExpired)?;
+						}
+					}
+
+					<T as pallet::Config>::Currency::unreserve(&offer.maker, offer.amount);
+					Self::do_buy(offer.maker, collection_id, nft_id, true)?;
+					// Emit OfferAccepted event
+					Self::deposit_event(Event::OfferAccepted {
+						owner,
+						buyer: offerer,
+						collection_id,
+						nft_id,
+					});
+
+					Ok(())
+			})
+		}
 	}
 }
 
@@ -438,7 +481,6 @@ where
 
 			let new_owner = AccountIdOrCollectionNftTuple::AccountId(buyer.clone());
 			pallet_rmrk_core::Pallet::<T>::send(root_owner_origin, collection_id, nft_id, new_owner)?;
-
 
 			Self::deposit_event(Event::TokenSold {
 				owner: root_owner,
