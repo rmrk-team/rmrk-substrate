@@ -67,9 +67,9 @@ pub mod pallet {
 	/// Stores listed NFT price info
 	pub type ListedNfts<T: Config> = StorageDoubleMap<
 		_,
-		Twox64Concat,
+		Blake2_128Concat,
 		CollectionId,
-		Twox64Concat,
+		Blake2_128Concat,
 		NftId,
 		BalanceOf<T>,
 		OptionQuery,
@@ -80,9 +80,9 @@ pub mod pallet {
 	/// Stores offer on a NFT info
 	pub type Offers<T: Config> = StorageDoubleMap<
 		_,
-		Twox64Concat,
+		Blake2_128Concat,
 		(CollectionId, NftId),
-		Twox64Concat,
+		Blake2_128Concat,
 		T::AccountId,
 		OfferOf<T>,
 		OptionQuery,
@@ -154,7 +154,7 @@ pub mod pallet {
 		TokenNotForSale,
 		/// Offer already accepted and cannot withdraw
 		CannotWithdrawOffer,
-		/// Cannot unlist NFT as it has already been sold
+		/// Cannot unlist NFT as it has already been unlisted or sold
 		CannotUnlistToken,
 		/// Cannot make offer on NFT on own NFT
 		CannotOfferOnOwnToken,
@@ -255,8 +255,25 @@ pub mod pallet {
 			nft_id: NftId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-
-			// TODO: Logic and create function to handle in functions.rs
+			// Check if NFT is still in ListedNfts storage
+			if !Self::is_nft_listed(collection_id, nft_id) {
+				Err(Error::<T>::CannotUnlistToken)?;
+			}
+			let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
+			// Ensure owner of NFT is performing call to unlist
+			if let Some(current_owner) = owner {
+				ensure!(sender == current_owner, Error::<T>::NoPermission);
+				// Remove from storage
+				ListedNfts::<T>::remove(collection_id, nft_id);
+				// Emit TokenUnlisted Event
+				Self::deposit_event(Event::TokenUnlisted {
+					owner: current_owner,
+					collection_id,
+					nft_id,
+				});
+			} else {
+				Err(Error::<T>::TokenDoesNotExist)?;
+			}
 
 			Ok(())
 		}
@@ -381,6 +398,18 @@ where
 
 			Ok(())
 		})
+	}
+
+	/// Helper function to check if a RMRK NFT is listed
+	///
+	/// Parameters:
+	/// - collection_id: The collection id of the RMRK NFT
+	/// - nft_id: The nft id of the RMRK NFT
+	fn is_nft_listed(
+		collection_id: CollectionId,
+		nft_id: NftId,
+	) -> bool {
+		ListedNfts::<T>::contains_key(collection_id, nft_id)
 	}
 
 }

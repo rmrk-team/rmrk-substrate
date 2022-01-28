@@ -46,7 +46,7 @@ fn basic_mint() -> DispatchResult {
 }
 
 #[test]
-fn set_price_works() {
+fn list_works() {
 	new_test_ext().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
@@ -138,8 +138,8 @@ fn buy_works() {
 		// Listed NFT should trigger TokenListed event TODO: royalty
 		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenListed {
 			owner: ALICE,
-			collection_id: 0,
-			nft_id: 0,
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_0,
 			price: 10u128,
 			royalty: None,
 		}));
@@ -169,6 +169,83 @@ fn buy_works() {
 		}));
 		// Ensure BOB is the new owner of NFT (0,0)
 		assert_eq!(Uniques::owner(COLLECTION_ID_0, NFT_ID_0), Some(BOB));
+	});
+}
+
+#[test]
+fn unlist_works() {
+	new_test_ext().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Collection nfts_count should be 0 prior to minting
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
+		// Mint an NFT
+		assert_ok!(basic_mint());
+		// Mint another NFT
+		assert_ok!(basic_mint());
+		// Minting an NFT should cause nfts_count to increase to 1
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 2);
+		// BOB shouldn't be able to list ALICE's NFT
+		assert_noop!(RmrkMarket::list(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			10u128,
+			),
+			Error::<Test>::NoPermission
+		);
+		// ALICE cannot list a non-existing NFT
+		assert_noop!(RmrkMarket::list(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NOT_EXISTING_NFT_ID,
+			10u128,
+			),
+			Error::<Test>::TokenDoesNotExist
+		);
+		// ALICE cannot unlist a NFT if not listed
+		assert_noop!(RmrkMarket::unlist(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			),
+			Error::<Test>::CannotUnlistToken
+		);
+		// ALICE lists the NFT successfully
+		assert_ok!(RmrkMarket::list(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			10u128,
+		));
+		// Listed NFT should trigger TokenListed event TODO: royalty
+		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenListed {
+			owner: ALICE,
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_0,
+			price: 10u128,
+			royalty: None,
+		}));
+		// BOB cannot unlist a NFT if not owned by BOB
+		assert_noop!(RmrkMarket::unlist(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			),
+			Error::<Test>::NoPermission
+		);
+		// ALICE unlists the NFT successfully
+		assert_ok!(RmrkMarket::unlist(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+		));
+		// Unisted NFT should trigger TokenUnlisted event
+		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenUnlisted {
+			owner: ALICE,
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_0,
+		}));
 	});
 }
 
