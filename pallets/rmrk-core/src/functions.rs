@@ -199,7 +199,6 @@ where
 		let max: u32 = collection.max;
 
 		// Prevent minting when next NFT id is greater than the collection max.
-		// TODO: do we need nft_id < max || max == max - max
 		ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 
 		let recipient = recipient.unwrap_or_else(|| owner.clone());
@@ -209,7 +208,7 @@ where
 
 		let nft = NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata };
 
-		NFTs::<T>::insert(collection_id, nft_id, nft);
+		Nfts::<T>::insert(collection_id, nft_id, nft);
 		NftsByOwner::<T>::append(owner, (collection_id, nft_id));
 
 		// increment nfts counter
@@ -229,7 +228,7 @@ where
 		max_recursions: u32,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
-		NFTs::<T>::remove(collection_id, nft_id);
+		Nfts::<T>::remove(collection_id, nft_id);
 		let kids = Children::<T>::take((collection_id, nft_id));
 		for (child_collection_id, child_nft_id) in kids {
 			// Remove child from Children StorageMap
@@ -263,14 +262,14 @@ where
 		ensure!(sender == root_owner, Error::<T>::NoPermission);
 		// Get NFT info
 		let mut sending_nft =
-			NFTs::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
 		// Prepare transfer
 		let new_owner_account = match new_owner.clone() {
 			AccountIdOrCollectionNftTuple::AccountId(id) => id,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				// Check if NFT target exists
-				ensure!(NFTs::<T>::contains_key(cid, nid), Error::<T>::NoAvailableNftId);
+				ensure!(Nfts::<T>::contains_key(cid, nid), Error::<T>::NoAvailableNftId);
 				// Check if sending to self
 				ensure!(
 					(collection_id, nft_id) != (cid, nid),
@@ -287,7 +286,7 @@ where
 		};
 
 		sending_nft.owner = new_owner;
-		NFTs::<T>::insert(collection_id, nft_id, sending_nft);
+		Nfts::<T>::insert(collection_id, nft_id, sending_nft);
 
 		if let Some(current_owner) = parent {
 			// Handle Children StorageMap for NFTs
@@ -480,7 +479,7 @@ where
 		max_recursions: u32,
 	) -> DispatchResult {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
-		NFTs::<T>::remove(collection_id, nft_id);
+		Nfts::<T>::remove(collection_id, nft_id);
 		let kids = Children::<T>::take((collection_id, nft_id));
 		for (child_collection_id, child_nft_id) in kids {
 			Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1)?;

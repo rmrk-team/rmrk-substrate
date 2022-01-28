@@ -5,17 +5,17 @@
 use frame_support::{
 	dispatch::DispatchResult, ensure, traits::{Currency, tokens::nonfungibles::*}, transactional, BoundedVec,
 };
-use frame_system::ensure_signed;
+use frame_support::traits::ExistenceRequirement;
+use frame_system::{ensure_signed, RawOrigin};
+use sp_runtime::Permill;
 
 use sp_std::prelude::*;
 
 pub use pallet::*;
-pub use pallet_rmrk_core::types::*;
 
-use rmrk_traits::{
-	ListInfo,
-	primitives::*,
-};
+use rmrk_traits::{AccountIdOrCollectionNftTuple, NftInfo, primitives::*};
+
+pub mod types;
 
 #[cfg(test)]
 mod mock;
@@ -24,6 +24,7 @@ mod mock;
 mod tests;
 
 pub use pallet::*;
+use crate::types::Offer;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -31,11 +32,15 @@ pub mod pallet {
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
 
-	type BalanceOf<T> =
+	pub type InstanceInfoOf<T> = NftInfo<
+		<T as frame_system::Config>::AccountId,
+		BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>, >;
+
+	pub type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
-	type ListInfoOf<T> =
-		ListInfo <ListId, CollectionId, NftId, BalanceOf<T>>;
+	pub type OfferOf<T> = Offer<
+		<T as frame_system::Config>::AccountId, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -59,19 +64,29 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn listed_nfts)]
-	/// Stores listed NFT info
-	pub type Listings<T: Config> = StorageNMap<
+	/// Stores listed NFT price info
+	pub type ListedNfts<T: Config> = StorageDoubleMap<
 		_,
-		(
-			NMapKey<Blake2_128Concat, CollectionId>,
-			NMapKey<Blake2_128Concat, NftId>,
-			NMapKey<Blake2_128Concat, ListId>,
-		),
-		ListInfoOf<T>,
+		Twox64Concat,
+		CollectionId,
+		Twox64Concat,
+		NftId,
+		BalanceOf<T>,
 		OptionQuery,
 	>;
 
-	// TODO: Storage for offers on an NFT. Need to create offer trait
+	#[pallet::storage]
+	#[pallet::getter(fn offers)]
+	/// Stores offer on a NFT info
+	pub type Offers<T: Config> = StorageDoubleMap<
+		_,
+		Twox64Concat,
+		(CollectionId, NftId),
+		Twox64Concat,
+		T::AccountId,
+		OfferOf<T>,
+		OptionQuery,
+	>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -136,7 +151,7 @@ pub mod pallet {
 		/// No permissions for account to interact with NFT
 		NoPermission,
 		/// Token cannot be bought
-		CannotBuyToken,
+		TokenNotForSale,
 		/// Offer already accepted and cannot withdraw
 		CannotWithdrawOffer,
 		/// Cannot unlist NFT as it has already been sold
@@ -145,10 +160,15 @@ pub mod pallet {
 		CannotOfferOnOwnToken,
 		/// Cannot buy NFT that is already owned
 		CannotBuyOwnToken,
+		/// Offer is unknown
+		UnknownOffer,
 	}
 
 	#[pallet::call]
-	impl<T: Config> Pallet<T> {
+	impl<T: Config> Pallet<T>
+	where
+		T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	{
 		/// Buy a listed NFT. Ensure that the NFT is available for purchase and has not recently
 		/// been purchased, sent, or burned.
 		///
@@ -158,16 +178,14 @@ pub mod pallet {
 		///	- `nft_id` - NFT id of the RMRK NFT
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
-		pub fn buy_nft(
+		pub fn buy(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			// TODO: Logic and create function to handle in functions.rs
-
-			Ok(())
+			Self::do_buy(sender, collection_id, nft_id, false)
 		}
 
 		/// List a RMRK NFT on the Marketplace for purchase.
@@ -187,7 +205,21 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			// TODO: Logic and create function to handle in functions.rs
+			// Ensure sender is the root owner
+			let (root_owner, _) = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			ensure!(sender == root_owner, Error::<T>::NoPermission);
+
+			ListedNfts::<T>::mutate_exists(collection_id, nft_id, |list_price| *list_price = Some(amount));
+
+			// TODO: royalty info
+
+			Self::deposit_event(Event::TokenListed {
+				owner: root_owner,
+				collection_id,
+				nft_id,
+				price: amount,
+				royalty: None
+			});
 
 			Ok(())
 		}
@@ -266,4 +298,72 @@ pub mod pallet {
 		// - `nft_id` - NFT id of the RMRK NFT
 		// - `offer_id` - Offer id of the offer to be accepted
 	}
+}
+
+impl<T: Config> Pallet<T>
+where
+	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+{
+	/// Buy the NFT helper funciton logic to handle both transactional calls of `buy` and
+	/// `accept_offer`
+	///
+	/// Parameters:
+	/// - `buyer`: The account that is buying the RMRK NFT
+	/// - `collection_id`: The collection id of the RMRK NFT
+	/// - `nft_id`: The id of the RMRK NFT
+	/// - `is_offer`: Whether the call is from `accept_offer` or `buy`
+	fn do_buy(
+		buyer: T::AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		is_offer: bool,
+	) -> DispatchResult {
+		// Ensure buyer is not the root owner
+		let (root_owner, _) = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		ensure!(buyer != root_owner, Error::<T>::CannotBuyOwnToken);
+
+		let root_owner_origin = T::Origin::from(RawOrigin::Signed(root_owner.clone()));
+		let token_id = (collection_id, nft_id);
+
+		ListedNfts::<T>::try_mutate(collection_id, nft_id, |list_price| -> DispatchResult {
+			let mut list_price = if is_offer {
+				Offers::<T>::get(token_id, buyer.clone())
+					.map(|o| o.amount)
+					.ok_or(Error::<T>::UnknownOffer)?
+			} else {
+				list_price.take().ok_or(Error::<T>::TokenNotForSale)?
+			};
+
+			// Check royalty set in NftInfo, NftInfo is populated at mint & if it was removed from
+			// Nfts Storage, lookup_root_owner would have thrown an error.
+			let nft_info = pallet_rmrk_core::Nfts::<T>::get(collection_id, nft_id);
+			//let royalty = nft_info.royalty;
+			//let recipient = nft_info.recipient;
+
+			// TODO: Calculate royalty to be paid to the recipient
+			// 1) Calculate price and substract from list_price
+			// 2) Transfer currency to recipient
+			// 3) Emit Event
+
+			// Transfer currency then transfer the NFT
+			<T as pallet::Config>::Currency::transfer(&buyer, &root_owner, list_price, ExistenceRequirement::KeepAlive)?;
+
+			let new_owner = AccountIdOrCollectionNftTuple::AccountId(buyer.clone());
+			pallet_rmrk_core::Pallet::<T>::send(root_owner_origin, collection_id, nft_id, new_owner)?;
+
+
+			Self::deposit_event(Event::TokenSold {
+				owner: root_owner,
+				buyer,
+				collection_id,
+				nft_id,
+				price: list_price,
+				royalty: None,
+				royalty_amount: None
+			});
+
+			Ok(())
+		})
+	}
+
 }

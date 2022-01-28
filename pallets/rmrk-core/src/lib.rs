@@ -85,7 +85,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn nfts)]
 	/// Stores nft info
-	pub type NFTs<T: Config> =
+	pub type Nfts<T: Config> =
 		StorageDoubleMap<_, Twox64Concat, CollectionId, Twox64Concat, NftId, InstanceInfoOf<T>>;
 
 	#[pallet::storage]

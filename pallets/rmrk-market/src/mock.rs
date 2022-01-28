@@ -16,6 +16,11 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 };
 
+mod rmrk_market {
+	// Re-export needed for `impl_outer_event!`
+	pub use super::super::*;
+}
+
 type AccountId = AccountId32;
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -29,10 +34,10 @@ construct_runtime!(
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
-		Uniques: pallet_uniques::{Pallet, Storage, Event<T>},
-		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>},
+		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
+		Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
+		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
 		RmrkMarket: pallet_rmrk_market::{Pallet, Call, Storage, Event<T>},
-		Balances: pallet_balances::{Pallet, Call, Storage, Event<T>},
 	}
 );
 
@@ -79,7 +84,7 @@ impl pallet_balances::Config for Test {
 	type DustRemoval = ();
 	type Event = Event;
 	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = System;
+	type AccountStore = frame_system::Pallet<Test>;
 	type WeightInfo = ();
 	type MaxLocks = ();
 	type MaxReserves = MaxReserves;
@@ -134,18 +139,29 @@ impl Config for Test {
 	type Currency = Balances;
 }
 
-// pub const ALICE: AccountId = AccountId::new([1u8; 32]);
-// pub const BOB: AccountId = AccountId::new([2u8; 32]);
-// pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
+pub const ALICE: AccountId = AccountId::new([1u8; 32]);
+pub const BOB: AccountId = AccountId::new([2u8; 32]);
+pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
+pub const UNITS: Balance = 100_000_000_000;
 pub const RMRK: Balance = 1;
-// pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::ClassId = 0;
+pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::ClassId = 0;
 // pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::ClassId = 1;
-// pub const NFT_ID_0: <Test as pallet_uniques::Config>::InstanceId = 0;
+pub const NFT_ID_0: <Test as pallet_uniques::Config>::InstanceId = 0;
 // pub const NOT_EXISTING_CLASS_ID: <Test as pallet_uniques::Config>::ClassId = 999;
 
 // Build genesis storage according to the mock runtime.
 pub fn new_test_ext() -> sp_io::TestExternalities {
-	let t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+	let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
+
+	pallet_balances::GenesisConfig::<Test> {
+		balances: vec![
+			(ALICE, 100_000 * UNITS),
+			(BOB, 200_000 * UNITS),
+			(CHARLIE, 300_000 * UNITS),
+		],
+	}
+	.assimilate_storage(&mut t)
+	.unwrap();
 
 	let mut ext = sp_io::TestExternalities::new(t);
 	ext.execute_with(|| System::set_block_number(1));
