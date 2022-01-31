@@ -494,31 +494,6 @@ where
 		});
 
 		Ok(())
-		/*ListedNfts::<T>::try_mutate(collection_id, nft_id, |list_price| -> DispatchResult {
-			let mut list_price = if is_offer {
-				Offers::<T>::get(token_id, buyer.clone())
-					.map(|o| o.amount)
-					.ok_or(Error::<T>::UnknownOffer)?
-			} else {
-				list_price.take().ok_or(Error::<T>::TokenNotForSale)?
-			};
-
-			// Transfer currency then transfer the NFT
-			<T as pallet::Config>::Currency::transfer(&buyer, &root_owner, list_price, ExistenceRequirement::KeepAlive)?;
-
-			let new_owner = AccountIdOrCollectionNftTuple::AccountId(buyer.clone());
-			pallet_rmrk_core::Pallet::<T>::send(root_owner_origin, collection_id, nft_id, new_owner)?;
-
-			Self::deposit_event(Event::TokenSold {
-				owner: root_owner,
-				buyer,
-				collection_id,
-				nft_id,
-				price: list_price,
-			});
-
-			Ok(())
-		})*/
 	}
 
 	/// Helper function to check if a RMRK NFT is listed
