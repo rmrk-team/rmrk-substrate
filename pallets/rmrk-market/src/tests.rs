@@ -4,6 +4,7 @@ use mock::{Event as MockEvent, *};
 use frame_support::{assert_noop, assert_ok};
 
 use sp_std::{convert::TryInto, vec::Vec};
+use sp_runtime::Permill;
 
 /// Turns a string into a BoundedVec
 fn stb(s: &str) -> BoundedVec<u8, ValueLimit> {
@@ -62,6 +63,7 @@ fn list_works() {
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			10u128,
+			None,
 			),
 			Error::<Test>::NoPermission
 		);
@@ -71,6 +73,7 @@ fn list_works() {
 			COLLECTION_ID_0,
 			NOT_EXISTING_NFT_ID,
 			10u128,
+			None,
 			),
 			Error::<Test>::TokenDoesNotExist
 		);
@@ -94,6 +97,7 @@ fn list_works() {
 			COLLECTION_ID_0,
 			NFT_ID_1,
 			10u128,
+			None,
 			),
 			Error::<Test>::CannotListNftOwnedByNft
 		);
@@ -103,14 +107,14 @@ fn list_works() {
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			10u128,
+			None,
 		));
-		// Listed NFT should trigger TokenListed event TODO: royalty
+		// Listed NFT should trigger TokenListed event
 		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenListed {
 			owner: ALICE,
 			collection_id: 0,
 			nft_id: 0,
 			price: 10u128,
-			royalty: None,
 		}));
 	});
 }
@@ -132,14 +136,14 @@ fn buy_works() {
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			10u128,
+			None,
 		));
-		// Listed NFT should trigger TokenListed event TODO: royalty
+		// Listed NFT should trigger TokenListed event
 		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenListed {
 			owner: ALICE,
 			collection_id: COLLECTION_ID_0,
 			nft_id: NFT_ID_0,
 			price: 10u128,
-			royalty: None,
 		}));
 		// Ensure that ALICE cannot buy the listed NFT
 		assert_noop!(RmrkMarket::buy(
@@ -155,18 +159,229 @@ fn buy_works() {
 			COLLECTION_ID_0,
 			NFT_ID_0,
 		));
-		// Bought NFT should trigger TokenSold event TODO: royalty
+		// Bought NFT should trigger TokenSold event
 		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenSold {
 			owner: ALICE,
 			buyer: BOB,
 			collection_id: 0,
 			nft_id: 0,
 			price: 10u128,
-			royalty: None,
-			royalty_amount: None,
 		}));
 		// Ensure BOB is the new owner of NFT (0,0)
 		assert_eq!(Uniques::owner(COLLECTION_ID_0, NFT_ID_0), Some(BOB));
+	});
+}
+
+#[test]
+fn buy_wont_work_after_list_expires() {
+	new_test_ext().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Collection nfts_count should be 0 prior to minting
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
+		// Mint an NFT
+		assert_ok!(basic_mint());
+		// Minting an NFT should cause nfts_count to increase to 1
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
+		// ALICE lists the NFT successfully
+		assert_ok!(RmrkMarket::list(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			10u128,
+			Some(1),
+		));
+		// Listed NFT should trigger TokenListed event
+		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenListed {
+			owner: ALICE,
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_0,
+			price: 10u128,
+		}));
+		// Set block number to expired block
+		System::set_block_number(2);
+		// Ensure that BOB cannot buy the listed NFT as the listing expired
+		assert_noop!(RmrkMarket::buy(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			),
+			Error::<Test>::ListingHasExpired
+		);
+	});
+}
+
+#[test]
+fn buy_wont_work_if_traded_after_list() {
+	new_test_ext().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Collection nfts_count should be 0 prior to minting
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
+		// Mint an NFT
+		assert_ok!(basic_mint());
+		// Minting an NFT should cause nfts_count to increase to 1
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
+		// ALICE lists the NFT successfully
+		assert_ok!(RmrkMarket::list(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			10u128,
+			None,
+		));
+		// Listed NFT should trigger TokenListed event
+		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenListed {
+			owner: ALICE,
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_0,
+			price: 10u128,
+		}));
+		// Ensure that ALICE cannot buy the listed NFT
+		assert_noop!(RmrkMarket::buy(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			),
+			Error::<Test>::CannotBuyOwnToken
+		);
+		// ALICE sends CHARLIE NFT [0,0]
+		assert_ok!(RmrkCore::send(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			AccountIdOrCollectionNftTuple::AccountId(CHARLIE),
+		));
+		// Successful send to NFT triggers NFTSent event
+		System::assert_last_event(MockEvent::RmrkCore(pallet_rmrk_core::Event::NFTSent {
+			sender: ALICE,
+			recipient: AccountIdOrCollectionNftTuple::AccountId(CHARLIE),
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_0,
+		}));
+		// BOB buys the NFT and the NFT is transferred from ALICE to BOB
+		assert_noop!(RmrkMarket::buy(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			),
+			Error::<Test>::TokenNotForSale,
+		);
+		// Ensure Charlie is the still new owner of NFT (0,0)
+		assert_eq!(Uniques::owner(COLLECTION_ID_0, NFT_ID_0), Some(CHARLIE));
+	});
+}
+
+#[test]
+fn buy_wont_work_if_traded_to_nft_after_list() {
+	new_test_ext().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Collection nfts_count should be 0 prior to minting
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
+		// Mint an two NFTs
+		assert_ok!(basic_mint());
+		assert_ok!(basic_mint());
+		// Minting an NFT should cause nfts_count to increase to 1
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 2);
+		// ALICE lists the NFT successfully
+		assert_ok!(RmrkMarket::list(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			10u128,
+			None,
+		));
+		// Listed NFT should trigger TokenListed event
+		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenListed {
+			owner: ALICE,
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_0,
+			price: 10u128,
+		}));
+		// Ensure that ALICE cannot buy the listed NFT
+		assert_noop!(RmrkMarket::buy(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			),
+			Error::<Test>::CannotBuyOwnToken
+		);
+		// ALICE sends NFT [0,0] to NFT [0.1]
+		assert_ok!(RmrkCore::send(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
+		));
+		// Successful send to NFT triggers NFTSent event
+		System::assert_last_event(MockEvent::RmrkCore(pallet_rmrk_core::Event::NFTSent {
+			sender: ALICE,
+			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_0,
+		}));
+		// BOB buys the NFT and the NFT is transferred from ALICE to BOB
+		assert_noop!(RmrkMarket::buy(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			),
+			Error::<Test>::TokenNotForSale,
+		);
+	});
+}
+
+#[test]
+fn accept_offer_wont_work_if_traded_to_nft_after_list() {
+	new_test_ext().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Collection nfts_count should be 0 prior to minting
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
+		// Mint an two NFTs
+		assert_ok!(basic_mint());
+		assert_ok!(basic_mint());
+		// Minting an NFT should cause nfts_count to increase to 1
+		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 2);
+		// BOB successfully places offer
+		assert_ok!(RmrkMarket::make_offer(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			MIN_OFFER_ON_NFT,
+			None,
+		));
+		// Offer from BOB on ALICE's NFT should trigger OfferPlaced event
+		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::OfferPlaced {
+			offerer: BOB,
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_0,
+			price: MIN_OFFER_ON_NFT,
+		}));
+		// ALICE sends NFT [0,0] to NFT [0.1]
+		assert_ok!(RmrkCore::send(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
+		));
+		// Successful send to NFT triggers NFTSent event
+		System::assert_last_event(MockEvent::RmrkCore(pallet_rmrk_core::Event::NFTSent {
+			sender: ALICE,
+			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_0,
+		}));
+		// ALICE cannot accept offer anymore
+		assert_noop!(RmrkMarket::accept_offer(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			BOB,
+			),
+			Error::<Test>::NoPermission
+		);
 	});
 }
 
@@ -189,6 +404,7 @@ fn unlist_works() {
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			10u128,
+			None,
 			),
 			Error::<Test>::NoPermission
 		);
@@ -198,6 +414,7 @@ fn unlist_works() {
 			COLLECTION_ID_0,
 			NOT_EXISTING_NFT_ID,
 			10u128,
+			None,
 			),
 			Error::<Test>::TokenDoesNotExist
 		);
@@ -215,14 +432,14 @@ fn unlist_works() {
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			10u128,
+			None,
 		));
-		// Listed NFT should trigger TokenListed event TODO: royalty
+		// Listed NFT should trigger TokenListed event
 		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenListed {
 			owner: ALICE,
 			collection_id: COLLECTION_ID_0,
 			nft_id: NFT_ID_0,
 			price: 10u128,
-			royalty: None,
 		}));
 		// BOB cannot unlist a NFT if not owned by BOB
 		assert_noop!(RmrkMarket::unlist(

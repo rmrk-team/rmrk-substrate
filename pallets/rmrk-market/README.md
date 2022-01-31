@@ -3,22 +3,48 @@ Market pallet design for the RMRK NFT Market. The Market pallet should extend [N
 
 ## Calls
 - `buy(origin, collection_id, nft_id)`
-- `list(origin, collection_id, nft_id, amount: T::Balance)`
+- `list(origin, collection_id, nft_id, amount: T::Balance, expires: Option<T::BlockNumber>)`
 - `unlist(origin, collection_id, nft_id)`
-- `make_offer(origin, collection_id, nft_id, amount: BalanceOf<T>, expires: T::BlockNumber)`
+- `make_offer(origin, collection_id, nft_id, amount: BalanceOf<T>, expires: Option<T::BlockNumber>)`
 - `withdraw_offer(origin, collection_id, nft_id)`
 
 ## Storages
 ```rust
 #[pallet::storage]
 #[pallet::getter(fn listed_nfts)]
-/// Stores listed NFTs info
-pub type ListedNfts<T: Config> =
-	StorageMap<_, Twox64Concat, (CollectionId, NftId), ListingInfoOf<T>>;
+/// Stores listed NFT price info
+pub type ListedNfts<T: Config> = StorageDoubleMap<
+    _,
+    Blake2_128Concat,
+    CollectionId,
+    Blake2_128Concat,
+    NftId,
+    ListInfoOf<T>,
+    OptionQuery,
+>;
+
+#[pallet::storage]
+#[pallet::getter(fn offers)]
+/// Stores offer on a NFT info
+pub type Offers<T: Config> = StorageDoubleMap<
+    _,
+    Blake2_128Concat,
+    (CollectionId, NftId),
+    Blake2_128Concat,
+    T::AccountId,
+    OfferOf<T>,
+    OptionQuery,
+>;
 ```
 
 ## Types
-TBD
+```rust
+pub type ListInfoOf<T> = ListInfo<
+    <T as frame_system::Config>::AccountId, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
+
+pub type OfferOf<T> = Offer<
+    <T as frame_system::Config>::AccountId, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
+```
 
 ## Events
 
@@ -29,43 +55,41 @@ pub enum Event<T: Config> {
         owner: T::AccountId,
         collection_id: CollectionId,
         nft_id: NftId,
-        price: Option<BalanceOf<T>>
+        price: Option<BalanceOf<T>>,
     },
-    /// Token was sold to a new owner \[owner, buyer, collection_id, nft_id, price, author, royalty, royalty_amount\]
+    /// Token was sold to a new owner
+    /// \[owner, buyer, collection_id, nft_id, price, author\]
     TokenSold {
         owner: T::AccountId,
         buyer: T::AccountId,
         collection_id: CollectionId,
         nft_id: NftId,
         price: BalanceOf<T>,
-        royalty: Option<(T::AccountId, u8)>,
-        royalty_amount: BalanceOf<T>,
     },
-    /// Token listed on Marketplace \[owner, collection_id, nft_id, author royalty\]
+    /// Token listed on Marketplace \[owner, collection_id, nft_id\]
     TokenListed {
         owner: T::AccountId,
-        collection_id: CollectionId, 
+        collection_id: CollectionId,
         nft_id: NftId,
-        price: BalanceOf<T>, 
-        royalty: Option<(T::AccountId, u8)>,
+        price: BalanceOf<T>,
     },
-    /// Token unlisted on Marketplace \[collection_id, nft_id\]
+    /// Token unlisted on Marketplace \[owner, collection_id, nft_id\]
     TokenUnlisted {
-        owner: T::AccountId, 
+        owner: T::AccountId,
         collection_id: CollectionId,
         nft_id: NftId,
     },
     /// Offer was placed on a token \[offerer, collection_id, nft_id, price\]
     OfferPlaced {
         offerer: T::AccountId,
-        collection_id: CollectionId, 
-        nft_id: NftId, 
+        collection_id: CollectionId,
+        nft_id: NftId,
         price: BalanceOf<T>,
     },
     /// Offer was withdrawn \[sender, collection_id, nft_id\]
     OfferWithdrawn {
-        sender: T::AccountId, 
-        collection_id: CollectionId, 
+        sender: T::AccountId,
+        collection_id: CollectionId,
         nft_id: NftId,
     },
     /// Offer was accepted \[owner, buyer, collection_id, nft_id\]
@@ -73,7 +97,7 @@ pub enum Event<T: Config> {
         owner: T::AccountId,
         buyer: T::AccountId,
         collection_id: CollectionId,
-        nft_id: NftId
+        nft_id: NftId,
     },
 }
 ```

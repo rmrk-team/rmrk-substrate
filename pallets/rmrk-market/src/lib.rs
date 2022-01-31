@@ -9,7 +9,6 @@ use frame_support::{
 };
 use frame_support::traits::ExistenceRequirement;
 use frame_system::{ensure_signed, RawOrigin};
-use sp_runtime::Permill;
 
 use sp_std::prelude::*;
 
@@ -33,6 +32,7 @@ pub mod pallet {
 	use super::*;
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
+	use crate::types::ListInfo;
 
 	pub type InstanceInfoOf<T> = NftInfo<
 		<T as frame_system::Config>::AccountId,
@@ -40,6 +40,9 @@ pub mod pallet {
 
 	pub type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+
+	pub type ListInfoOf<T> = ListInfo<
+		<T as frame_system::Config>::AccountId, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
 
 	pub type OfferOf<T> = Offer<
 		<T as frame_system::Config>::AccountId, BalanceOf<T>, <T as frame_system::Config>::BlockNumber>;
@@ -77,7 +80,7 @@ pub mod pallet {
 		CollectionId,
 		Blake2_128Concat,
 		NftId,
-		BalanceOf<T>,
+		ListInfoOf<T>,
 		OptionQuery,
 	>;
 
@@ -105,23 +108,20 @@ pub mod pallet {
 			price: Option<BalanceOf<T>>,
 		},
 		/// Token was sold to a new owner
-		/// \[owner, buyer, collection_id, nft_id, price, author, royalty, royalty_amount\]
+		/// \[owner, buyer, collection_id, nft_id, price, author\]
 		TokenSold {
 			owner: T::AccountId,
 			buyer: T::AccountId,
 			collection_id: CollectionId,
 			nft_id: NftId,
 			price: BalanceOf<T>,
-			royalty: Option<(T::AccountId, u8)>,
-			royalty_amount: Option<BalanceOf<T>>,
 		},
-		/// Token listed on Marketplace \[owner, collection_id, nft_id, author royalty\]
+		/// Token listed on Marketplace \[owner, collection_id, nft_id\]
 		TokenListed {
 			owner: T::AccountId,
 			collection_id: CollectionId,
 			nft_id: NftId,
 			price: BalanceOf<T>,
-			royalty: Option<(T::AccountId, u8)>,
 		},
 		/// Token unlisted on Marketplace \[owner, collection_id, nft_id\]
 		TokenUnlisted {
@@ -178,6 +178,8 @@ pub mod pallet {
 		AlreadyOffered,
 		/// Accepted offer has expired and cannot be accepted
 		OfferHasExpired,
+		/// Listing has expired and cannot be bought
+		ListingHasExpired,
 	}
 
 	#[pallet::call]
@@ -221,34 +223,40 @@ pub mod pallet {
 			collection_id: CollectionId,
 			nft_id: NftId,
 			amount: BalanceOf<T>,
+			expires: Option<T::BlockNumber>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
+			let owner =
+				pallet_uniques::Pallet::<T>::owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
 
-			let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
 			// Ensure that the NFT is not owned by an NFT
-			if let Some(current_owner) = owner {
-				let current_owner_cid_nid =
-					pallet_rmrk_core::Pallet::<T>::decode_nft_account_id::<T::AccountId>(current_owner.clone());
-				if let Some(_current_owner_cid_nid) = current_owner_cid_nid {
-					Err(Error::<T>::CannotListNftOwnedByNft)?;
-				}
-				// Ensure sender is not the owner
-				ensure!(sender == current_owner, Error::<T>::NoPermission);
+			ensure!(Self::is_nft_owned_by_nft(collection_id, nft_id) == false,
+				Error::<T>::CannotListNftOwnedByNft);
+			// Ensure sender is not the owner
+			ensure!(sender == owner, Error::<T>::NoPermission);
 
-				ListedNfts::<T>::mutate_exists(collection_id, nft_id, |list_price| *list_price = Some(amount));
-
-				// TODO: royalty info
-
-				Self::deposit_event(Event::TokenListed {
-					owner: current_owner,
-					collection_id,
-					nft_id,
-					price: amount,
-					royalty: None
-				});
-			} else {
-				Err(Error::<T>::TokenDoesNotExist)?;
+			// Check if a prior listing is in storage from previous owner and update if found
+			if Self::is_nft_listed(collection_id, nft_id) {
+				ListedNfts::<T>::remove(collection_id, nft_id);
 			}
+
+			// Add new ListInfo with listed_by, amount, Option<BlockNumber>
+			ListedNfts::<T>::insert(
+				collection_id,
+				nft_id,
+				ListInfo {
+					listed_by: sender,
+					amount,
+					expires,
+				}
+			);
+
+			Self::deposit_event(Event::TokenListed {
+				owner,
+				collection_id,
+				nft_id,
+				price: amount,
+			});
 
 			Ok(())
 		}
@@ -269,21 +277,18 @@ pub mod pallet {
 			let sender = ensure_signed(origin.clone())?;
 			// Check if NFT is still in ListedNfts storage
 			ensure!(Self::is_nft_listed(collection_id, nft_id), Error::<T>::CannotUnlistToken);
-			let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
+			let owner =
+				pallet_uniques::Pallet::<T>::owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
 			// Ensure owner of NFT is performing call to unlist
-			if let Some(current_owner) = owner {
-				ensure!(sender == current_owner, Error::<T>::NoPermission);
-				// Remove from storage
-				ListedNfts::<T>::remove(collection_id, nft_id);
-				// Emit TokenUnlisted Event
-				Self::deposit_event(Event::TokenUnlisted {
-					owner: current_owner,
-					collection_id,
-					nft_id,
-				});
-			} else {
-				Err(Error::<T>::TokenDoesNotExist)?;
-			}
+			ensure!(sender == owner, Error::<T>::NoPermission);
+			// Remove from storage
+			ListedNfts::<T>::remove(collection_id, nft_id);
+			// Emit TokenUnlisted Event
+			Self::deposit_event(Event::TokenUnlisted {
+				owner,
+				collection_id,
+				nft_id,
+			});
 
 			Ok(())
 		}
@@ -450,13 +455,46 @@ where
 		is_offer: bool,
 	) -> DispatchResult {
 		// Ensure buyer is not the root owner
-		let (root_owner, _) = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-		ensure!(buyer != root_owner, Error::<T>::CannotBuyOwnToken);
+		let owner =
+			pallet_uniques::Pallet::<T>::owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
+		ensure!(buyer != owner, Error::<T>::CannotBuyOwnToken);
 
-		let root_owner_origin = T::Origin::from(RawOrigin::Signed(root_owner.clone()));
+		let owner_origin = T::Origin::from(RawOrigin::Signed(owner.clone()));
 		let token_id = (collection_id, nft_id);
 
-		ListedNfts::<T>::try_mutate(collection_id, nft_id, |list_price| -> DispatchResult {
+		let list_price = if is_offer {
+			Offers::<T>::get(token_id, buyer.clone())
+				.map(|o| o.amount)
+				.ok_or(Error::<T>::UnknownOffer)?
+		} else {
+			let list_info = ListedNfts::<T>::take(collection_id, nft_id).ok_or(Error::<T>::TokenNotForSale)?;
+			// Ensure that the current owner is the one that listed the NFT
+			ensure!(list_info.listed_by == owner, Error::<T>::TokenNotForSale);
+			// Ensure the listing has not expired if Some(expires)
+			// if None then there is no expiration
+			if let Some(expires) = list_info.expires {
+				ensure!(expires > <frame_system::Pallet<T>>::block_number(),
+					Error::<T>::ListingHasExpired);
+			}
+			list_info.amount
+		};
+
+		// Transfer currency then transfer the NFT
+		<T as pallet::Config>::Currency::transfer(&buyer, &owner, list_price, ExistenceRequirement::KeepAlive)?;
+
+		let new_owner = AccountIdOrCollectionNftTuple::AccountId(buyer.clone());
+		pallet_rmrk_core::Pallet::<T>::send(owner_origin, collection_id, nft_id, new_owner)?;
+
+		Self::deposit_event(Event::TokenSold {
+			owner,
+			buyer,
+			collection_id,
+			nft_id,
+			price: list_price,
+		});
+
+		Ok(())
+		/*ListedNfts::<T>::try_mutate(collection_id, nft_id, |list_price| -> DispatchResult {
 			let mut list_price = if is_offer {
 				Offers::<T>::get(token_id, buyer.clone())
 					.map(|o| o.amount)
@@ -464,17 +502,6 @@ where
 			} else {
 				list_price.take().ok_or(Error::<T>::TokenNotForSale)?
 			};
-
-			// Check royalty set in NftInfo, NftInfo is populated at mint & if it was removed from
-			// Nfts Storage, lookup_root_owner would have thrown an error.
-			let nft_info = pallet_rmrk_core::Nfts::<T>::get(collection_id, nft_id);
-			//let royalty = nft_info.royalty;
-			//let recipient = nft_info.recipient;
-
-			// TODO: Calculate royalty to be paid to the recipient
-			// 1) Calculate price and substract from list_price
-			// 2) Transfer currency to recipient
-			// 3) Emit Event
 
 			// Transfer currency then transfer the NFT
 			<T as pallet::Config>::Currency::transfer(&buyer, &root_owner, list_price, ExistenceRequirement::KeepAlive)?;
@@ -488,12 +515,10 @@ where
 				collection_id,
 				nft_id,
 				price: list_price,
-				royalty: None,
-				royalty_amount: None
 			});
 
 			Ok(())
-		})
+		})*/
 	}
 
 	/// Helper function to check if a RMRK NFT is listed
@@ -520,6 +545,26 @@ where
 		sender: T::AccountId,
 	) -> bool {
 		Offers::<T>::contains_key((collection_id, nft_id), sender)
+	}
+
+	/// Helper function to check if the NFT's parent is a User Account
+	///
+	/// Parameters:
+	/// - collection_id: The collection id of the RMRK NFT
+	/// - nft_id: The nft id of the RMRK NFT
+	fn is_nft_owned_by_nft(
+		collection_id: CollectionId,
+		nft_id: NftId,
+	) -> bool {
+		let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
+		if let Some(current_owner) = owner {
+			let current_owner_cid_nid =
+				pallet_rmrk_core::Pallet::<T>::decode_nft_account_id::<T::AccountId>(current_owner);
+			if let Some(_current_owner_cid_nid) = current_owner_cid_nid {
+				return true;
+			}
+		}
+		return false;
 	}
 
 }
