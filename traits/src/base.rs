@@ -17,7 +17,6 @@ pub struct BaseInfo<AccountId, BoundedString> {
 }
 
 // Abstraction over a Base system.
-#[allow(clippy::upper_case_acronyms)]
 pub trait Base<AccountId, BoundedString> {
 	fn base_create(
 		issuer: AccountId,
