@@ -249,7 +249,7 @@ pub mod pallet {
 			if let Some(collection_issuer) = pallet_uniques::Pallet::<T>::class_owner(&collection_id) {
 				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
 			} else {
-				Err(Error::<T>::CollectionUnknown)?;
+				return Err(Error::<T>::CollectionUnknown.into())
 			}
 
 			let (collection_id, nft_id) =

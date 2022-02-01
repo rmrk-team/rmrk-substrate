@@ -4,7 +4,7 @@
 
 use frame_support::{
 	dispatch::DispatchResult, ensure,
-	traits::{Currency, BalanceStatus::Reserved, ReservableCurrency},
+	traits::{Currency, ReservableCurrency},
 	transactional, BoundedVec,
 };
 use frame_support::traits::ExistenceRequirement;
@@ -230,7 +230,7 @@ pub mod pallet {
 				pallet_uniques::Pallet::<T>::owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
 
 			// Ensure that the NFT is not owned by an NFT
-			ensure!(Self::is_nft_owned_by_nft(collection_id, nft_id) == false,
+			ensure!(!Self::is_nft_owned_by_nft(collection_id, nft_id),
 				Error::<T>::CannotListNftOwnedByNft);
 			// Ensure sender is not the owner
 			ensure!(sender == owner, Error::<T>::NoPermission);
@@ -416,7 +416,7 @@ pub mod pallet {
 
 					if let Some(expires) = offer.expires {
 						if expires <= <frame_system::Pallet<T>>::block_number() {
-							Err(Error::<T>::OfferHasExpired)?;
+							return Err(Error::<T>::OfferHasExpired.into())
 						}
 					}
 
@@ -539,7 +539,7 @@ where
 				return true;
 			}
 		}
-		return false;
+		false
 	}
 
 }
