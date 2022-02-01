@@ -312,7 +312,7 @@ impl pallet_rmrk_core::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MinimumOfferAmount: Balance = 100 * UNITS;
+	pub const MinimumOfferAmount: Balance = UNITS / 10_000;
 }
 
 impl pallet_rmrk_market::Config for Runtime {
