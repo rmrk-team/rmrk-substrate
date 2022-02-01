@@ -85,7 +85,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn nfts)]
 	/// Stores nft info
-	pub type NFTs<T: Config> =
+	pub type Nfts<T: Config> =
 		StorageDoubleMap<_, Twox64Concat, CollectionId, Twox64Concat, NftId, InstanceInfoOf<T>>;
 
 	#[pallet::storage]
@@ -251,7 +251,7 @@ pub mod pallet {
 			{
 				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
 			} else {
-				Err(Error::<T>::CollectionUnknown)?;
+				return Err(Error::<T>::CollectionUnknown.into())
 			}
 
 			let (collection_id, nft_id) =
