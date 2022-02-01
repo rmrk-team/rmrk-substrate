@@ -1,0 +1,54 @@
+[package]
+name = "pallet-rmrk-market"
+version = "4.0.0-dev"
+description = "RMRK Market"
+authors = ["RMRK Team"]
+homepage = ""
+edition = "2021"
+license = "Apache-2.0"
+publish = false
+repository = "https://github.com/rmrk-team/rmrk-substrate"
+
+[package.metadata.docs.rs]
+targets = ["x86_64-unknown-linux-gnu"]
+
+[dependencies]
+serde = { version = "1.0.111", default-features = false, features = ["derive"] }
+sp-runtime = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = [
+    "derive",
+] }
+scale-info = { version = "1.0", default-features = false, features = ["derive"] }
+frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01"}
+frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01", optional = true }
+
+pallet-uniques = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+pallet-balances = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+
+# Local Dependencies
+pallet-rmrk-core = { default-features = false, version = "4.0.0-dev", path = "../rmrk-core" }
+rmrk-traits = { default-features = false, version = "0.0.1", path = "../../traits" }
+
+[dev-dependencies]
+sp-core = { default-features = false, version = "4.1.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+sp-io = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+sp-runtime = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
+
+[features]
+default = ["std"]
+std = [
+    "pallet-uniques/std",
+    "pallet-balances/std",
+    "serde/std",
+    "codec/std",
+    "scale-info/std",
+    "frame-support/std",
+    "frame-system/std",
+    "frame-benchmarking/std",
+]
+
+runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
+try-runtime = ["frame-support/try-runtime"]
