@@ -17,9 +17,10 @@ impl<T: Config> Base<T::AccountId, StringLimitOf<T>> for Pallet<T>
 		issuer: T::AccountId,
 		base_type: StringLimitOf<T>,
 		symbol: StringLimitOf<T>,
+		parts: Vec<FixedOrSlotPart<StringLimitOf<T>>>,
 	) -> Result<BaseId, DispatchError> {
 		let base_id = Self::get_next_base_id()?;
-		let base = BaseInfo { issuer, base_type, symbol };
+		let base = BaseInfo { issuer, base_type, symbol, parts };
 		Bases::<T>::insert(base_id, base);
 		Ok(base_id)
 	}

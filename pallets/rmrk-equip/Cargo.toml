@@ -48,6 +48,8 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"frame-benchmarking/std",
+	"pallet-rmrk-core/std",
+	"pallet-balances/std",
 ]
 
 runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]

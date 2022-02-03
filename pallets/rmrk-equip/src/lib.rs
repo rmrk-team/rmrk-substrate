@@ -1,19 +1,20 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 use frame_support::BoundedVec;
-use frame_support::dispatch::DispatchError;
+use frame_support::dispatch::{DispatchError, DispatchResult};
+use sp_std::vec::Vec;
 
 pub use pallet::*;
 
-use rmrk_traits::{primitives::*, BaseInfo, Base};
+use rmrk_traits::{primitives::*, BaseInfo, Base, FixedOrSlotPart, FixedPart, SlotPart};
 
 mod functions;
 
-// #[cfg(test)]
-// mod mock;
+#[cfg(test)]
+mod mock;
 
-// #[cfg(test)]
-// mod tests;
+#[cfg(test)]
+mod tests;
 
 // #[cfg(feature = "runtime-benchmarks")]
 // mod benchmarking;
@@ -93,10 +94,11 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,
 			symbol: BoundedVec<u8, T::StringLimit>,
+			parts: Vec<FixedOrSlotPart<StringLimitOf<T>>>
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let base_id = Self::base_create(sender.clone(), base_type, symbol)?;
+			let base_id = Self::base_create(sender.clone(), base_type, symbol, parts)?;
 
 			Self::deposit_event(Event::BaseCreated { issuer: sender, base_id });
 			Ok(())

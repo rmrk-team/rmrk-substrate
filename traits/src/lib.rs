@@ -7,7 +7,7 @@ pub mod priority;
 pub mod property;
 pub mod resource;
 
-pub use base::{BaseInfo, Base};
+pub use base::{BaseInfo, Base, FixedOrSlotPart, FixedPart, SlotPart};
 pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo};
 pub use priority::Priority;
@@ -19,4 +19,5 @@ pub mod primitives {
 	pub type NftId = u32;
 	pub type BaseId = u32;
 	pub type PartId = u32;
+	pub type ZIndex = u32;
 }
