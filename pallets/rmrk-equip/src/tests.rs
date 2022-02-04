@@ -34,8 +34,8 @@ fn create_base_works() {
 			z: 0,
 			src: stb("slot_part_src"),
 			equippable: vec![
-				stb("equippable_collection_id_1"),
-				stb("equippable_collection_id_2"),
+				0, // Collection 0
+				1, // Collection 1
 			]
 		};
 

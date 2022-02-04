@@ -19,7 +19,7 @@ pub struct FixedPart<BoundedString> {
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
 pub struct SlotPart<BoundedString> {
 	pub id: BoundedString,
-	pub equippable: Vec<BoundedString>,
+	pub equippable: Vec<CollectionId>,
 	pub src: BoundedString,
 	pub z: ZIndex,
 }
