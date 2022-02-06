@@ -6,7 +6,8 @@ use sp_std::vec::Vec;
 
 pub use pallet::*;
 
-use rmrk_traits::{primitives::*, BaseInfo, Base, FixedOrSlotPart, FixedPart, SlotPart};
+use rmrk_traits::{primitives::*, BaseInfo, Base, FixedOrSlotPart, FixedPart,
+	 SlotPart, SlotResourceInfo, AccountIdOrCollectionNftTuple, ResourceType};
 
 mod functions;
 
@@ -44,6 +45,13 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn next_base_id)]
 	pub type NextBaseId<T: Config> = StorageValue<_, BaseId, ValueQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn collections)]
+	/// Stores collections info
+	pub type Equippings<T: Config> =
+		StorageDoubleMap<_, Twox64Concat, NftId, Twox64Concat, BaseId, u32>;
+
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
@@ -63,8 +71,20 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		/// TODO: equip a child NFT into a parent's slot, or unequip
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn equip(origin: OriginFor<T>, something: u32) -> DispatchResult {
+		pub fn equip(origin: OriginFor<T>, nft: NftId, base: u32, slot: u32) -> DispatchResult {
+
+			/*
+fn do_equip(
+		issuer: AccountId, // Maybe don't need?
+		nft: NftId,
+		base_id: u32, // Maybe BaseId ?
+		slot: u32 // Maybe SlotId ?
+)-> Result<(), DispatchError>;
+			*/
+
 			let sender = ensure_signed(origin)?;
+
+			let _equipped = Self::do_equip(sender.clone(), nft, base, slot)?;
 
 			// Self::deposit_event(Event::SomethingStored(something, sender));
 			Ok(())
