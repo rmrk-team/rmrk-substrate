@@ -24,4 +24,13 @@ impl<T: Config> Base<T::AccountId, StringLimitOf<T>> for Pallet<T>
 		Bases::<T>::insert(base_id, base);
 		Ok(base_id)
 	}
+	fn do_equip(
+		issuer: T::AccountId, // Maybe don't need?
+		nft: NftId,
+		base_id: u32, // Maybe BaseId ?
+		slot: u32 // Maybe SlotId ?
+	)-> Result<(), DispatchError> {
+		Equippings::<T>::insert(nft, base_id, slot);
+		Ok(())
+	}
 }
