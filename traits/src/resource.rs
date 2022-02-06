@@ -4,6 +4,7 @@ use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
 use sp_std::cmp::Eq;
+use sp_std::{vec::Vec};
 
 use crate::primitives::*;
 use serde::{Deserialize, Serialize};
@@ -43,6 +44,80 @@ pub struct ResourceInfo<ResourceId, BoundedString> {
 	/// bit of a strain on the browser. For this reason, the thumb value can contain a URI to an
 	/// image that is lighter and faster to load but representative of this resource.
 	pub thumb: Option<BoundedString>,
+}
+
+
+
+
+/*
+		Decoded:
+		{
+			"base":"base-8788686-KANBASE",
+			"id":"6BrBxg_X",
+			"parts":["1F60F_beak","var4_body","1F60F_eyes","var4_footLeft","var4_footRight",
+				"var4_handLeft","1f48e_handRight","1f48e_head","var4_tail","var4_wingLeft","1f48e_wingRight","card_le","background",
+				"foreground", "headwear","backpack","objectleft","objectright","necklace","gem_empty2","gem_empty3","gem_empty4"],
+			"thumb":"ipfs://ipfs/QmR3rK1P4n24PPqvfjGYNXWixPJpyBKTV6rYzAS2TYHLpT",
+			"themeId":"eggplant"
+		}
+
+		Decoded:
+		{
+			"slot":"base-8788686-KANBASE.objectright", ->
+				"base"
+				"slot"
+			"id":"fG-kSh3M",
+			"src":"ipfs://ipfs/QmPAdcr87vu2mENZbJNg14yoRRjtUZ6vAYWN5oZQczyCvo/sparklers22_objectright.svg",
+			"thumb":"ipfs://ipfs/QmPAdcr87vu2mENZbJNg14yoRRjtUZ6vAYWN5oZQczyCvo/sparklers22_object_thumb.png"
+		}
+
+*/
+
+#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub enum ResourceType<BaseId, SlotId, ResourceId, BoundedString> {
+	Base(CoreResourceInfo<BaseId, ResourceId, BoundedString>),
+	Slot(SlotResourceInfo<BaseId, SlotId, ResourceId, BoundedString>),
+}
+
+
+#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub struct CoreResourceInfo<BaseId, ResourceId, BoundedString> {
+	pub base: BaseId,
+	pub id: ResourceId,
+	pub parts: Vec<BoundedString>, // maybe switch to Vec<Part> ?
+	pub src: Option<BoundedString>,
+	pub thumb: Option<BoundedString>,
+}
+
+
+#[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+#[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
+pub struct SlotResourceInfo<BaseId, SlotId, ResourceId, BoundedString> {
+	pub base: BaseId,
+	pub slot_id: SlotId,
+	pub id: ResourceId,
+	pub src: BoundedString,
+	pub thumb: Option<BoundedString>,
+	pub themeId: Option<BoundedString>,
+}
+
+
+/// Abstraction over a Resource system.
+pub trait NewResource<AccountId, CollectionId, NftId, BaseId, SlotId, ResourceId, BoundedString> {
+	fn new_resource_add(
+		sender: AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		resource: ResourceType<BaseId, SlotId, ResourceId, BoundedString>,
+	) -> Result<ResourceId, DispatchError>;
+	fn accept(
+		sender: AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		resource_id: ResourceId,
+	) -> DispatchResult;
 }
 
 /// Abstraction over a Resource system.
