@@ -5,7 +5,14 @@ use sp_std::cmp::Eq;
 use crate::primitives::*;
 use sp_std::{vec::Vec};
 
-
+// // #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
+// #[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
+// pub struct Equipping<BoundedString> {
+// 	// base
+// 	// pub base: BaseId,
+// 	// slot
+// 	pub slot: BoundedString,
+// }
 
 // #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
@@ -52,4 +59,10 @@ pub trait Base<AccountId, BoundedString> {
 		symbol: BoundedString,
 		parts: Vec<FixedOrSlotPart<BoundedString>>
 ) -> Result<BaseId, DispatchError>;
+	fn do_equip(
+		issuer: AccountId, // Maybe don't need?
+		nft: NftId,
+		base_id: u32, // Maybe BaseId ?
+		slot: u32 // Maybe SlotId ?
+)-> Result<(), DispatchError>;
 }
