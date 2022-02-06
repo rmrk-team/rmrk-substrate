@@ -76,14 +76,14 @@ pub struct ResourceInfo<ResourceId, BoundedString> {
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub enum ResourceType<BaseId, SlotId, ResourceId, BoundedString> {
-	Base(CoreResourceInfo<BaseId, ResourceId, BoundedString>),
-	Slot(SlotResourceInfo<BaseId, SlotId, ResourceId, BoundedString>),
+	Base(NoncomposableResource<BaseId, ResourceId, BoundedString>),
+	Slot(ComposableResource<BaseId, SlotId, ResourceId, BoundedString>),
 }
 
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct CoreResourceInfo<BaseId, ResourceId, BoundedString> {
+pub struct NoncomposableResource<BaseId, ResourceId, BoundedString> {
 	pub base: BaseId,
 	pub id: ResourceId,
 	pub parts: Vec<BoundedString>, // maybe switch to Vec<Part> ?
@@ -94,7 +94,7 @@ pub struct CoreResourceInfo<BaseId, ResourceId, BoundedString> {
 
 #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct SlotResourceInfo<BaseId, SlotId, ResourceId, BoundedString> {
+pub struct ComposableResource<BaseId, SlotId, ResourceId, BoundedString> {
 	pub base: BaseId,
 	pub slot_id: SlotId,
 	pub id: ResourceId,

@@ -7,7 +7,7 @@ use sp_std::vec::Vec;
 pub use pallet::*;
 
 use rmrk_traits::{primitives::*, BaseInfo, Base, FixedOrSlotPart, FixedPart,
-	 SlotPart, SlotResourceInfo, AccountIdOrCollectionNftTuple, ResourceType};
+	 SlotPart, ComposableResource, AccountIdOrCollectionNftTuple, ResourceType};
 
 mod functions;
 

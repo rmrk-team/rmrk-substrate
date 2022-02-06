@@ -162,7 +162,7 @@ fn equip_works() {
 			0,
 			0,
 			ResourceType::Slot(
-				SlotResourceInfo { //<BaseId, SlotId, ResourceId, BoundedString> {
+				ComposableResource { //<BaseId, SlotId, ResourceId, BoundedString> {
 					base: 0, // pub base: BaseId,
 					slot_id: 0, // pub slot_id: SlotId,
 					id: 0, // pub id: ResourceId,
