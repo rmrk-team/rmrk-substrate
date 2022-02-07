@@ -32,7 +32,7 @@ pub type ResourceOf<T> =
 	ResourceInfo<ResourceId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
 
 pub type NewResourceOf<T> =
-	ResourceType<BaseId, SlotId, ResourceId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
+	ResourceType<BaseId, SlotId, ResourceId, PartId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
 
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
@@ -498,7 +498,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			resource: ResourceType<BaseId, SlotId, ResourceId, StringLimitOf<T>>
+			resource: ResourceType<BaseId, SlotId, ResourceId, PartId, StringLimitOf<T>>
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
