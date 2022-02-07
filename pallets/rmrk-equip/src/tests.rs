@@ -1,4 +1,8 @@
-use frame_support::{assert_noop, assert_ok, error::BadOrigin};
+use frame_support::{
+	// assert_noop, 
+	assert_ok, 
+	// error::BadOrigin
+};
 use sp_runtime::Permill;
 
 use super::*;
@@ -44,12 +48,12 @@ fn create_base_works() {
 			bvec![0u8; 20], // base_type
 			bvec![0u8; 20], // symbol
 			vec![
-				FixedOrSlotPart::FixedPart(fixed_part),
-				FixedOrSlotPart::SlotPart(slot_part),
+				NewPartTypes::FixedPart(fixed_part),
+				NewPartTypes::SlotPart(slot_part),
 				],
 		);
 
-		println!("{:?}", RmrkEquip::bases(0).unwrap());
+		// println!("{:?}", RmrkEquip::bases(0).unwrap());
 	});
 }
 
@@ -77,8 +81,8 @@ fn equip_works() {
 			bvec![0u8; 20], // base_type
 			bvec![0u8; 20], // symbol
 			vec![
-				FixedOrSlotPart::FixedPart(fixed_part),
-				FixedOrSlotPart::SlotPart(slot_part),
+				NewPartTypes::FixedPart(fixed_part),
+				NewPartTypes::SlotPart(slot_part),
 				],
 		);
 
@@ -90,6 +94,7 @@ fn equip_works() {
 		// First, an NFT exists.  There are no inherent requirements of this NFT.  The requirements become associated with the
 		// *resources* added to the NFT.  Which will come later.
 
+		RmrkCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], Some(5), bvec![0u8; 15]);
 		RmrkCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], Some(5), bvec![0u8; 15]);
 
 		RmrkCore::mint_nft(
@@ -104,7 +109,7 @@ fn equip_works() {
 		RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE,
-			COLLECTION_ID_0,
+			1,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
@@ -113,8 +118,8 @@ fn equip_works() {
 		// ALICE sends NFT (0, 1) [child] to ALICE-owned NFT (0, 0) [parent]
 		assert_ok!(RmrkCore::send(
 			Origin::signed(ALICE),
-			0,
 			1,
+			0,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
 
@@ -123,6 +128,13 @@ fn equip_works() {
 			z: 0,
 			src: stb("fixed_part_src"),
 		};
+
+		let fixed_part_2 = FixedPart {
+			id: stb("fixed_part_id2"),
+			z: 0,
+			src: stb("fixed_part_src"),
+		};
+
 		let slot_part = SlotPart {
 			id: stb("slot_part_id"),
 			z: 0,
@@ -138,24 +150,40 @@ fn equip_works() {
 			bvec![0u8; 20], // base_type
 			bvec![0u8; 20], // symbol
 			vec![
-				FixedOrSlotPart::FixedPart(fixed_part),
-				FixedOrSlotPart::SlotPart(slot_part),
+				NewPartTypes::FixedPart(fixed_part),
+				NewPartTypes::FixedPart(fixed_part_2.clone()),
+				NewPartTypes::FixedPart(fixed_part_2),
+				NewPartTypes::SlotPart(slot_part),
 				],
 		);
 
-		// Add resource to NFT
-		assert_ok!(RmrkCore::add_resource(
+		// println!("iter");
+		// println!("pp: {:?}", <Parts<Test>>::iter_prefix_values(0).count());
+		// println!("pp: {:?}", <Parts<Test>>::iter_prefix_values(0).collect::<NewPartTypes<StringLimitOf<Test>>>());
+		for i in <Parts<Test>>::iter_prefix_values(0) {
+			println!("i: {:?}", i);	
+		}
+		// let x: NewPartTypes<StringLimitOf<Test>> = <Parts<Test>>::iter_prefix_values(0).collect();
+		// println!("end iter");
+
+		// println!("parts: \n{:?}", RmrkEquip::parts(0, 2));
+		// println!("end parts");
+
+		assert_ok!(RmrkCore::new_add_resource(
 			Origin::signed(ALICE),
 			0,
 			0,
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(stb("slot_part_src")), // slot
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
+			ResourceType::Base(
+				NoncomposableResource { //<BaseId, SlotId, ResourceId, BoundedString> {
+					base: 0, // pub base: BaseId,
+					slot_id: 0, // pub slot_id: SlotId,
+					id: 0, // pub id: ResourceId,
+					src: stb("src"), // pub src: BoundedString,
+					thumb: None, // pub thumb: Option<BoundedString>,
+					theme_id: None, // pub themeId: Option<BoundedString>,
+				}
+			), // slot
 		));
-
 
 		assert_ok!(RmrkCore::new_add_resource(
 			Origin::signed(ALICE),
@@ -164,16 +192,49 @@ fn equip_works() {
 			ResourceType::Slot(
 				ComposableResource { //<BaseId, SlotId, ResourceId, BoundedString> {
 					base: 0, // pub base: BaseId,
-					slot_id: 0, // pub slot_id: SlotId,
 					id: 0, // pub id: ResourceId,
-					src: stb("src"), // pub src: BoundedString,
+					parts: vec![
+						2,
+						3
+					],
+					src: Some(stb("src")), // pub src: BoundedString,
 					thumb: None, // pub thumb: Option<BoundedString>,
-					themeId: None, // pub themeId: Option<BoundedString>,
 				}
 			), // slot
 		));
 
-		println!("CORE:\n {:?}", RmrkCore::new_resources((0,0,1)));
+		// println!("New res: {:?}", RmrkCore::new_resources((0,0,1)).unwrap());
+
+		// (src_col, src_nft), (dest_col, dest_nft), base_id, part_id
+		assert_ok!(RmrkEquip::equip(
+			Origin::signed(ALICE), // Signer
+			1, // Item CollectionId
+			0, // Item NftId
+			0, // Equipper CollectionId
+			0, // Equipper NftId
+			1, // BaseId
+			3, // SlotId
+		));
+
+		// Does item exist?
+		// Does equipper nft exist?
+		// Does caller own item?
+		// Does caller own equipper?
+		// Does base.slot exist?
+		// Is item collection in base.slot's equippable list?
+
+
+		/*
+pub struct ComposableResource<BaseId, ResourceId, BoundedString> {
+	pub base: BaseId,
+	pub id: ResourceId,
+	pub parts: Vec<BoundedString>, // maybe switch to Vec<Part> ?
+	pub src: Option<BoundedString>,
+	pub thumb: Option<BoundedString>,
+}
+		*/
+
+		// println!("CORE:\n {:?}", RmrkCore::new_resources((0,0,1)));
 
 
 
@@ -246,6 +307,6 @@ fn equip_works() {
 
 		*/
 
-		println!("{:?}", RmrkEquip::bases(0).unwrap());
+		// println!("{:?}", RmrkEquip::bases(0).unwrap());
 	});
 }
