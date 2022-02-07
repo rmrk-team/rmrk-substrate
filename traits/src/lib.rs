@@ -6,13 +6,15 @@ pub mod nft;
 pub mod priority;
 pub mod property;
 pub mod resource;
+pub mod part;
 
-pub use base::{BaseInfo, Base, FixedOrSlotPart, FixedPart, SlotPart};
+pub use base::{BaseInfo, Base, NewPartTypes, FixedPart, SlotPart};
+pub use part::{PartInfo};
 pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo};
 pub use priority::Priority;
 pub use property::Property;
-pub use resource::{Resource, ResourceInfo, NewResource, ResourceType, ComposableResource};
+pub use resource::{Resource, ResourceInfo, NewResource, ResourceType, ComposableResource, NoncomposableResource};
 pub mod primitives {
 	pub type CollectionId = u32;
 	pub type ResourceId = u32;
