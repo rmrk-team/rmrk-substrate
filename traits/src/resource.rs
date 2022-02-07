@@ -7,7 +7,6 @@ use sp_std::cmp::Eq;
 use sp_std::{vec::Vec};
 
 use crate::primitives::*;
-use serde::{Deserialize, Serialize};
 use sp_std::result::Result;
 
 #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
@@ -75,18 +74,18 @@ pub struct ResourceInfo<ResourceId, BoundedString> {
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub enum ResourceType<BaseId, SlotId, ResourceId, BoundedString> {
-	Base(NoncomposableResource<BaseId, ResourceId, BoundedString>),
-	Slot(ComposableResource<BaseId, SlotId, ResourceId, BoundedString>),
+pub enum ResourceType<BaseId, SlotId, ResourceId, PartId, BoundedString> {
+	Base(NoncomposableResource<BaseId, SlotId, ResourceId, BoundedString>),
+	Slot(ComposableResource<BaseId, ResourceId, PartId, BoundedString>),
 }
 
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct NoncomposableResource<BaseId, ResourceId, BoundedString> {
+pub struct ComposableResource<BaseId, ResourceId, PartId, BoundedString> {
 	pub base: BaseId,
 	pub id: ResourceId,
-	pub parts: Vec<BoundedString>, // maybe switch to Vec<Part> ?
+	pub parts: Vec<PartId>, // maybe switch to Vec<Part> ?
 	pub src: Option<BoundedString>,
 	pub thumb: Option<BoundedString>,
 }
@@ -94,23 +93,23 @@ pub struct NoncomposableResource<BaseId, ResourceId, BoundedString> {
 
 #[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct ComposableResource<BaseId, SlotId, ResourceId, BoundedString> {
+pub struct NoncomposableResource<BaseId, SlotId, ResourceId, BoundedString> {
 	pub base: BaseId,
 	pub slot_id: SlotId,
 	pub id: ResourceId,
 	pub src: BoundedString,
 	pub thumb: Option<BoundedString>,
-	pub themeId: Option<BoundedString>,
+	pub theme_id: Option<BoundedString>,
 }
 
 
 /// Abstraction over a Resource system.
-pub trait NewResource<AccountId, CollectionId, NftId, BaseId, SlotId, ResourceId, BoundedString> {
+pub trait NewResource<AccountId, CollectionId, NftId, BaseId, SlotId, ResourceId, PartId, BoundedString> {
 	fn new_resource_add(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource: ResourceType<BaseId, SlotId, ResourceId, BoundedString>,
+		resource: ResourceType<BaseId, SlotId, ResourceId, PartId, BoundedString>,
 	) -> Result<ResourceId, DispatchError>;
 	fn accept(
 		sender: AccountId,
