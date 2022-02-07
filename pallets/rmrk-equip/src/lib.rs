@@ -1,13 +1,30 @@
 #![cfg_attr(not(feature = "std"), no_std)]
+#![allow(dead_code)]
 
-use frame_support::BoundedVec;
-use frame_support::dispatch::{DispatchError, DispatchResult};
+
+use frame_support::{BoundedVec, ensure};
+use frame_support::dispatch::{
+	DispatchError, 
+	// DispatchResult
+};
 use sp_std::vec::Vec;
 
 pub use pallet::*;
 
-use rmrk_traits::{primitives::*, BaseInfo, Base, FixedOrSlotPart, FixedPart,
-	 SlotPart, ComposableResource, AccountIdOrCollectionNftTuple, ResourceType};
+
+use rmrk_traits::{
+	primitives::*, 
+	BaseInfo, 
+	Base, 
+	NewPartTypes, 
+	FixedPart,
+	SlotPart, 
+	ComposableResource, 
+	NoncomposableResource, 
+	AccountIdOrCollectionNftTuple, 
+	ResourceType,
+	PartInfo,
+	};
 
 mod functions;
 
@@ -43,14 +60,29 @@ pub mod pallet {
 		StorageMap<_, Twox64Concat, BaseId, BaseInfo<T::AccountId, StringLimitOf<T>>>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn parts)]
+	/// Stores bases info
+	pub type Parts<T: Config> =
+		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, NewPartTypes<StringLimitOf<T>>>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn next_base_id)]
 	pub type NextBaseId<T: Config> = StorageValue<_, BaseId, ValueQuery>;
+
+
+	#[pallet::storage]
+	#[pallet::getter(fn next_part_id)]
+	pub type NextPartId<T: Config> = StorageMap<_, Twox64Concat, BaseId, PartId, ValueQuery>;
+
+	// #[pallet::storage]
+	// #[pallet::getter(fn next_part_id)]
+	// pub type NextPartId<T: Config> = StorageMap<_, PartId, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn collections)]
 	/// Stores collections info
 	pub type Equippings<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, NftId, Twox64Concat, BaseId, u32>;
+		StorageDoubleMap<_, Twox64Concat, (CollectionId, NftId), Twox64Concat, BaseId, SlotId>;
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
@@ -64,14 +96,31 @@ pub mod pallet {
 
 	#[pallet::error]
 	pub enum Error<T> {
+		PermissionError,
+		ItemDoesntExist,
+		EquipperDoesntExist,
 		NoAvailableBaseId,
+		NoAvailablePartId,
+		MustBeDirectParent,
+		BaseSlotDoesntExist
 	}
 
 	#[pallet::call]
-	impl<T: Config> Pallet<T> {
+	impl<T: Config> Pallet<T> 
+	where
+		T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	{
 		/// TODO: equip a child NFT into a parent's slot, or unequip
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn equip(origin: OriginFor<T>, nft: NftId, base: u32, slot: u32) -> DispatchResult {
+		pub fn equip(
+			origin: OriginFor<T>,
+			equipping_item_collection_id: CollectionId,
+			equipping_item_nft_id: NftId,
+			equipper_collection_id: CollectionId,
+			equipper_nft_id: NftId,
+			base: BaseId,
+			slot: SlotId) -> DispatchResult {
+		// (src_col, src_nft), (dest_col, dest_nft), base_id, part_id
 
 			/*
 fn do_equip(
@@ -84,7 +133,15 @@ fn do_equip(
 
 			let sender = ensure_signed(origin)?;
 
-			let _equipped = Self::do_equip(sender.clone(), nft, base, slot)?;
+			let _equipped = Self::do_equip(
+				sender.clone(),
+				equipping_item_collection_id,
+				equipping_item_nft_id,
+				equipper_collection_id,
+				equipper_nft_id,
+				base,
+				slot
+			)?;
 
 			// Self::deposit_event(Event::SomethingStored(something, sender));
 			Ok(())
@@ -92,8 +149,8 @@ fn do_equip(
 
 		/// TODO: changes the list of equippable collections on a base's part
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn equippable(origin: OriginFor<T>, something: u32) -> DispatchResult {
-			let sender = ensure_signed(origin)?;
+		pub fn equippable(origin: OriginFor<T>, _something: u32) -> DispatchResult {
+			let _sender = ensure_signed(origin)?;
 
 			// Self::deposit_event(Event::SomethingStored(something, sender));
 			Ok(())
@@ -101,8 +158,8 @@ fn do_equip(
 
 		/// TODO: add a new theme to a base
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn theme_add(origin: OriginFor<T>, something: u32) -> DispatchResult {
-			let sender = ensure_signed(origin)?;
+		pub fn theme_add(origin: OriginFor<T>, _something: u32) -> DispatchResult {
+			let _sender = ensure_signed(origin)?;
 
 			// Self::deposit_event(Event::SomethingStored(something, sender));
 			Ok(())
@@ -114,7 +171,7 @@ fn do_equip(
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,
 			symbol: BoundedVec<u8, T::StringLimit>,
-			parts: Vec<FixedOrSlotPart<StringLimitOf<T>>>
+			parts: Vec<NewPartTypes<StringLimitOf<T>>>
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
