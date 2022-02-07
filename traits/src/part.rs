@@ -1,7 +1,6 @@
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{RuntimeDebug, DispatchError};
-use sp_std::cmp::Eq;
 use crate::primitives::*;
 
 /// Fixed parts are references to static content, like an IPFS hash of an SVG file
@@ -16,7 +15,7 @@ pub enum PartType {
 /// using this base as a resource can cherry-pick from in order to achieve a composite render.
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct PartInfo<AccountId, BoundedString> {
+pub struct PartInfo<BoundedString> {
 	/// IPFS source
 	pub src: BoundedString,
 }

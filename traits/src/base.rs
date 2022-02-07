@@ -33,7 +33,7 @@ pub struct SlotPart<BoundedString> {
 
 // #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
-pub enum FixedOrSlotPart<BoundedString> {
+pub enum NewPartTypes<BoundedString> {
 	FixedPart(FixedPart<BoundedString>),
 	SlotPart(SlotPart<BoundedString>), 
 }
@@ -48,20 +48,23 @@ pub struct BaseInfo<AccountId, BoundedString> {
 	/// User provided symbol during Base creation
 	pub symbol: BoundedString,
 	/// Parts, full list of both Fixed and Slot parts
-	pub parts: Vec<FixedOrSlotPart<BoundedString>>,
+	pub parts: Vec<NewPartTypes<BoundedString>>,
 }
 
 // Abstraction over a Base system.
-pub trait Base<AccountId, BoundedString> {
+pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
 	fn base_create(
 		issuer: AccountId,
 		base_type: BoundedString,
 		symbol: BoundedString,
-		parts: Vec<FixedOrSlotPart<BoundedString>>
+		parts: Vec<NewPartTypes<BoundedString>>
 ) -> Result<BaseId, DispatchError>;
 	fn do_equip(
 		issuer: AccountId, // Maybe don't need?
-		nft: NftId,
+		equipping_item_collection_id: CollectionId,
+		equipping_item_nft_id: NftId,
+		equipper_collection_id: CollectionId,
+		equipper_nft_id: NftId,
 		base_id: u32, // Maybe BaseId ?
 		slot: u32 // Maybe SlotId ?
 )-> Result<(), DispatchError>;
