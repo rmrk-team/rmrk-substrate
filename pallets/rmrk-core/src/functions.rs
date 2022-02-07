@@ -124,17 +124,17 @@ where
 	}
 }
 
-impl<T: Config> NewResource<T::AccountId, CollectionId, NftId, BaseId, SlotId, ResourceId, StringLimitOf<T>, > for Pallet<T>
+impl<T: Config> NewResource<T::AccountId, CollectionId, NftId, BaseId, SlotId, ResourceId, PartId, StringLimitOf<T>, > for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
 	fn new_resource_add(
-		sender: T::AccountId,
+		_sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource: ResourceType<BaseId, SlotId, ResourceId, StringLimitOf<T>>
+		resource: ResourceType<BaseId, SlotId, ResourceId, PartId, StringLimitOf<T>>
 	) -> Result<ResourceId, DispatchError> {
-		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		let (_root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
 		let resource_id = Self::get_next_resource_id()?;
 		// ensure!(
@@ -147,10 +147,10 @@ where
 	}
 
 	fn accept(
-		sender: T::AccountId,
-		collection_id: CollectionId,
-		nft_id: NftId,
-		resource_id: ResourceId,
+		_sender: T::AccountId,
+		_collection_id: CollectionId,
+		_nft_id: NftId,
+		_resource_id: ResourceId,
 	) -> DispatchResult {
 		// let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		// ensure!(root_owner == sender, Error::<T>::NoPermission);
