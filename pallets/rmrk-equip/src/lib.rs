@@ -40,6 +40,9 @@ mod tests;
 // Re-export pallet items so that they can be accessed from the crate namespace.
 pub use pallet::*;
 
+pub type NewResourceOf<T> =
+	ResourceType<BaseId, SlotId, ResourceId, PartId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
+
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
 #[frame_support::pallet]
@@ -79,10 +82,22 @@ pub mod pallet {
 	// pub type NextPartId<T: Config> = StorageMap<_, PartId, ValueQuery>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn collections)]
-	/// Stores collections info
-	pub type Equippings<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, (CollectionId, NftId), Twox64Concat, BaseId, SlotId>;
+	#[pallet::getter(fn equippings)]
+	/// Stores Equippings info
+	pub type Equippings<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, (CollectionId, NftId)>,
+			NMapKey<Blake2_128Concat, BaseId>,
+			NMapKey<Blake2_128Concat, SlotId>,
+		),
+		ResourceId,
+		OptionQuery,
+	>;
+
+
+
+
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
@@ -92,6 +107,14 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		BaseCreated { issuer: T::AccountId, base_id: BaseId },
+		SlotEquipped {
+			collection_id: CollectionId,
+			nft_id: NftId,
+			item_collection: CollectionId,
+			item_nft: NftId,
+			base_id: BaseId,
+			slot_id: SlotId,
+		}
 	}
 
 	#[pallet::error]
@@ -102,7 +125,11 @@ pub mod pallet {
 		NoAvailableBaseId,
 		NoAvailablePartId,
 		MustBeDirectParent,
-		BaseSlotDoesntExist
+		PartDoesntExist,
+		CantEquipFixedPart,
+		NoBaseResourceFoundOnNft,
+		CollectionNotEquippable,
+		ItemHasNoResourceToEquipThere,
 	}
 
 	#[pallet::call]
