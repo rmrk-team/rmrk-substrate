@@ -17,7 +17,7 @@ use sp_std::{vec::Vec};
 // #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
 pub struct FixedPart<BoundedString> {
-	pub id: BoundedString,
+	pub id: PartId,
 	pub z: ZIndex,
 	pub src: BoundedString,
 }
@@ -25,7 +25,7 @@ pub struct FixedPart<BoundedString> {
 // #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
 pub struct SlotPart<BoundedString> {
-	pub id: BoundedString,
+	pub id: PartId,
 	pub equippable: Vec<CollectionId>,
 	pub src: BoundedString,
 	pub z: ZIndex,
