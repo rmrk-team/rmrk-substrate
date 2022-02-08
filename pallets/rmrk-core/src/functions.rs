@@ -132,6 +132,7 @@ where
 		_sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
+		base_id: Option<BaseId>,
 		resource: ResourceType<BaseId, SlotId, ResourceId, PartId, StringLimitOf<T>>
 	) -> Result<ResourceId, DispatchError> {
 		let (_root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
@@ -142,7 +143,13 @@ where
 		// 	Error::<T>::ResourceAlreadyExists
 		// );
 
-		NewResources::<T>::insert((collection_id, nft_id, resource_id), resource);
+		NewResources::<T>::insert(
+			(
+				collection_id, 
+				nft_id, 
+				base_id,
+				resource_id,
+			), resource);
 		Ok(resource_id)
 	}
 
