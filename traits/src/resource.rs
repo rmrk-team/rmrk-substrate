@@ -5,6 +5,7 @@ use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
 use sp_std::cmp::Eq;
 use sp_std::{vec::Vec};
+use serde::{Serialize, Deserialize};
 
 use crate::primitives::*;
 use sp_std::result::Result;
@@ -109,6 +110,7 @@ pub trait NewResource<AccountId, CollectionId, NftId, BaseId, SlotId, ResourceId
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
+		base_id: Option<BaseId>,
 		resource: ResourceType<BaseId, SlotId, ResourceId, PartId, BoundedString>,
 	) -> Result<ResourceId, DispatchError>;
 	fn accept(
