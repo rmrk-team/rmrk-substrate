@@ -1,5 +1,5 @@
 use frame_support::{
-	// assert_noop, 
+	assert_noop, 
 	assert_ok, 
 	// error::BadOrigin
 };
@@ -15,6 +15,7 @@ type RMRKEquip = Pallet<Test>;
 
 /// Turns a string into a BoundedVec
 fn stb(s: &str) -> BoundedVec<u8, UniquesStringLimit> {
+	// println!("len: {:?}", s.as_bytes().to_vec().len());
 	s.as_bytes().to_vec().try_into().unwrap()
 }
 
@@ -125,17 +126,27 @@ fn equip_works() {
 			stb("COL2") // symbol
 		);
 
-		// Mint NFT 0 from collection 0
+		// Mint NFT 0 from collection 0 (character-0)
 		RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE, // owner
 			0, // collection ID
 			Some(ALICE), // recipient
 			Some(Permill::from_float(1.525)), // royalties
-			stb("ipfs://warrior-metadata"), // metadata
+			stb("ipfs://character-0-metadata"), // metadata
 		);
 
-		// Mint NFT 0 from collection 1
+		// Mint NFT 1 from collection 0 (character-1)
+		RmrkCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE, // owner
+			0, // collection ID
+			Some(ALICE), // recipient
+			Some(Permill::from_float(1.525)), // royalties
+			stb("ipfs://character-1-metadata"), // metadata
+		);
+
+		// Mint NFT 0 from collection 1 (sword)
 		RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE, // owner
@@ -145,7 +156,31 @@ fn equip_works() {
 			stb("ipfs://sword-metadata"), // metadata
 		);
 
-		// Sends NFT (0, 1) [sword] to NFT (0, 0) [warrior]
+		// Mint NFT 1 from collection 1 (flashlight)
+		RmrkCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE, // owner
+			1, // collection ID
+			Some(ALICE), // recipient
+			Some(Permill::from_float(1.525)), // royalties
+			stb("ipfs://flashlight-metadata"), // metadata
+		);
+
+		// Attempt to equip sword should fail as character-0 doesn't own sword
+		assert_noop!(
+			RmrkEquip::equip(
+				Origin::signed(ALICE), // Signer
+				1, // Item CollectionId
+				0, // Item NftId
+				0, // Equipper CollectionId
+				0, // Equipper NftId
+				0, // BaseId
+				201, // SlotId
+			),
+			Error::<Test>::MustBeDirectParent
+		);
+
+		// Sends NFT (0, 1) [sword] to NFT (0, 0) [character-0]
 		assert_ok!(RmrkCore::send(
 			Origin::signed(ALICE),
 			1, // Collection ID
@@ -153,16 +188,30 @@ fn equip_works() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0), // Recipient
 		));
 
-		// Add our body-1+left-hand resource to our soldier nft
+		// Attempt to equip sword should fail as character-0 doesn't have a resource that is associated with this base
+		assert_noop!(
+			RmrkEquip::equip(
+				Origin::signed(ALICE), // Signer
+				1, // Item CollectionId
+				0, // Item NftId
+				0, // Equipper CollectionId
+				0, // Equipper NftId
+				0, // BaseId
+				201, // SlotId
+			),
+			Error::<Test>::NoResourceForThisBaseFoundOnNft
+		);
+
+		// Add a Base 0 resource (body-1 and left-hand slot) to our character-0 nft
 		assert_ok!(RmrkCore::new_add_resource(
 			Origin::signed(ALICE),
 			0, // collection_id
 			0, // nft id
-			Some(0), // base id
+			// Some(0), // base id
 			ResourceType::Slot(
 				ComposableResource { //<BaseId, SlotId, ResourceId, BoundedString> {
 					base: 0, // pub base: BaseId,
-					id: 0, // pub id: ResourceId,
+					id: 1000, // pub id: ResourceId,
 					parts: vec![
 						101, // ID of body-1 part
 						201, // ID of left-hand slot
@@ -173,12 +222,26 @@ fn equip_works() {
 			),
 		));
 
+		// Attempt to equip sword should fail as the sword doesn't have a resource that is equippable into that slot
+		assert_noop!(
+			RmrkEquip::equip(
+				Origin::signed(ALICE), // Signer
+				1, // Item CollectionId
+				0, // Item NftId
+				0, // Equipper CollectionId
+				0, // Equipper NftId
+				0, // BaseId
+				201, // SlotId
+			),
+			Error::<Test>::ItemHasNoResourceToEquipThere
+		);
+
 		// Add our sword resource to our sword NFT
 		assert_ok!(RmrkCore::new_add_resource(
 			Origin::signed(ALICE),
 			1, // collection id
 			0, // nft id
-			None, // base id
+			// None, // base id
 			ResourceType::Base(
 				NoncomposableResource { 
 					base: 0, // Base ID this resource can be equipped into
@@ -191,6 +254,7 @@ fn equip_works() {
 			),
 		));
 
+		// Equipping should now work
 		assert_ok!(RmrkEquip::equip(
 			Origin::signed(ALICE), // Signer
 			1, // Item CollectionId
@@ -200,60 +264,15 @@ fn equip_works() {
 			0, // BaseId
 			201, // SlotId
 		));
+
+		// Equipped resource ID Some(777) should now be associated with equippings for character-0 on base 0, slot 201
+		let equipped = RmrkEquip::equippings(((0, 0), 0, 201));
+		assert_eq!(
+			equipped,
+			Some(777)
+		);
+
+		// Resource for equipped item should exist
+		assert!(RmrkCore::new_resources((1, 0, equipped.unwrap())).is_some());
 	});
 }
-
-
-
-
-
-		// for i in <pallet_rmrk_core::NewResources<Test>>::iter_prefix_values((0, 0, None::<BaseId>)) {
-		// 	println!("iii: {:?}", i);
-		// }
-
-		// println!("aaa: {:?}", <pallet_rmrk_core::NewResources<Test>>::get((0, 0, None::<BaseId>, 1)));
-		// println!("aaa: {:?}", <pallet_rmrk_core::NewResources<Test>>::get((0, 0, None::<BaseId>, 2)));
-
-		// for i in <pallet_rmrk_core::NewResources<Test>>::iter_prefix_values((0, 0, Some(0))) {
-		// 	println!("jjj: {:?}", i);
-		// }
-
-		// for i in Equippings::<Test>::iter_prefix_values(((0, 0), 0)) {
-		// 	println!("kkk: {:?}", i);
-		// }
-
-
-
-		// let fixed_part = FixedPart {
-		// 	id: 333,
-		// 	z: 0,
-		// 	src: stb("fixed_part_src"),
-		// };
-
-		// let fixed_part_2 = FixedPart {
-		// 	id: 444,
-		// 	z: 0,
-		// 	src: stb("fixed_part_src"),
-		// };
-
-		// let slot_part = SlotPart {
-		// 	id: 555,
-		// 	z: 0,
-		// 	src: stb("slot_part_src"),
-		// 	equippable: vec![
-		// 		0, // Collection 0
-		// 		1, // Collection 1
-		// 	]
-		// };
-
-		// RmrkEquip::create_base(
-		// 	Origin::signed(ALICE), // origin
-		// 	bvec![0u8; 20], // base_type
-		// 	bvec![0u8; 20], // symbol
-		// 	vec![
-		// 		NewPartTypes::FixedPart(fixed_part),
-		// 		NewPartTypes::FixedPart(fixed_part_2.clone()),
-		// 		NewPartTypes::FixedPart(fixed_part_2),
-		// 		NewPartTypes::SlotPart(slot_part),
-		// 		],
-		// );
