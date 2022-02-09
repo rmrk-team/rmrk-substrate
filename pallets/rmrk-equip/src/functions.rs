@@ -34,8 +34,17 @@ where
 	) -> Result<BaseId, DispatchError> {
 		let base_id = Self::get_next_base_id()?;
 		for part in parts.clone() {
+			let mut pid = 0;
+			match part.clone() {
+				NewPartTypes::SlotPart(p) => {
+					pid = p.id;
+				},
+				NewPartTypes::FixedPart(p) => {
+					pid = p.id;
+				}
+			}
 			let part_id = Self::get_next_part_id(base_id)?;
-			Parts::<T>::insert(base_id, part_id, part);
+			Parts::<T>::insert(base_id, pid, part);
 		}
 		let base = BaseInfo { issuer, base_type, symbol, parts };
 		Bases::<T>::insert(base_id, base);
