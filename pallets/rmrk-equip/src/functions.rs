@@ -38,13 +38,15 @@ where
 			match part.clone() {
 				NewPartTypes::SlotPart(p) => {
 					pid = p.id;
+					Parts::<T>::insert(base_id, pid, part);
 				},
 				NewPartTypes::FixedPart(p) => {
 					pid = p.id;
+					Parts::<T>::insert(base_id, pid, part);
 				}
 			}
-			let part_id = Self::get_next_part_id(base_id)?;
-			Parts::<T>::insert(base_id, pid, part);
+			// let part_id = Self::get_next_part_id(base_id)?;
+			// Parts::<T>::insert(base_id, pid, part);
 		}
 		let base = BaseInfo { issuer, base_type, symbol, parts };
 		Bases::<T>::insert(base_id, base);
@@ -59,6 +61,7 @@ where
 		base_id: u32, // Maybe BaseId ?
 		slot_id: u32 // Maybe SlotId ?
 	)-> Result<(), DispatchError> {
+		
 
 		let item_is_equipped = Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id)).is_some();
 		let item_exists = pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id).is_some();
@@ -110,7 +113,11 @@ where
 		let mut found_base_resource_on_nft = false;
 		let mut resource_id = 999;
 		let resources_matching_base_iter = pallet_rmrk_core::NewResources::<T>::iter_prefix_values(
-			(equipper_collection_id, equipper_nft_id, Some(base_id))
+			(
+				equipper_collection_id,
+				equipper_nft_id,
+				// Some(base_id)
+			)
 		);
 		for resource in resources_matching_base_iter {
 			match resource {
@@ -125,9 +132,9 @@ where
 			}
 		};
 
-		// If we don't find a matching base resource, we raise a NoBaseResourceFoundOnNft error
+		// If we don't find a matching base resource, we raise a NoResourceForThisBaseFoundOnNft error
 		if !found_base_resource_on_nft {
-			return Err(Error::<T>::NoBaseResourceFoundOnNft.into())
+			return Err(Error::<T>::NoResourceForThisBaseFoundOnNft.into())
 		}
 
 		// Find the specific Part to equip 
@@ -150,7 +157,11 @@ where
 						let mut found_base_slot_resource_on_nft = false;
 						let mut to_equip_resource_id = 999;
 						let resources_matching_base_iter = pallet_rmrk_core::NewResources::<T>::iter_prefix_values(
-							(item_collection_id, item_nft_id, None::<BaseId>)
+							(
+								item_collection_id,
+								item_nft_id,
+								// None::<BaseId>
+							)
 						);
 
 						for resource in resources_matching_base_iter {
