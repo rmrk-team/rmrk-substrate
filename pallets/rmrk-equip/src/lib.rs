@@ -116,7 +116,7 @@ pub mod pallet {
 		MustBeDirectParent,
 		PartDoesntExist,
 		CantEquipFixedPart,
-		NoBaseResourceFoundOnNft,
+		NoResourceForThisBaseFoundOnNft,
 		CollectionNotEquippable,
 		ItemHasNoResourceToEquipThere,
 	}
