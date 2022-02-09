@@ -132,12 +132,29 @@ where
 		_sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		base_id: Option<BaseId>,
+		// base_id: Option<BaseId>,
 		resource: ResourceType<BaseId, SlotId, ResourceId, PartId, StringLimitOf<T>>
 	) -> Result<ResourceId, DispatchError> {
 		let (_root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
-		let resource_id = Self::get_next_resource_id()?;
+		let mut resource_id = 0;
+
+		match resource.clone() {
+			ResourceType::Base(r) => resource_id = r.id,
+			ResourceType::Slot(r) => resource_id = r.id,
+		}
+
+		ensure!(
+			!NewResources::<T>::contains_key((
+				collection_id,
+				nft_id,
+				// base_id,
+				resource_id,
+			)),
+			Error::<T>::ResourceAlreadyExists
+		);
+
+		// let resource_id = Self::get_next_resource_id()?;
 		// ensure!(
 		// 	Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
 		// 	Error::<T>::ResourceAlreadyExists
@@ -147,7 +164,7 @@ where
 			(
 				collection_id, 
 				nft_id, 
-				base_id,
+				// base_id,
 				resource_id,
 			), resource);
 		Ok(resource_id)

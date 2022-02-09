@@ -110,7 +110,7 @@ pub trait NewResource<AccountId, CollectionId, NftId, BaseId, SlotId, ResourceId
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		base_id: Option<BaseId>,
+		// base_id: Option<BaseId>,
 		resource: ResourceType<BaseId, SlotId, ResourceId, PartId, BoundedString>,
 	) -> Result<ResourceId, DispatchError>;
 	fn accept(

@@ -131,7 +131,7 @@ pub mod pallet {
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
 			NMapKey<Blake2_128Concat, NftId>,
-			NMapKey<Blake2_128Concat, Option<BaseId>>,
+			// NMapKey<Blake2_128Concat, Option<BaseId>>,
 			NMapKey<Blake2_128Concat, ResourceId>,
 		),
 		NewResourceOf<T>,
@@ -499,7 +499,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			base_id: Option<BaseId>,
+			// base_id: Option<BaseId>,
 			resource: ResourceType<BaseId, SlotId, ResourceId, PartId, StringLimitOf<T>>
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
@@ -508,7 +508,7 @@ pub mod pallet {
 				sender,
 				collection_id,
 				nft_id,
-				base_id,
+				// base_id,
 				resource
 			)?;
 
