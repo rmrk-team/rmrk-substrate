@@ -1,7 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(dead_code)]
 
-
 use frame_support::{BoundedVec, ensure};
 use frame_support::dispatch::{
 	DispatchError, 
@@ -10,7 +9,6 @@ use frame_support::dispatch::{
 use sp_std::vec::Vec;
 
 pub use pallet::*;
-
 
 use rmrk_traits::{
 	primitives::*, 
@@ -72,14 +70,9 @@ pub mod pallet {
 	#[pallet::getter(fn next_base_id)]
 	pub type NextBaseId<T: Config> = StorageValue<_, BaseId, ValueQuery>;
 
-
 	#[pallet::storage]
 	#[pallet::getter(fn next_part_id)]
 	pub type NextPartId<T: Config> = StorageMap<_, Twox64Concat, BaseId, PartId, ValueQuery>;
-
-	// #[pallet::storage]
-	// #[pallet::getter(fn next_part_id)]
-	// pub type NextPartId<T: Config> = StorageMap<_, PartId, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn equippings)]
@@ -94,10 +87,6 @@ pub mod pallet {
 		ResourceId,
 		OptionQuery,
 	>;
-
-
-
-
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
@@ -147,16 +136,6 @@ pub mod pallet {
 			equipper_nft_id: NftId,
 			base: BaseId,
 			slot: SlotId) -> DispatchResult {
-		// (src_col, src_nft), (dest_col, dest_nft), base_id, part_id
-
-			/*
-fn do_equip(
-		issuer: AccountId, // Maybe don't need?
-		nft: NftId,
-		base_id: u32, // Maybe BaseId ?
-		slot: u32 // Maybe SlotId ?
-)-> Result<(), DispatchError>;
-			*/
 
 			let sender = ensure_signed(origin)?;
 
