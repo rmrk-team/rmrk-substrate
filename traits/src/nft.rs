@@ -57,4 +57,15 @@ pub trait Nft<AccountId, BoundedString> {
 		nft_id: NftId,
 		new_owner: AccountIdOrCollectionNftTuple<AccountId>,
 	) -> Result<AccountId, DispatchError>;
+	fn nft_accept(
+		sender: AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		new_owner: AccountIdOrCollectionNftTuple<AccountId>,
+	) -> Result<(AccountId, CollectionId, NftId), DispatchError>;
+	fn nft_reject(
+		sender: AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+	) -> Result<(AccountId, CollectionId, NftId), DispatchError>;
 }
