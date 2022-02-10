@@ -89,6 +89,12 @@ pub mod pallet {
 		StorageDoubleMap<_, Twox64Concat, CollectionId, Twox64Concat, NftId, InstanceInfoOf<T>>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn pending_nfts)]
+	/// Stores nft info
+	pub type PendingNfts<T: Config> =
+		StorageDoubleMap<_, Twox64Concat, CollectionId, Twox64Concat, NftId, InstanceInfoOf<T>>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn priorities)]
 	/// Stores priority info
 	pub type Priorities<T: Config> = StorageDoubleMap<
