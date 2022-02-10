@@ -247,6 +247,22 @@ fn send_nft_to_minted_nft_works() {
 			recipient: AccountIdOrCollectionNftTuple::AccountId(BOB),
 			collection_id: 0,
 			nft_id: 0,
+			approval_required: true,
+		}));
+		// Bob accepts NFT (0,0) for himself
+		assert_ok!(RMRKCore::accept_nft(
+			Origin::signed(BOB),
+			0,
+			0,
+			AccountIdOrCollectionNftTuple::AccountId(BOB),
+		));
+		println!("ok2");
+		// Successful send triggers NFTSent event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTAccepted {
+			sender: BOB,
+			recipient: AccountIdOrCollectionNftTuple::AccountId(BOB),
+			collection_id: 0,
+			nft_id: 0,
 		}));
 		// ALICE sends NFT (0, 1) [child] to BOB-owned NFT (0, 0) [parent]
 		assert_ok!(RMRKCore::send(
@@ -255,9 +271,25 @@ fn send_nft_to_minted_nft_works() {
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
+		println!("ok3");
 		// Successful send to NFT triggers NFTSent event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTSent {
 			sender: ALICE,
+			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+			collection_id: 0,
+			nft_id: 1,
+			approval_required: true,
+		}));
+		// Bob accepts NFT (0,1) for Bob-owned NFT (0,0)
+		assert_ok!(RMRKCore::accept_nft(
+			Origin::signed(BOB),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+		// Successful send triggers NFTSent event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTAccepted {
+			sender: BOB,
 			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 			collection_id: 0,
 			nft_id: 1,
@@ -272,6 +304,21 @@ fn send_nft_to_minted_nft_works() {
 		// Successful send to NFT triggers NFTSent event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTSent {
 			sender: ALICE,
+			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
+			collection_id: 0,
+			nft_id: 2,
+			approval_required: true,
+		}));
+		// Bob accepts NFT (0,2) for Bob-owned NFT (0,1)
+		assert_ok!(RMRKCore::accept_nft(
+			Origin::signed(BOB),
+			0,
+			2,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
+		));
+		// Successful send triggers NFTSent event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTAccepted {
+			sender: BOB,
 			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
 			collection_id: 0,
 			nft_id: 2,

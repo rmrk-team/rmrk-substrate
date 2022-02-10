@@ -251,7 +251,7 @@ where
 		collection_id: CollectionId,
 		nft_id: NftId,
 		new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
-	) -> sp_std::result::Result<T::AccountId, DispatchError> {
+	) -> sp_std::result::Result<(T::AccountId, bool), DispatchError> {
 		// Get current owner for child removal later
 		let parent = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
 		// Check if parent returns None which indicates the NFT is not available
@@ -265,7 +265,7 @@ where
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 		
 		// Needs to be pending if the sending to an account or to a non-owned NFT
-		let mut pending = true;
+		let mut approval_required = true;
 
 		// Prepare transfer
 		let new_owner_account = match new_owner.clone() {
@@ -283,10 +283,9 @@ where
 					!Pallet::<T>::is_x_descendent_of_y(cid, nid, collection_id, nft_id),
 					Error::<T>::CannotSendToDescendentOrSelf
 				);
-				println!("rec: {:?}", Pallet::<T>::lookup_root_owner(cid, nid));
 				let (recipient_root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(cid, nid)?;
 				if recipient_root_owner == root_owner {
-					pending = false;
+					approval_required = false;
 				}
 
 				// Convert to virtual account
@@ -297,14 +296,11 @@ where
 		sending_nft.owner = new_owner;
 		// Nfts::<T>::insert(collection_id, nft_id, sending_nft);
 
-		if pending {
-			println!("pending");
+		if approval_required {
 			PendingNfts::<T>::insert(collection_id, nft_id, sending_nft);
 			Nfts::<T>::remove(collection_id, nft_id);
 		} else {
-			println!("not pending");
 			Nfts::<T>::insert(collection_id, nft_id, sending_nft);
-			println!("ok");
 		}
 		
 
@@ -319,13 +315,15 @@ where
 		}
 
 		// add child to new parent if NFT virtual address
-		let new_owner_cid_nid =
-			Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone());
-		if let Some(new_owner_cid_nid) = new_owner_cid_nid {
-			Pallet::<T>::add_child(new_owner_cid_nid, (collection_id, nft_id));
+		if !approval_required {
+			let new_owner_cid_nid =
+				Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone());
+			if let Some(new_owner_cid_nid) = new_owner_cid_nid {
+				Pallet::<T>::add_child(new_owner_cid_nid, (collection_id, nft_id));
+			}
 		}
 
-		Ok(new_owner_account)
+		Ok((new_owner_account, approval_required))
 	}
 
 	fn nft_accept(
@@ -334,9 +332,58 @@ where
 		nft_id: NftId,
 		new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 	) -> Result<(T::AccountId, CollectionId, NftId), DispatchError> {
-	// ) -> Result<(), DispatchError> {
-		println!("accept");
-		Ok((sender, collection_id, nft_id))
+		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+
+		// Check ownership
+		ensure!(sender == root_owner, Error::<T>::NoPermission);
+
+		// Get NFT info
+		let mut sending_nft =
+			PendingNfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+
+		// Prepare acceptance
+		let new_owner_account = match new_owner.clone() {
+			AccountIdOrCollectionNftTuple::AccountId(id) => id,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
+
+				// Check if NFT target exists
+				ensure!(Nfts::<T>::contains_key(cid, nid), Error::<T>::NoAvailableNftId);
+
+				// Check if sending to self
+				ensure!(
+					(collection_id, nft_id) != (cid, nid),
+					Error::<T>::CannotSendToDescendentOrSelf
+				);
+
+				// Check if collection_id & nft_id are descendent of cid & nid
+				ensure!(
+					!Pallet::<T>::is_x_descendent_of_y(cid, nid, collection_id, nft_id),
+					Error::<T>::CannotSendToDescendentOrSelf
+				);
+
+				let (recipient_root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(cid, nid)?;
+				ensure!(
+					recipient_root_owner == root_owner,
+					Error::<T>::CannotAcceptNonOwnedNft
+				);
+
+				// Convert to virtual account
+				Pallet::<T>::nft_to_account_id::<T::AccountId>(cid, nid)
+			},
+		};
+
+		sending_nft.owner = new_owner;
+		PendingNfts::<T>::remove(collection_id, nft_id);
+		Nfts::<T>::insert(collection_id, nft_id, sending_nft);	
+
+		// Add child to new parent if NFT virtual address
+		let new_owner_cid_nid =
+			Pallet::<T>::decode_nft_account_id::<T::AccountId>(new_owner_account.clone());
+		if let Some(new_owner_cid_nid) = new_owner_cid_nid {
+			Pallet::<T>::add_child(new_owner_cid_nid, (collection_id, nft_id));
+		}
+
+		Ok((new_owner_account, collection_id, nft_id))
 	}
 
 	fn nft_reject(
