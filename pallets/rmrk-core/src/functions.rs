@@ -307,6 +307,27 @@ where
 
 		Ok(new_owner_account)
 	}
+
+	fn nft_accept(
+		sender: T::AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
+	) -> Result<(T::AccountId, CollectionId, NftId), DispatchError> {
+	// ) -> Result<(), DispatchError> {
+		println!("accept");
+		Ok((sender, collection_id, nft_id))
+	}
+
+	fn nft_reject(
+		sender: T::AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+	) -> Result<(T::AccountId, CollectionId, NftId), DispatchError> {
+	// ) -> Result<(), DispatchError> {
+		println!("reject");
+		Ok((sender, collection_id, nft_id))
+	}
 }
 
 impl<T: Config> Pallet<T>
