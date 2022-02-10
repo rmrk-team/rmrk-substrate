@@ -22,8 +22,10 @@ Extends uniques pallet. Based on [RMRK2 Spec](https://github.com/rmrk-team/rmrk-
 * **set_property**(collection_id, maybe_nft_id, key, value)
     * key and value of type `BoundedVec<u8, T::KeyLimit>`
     * set a custom value on an NFT. Similar to uniques `set_attribute`
-* **lock**(collection_id)
+* **lock_collection**(collection_id)
     * locking a collection  
+* **destroy_collection**(collection_id)
+    * destroying a collection
 
 Multi resource calls.
 
