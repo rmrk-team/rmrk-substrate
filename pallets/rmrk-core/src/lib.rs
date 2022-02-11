@@ -180,6 +180,11 @@ pub mod pallet {
 			collection_id: CollectionId,
 			nft_id: NftId,
 		},
+		NFTRejected {
+			sender: T::AccountId,
+			collection_id: CollectionId,
+			nft_id: NftId,
+		},
 		IssuerChanged {
 			old_issuer: T::AccountId,
 			new_issuer: T::AccountId,
@@ -232,7 +237,8 @@ pub mod pallet {
 		ResourceAlreadyExists,
 		EmptyResource,
 		TooManyRecursions,
-		CannotAcceptNonOwnedNft
+		CannotAcceptNonOwnedNft,
+		CannotRejectNonOwnedNft,
 	}
 
 	#[pallet::call]
@@ -431,6 +437,33 @@ pub mod pallet {
 			});
 			Ok(())
 		}
+
+		/// Rejects an NFT sent from another account to self or owned NFT
+		///
+		/// Parameters:
+		/// - `origin`: sender of the transaction
+		/// - `collection_id`: collection id of the nft to be accepted
+		/// - `nft_id`: nft id of the nft to be accepted
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn reject_nft(
+			origin: OriginFor<T>,
+			collection_id: CollectionId,
+			nft_id: NftId,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin.clone())?;
+
+			let (sender, collection_id, nft_id) =
+				Self::nft_reject(sender.clone(), collection_id, nft_id)?;
+
+			Self::deposit_event(Event::NFTRejected {
+				sender,
+				collection_id,
+				nft_id,
+			});
+			Ok(())
+		}
+
 
 		/// changing the issuer of a collection or a base
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]

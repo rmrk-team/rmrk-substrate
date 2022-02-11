@@ -391,8 +391,17 @@ where
 		collection_id: CollectionId,
 		nft_id: NftId,
 	) -> Result<(T::AccountId, CollectionId, NftId), DispatchError> {
-	// ) -> Result<(), DispatchError> {
-		println!("reject");
+		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+
+		// Check ownership
+		ensure!(sender == root_owner, Error::<T>::CannotRejectNonOwnedNft);
+
+		// Get NFT info
+		let mut rejecting_nft =
+			PendingNfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+
+		PendingNfts::<T>::remove(collection_id, nft_id);
+
 		Ok((sender, collection_id, nft_id))
 	}
 }

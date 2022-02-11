@@ -256,7 +256,6 @@ fn send_nft_to_minted_nft_works() {
 			0,
 			AccountIdOrCollectionNftTuple::AccountId(BOB),
 		));
-		println!("ok2");
 		// Successful send triggers NFTSent event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTAccepted {
 			sender: BOB,
@@ -271,7 +270,6 @@ fn send_nft_to_minted_nft_works() {
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
-		println!("ok3");
 		// Successful send to NFT triggers NFTSent event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTSent {
 			sender: ALICE,
@@ -388,6 +386,59 @@ fn send_nft_to_minted_nft_works() {
 			),
 			Error::<Test>::NoAvailableNftId
 		);
+	});
+}
+
+/// NFT: Reject tests (RMRK2.0 spec: new)
+#[test]
+fn reject_nft_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint NFTs (0, 0), (0, 1), (0, 2)
+		for _ in 0..3 {
+			assert_ok!(basic_mint());
+		}
+		// ALICE sends NFT (0, 0) [parent] to Bob
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			0,
+			AccountIdOrCollectionNftTuple::AccountId(BOB),
+		));
+		// Bob accepts NFT (0,0) for himself
+		assert_ok!(RMRKCore::accept_nft(
+			Origin::signed(BOB),
+			0,
+			0,
+			AccountIdOrCollectionNftTuple::AccountId(BOB),
+		));
+		// ALICE sends NFT (0, 1) [parent] to Bob
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::AccountId(BOB),
+		));
+		// Bob accepts NFT (0,0) for himself
+		assert_ok!(RMRKCore::reject_nft(
+			Origin::signed(BOB),
+			0,
+			1,
+		));
+		// ALICE sends NFT (0, 2) to Bob-owned NFT (0,0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			2,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+		// Bob rejects NFT (0,2) for Bob-owned NFT (0,0)
+		assert_ok!(RMRKCore::reject_nft(
+			Origin::signed(BOB),
+			0,
+			2,
+		));
 	});
 }
 
