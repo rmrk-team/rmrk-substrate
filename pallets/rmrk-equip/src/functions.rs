@@ -210,6 +210,28 @@ where
 		equippables: Vec<CollectionId>
 	)-> Result<(), DispatchError> {
 		println!("equipping");
+
+
+		match Parts::<T>::get(base_id, slot_id) {
+			None => return Ok(()), //TODO fix
+			Some(part) => {
+				match part {
+					NewPartTypes::FixedPart(fixed_part) => {
+						//TODO fail
+					},
+					NewPartTypes::SlotPart(mut slot_part) => {
+						slot_part.equippable = equippables;
+						Parts::<T>::insert(base_id, slot_id, NewPartTypes::SlotPart(slot_part));
+						// TODO success response
+					},
+				}
+			}
+
+		}
+		
+		
+		
+
 		Ok(())
 	}
 }

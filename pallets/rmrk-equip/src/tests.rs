@@ -326,11 +326,28 @@ fn equippable_works() {
 				],
 		);
 
+		// equippable extrinsic should work
 		assert_ok!(RmrkEquip::equippable(
 			Origin::signed(ALICE),
 			0, // base ID
 			202, // slot ID
 			vec![5, 6, 7] // equippable collections
 		));
+
+		// Parts storage should be updated
+		let should_be = SlotPart {
+			id: 202,
+			z: 0,
+			src: stb("right-hand"),
+			equippable: vec![5, 6, 7],
+		};
+		assert_eq!(
+			RmrkEquip::parts(0, 202).unwrap(),
+			NewPartTypes::SlotPart(should_be)
+		);
+
+		// Should not be able to change equippable on non-existent part
+		// Should not be able to change equippable on FixedPart part
+		// Should not be able to change equippable on non-issued base
 	});
 }
