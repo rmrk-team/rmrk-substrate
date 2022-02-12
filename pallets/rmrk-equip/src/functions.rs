@@ -203,4 +203,13 @@ where
 		}?;
 		Ok(())
 	}
+	fn do_equippable(
+		issuer: T::AccountId,
+		base_id: BaseId,
+		slot_id: PartId,
+		equippables: Vec<CollectionId>
+	)-> Result<(), DispatchError> {
+		println!("equipping");
+		Ok(())
+	}
 }

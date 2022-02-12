@@ -276,3 +276,61 @@ fn equip_works() {
 		assert!(RmrkCore::new_resources((1, 0, equipped.unwrap())).is_some());
 	});
 }
+/// Base: Basic equip tests
+#[test]
+fn equippable_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// First we'll build our parts
+		// Fixed part body 1 is one option for body type
+		let fixed_part_body_1 = FixedPart {
+			id: 101,
+			z: 0,
+			src: stb("body-1"),
+		};
+		// Fixed part body 2 is second option for body type
+		let fixed_part_body_2 = FixedPart {
+			id: 102,
+			z: 0,
+			src: stb("body-2"),
+		};
+		// Slot part left hand can equip items from collections 0 or 1
+		let slot_part_left_hand = SlotPart {
+			id: 201,
+			z: 0,
+			src: stb("left-hand"),
+			equippable: vec![
+				0, // Collection 0
+				1, // Collection 1
+			]
+		};
+		// Slot part right hand can equip items from collections 2 or 3
+		let slot_part_right_hand = SlotPart {
+			id: 202,
+			z: 0,
+			src: stb("right-hand"),
+			equippable: vec![
+				2, // Collection 2
+				3, // Collection 3
+			]
+		};
+		// Let's create a base with these 4 parts
+		RmrkEquip::create_base(
+			Origin::signed(ALICE), // origin
+			stb("svg"), // base_type
+			stb("KANPEOPLE"), // symbol
+			vec![
+				NewPartTypes::FixedPart(fixed_part_body_1),
+				NewPartTypes::FixedPart(fixed_part_body_2),
+				NewPartTypes::SlotPart(slot_part_left_hand),
+				NewPartTypes::SlotPart(slot_part_right_hand),
+				],
+		);
+
+		assert_ok!(RmrkEquip::equippable(
+			Origin::signed(ALICE),
+			0, // base ID
+			202, // slot ID
+			vec![5, 6, 7] // equippable collections
+		));
+	});
+}

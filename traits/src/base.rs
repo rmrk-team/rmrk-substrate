@@ -68,4 +68,10 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
 		base_id: u32, // Maybe BaseId ?
 		slot: u32 // Maybe SlotId ?
 )-> Result<(), DispatchError>;
+	fn do_equippable(
+		issuer: AccountId, 
+		base_id: BaseId,
+		slot: SlotId,
+		equippables: Vec<CollectionId>,
+	)-> Result<(), DispatchError>;
 }

@@ -155,8 +155,17 @@ pub mod pallet {
 
 		/// TODO: changes the list of equippable collections on a base's part
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn equippable(origin: OriginFor<T>, _something: u32) -> DispatchResult {
-			let _sender = ensure_signed(origin)?;
+		pub fn equippable(
+			origin: OriginFor<T>, base_id: BaseId, slot_id: SlotId, equippables: Vec<CollectionId>
+		) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
+
+			let _equippable = Self::do_equippable(
+				sender,
+				base_id,
+				slot_id,
+				equippables,
+			)?;
 
 			// Self::deposit_event(Event::SomethingStored(something, sender));
 			Ok(())
