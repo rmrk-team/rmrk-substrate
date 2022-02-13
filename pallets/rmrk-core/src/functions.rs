@@ -269,7 +269,10 @@ where
 
 		// Prepare transfer
 		let new_owner_account = match new_owner.clone() {
-			AccountIdOrCollectionNftTuple::AccountId(id) => id,
+			AccountIdOrCollectionNftTuple::AccountId(id) => {
+				approval_required = false;
+				id
+			},
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				// Check if NFT target exists
 				ensure!(Nfts::<T>::contains_key(cid, nid), Error::<T>::NoAvailableNftId);
