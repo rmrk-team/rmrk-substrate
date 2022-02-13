@@ -22,11 +22,18 @@ pub struct FixedPart<BoundedString> {
 	pub src: BoundedString,
 }
 
+#[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
+pub enum EquippableList {
+	All,
+	Empty,
+	Custom(Vec<CollectionId>)
+}
+
 // #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
 pub struct SlotPart<BoundedString> {
 	pub id: PartId,
-	pub equippable: Vec<CollectionId>,
+	pub equippable: EquippableList,
 	pub src: BoundedString,
 	pub z: ZIndex,
 }
@@ -72,6 +79,6 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
 		issuer: AccountId, 
 		base_id: BaseId,
 		slot: SlotId,
-		equippables: Vec<CollectionId>,
+		equippables: EquippableList,
 	)-> Result<(), DispatchError>;
 }

@@ -40,10 +40,10 @@ fn create_base_works() {
 			id: 102,
 			z: 0,
 			src: stb("slot_part_src"),
-			equippable: vec![
+			equippable: EquippableList::Custom(vec![
 				0, // Collection 0
 				1, // Collection 1
-			]
+			]),
 		};
 
 		RmrkEquip::create_base(
@@ -82,20 +82,20 @@ fn equip_works() {
 			id: 201,
 			z: 0,
 			src: stb("left-hand"),
-			equippable: vec![
+			equippable: EquippableList::Custom(vec![
 				0, // Collection 0
 				1, // Collection 1
-			]
+			]),
 		};
 		// Slot part right hand can equip items from collections 2 or 3
 		let slot_part_right_hand = SlotPart {
 			id: 202,
 			z: 0,
 			src: stb("right-hand"),
-			equippable: vec![
+			equippable: EquippableList::Custom(vec![
 				2, // Collection 2
 				3, // Collection 3
-			]
+			]),
 		};
 		// Let's create a base with these 4 parts
 		RmrkEquip::create_base(
@@ -298,20 +298,20 @@ fn equippable_works() {
 			id: 201,
 			z: 0,
 			src: stb("left-hand"),
-			equippable: vec![
+			equippable: EquippableList::Custom(vec![
 				0, // Collection 0
 				1, // Collection 1
-			]
+			])
 		};
 		// Slot part right hand can equip items from collections 2 or 3
 		let slot_part_right_hand = SlotPart {
 			id: 202,
 			z: 0,
 			src: stb("right-hand"),
-			equippable: vec![
+			equippable: EquippableList::Custom(vec![
 				2, // Collection 2
 				3, // Collection 3
-			]
+			])
 		};
 		// Let's create a base with these 4 parts
 		RmrkEquip::create_base(
@@ -331,7 +331,7 @@ fn equippable_works() {
 			Origin::signed(ALICE),
 			0, // base ID
 			202, // slot ID
-			vec![5, 6, 7] // equippable collections
+			EquippableList::Custom(vec![5, 6, 7]), // equippable collections
 		));
 
 		// Parts storage should be updated
@@ -339,15 +339,77 @@ fn equippable_works() {
 			id: 202,
 			z: 0,
 			src: stb("right-hand"),
-			equippable: vec![5, 6, 7],
+			equippable: EquippableList::Custom(vec![5, 6, 7]),
 		};
 		assert_eq!(
 			RmrkEquip::parts(0, 202).unwrap(),
 			NewPartTypes::SlotPart(should_be)
 		);
 
+		// Should not be able to change equippable on non-existent base
+		assert_noop!(
+			RmrkEquip::equippable(
+				Origin::signed(ALICE),
+				666, // base ID
+				202, // slot ID
+				EquippableList::Custom(vec![5, 6, 7]), // equippable collections
+			),
+			Error::<Test>::BaseDoesntExist
+		);
+
 		// Should not be able to change equippable on non-existent part
+		assert_noop!(
+			RmrkEquip::equippable(
+				Origin::signed(ALICE),
+				0, // base ID
+				200, // slot ID
+				EquippableList::Custom(vec![5, 6, 7]), // equippable collections
+			),
+			Error::<Test>::PartDoesntExist
+		);
+
 		// Should not be able to change equippable on FixedPart part
+		assert_noop!(
+			RmrkEquip::equippable(
+				Origin::signed(ALICE),
+				0, // base ID
+				101, // slot ID
+				EquippableList::Custom(vec![5, 6, 7, 8, 9]), // equippable collections
+			),
+			Error::<Test>::NoEquippableOnFixedPart
+		);
+
 		// Should not be able to change equippable on non-issued base
+		assert_noop!(
+			RmrkEquip::equippable(
+				Origin::signed(BOB),
+				0, // base ID
+				201, // slot ID
+				EquippableList::Custom(vec![3, 4, 5]), // equippable collections
+			),
+			Error::<Test>::PermissionError
+		);
+
+		// Blanking out equippable (setting to []) works
+		assert_ok!(RmrkEquip::equippable(
+			Origin::signed(ALICE),
+			0, // base ID
+			202, // slot ID
+			EquippableList::Empty, // equippable collections
+		));
+
+		// Check storage
+
+		// Setting equippable to * works
+		assert_ok!(RmrkEquip::equippable(
+			Origin::signed(ALICE),
+			0, // base ID
+			202, // slot ID
+			EquippableList::All, // equippable collections
+		));
+
+
+		// Question: Should be check existence of collections being equipped?
+
 	});
 }

@@ -22,6 +22,7 @@ use rmrk_traits::{
 	AccountIdOrCollectionNftTuple, 
 	ResourceType,
 	PartInfo,
+	EquippableList,
 	};
 
 mod functions;
@@ -115,10 +116,12 @@ pub mod pallet {
 		NoAvailablePartId,
 		MustBeDirectParent,
 		PartDoesntExist,
+		BaseDoesntExist,
 		CantEquipFixedPart,
 		NoResourceForThisBaseFoundOnNft,
 		CollectionNotEquippable,
 		ItemHasNoResourceToEquipThere,
+		NoEquippableOnFixedPart,
 	}
 
 	#[pallet::call]
@@ -156,7 +159,7 @@ pub mod pallet {
 		/// TODO: changes the list of equippable collections on a base's part
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn equippable(
-			origin: OriginFor<T>, base_id: BaseId, slot_id: SlotId, equippables: Vec<CollectionId>
+			origin: OriginFor<T>, base_id: BaseId, slot_id: SlotId, equippables: EquippableList
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 

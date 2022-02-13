@@ -8,7 +8,7 @@ pub mod property;
 pub mod resource;
 pub mod part;
 
-pub use base::{BaseInfo, Base, NewPartTypes, FixedPart, SlotPart};
+pub use base::{BaseInfo, Base, NewPartTypes, FixedPart, SlotPart, EquippableList};
 pub use part::{PartInfo};
 pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo};

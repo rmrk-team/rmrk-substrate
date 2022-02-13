@@ -149,8 +149,14 @@ where
 					},
 					NewPartTypes::SlotPart(v) => {
 						// Collection must be in item's equippable list?
-						if !v.equippable.contains(&item_collection_id) {
-							return Err(Error::<T>::CollectionNotEquippable.into())
+						match v.equippable {
+							EquippableList::Empty => return Err(Error::<T>::CollectionNotEquippable.into()),
+							EquippableList::All => (),
+							EquippableList::Custom(eq) => {
+								if !eq.contains(&item_collection_id) {
+									return Err(Error::<T>::CollectionNotEquippable.into())
+								}
+							}
 						}
 
 						// The item being equipped must be have a resource equippable into that base.slot
@@ -207,17 +213,22 @@ where
 		issuer: T::AccountId,
 		base_id: BaseId,
 		slot_id: PartId,
-		equippables: Vec<CollectionId>
+		equippables: EquippableList
 	)-> Result<(), DispatchError> {
-		println!("equipping");
-
+		
+		match Bases::<T>::get(base_id) {
+			None => return Err(Error::<T>::BaseDoesntExist.into()),
+			Some(base) => {
+				ensure!(base.issuer == issuer, Error::<T>::PermissionError);
+			},
+		}
 
 		match Parts::<T>::get(base_id, slot_id) {
-			None => return Ok(()), //TODO fix
+			None => return Err(Error::<T>::PartDoesntExist.into()),
 			Some(part) => {
 				match part {
 					NewPartTypes::FixedPart(fixed_part) => {
-						//TODO fail
+						return Err(Error::<T>::NoEquippableOnFixedPart.into());
 					},
 					NewPartTypes::SlotPart(mut slot_part) => {
 						slot_part.equippable = equippables;
