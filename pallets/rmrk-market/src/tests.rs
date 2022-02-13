@@ -259,7 +259,7 @@ fn buy_wont_work_if_traded_after_list() {
 			recipient: AccountIdOrCollectionNftTuple::AccountId(CHARLIE),
 			collection_id: COLLECTION_ID_0,
 			nft_id: NFT_ID_0,
-			approval_required: true,
+			approval_required: false,
 		}));
 		// BOB buys the NFT and the NFT is transferred from ALICE to BOB
 		assert_noop!(RmrkMarket::buy(
