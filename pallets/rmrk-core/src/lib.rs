@@ -89,6 +89,12 @@ pub mod pallet {
 		StorageDoubleMap<_, Twox64Concat, CollectionId, Twox64Concat, NftId, InstanceInfoOf<T>>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn pending_nfts)]
+	/// Stores nft info
+	pub type PendingNfts<T: Config> =
+		StorageDoubleMap<_, Twox64Concat, CollectionId, Twox64Concat, NftId, InstanceInfoOf<T>>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn priorities)]
 	/// Stores priority info
 	pub type Priorities<T: Config> = StorageDoubleMap<
@@ -166,6 +172,18 @@ pub mod pallet {
 			recipient: AccountIdOrCollectionNftTuple<T::AccountId>,
 			collection_id: CollectionId,
 			nft_id: NftId,
+			approval_required: bool,
+		},
+		NFTAccepted {
+			sender: T::AccountId,
+			recipient: AccountIdOrCollectionNftTuple<T::AccountId>,
+			collection_id: CollectionId,
+			nft_id: NftId,
+		},
+		NFTRejected {
+			sender: T::AccountId,
+			collection_id: CollectionId,
+			nft_id: NftId,
 		},
 		IssuerChanged {
 			old_issuer: T::AccountId,
@@ -219,6 +237,8 @@ pub mod pallet {
 		ResourceAlreadyExists,
 		EmptyResource,
 		TooManyRecursions,
+		CannotAcceptNonOwnedNft,
+		CannotRejectNonOwnedNft,
 	}
 
 	#[pallet::call]
@@ -362,7 +382,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let new_owner_account =
+			let (new_owner_account, approval_required) =
 				Self::nft_send(sender.clone(), collection_id, nft_id, new_owner.clone())?;
 
 			pallet_uniques::Pallet::<T>::do_transfer(
@@ -377,9 +397,73 @@ pub mod pallet {
 				recipient: new_owner.clone(),
 				collection_id,
 				nft_id,
+				approval_required
+			});
+
+			Ok(())
+		}
+		/// Accepts an NFT sent from another account to self or owned NFT
+		///
+		/// Parameters:
+		/// - `origin`: sender of the transaction
+		/// - `collection_id`: collection id of the nft to be accepted
+		/// - `nft_id`: nft id of the nft to be accepted
+		/// - `new_owner`: either origin's account ID or origin-owned NFT, whichever the NFT was sent to
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn accept_nft(
+			origin: OriginFor<T>,
+			collection_id: CollectionId,
+			nft_id: NftId,
+			new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin.clone())?;
+
+			let (new_owner_account, collection_id, nft_id) =
+				Self::nft_accept(sender.clone(), collection_id, nft_id, new_owner.clone())?;
+
+			pallet_uniques::Pallet::<T>::do_transfer(
+				collection_id,
+				nft_id,
+				new_owner_account,
+				|_class_details, _details| Ok(()),
+			)?;
+
+			Self::deposit_event(Event::NFTAccepted {
+				sender,
+				recipient: new_owner.clone(),
+				collection_id,
+				nft_id,
 			});
 			Ok(())
 		}
+
+		/// Rejects an NFT sent from another account to self or owned NFT
+		///
+		/// Parameters:
+		/// - `origin`: sender of the transaction
+		/// - `collection_id`: collection id of the nft to be accepted
+		/// - `nft_id`: nft id of the nft to be accepted
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn reject_nft(
+			origin: OriginFor<T>,
+			collection_id: CollectionId,
+			nft_id: NftId,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin.clone())?;
+
+			let (sender, collection_id, nft_id) =
+				Self::nft_reject(sender.clone(), collection_id, nft_id)?;
+
+			Self::deposit_event(Event::NFTRejected {
+				sender,
+				collection_id,
+				nft_id,
+			});
+			Ok(())
+		}
+
 
 		/// changing the issuer of a collection or a base
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]

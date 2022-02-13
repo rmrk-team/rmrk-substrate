@@ -90,6 +90,7 @@ fn list_works() {
 			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_0),
 			collection_id: COLLECTION_ID_0,
 			nft_id: NFT_ID_1,
+			approval_required: false,
 		}));
 		// ALICE cannot list NFT [0,1] bc it is owned by NFT[0,0]
 		assert_noop!(RmrkMarket::list(
@@ -258,6 +259,7 @@ fn buy_wont_work_if_traded_after_list() {
 			recipient: AccountIdOrCollectionNftTuple::AccountId(CHARLIE),
 			collection_id: COLLECTION_ID_0,
 			nft_id: NFT_ID_0,
+			approval_required: false,
 		}));
 		// BOB buys the NFT and the NFT is transferred from ALICE to BOB
 		assert_noop!(RmrkMarket::buy(
@@ -320,6 +322,7 @@ fn buy_wont_work_if_traded_to_nft_after_list() {
 			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
 			collection_id: COLLECTION_ID_0,
 			nft_id: NFT_ID_0,
+			approval_required: false,
 		}));
 		// BOB buys the NFT and the NFT is transferred from ALICE to BOB
 		assert_noop!(RmrkMarket::buy(
@@ -372,6 +375,7 @@ fn accept_offer_wont_work_if_traded_to_nft_after_list() {
 			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
 			collection_id: COLLECTION_ID_0,
 			nft_id: NFT_ID_0,
+			approval_required: false,
 		}));
 		// ALICE cannot accept offer anymore
 		assert_noop!(RmrkMarket::accept_offer(
