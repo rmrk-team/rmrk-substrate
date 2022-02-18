@@ -23,6 +23,8 @@ use rmrk_traits::{
 	ResourceType,
 	PartInfo,
 	EquippableList,
+	Theme,
+	ThemeProperty
 	};
 
 mod functions;
@@ -89,6 +91,20 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
+	#[pallet::storage]
+	#[pallet::getter(fn themes)]
+	/// Stores Equippings info
+	pub type Themes<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, BaseId>, // Base ID
+			NMapKey<Blake2_128Concat, StringLimitOf<T>>, // Theme name
+			NMapKey<Blake2_128Concat, StringLimitOf<T>>, // Property name (key)
+		),
+		StringLimitOf<T>, // Property value
+		OptionQuery,
+	>;
+
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
@@ -122,6 +138,7 @@ pub mod pallet {
 		CollectionNotEquippable,
 		ItemHasNoResourceToEquipThere,
 		NoEquippableOnFixedPart,
+		NeedsDefaultThemeFirst,
 	}
 
 	#[pallet::call]
@@ -176,8 +193,10 @@ pub mod pallet {
 
 		/// TODO: add a new theme to a base
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn theme_add(origin: OriginFor<T>, _something: u32) -> DispatchResult {
-			let _sender = ensure_signed(origin)?;
+		pub fn theme_add(origin: OriginFor<T>, base_id: BaseId, theme: Theme<BoundedVec<u8, T::StringLimit>>) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
+
+			let theme_id = Self::add_theme(sender, base_id, theme)?;
 
 			// Self::deposit_event(Event::SomethingStored(something, sender));
 			Ok(())

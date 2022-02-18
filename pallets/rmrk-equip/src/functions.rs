@@ -245,4 +245,46 @@ where
 
 		Ok(())
 	}
+
+	fn add_theme(
+		issuer: T::AccountId,
+		base_id: BaseId,
+		theme: Theme<BoundedVec<u8, T::StringLimit>>,
+	) -> Result<(), DispatchError> {
+		// Check the referenced base exists
+		ensure!(
+			Bases::<T>::get(base_id).is_some(),
+			Error::<T>::BaseDoesntExist
+		);
+
+		// Check the sender of the tx is the issuer of the base
+		ensure!(
+			Bases::<T>::get(base_id).unwrap().issuer == issuer,
+			Error::<T>::PermissionError
+		);
+
+		// The string "default" as a BoundedVec
+		let default_as_bv: BoundedVec<u8, T::StringLimit> = "default".as_bytes().to_vec().try_into().unwrap();
+
+		// Check for existence of default theme (default theme cannot be empty)
+		let def_count = Themes::<T>::iter_prefix_values((base_id,default_as_bv.clone())).count();
+
+		// If either the default theme doesn't already exist, nor is it currently being passed, we fail
+		ensure!(def_count >= 1 || theme.name == default_as_bv, Error::<T>::NeedsDefaultThemeFirst);
+
+		// TODO check length of properties against some maximum
+
+		// Iterate through each property
+		for prop in theme.properties {
+			Themes::<T>::insert(
+				(
+					base_id,
+					theme.name.clone(),
+					prop.key,
+				),
+				prop.value,
+			)
+		}
+		Ok(())
+	}
 }

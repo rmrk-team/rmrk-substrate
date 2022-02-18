@@ -58,6 +58,26 @@ pub struct BaseInfo<AccountId, BoundedString> {
 	pub parts: Vec<NewPartTypes<BoundedString>>,
 }
 
+#[cfg_attr(feature = "std", derive(Eq))]
+#[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq)]
+pub struct Theme<BoundedString> {
+	/// Name of the theme
+	pub name: BoundedString,
+	/// Theme properties
+	pub properties: Vec<ThemeProperty<BoundedString>>,
+}
+
+#[cfg_attr(feature = "std", derive(Eq))]
+#[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq)]
+pub struct ThemeProperty<BoundedString> {
+	/// Key of the property
+	pub key: BoundedString,
+	/// Value of the property
+	pub value: BoundedString,
+	/// Inheritability
+	pub inherit: Option<bool>,
+}
+
 // Abstraction over a Base system.
 pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
 	fn base_create(
@@ -81,4 +101,9 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
 		slot: SlotId,
 		equippables: EquippableList,
 	)-> Result<(), DispatchError>;
+	fn add_theme(
+		issuer: AccountId,
+		base_id: BaseId,
+		theme: Theme<BoundedString>,
+	) -> Result<(), DispatchError>;
 }

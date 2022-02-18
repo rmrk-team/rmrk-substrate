@@ -413,3 +413,116 @@ fn equippable_works() {
 
 	});
 }
+
+/// Base: Basic theme_add tests
+#[test]
+fn theme_add_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Define a non-default theme
+		let non_default_theme = Theme {
+			name: stb("doglover"),
+			properties: vec![
+				ThemeProperty {
+					key: stb("sound"),
+					value: stb("woof"),
+					inherit: Some(true),
+				},
+				ThemeProperty {
+					key: stb("secondary_color"),
+					value: stb("blue"),
+					inherit: None,
+				}
+			]
+		};
+
+		// Attempt to add theme (should fail: Base must exist)
+		assert_noop!(
+			RmrkEquip::theme_add(
+				Origin::signed(ALICE),
+				0, // BaseID
+				non_default_theme.clone()
+			),
+			Error::<Test>::BaseDoesntExist
+		);
+
+		// Build a base
+		assert_ok!(RmrkEquip::create_base(
+			Origin::signed(ALICE), // origin
+			bvec![0u8; 20], // base_type
+			bvec![0u8; 20], // symbol
+			vec![],
+		));
+
+		// Add non-default theme to base (should fail w/o default)
+		assert_noop!(
+			RmrkEquip::theme_add(
+				Origin::signed(ALICE),
+				0, // BaseID
+				non_default_theme.clone()
+			),
+			Error::<Test>::NeedsDefaultThemeFirst
+		);
+
+		// Define a default theme
+		let default_theme = Theme {
+			name: stb("default"),
+			properties: vec![
+				ThemeProperty {
+					key: stb("primary_color"),
+					value: stb("red"),
+					inherit: None,
+				},
+				ThemeProperty {
+					key: stb("secondary_color"),
+					value: stb("blue"),
+					inherit: None,
+				}
+			]
+		};
+
+		// Attempt to add default theme (should fail: Signer must be issuer of base)
+		assert_noop!(
+			RmrkEquip::theme_add(
+				Origin::signed(BOB),
+				0, // BaseID
+				default_theme.clone()
+			),
+			Error::<Test>::PermissionError
+		);
+
+		// Add default theme to base
+		assert_ok!(RmrkEquip::theme_add(
+			Origin::signed(ALICE),
+			0, // BaseID
+			default_theme
+		));
+
+		// Add non-default theme to base (should succeed)
+		assert_ok!(RmrkEquip::theme_add(
+			Origin::signed(ALICE),
+			0, // BaseID
+			non_default_theme
+		));
+
+		assert_eq!(
+			RmrkEquip::themes((0, stb("default"), stb("primary_color"))).unwrap(),
+			stb("red")
+		);
+
+		assert_eq!(
+			RmrkEquip::themes((0, stb("default"), stb("secondary_color"))).unwrap(),
+			stb("blue")
+		);
+
+		// Base must exist
+		// Caller must be issuer of base
+		// "default" must exist first
+
+		// Question: do we need a cap on number of properties?
+		// - Pretty sure
+
+		// Do we want to automatically override a theme, or error when already exists?
+		// - If error, we want some mechanism to remove a theme
+
+	});
+}
