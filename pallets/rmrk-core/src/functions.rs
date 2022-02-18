@@ -278,7 +278,7 @@ where
 
 		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
 
-		let nft = NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata };
+		let nft = NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata, equipped: false };
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 		NftsByOwner::<T>::append(owner, (collection_id, nft_id));
