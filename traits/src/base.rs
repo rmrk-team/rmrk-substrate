@@ -92,9 +92,9 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
 		equipping_item_nft_id: NftId,
 		equipper_collection_id: CollectionId,
 		equipper_nft_id: NftId,
-		base_id: u32, // Maybe BaseId ?
-		slot: u32 // Maybe SlotId ?
-)-> Result<(), DispatchError>;
+		base_id: BaseId, // Maybe BaseId ?
+		slot: SlotId // Maybe SlotId ?
+)-> Result<(CollectionId, NftId, BaseId, SlotId, bool), DispatchError>;
 	fn do_equippable(
 		issuer: AccountId, 
 		base_id: BaseId,
