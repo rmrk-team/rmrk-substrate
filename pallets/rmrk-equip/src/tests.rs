@@ -93,8 +93,8 @@ fn equip_works() {
 			z: 0,
 			src: stb("right-hand"),
 			equippable: EquippableList::Custom(vec![
-				2, // Collection 2
-				3, // Collection 3
+				0, // Collection 2
+				1, // Collection 3
 			]),
 		};
 		// Let's create a base with these 4 parts
@@ -236,7 +236,7 @@ fn equip_works() {
 			Error::<Test>::ItemHasNoResourceToEquipThere
 		);
 
-		// Add our sword resource to our sword NFT
+		// Add our sword left-hand resource to our sword NFT
 		assert_ok!(RmrkCore::new_add_resource(
 			Origin::signed(ALICE),
 			1, // collection id
@@ -245,9 +245,9 @@ fn equip_works() {
 			ResourceType::Base(
 				NoncomposableResource { 
 					base: 0, // Base ID this resource can be equipped into
-					slot_id: 201, // Slot ID this resource can be equipped into
+					slot_id: 201, // Slot ID this resource can be equipped into (left hand)
 					id: 777, // pub id: ResourceId,
-					src: stb("ipfs://sword-metadata"), // pub src: BoundedString,
+					src: stb("ipfs://sword-metadata-left"), // pub src: BoundedString,
 					thumb: None, // pub thumb: Option<BoundedString>,
 					theme_id: None, // pub themeId: Option<BoundedString>,
 				}
@@ -265,6 +265,13 @@ fn equip_works() {
 			201, // SlotId
 		));
 
+		System::assert_last_event(MockEvent::RmrkEquip(crate::Event::SlotEquipped {
+			item_collection: 1,
+			item_nft: 0,
+			base_id: 0,
+			slot_id: 201,
+		}));
+
 		// Equipped resource ID Some(777) should now be associated with equippings for character-0 on base 0, slot 201
 		let equipped = RmrkEquip::equippings(((0, 0), 0, 201));
 		assert_eq!(
@@ -274,6 +281,101 @@ fn equip_works() {
 
 		// Resource for equipped item should exist
 		assert!(RmrkCore::new_resources((1, 0, equipped.unwrap())).is_some());
+
+		// Add our sword right-hand resource to our sword NFT
+		assert_ok!(RmrkCore::new_add_resource(
+			Origin::signed(ALICE),
+			1, // collection id
+			0, // nft id
+			// None, // base id
+			ResourceType::Base(
+				NoncomposableResource { 
+					base: 0, // Base ID this resource can be equipped into
+					slot_id: 202, // Slot ID this resource can be equipped into (right hand)
+					id: 778, // pub id: ResourceId,
+					src: stb("ipfs://sword-metadata-right"), // pub src: BoundedString,
+					thumb: None, // pub thumb: Option<BoundedString>,
+					theme_id: None, // pub themeId: Option<BoundedString>,
+				}
+			),
+		));
+		
+		// Equipping to right-hand should fail (already equipped in left hand)
+		assert_noop!(
+			RmrkEquip::equip(
+				Origin::signed(ALICE), // Signer
+				1, // Item CollectionId
+				0, // Item NftId
+				0, // Equipper CollectionId
+				0, // Equipper NftId
+				0, // BaseId
+				202, // SlotId
+			),
+			Error::<Test>::AlreadyEquipped
+		);
+
+		// Unequipping from left-hand should work
+		assert_ok!(
+			RmrkEquip::equip(
+				Origin::signed(ALICE), // Signer
+				1, // Item CollectionId
+				0, // Item NftId
+				0, // Equipper CollectionId
+				0, // Equipper NftId
+				0, // BaseId
+				201, // SlotId
+			)
+		);
+
+		System::assert_last_event(MockEvent::RmrkEquip(crate::Event::SlotUnequipped {
+			item_collection: 1,
+			item_nft: 0,
+			base_id: 0,
+			slot_id: 201,
+		}));
+
+		// Re-equipping to left-hand should work
+		assert_ok!(
+			RmrkEquip::equip(
+				Origin::signed(ALICE), // Signer
+				1, // Item CollectionId
+				0, // Item NftId
+				0, // Equipper CollectionId
+				0, // Equipper NftId
+				0, // BaseId
+				201, // SlotId
+			)
+
+		);
+
+		// Unequipping from left-hand should work
+		assert_ok!(
+			RmrkEquip::equip(
+				Origin::signed(ALICE), // Signer
+				1, // Item CollectionId
+				0, // Item NftId
+				0, // Equipper CollectionId
+				0, // Equipper NftId
+				0, // BaseId
+				201, // SlotId
+			)
+		);
+
+		// Equipping to right-hand should work
+		assert_ok!(
+			RmrkEquip::equip(
+				Origin::signed(ALICE), // Signer
+				1, // Item CollectionId
+				0, // Item NftId
+				0, // Equipper CollectionId
+				0, // Equipper NftId
+				0, // BaseId
+				202, // SlotId
+			)
+		);
+
+
+
 	});
 }
 /// Base: Basic equip tests

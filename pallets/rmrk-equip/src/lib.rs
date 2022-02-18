@@ -4,7 +4,7 @@
 use frame_support::{BoundedVec, ensure};
 use frame_support::dispatch::{
 	DispatchError, 
-	// DispatchResult
+	DispatchResult
 };
 use sp_std::vec::Vec;
 
@@ -114,13 +114,17 @@ pub mod pallet {
 	pub enum Event<T: Config> {
 		BaseCreated { issuer: T::AccountId, base_id: BaseId },
 		SlotEquipped {
-			collection_id: CollectionId,
-			nft_id: NftId,
 			item_collection: CollectionId,
 			item_nft: NftId,
 			base_id: BaseId,
 			slot_id: SlotId,
-		}
+		},
+		SlotUnequipped {
+			item_collection: CollectionId,
+			item_nft: NftId,
+			base_id: BaseId,
+			slot_id: SlotId,
+		},
 	}
 
 	#[pallet::error]
@@ -139,6 +143,8 @@ pub mod pallet {
 		ItemHasNoResourceToEquipThere,
 		NoEquippableOnFixedPart,
 		NeedsDefaultThemeFirst,
+		AlreadyEquipped,
+		UnknownError,
 	}
 
 	#[pallet::call]
@@ -146,7 +152,7 @@ pub mod pallet {
 	where
 		T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 	{
-		/// TODO: equip a child NFT into a parent's slot, or unequip
+		/// Equip a child NFT into a parent's slot, or unequip
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn equip(
 			origin: OriginFor<T>,
@@ -159,7 +165,7 @@ pub mod pallet {
 
 			let sender = ensure_signed(origin)?;
 
-			let _equipped = Self::do_equip(
+			let (collection_id, nft_id, base_id, slot_id, equipped) = Self::do_equip(
 				sender.clone(),
 				equipping_item_collection_id,
 				equipping_item_nft_id,
@@ -169,7 +175,23 @@ pub mod pallet {
 				slot
 			)?;
 
-			// Self::deposit_event(Event::SomethingStored(something, sender));
+			if equipped {
+				// Send Equip event
+				Self::deposit_event(Event::SlotEquipped { 
+					item_collection: collection_id,
+					item_nft: nft_id,
+					base_id: base_id,
+					slot_id: slot_id,								
+				});
+			} else {
+				// Send Unequip event
+				Self::deposit_event(Event::SlotUnequipped { 
+					item_collection: collection_id,
+					item_nft: nft_id,
+					base_id: base_id,
+					slot_id: slot_id,								
+				});
+			}
 			Ok(())
 		}
 

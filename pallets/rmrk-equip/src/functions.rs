@@ -57,30 +57,72 @@ where
 		item_collection_id: CollectionId,
 		item_nft_id: NftId,
 		equipper_collection_id: CollectionId,
-		equipper_nft_id: NftId,
-		base_id: u32, // Maybe BaseId ?
-		slot_id: u32 // Maybe SlotId ?
-	)-> Result<(), DispatchError> {
 		
-
+		equipper_nft_id: NftId,
+		base_id: BaseId, // Maybe BaseId ?
+		slot_id: SlotId, // Maybe SlotId ?
+	)-> Result<(CollectionId, NftId, BaseId, SlotId, bool), DispatchError> {
+		
 		let item_is_equipped = Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id)).is_some();
 		let item_exists = pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id).is_some();
 		
 		// If item doesn't exist, anyone can unequip it.
 		if !item_exists && item_is_equipped {
+			
+			// Remove from Equippings nft/base/slot storage
 			Equippings::<T>::remove(((equipper_collection_id, equipper_nft_id), base_id, slot_id));
-			//TODO emit removal event
-			return Ok(());
+
+			// Update item's equipped property
+			pallet_rmrk_core::Nfts::<T>::try_mutate_exists(
+				item_collection_id, 
+				item_nft_id,
+				|nft| -> DispatchResult {
+					if let Some(nft) = nft {
+						nft.equipped = false;
+					}
+					Ok(())
+				},
+			)?;
+
+			// Return unequip event details
+			return Ok((
+				item_collection_id,
+				item_nft_id,
+				base_id,
+				slot_id,
+				false,
+			));
 		}
 
 		let item_owner = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(item_collection_id, item_nft_id)?;
 		let equipper_owner = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(equipper_collection_id, equipper_nft_id)?;
 
-		// If the item is equipped, and either the equipper or the item owner is the caller, it will be unequipped
+		// If the item is equipped in this slot, and either the equipper or the item owner is the caller, it will be unequipped
 		if item_is_equipped && (item_owner.0 == issuer || equipper_owner.0 == issuer) {
+
+			// Remove from Equippings nft/base/slot storage
 			Equippings::<T>::remove(((equipper_collection_id, equipper_nft_id), base_id, slot_id));
-			//TODO emit removal event
-			return Ok(());
+
+			// Update item's equipped property
+			pallet_rmrk_core::Nfts::<T>::try_mutate_exists(
+				item_collection_id, 
+				item_nft_id,
+				|nft| -> DispatchResult {
+					if let Some(nft) = nft {
+						nft.equipped = false;
+					}
+					Ok(())
+				},
+			)?;
+
+			// Return unequip event details
+			return Ok((
+				item_collection_id,
+				item_nft_id,
+				base_id,
+				slot_id,
+				false,
+			));
 		}
 
 		// Equipper NFT must exist
@@ -93,6 +135,12 @@ where
 		ensure!(
 			item_exists,
 			Error::<T>::ItemDoesntExist
+		);
+
+		// Is the item equipped anywhere?
+		ensure!(
+			!pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id).unwrap().equipped,
+			Error::<T>::AlreadyEquipped
 		);
 
 		// Caller must root-own equipper?
@@ -138,7 +186,7 @@ where
 		}
 
 		// Find the specific Part to equip 
-		match Self::parts(base_id, slot_id) {
+		let results = match Self::parts(base_id, slot_id) {
 			// Part must exist
 			None => Err(Error::<T>::PartDoesntExist),
 			Some(part_type) => {
@@ -193,21 +241,41 @@ where
 							to_equip_resource_id
 						);
 
+						// Update item's equipped property
+						pallet_rmrk_core::Nfts::<T>::try_mutate_exists(
+								item_collection_id, 
+								item_nft_id,
+								|nft| -> DispatchResult {
+									if let Some(nft) = nft {
+										nft.equipped = true;
+									}
+									Ok(())
+								},
+							)?;
+
 						// Emit event
-						Self::deposit_event(Event::SlotEquipped { 
-							collection_id: equipper_collection_id,
-							nft_id: equipper_nft_id,
-							item_collection: item_collection_id,
-							item_nft: item_nft_id,
-							base_id: base_id,
-							slot_id: slot_id,								
-						});
-						Ok(())
+						// Self::deposit_event(Event::SlotEquipped { 
+						// 	collection_id: equipper_collection_id,
+						// 	nft_id: equipper_nft_id,
+						// 	item_collection: item_collection_id,
+						// 	item_nft: item_nft_id,
+						// 	base_id: base_id,
+						// 	slot_id: slot_id,								
+						// });
+						Ok((
+							item_collection_id,
+							item_nft_id,
+							base_id,
+							slot_id,
+							true,
+						))
 					}
 				}
 			}
 		}?;
-		Ok(())
+		Ok(results)
+		
+
 	}
 	fn do_equippable(
 		issuer: T::AccountId,
