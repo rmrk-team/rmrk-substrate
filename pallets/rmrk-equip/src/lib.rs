@@ -125,6 +125,10 @@ pub mod pallet {
 			base_id: BaseId,
 			slot_id: SlotId,
 		},
+		EquippablesUpdated {
+			base_id: BaseId,
+			slot_id: SlotId,
+		}
 	}
 
 	#[pallet::error]
@@ -202,14 +206,14 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let _equippable = Self::do_equippable(
+			let (base_id, slot_id) = Self::do_equippable(
 				sender,
 				base_id,
 				slot_id,
 				equippables,
 			)?;
 
-			// Self::deposit_event(Event::SomethingStored(something, sender));
+			Self::deposit_event(Event::EquippablesUpdated {base_id, slot_id});
 			Ok(())
 		}
 

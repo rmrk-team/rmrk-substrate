@@ -436,6 +436,12 @@ fn equippable_works() {
 			EquippableList::Custom(vec![5, 6, 7]), // equippable collections
 		));
 
+		// Last event should be EquippablesUpdated
+		System::assert_last_event(MockEvent::RmrkEquip(crate::Event::EquippablesUpdated {
+			base_id: 0,
+			slot_id: 202,
+		}));
+
 		// Parts storage should be updated
 		let should_be = SlotPart {
 			id: 202,

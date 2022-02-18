@@ -100,7 +100,7 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
 		base_id: BaseId,
 		slot: SlotId,
 		equippables: EquippableList,
-	)-> Result<(), DispatchError>;
+	)-> Result<(BaseId, SlotId), DispatchError>;
 	fn add_theme(
 		issuer: AccountId,
 		base_id: BaseId,

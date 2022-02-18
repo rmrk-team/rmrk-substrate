@@ -282,7 +282,7 @@ where
 		base_id: BaseId,
 		slot_id: PartId,
 		equippables: EquippableList
-	)-> Result<(), DispatchError> {
+	)-> Result<(BaseId, SlotId), DispatchError> {
 		
 		match Bases::<T>::get(base_id) {
 			None => return Err(Error::<T>::BaseDoesntExist.into()),
@@ -291,27 +291,24 @@ where
 			},
 		}
 
-		match Parts::<T>::get(base_id, slot_id) {
-			None => return Err(Error::<T>::PartDoesntExist.into()),
+		let results = match Parts::<T>::get(base_id, slot_id) {
+			None => Err(Error::<T>::PartDoesntExist),
 			Some(part) => {
 				match part {
 					NewPartTypes::FixedPart(fixed_part) => {
-						return Err(Error::<T>::NoEquippableOnFixedPart.into());
+						Err(Error::<T>::NoEquippableOnFixedPart)
+
 					},
 					NewPartTypes::SlotPart(mut slot_part) => {
 						slot_part.equippable = equippables;
 						Parts::<T>::insert(base_id, slot_id, NewPartTypes::SlotPart(slot_part));
-						// TODO success response
+						Ok((base_id, slot_id))
 					},
 				}
 			}
+		}?;
 
-		}
-		
-		
-		
-
-		Ok(())
+		Ok(results)
 	}
 
 	fn add_theme(
