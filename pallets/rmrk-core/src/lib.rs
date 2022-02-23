@@ -194,6 +194,11 @@ pub mod pallet {
 			collection_id: CollectionId,
 			nft_id: NftId,
 		},
+		NftLockStatusChanged {
+			collection_id: CollectionId,
+			nft_id: NftId,
+			status: bool
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -219,6 +224,7 @@ pub mod pallet {
 		ResourceAlreadyExists,
 		EmptyResource,
 		TooManyRecursions,
+		NftIsLocked,
 	}
 
 	#[pallet::call]

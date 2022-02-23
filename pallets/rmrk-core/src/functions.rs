@@ -18,6 +18,9 @@ where
 		nft_id: NftId,
 		priorities: Vec<Vec<u8>>,
 	) -> DispatchResult {
+		// Check NFT lock status
+		let is_nft_locked = Pallet::<T>::check_nft_lock_status(collection_id, nft_id)?;
+		ensure!(!is_nft_locked, Error::<T>::NftIsLocked);
 		let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
 		for priority in priorities {
 			let bounded_priority = Self::to_bounded_string(priority)?;
@@ -44,6 +47,9 @@ where
 			Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		if let Some(nft_id) = &maybe_nft_id {
+			// Check NFT lock status
+			let is_nft_locked = Pallet::<T>::check_nft_lock_status(collection_id, *nft_id)?;
+			ensure!(!is_nft_locked, Error::<T>::NftIsLocked);
 			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id)?;
 			ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
 		}
@@ -75,6 +81,9 @@ where
 			Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
 			Error::<T>::ResourceAlreadyExists
 		);
+		// Check NFT lock status
+		let is_nft_locked = Pallet::<T>::check_nft_lock_status(collection_id, nft_id)?;
+		ensure!(!is_nft_locked, Error::<T>::NftIsLocked);
 
 		let empty =
 			base.is_none() &&
@@ -106,6 +115,9 @@ where
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
+		// Check NFT lock status
+		let is_nft_locked = Pallet::<T>::check_nft_lock_status(collection_id, nft_id)?;
+		ensure!(!is_nft_locked, Error::<T>::NftIsLocked);
 
 		Resources::<T>::try_mutate_exists(
 			(collection_id, nft_id, resource_id),
@@ -206,7 +218,7 @@ where
 
 		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
 
-		let nft = NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata };
+		let nft = NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata, lock: false };
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 		NftsByOwner::<T>::append(owner, (collection_id, nft_id));
@@ -263,6 +275,9 @@ where
 		// Get NFT info
 		let mut sending_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+		// Check NFT lock status
+		let is_nft_locked = Pallet::<T>::check_nft_lock_status(collection_id, nft_id)?;
+		ensure!(!is_nft_locked, Error::<T>::NftIsLocked);
 
 		// Prepare transfer
 		let new_owner_account = match new_owner.clone() {
@@ -514,5 +529,47 @@ where
 			*id = id.checked_add(1).ok_or(Error::<T>::NoAvailableCollectionId)?;
 			Ok(current_id)
 		})
+	}
+
+	/// Set the NFT lock status and insert into storage
+	///
+	/// Parameters:
+	/// - collection_id: The Collection id of the NFT
+	/// - nft_id: The NFT id of the NFT
+	/// - status: Status `bool` for the lock status to be set to in storage
+	pub fn set_nft_lock_status(
+		collection_id: CollectionId,
+		nft_id: NftId,
+		status: bool
+	) -> DispatchResult {
+		// Get NFT info
+		let mut nft_info =
+			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+		// Set the new NFT lock status
+		nft_info.lock = status;
+		Nfts::<T>::insert(collection_id, nft_id, nft_info);
+
+		Self::deposit_event(Event::NftLockStatusChanged {
+			collection_id,
+			nft_id,
+			status,
+		});
+
+		Ok(())
+	}
+
+	/// Check the current lock status for a NFT. If not in storage return `false`
+	/// Parameters:
+	/// - collection_id: The Collection id of the NFT
+	/// - nft_id: The NFT id of the NFT
+	pub fn check_nft_lock_status(
+		collection_id: CollectionId,
+		nft_id: NftId,
+	) -> Result<bool, Error<T>> {
+		// Get NFT info
+		let nft_info =
+			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+
+		Ok(nft_info.lock)
 	}
 }
