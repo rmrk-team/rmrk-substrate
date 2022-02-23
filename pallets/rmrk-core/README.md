@@ -18,13 +18,15 @@ Extends uniques pallet. Based on [RMRK2 Spec](https://github.com/rmrk-team/rmrk-
 * **send**(origin, collection_id, nft_id, dest)
     * transfer NFT from account A to account B
 * **change_issuer**(origin, collection_id, base_id, dest)
-    * changing the issuer of a collection or base    
+    * changing the issuer of a collection or base  
 * **set_property**(collection_id, maybe_nft_id, key, value)
     * key and value of type `BoundedVec<u8, T::KeyLimit>`
     * set a custom value on an NFT. Similar to uniques `set_attribute`
-* **lock**(collection_id)
-    * locking a collection    
-    
+* **lock_collection**(collection_id)
+    * locking a collection  
+* **destroy_collection**(collection_id)
+    * destroying a collection
+
 Multi resource calls.
 
 
@@ -35,13 +37,13 @@ Multi resource calls.
 * **set_priority**(collection_id, nft_id)
     * set a different order of resource priority
 
-    
-    
+
+
 ## Storages
 > Defines how to access on-chain storage
 
 ### Collection
-    
+
 ```#rust
 type Collection<T: Config> = StorageMap<
     _,
@@ -52,7 +54,7 @@ type Collection<T: Config> = StorageMap<
 ```
 
 ### NFT
-    
+
 
 StorageDoubleMap structure `CollectionId -> NftId -> NFTDetails`
 ```#rust
@@ -64,10 +66,10 @@ type NFT<T: Config> = StorageDoubleMap<
     T::NftId,
     NFTDetails<T::AccountId>,
 >;
-``` 
- 
+```
+
 ### Attribute
-    
+
 
 1. Uniques based StorageNMap structure `CollectionId -> Some(NftId) -> Key -> Value`
 ```#rust
@@ -82,9 +84,9 @@ type Attribute<T: Config<I>, I: 'static = ()> = StorageNMap<
     OptionQuery,
 >;
 ```
-    
+
 ### Resource
-    
+
 
 StorageDoubleMap structure `BaseId -> PartId -> PartDetail`
 ```#rust
@@ -93,12 +95,12 @@ type Base<T: Config> = StorageDoubleMap<
     Twox64Concat,
     T::ResourceId,
     Twox64Concat,
-    T::PartId,    
+    T::PartId,  
     ResourceDetail,
 >;
 ```
 
-    
+
 ## Events
 > Defines the events that could be emitted by this pallet to indicate what happened
 
@@ -117,7 +119,7 @@ pub enum Event<T: Config> {
 ```
 
 ## Types
-    
+
 ### **CollectionDetails**
 ```#rust
 pub struct CollectionDetails<AccountId> {
@@ -128,7 +130,7 @@ pub struct CollectionDetails<AccountId> {
     metadata: BoundedVec<u8, StringLimit>
 }
 ```
-    
+
 ### NFTDetails (WIP)
 ```#rust
 pub struct NFTDetails<AccountId> {

@@ -1,37 +1,43 @@
 {
-    // See https://go.microsoft.com/fwlink/?LinkId=733558
-    // for the documentation about the tasks.json format
-    "version": "2.0.0",
-    "tasks": [
+  "tasks": [
+    {
+      "args": [
+        "run",
+        "--release",
+        "--",
+        "--dev"
+      ],
+      "command": "cargo",
+      "group": {
+        "isDefault": true,
+        "kind": "build"
+      },
+      "label": "Run ",
+      "presentation": {
+        "panel": "new",
+        "reveal": "always"
+      },
+      "problemMatcher": [
         {
-            "label": "Run ",
-            "type": "shell",
-            "command": "cargo",
-            "args": ["run", "--release", "--", "--dev"],
-            "group": {
-                "kind": "build",
-                "isDefault": true
-            },
-            "presentation": {
-                "reveal": "always",
-                "panel": "new"
-            },
-            "problemMatcher": [
-            {
-                "owner": "rust",
-                "fileLocation": ["relative", "${workspaceRoot}"],
-                "pattern": {
-                "regexp": "^(.*):(\\d+):(\\d+):\\s+(\\d+):(\\d+)\\s+(warning|error):\\s+(.*)$",
-                "file": 1,
-                "line": 2,
-                "column": 3,
-                "endLine": 4,
-                "endColumn": 5,
-                "severity": 6,
-                "message": 7
-                }
-            }
-            ]
+          "fileLocation": [
+            "relative",
+            "${workspaceRoot}"
+          ],
+          "owner": "rust",
+          "pattern": {
+            "column": 3,
+            "endColumn": 5,
+            "endLine": 4,
+            "file": 1,
+            "line": 2,
+            "message": 7,
+            "regexp": "^(.*):(\\d+):(\\d+):\\s+(\\d+):(\\d+)\\s+(warning|error):\\s+(.*)$",
+            "severity": 6
+          }
         }
-    ]
+      ],
+      "type": "shell"
+    }
+  ],
+  "version": "2.0.0"
 }

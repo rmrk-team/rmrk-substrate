@@ -1,7 +1,7 @@
 [package]
-name = "pallet-rmrk-core"
+name = "pallet-rmrk-market"
 version = "4.0.0-dev"
-description = "RMRK Core"
+description = "RMRK Market"
 authors = ["RMRK Team"]
 homepage = ""
 edition = "2021"
@@ -17,7 +17,7 @@ serde = { version = "1.0.111", default-features = false, features = ["derive"] }
 sp-runtime = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = [
-	"derive",
+    "derive",
 ] }
 scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01"}
@@ -28,6 +28,7 @@ pallet-uniques = { default-features = false, version = "4.0.0-dev", git = "https
 pallet-balances = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", tag = "monthly-2022-01" }
 
 # Local Dependencies
+pallet-rmrk-core = { default-features = false, version = "4.0.0-dev", path = "../rmrk-core" }
 rmrk-traits = { default-features = false, version = "0.0.1", path = "../../traits" }
 
 [dev-dependencies]
@@ -39,14 +40,14 @@ sp-std = { default-features = false, version = "4.0.0", git = "https://github.co
 [features]
 default = ["std"]
 std = [
-	"pallet-uniques/std",
-	"pallet-balances/std",
-	"serde/std",
-	"codec/std",
-	"scale-info/std",
-	"frame-support/std",
-	"frame-system/std",
-	"frame-benchmarking/std",
+    "pallet-uniques/std",
+    "pallet-balances/std",
+    "serde/std",
+    "codec/std",
+    "scale-info/std",
+    "frame-support/std",
+    "frame-system/std",
+    "frame-benchmarking/std",
 ]
 
 runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
