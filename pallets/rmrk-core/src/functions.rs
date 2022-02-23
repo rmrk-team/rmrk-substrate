@@ -55,28 +55,30 @@ where
 	}
 }
 
-impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T>
+impl<T: Config> NewResource<StringLimitOf<T>, T::AccountId> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
 	fn resource_add(
 		sender: T::AccountId,
+		resource_id: ResourceId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		base: Option<BoundedVec<u8, T::StringLimit>>,
+		base: Option<BaseId>,
 		src: Option<BoundedVec<u8, T::StringLimit>>,
 		metadata: Option<BoundedVec<u8, T::StringLimit>>,
-		slot: Option<BoundedVec<u8, T::StringLimit>>,
+		slot: Option<SlotId>,
 		license: Option<BoundedVec<u8, T::StringLimit>>,
 		thumb: Option<BoundedVec<u8, T::StringLimit>>,
+		parts: Option<Vec<PartId>>,
 	) -> Result<ResourceId, DispatchError> {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
-		let resource_id = Self::get_next_resource_id()?;
-		ensure!(
-			Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
-			Error::<T>::ResourceAlreadyExists
-		);
+		// let resource_id = Self::get_next_resource_id()?;
+		// ensure!(
+		// 	Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
+		// 	Error::<T>::ResourceAlreadyExists
+		// );
 
 		let empty =
 			base.is_none() &&
@@ -85,7 +87,7 @@ where
 				thumb.is_none();
 		ensure!(!empty, Error::<T>::EmptyResource);
 
-		let res = ResourceInfo {
+		let res = NewResourceInfo {
 			id: resource_id,
 			base,
 			src,
@@ -93,6 +95,7 @@ where
 			slot,
 			license,
 			thumb,
+			parts,
 			pending: root_owner != sender,
 		};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
@@ -124,75 +127,76 @@ where
 	}
 }
 
-impl<T: Config> NewResource<T::AccountId, CollectionId, NftId, BaseId, SlotId, ResourceId, PartId, StringLimitOf<T>, > for Pallet<T>
-where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
-{
-	fn new_resource_add(
-		_sender: T::AccountId,
-		collection_id: CollectionId,
-		nft_id: NftId,
-		// base_id: Option<BaseId>,
-		resource: ResourceType<BaseId, SlotId, ResourceId, PartId, StringLimitOf<T>>
-	) -> Result<ResourceId, DispatchError> {
-		let (_root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+// impl<T: Config> NewResource<T::AccountId, CollectionId, NftId, BaseId, SlotId, ResourceId, PartId, StringLimitOf<T>, > for Pallet<T>
+// where
+// 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+// {
+// 	fn new_resource_add(
+// 		_sender: T::AccountId,
+// 		collection_id: CollectionId,
+// 		nft_id: NftId,
+// 		// base_id: Option<BaseId>,
+// 		resource: ResourceType<BaseId, SlotId, ResourceId, PartId, StringLimitOf<T>>
+// 	) -> Result<ResourceId, DispatchError> {
+// 		let (_root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
-		let mut resource_id = 0;
+// 		let mut resource_id = 0;
 
-		match resource.clone() {
-			ResourceType::Base(r) => resource_id = r.id,
-			ResourceType::Slot(r) => resource_id = r.id,
-		}
+// 		resource_id = resource.id;
+// 		// match resource.clone() {
+// 		// 	ResourceType::Base(r) => resource_id = r.id,
+// 		// 	ResourceType::Slot(r) => resource_id = r.id,
+// 		// }
 
-		ensure!(
-			!NewResources::<T>::contains_key((
-				collection_id,
-				nft_id,
-				// base_id,
-				resource_id,
-			)),
-			Error::<T>::ResourceAlreadyExists
-		);
+// 		ensure!(
+// 			!NewResources::<T>::contains_key((
+// 				collection_id,
+// 				nft_id,
+// 				// base_id,
+// 				resource_id,
+// 			)),
+// 			Error::<T>::ResourceAlreadyExists
+// 		);
 
-		// let resource_id = Self::get_next_resource_id()?;
-		// ensure!(
-		// 	Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
-		// 	Error::<T>::ResourceAlreadyExists
-		// );
+// 		// let resource_id = Self::get_next_resource_id()?;
+// 		// ensure!(
+// 		// 	Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
+// 		// 	Error::<T>::ResourceAlreadyExists
+// 		// );
 
-		NewResources::<T>::insert(
-			(
-				collection_id, 
-				nft_id, 
-				// base_id,
-				resource_id,
-			), resource);
-		Ok(resource_id)
-	}
+// 		NewResources::<T>::insert(
+// 			(
+// 				collection_id, 
+// 				nft_id, 
+// 				// base_id,
+// 				resource_id,
+// 			), resource);
+// 		Ok(resource_id)
+// 	}
 
-	fn accept(
-		_sender: T::AccountId,
-		_collection_id: CollectionId,
-		_nft_id: NftId,
-		_resource_id: ResourceId,
-	) -> DispatchResult {
-		// let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-		// ensure!(root_owner == sender, Error::<T>::NoPermission);
+// 	fn accept(
+// 		_sender: T::AccountId,
+// 		_collection_id: CollectionId,
+// 		_nft_id: NftId,
+// 		_resource_id: ResourceId,
+// 	) -> DispatchResult {
+// 		// let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+// 		// ensure!(root_owner == sender, Error::<T>::NoPermission);
 
-		// Resources::<T>::try_mutate_exists(
-		// 	(collection_id, nft_id, resource_id),
-		// 	|resource| -> DispatchResult {
-		// 		if let Some(res) = resource {
-		// 			res.pending = false;
-		// 		}
-		// 		Ok(())
-		// 	},
-		// )?;
+// 		// Resources::<T>::try_mutate_exists(
+// 		// 	(collection_id, nft_id, resource_id),
+// 		// 	|resource| -> DispatchResult {
+// 		// 		if let Some(res) = resource {
+// 		// 			res.pending = false;
+// 		// 		}
+// 		// 		Ok(())
+// 		// 	},
+// 		// )?;
 
-		// Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
-		Ok(())
-	}
-}
+// 		// Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
+// 		Ok(())
+// 	}
+// }
 
 impl<T: Config> Collection<StringLimitOf<T>, T::AccountId> for Pallet<T>
 where

@@ -160,7 +160,7 @@ where
 		// First we iterate through the resources added to this NFT in search of the base ID
 		let mut found_base_resource_on_nft = false;
 		let mut resource_id = 999;
-		let resources_matching_base_iter = pallet_rmrk_core::NewResources::<T>::iter_prefix_values(
+		let resources_matching_base_iter = pallet_rmrk_core::Resources::<T>::iter_prefix_values(
 			(
 				equipper_collection_id,
 				equipper_nft_id,
@@ -168,16 +168,22 @@ where
 			)
 		);
 		for resource in resources_matching_base_iter {
-			match resource {
-				ResourceType::Base(_) => (),
-				ResourceType::Slot(slot_resource) => {
-					// println!("sr: {:?}", slot_resource.base);
-					if slot_resource.base == base_id {
-						found_base_resource_on_nft = true;
-						resource_id = slot_resource.id;
-					}
-				},
+			if resource.base.is_some() {
+				if resource.base.unwrap() == base_id {
+					found_base_resource_on_nft = true;
+					resource_id = resource.id;
+				}
 			}
+			// match resource {
+			// 	ResourceType::Base(_) => (),
+			// 	ResourceType::Slot(slot_resource) => {
+			// 		// println!("sr: {:?}", slot_resource.base);
+			// 		if slot_resource.base == base_id {
+			// 			found_base_resource_on_nft = true;
+			// 			resource_id = slot_resource.id;
+			// 		}
+			// 	},
+			// }
 		};
 
 		// If we don't find a matching base resource, we raise a NoResourceForThisBaseFoundOnNft error
@@ -210,7 +216,7 @@ where
 						// The item being equipped must be have a resource equippable into that base.slot
 						let mut found_base_slot_resource_on_nft = false;
 						let mut to_equip_resource_id = 999;
-						let resources_matching_base_iter = pallet_rmrk_core::NewResources::<T>::iter_prefix_values(
+						let resources_matching_base_iter = pallet_rmrk_core::Resources::<T>::iter_prefix_values(
 							(
 								item_collection_id,
 								item_nft_id,
@@ -219,15 +225,22 @@ where
 						);
 
 						for resource in resources_matching_base_iter {
-							match resource {
-								ResourceType::Base(b) => {
-									if b.base == base_id && b.slot_id == slot_id {
-										found_base_slot_resource_on_nft = true;
-										to_equip_resource_id = b.id;
-									}
-								},
-								ResourceType::Slot(_) => (),
+							if resource.base.is_some() && resource.slot.is_some() {
+								if resource.base.unwrap() == base_id && resource.slot.unwrap() == slot_id {
+									found_base_slot_resource_on_nft = true;
+									to_equip_resource_id = resource.id;
+								}
 							}
+
+							// match resource {
+							// 	ResourceType::Base(b) => {
+							// 		if b.base == base_id && b.slot_id == slot_id {
+							// 			found_base_slot_resource_on_nft = true;
+							// 			to_equip_resource_id = b.id;
+							// 		}
+							// 	},
+							// 	ResourceType::Slot(_) => (),
+							// }
 						};
 
 						// Item has no resource to equip into that slot

@@ -17,10 +17,10 @@ use rmrk_traits::{
 	NewPartTypes, 
 	FixedPart,
 	SlotPart, 
-	ComposableResource, 
-	NoncomposableResource, 
+	// ComposableResource, 
+	// NoncomposableResource, 
 	AccountIdOrCollectionNftTuple, 
-	ResourceType,
+	// ResourceType,
 	PartInfo,
 	EquippableList,
 	Theme,
@@ -41,8 +41,14 @@ mod tests;
 // Re-export pallet items so that they can be accessed from the crate namespace.
 pub use pallet::*;
 
-pub type NewResourceOf<T> =
-	ResourceType<BaseId, SlotId, ResourceId, PartId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
+// pub type NewResourceOf<T> =
+// 	ResourceType<BaseId, SlotId, ResourceId, PartId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
+
+// pub type NewResourceOf<T> =
+// 	NewResourceInfo<ResourceId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
+
+// pub type ResourceOf<T> =
+// 	NewResourceInfo<ResourceId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
 
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 

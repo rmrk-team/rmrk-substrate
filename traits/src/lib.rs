@@ -14,7 +14,14 @@ pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo};
 pub use priority::Priority;
 pub use property::Property;
-pub use resource::{Resource, ResourceInfo, NewResource, ResourceType, ComposableResource, NoncomposableResource};
+pub use resource::{
+	OldResource,
+	NewResourceInfo,
+	NewResource,
+	// ResourceType,
+	// ComposableResource,
+	// NoncomposableResource
+};
 pub mod primitives {
 	pub type CollectionId = u32;
 	pub type ResourceId = u32;
