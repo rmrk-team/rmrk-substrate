@@ -90,6 +90,7 @@ fn list_works() {
 			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_0),
 			collection_id: COLLECTION_ID_0,
 			nft_id: NFT_ID_1,
+			approval_required: false,
 		}));
 		// ALICE cannot list NFT [0,1] bc it is owned by NFT[0,0]
 		assert_noop!(RmrkMarket::list(
@@ -344,8 +345,9 @@ fn send_to_nft_wont_work_after_list() {
 		System::assert_last_event(MockEvent::RmrkCore(pallet_rmrk_core::Event::NFTSent {
 			sender: BOB,
 			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
-			collection_id: 0,
-			nft_id: 0,
+			collection_id: COLLECTION_ID_0,
+			nft_id: NFT_ID_0,
+      approval_required: false,
 		}));
 	});
 }
@@ -390,6 +392,7 @@ fn accept_offer_wont_work_if_traded_to_nft_after_list() {
 			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
 			collection_id: COLLECTION_ID_0,
 			nft_id: NFT_ID_0,
+			approval_required: false,
 		}));
 		// ALICE cannot accept offer anymore
 		assert_noop!(RmrkMarket::accept_offer(
