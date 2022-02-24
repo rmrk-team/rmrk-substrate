@@ -347,7 +347,7 @@ fn send_to_nft_wont_work_after_list() {
 			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
 			collection_id: COLLECTION_ID_0,
 			nft_id: NFT_ID_0,
-      approval_required: false,
+			approval_required: true,
 		}));
 	});
 }
