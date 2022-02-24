@@ -19,6 +19,11 @@ fn stb(s: &str) -> BoundedVec<u8, UniquesStringLimit> {
 	s.as_bytes().to_vec().try_into().unwrap()
 }
 
+/// Turns a string into a BoundedResource
+fn stbr(s: &str) -> BoundedVec<u8, ResourceSymbolLimit> {
+	s.as_bytes().to_vec().try_into().unwrap()
+}
+
 macro_rules! bvec {
 	($( $x:tt )*) => {
 		vec![$( $x )*].try_into().unwrap()
@@ -205,9 +210,9 @@ fn equip_works() {
 		// Add a Base 0 resource (body-1 and left-hand slot) to our character-0 nft
 		assert_ok!(RmrkCore::add_resource(
 			Origin::signed(ALICE),
-			123, // resource_id
 			0, // collection_id
 			0, // nft id
+			stbr("res-1"), // resource_id
 			Some(0), // pub base: BaseId,
 			Some(stb("ipfs://backup-src")), // pub src: BoundedString,
 			None, // metadata
@@ -238,9 +243,9 @@ fn equip_works() {
 		// Add our sword left-hand resource to our sword NFT
 		assert_ok!(RmrkCore::add_resource(
 			Origin::signed(ALICE),
-			777, // resource_id
 			1, // collection id
 			0, // nft id
+			stbr("res-777"), // resource_id
 			Some(0), // pub base: BaseId,
 			Some(stb("ipfs://sword-metadata-left")), // pub src: BoundedString,
 			None, // metadata
@@ -271,8 +276,8 @@ fn equip_works() {
 		// Equipped resource ID Some(777) should now be associated with equippings for character-0 on base 0, slot 201
 		let equipped = RmrkEquip::equippings(((0, 0), 0, 201));
 		assert_eq!(
-			equipped,
-			Some(777)
+			equipped.clone().unwrap(),
+			stbr("res-777"),
 		);
 
 		// Resource for equipped item should exist
@@ -281,9 +286,9 @@ fn equip_works() {
 		// Add our sword left-hand resource to our sword NFT
 		assert_ok!(RmrkCore::add_resource(
 			Origin::signed(ALICE),
-			130, // resource_id
 			1, // collection id
 			0, // nft id
+			stbr("res-130"), // resource_id
 			Some(0), // pub base: BaseId,
 			Some(stb("ipfs://sword-metadata-left")), // pub src: BoundedString,
 			None, // metadata
@@ -296,9 +301,9 @@ fn equip_works() {
 		// Add our sword right-hand resource to our sword NFT
 		assert_ok!(RmrkCore::add_resource(
 			Origin::signed(ALICE),
-			131, // resource_id
 			1, // collection id
 			0, // nft id
+			stbr("res-130"), // resource_id
 			Some(0), // pub base: BaseId,
 			Some(stb("ipfs://sword-metadata-right")), // pub src: BoundedString,
 			None, // metadata

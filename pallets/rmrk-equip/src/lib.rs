@@ -52,6 +52,9 @@ pub use pallet::*;
 
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
+pub type BoundedResource<T> = BoundedVec<u8, <T as pallet_rmrk_core::Config>::ResourceSymbolLimit>;
+
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -93,7 +96,7 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, BaseId>,
 			NMapKey<Blake2_128Concat, SlotId>,
 		),
-		ResourceId,
+		BoundedResource<T>,
 		OptionQuery,
 	>;
 

@@ -32,13 +32,11 @@ pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
-pub type ResourceOf<T> =
-	NewResourceInfo<ResourceId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
-
-// pub type NewResourceOf<T> =
-// 	ResourceType<BaseId, SlotId, ResourceId, PartId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
+pub type ResourceOf<T, R> = NewResourceInfo::<BoundedVec<u8, R>, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
 
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
+
+pub type BoundedResource<R> = BoundedVec<u8, R>;
 
 pub type KeyLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::KeyLimit>;
 
@@ -62,6 +60,10 @@ pub mod pallet {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
 		type MaxRecursions: Get<u32>;
+
+		/// The maximum resource symbol length
+		#[pallet::constant]
+		type ResourceSymbolLimit: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -121,9 +123,10 @@ pub mod pallet {
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
 			NMapKey<Blake2_128Concat, NftId>,
-			NMapKey<Blake2_128Concat, ResourceId>,
+			NMapKey<Blake2_128Concat, BoundedResource<T::ResourceSymbolLimit>>
+			,
 		),
-		ResourceOf<T>,
+		ResourceOf<T, T::ResourceSymbolLimit>,
 		OptionQuery,
 	>;
 
@@ -206,11 +209,11 @@ pub mod pallet {
 		},
 		ResourceAdded {
 			nft_id: NftId,
-			resource_id: ResourceId,
+			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 		},
 		ResourceAccepted {
 			nft_id: NftId,
-			resource_id: ResourceId,
+			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 		},
 		PrioritySet {
 			collection_id: CollectionId,
@@ -471,7 +474,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			resource_id: ResourceId,
+			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 			base: Option<BaseId>,
 			src: Option<BoundedVec<u8, T::StringLimit>>,
 			metadata: Option<BoundedVec<u8, T::StringLimit>>,
@@ -531,7 +534,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			resource_id: ResourceId,
+			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
@@ -539,7 +542,7 @@ pub mod pallet {
 			ensure!(owner == sender, Error::<T>::NoPermission);
 
 			Resources::<T>::try_mutate_exists(
-				(collection_id, nft_id, resource_id),
+				(collection_id, nft_id, resource_id.clone()),
 				|resource| -> DispatchResult {
 					if let Some(res) = resource.into_mut() {
 						res.pending = false;

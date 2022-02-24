@@ -159,7 +159,7 @@ where
 		// Equipper must have a resource that is associated with the provided base ID?
 		// First we iterate through the resources added to this NFT in search of the base ID
 		let mut found_base_resource_on_nft = false;
-		let mut resource_id = 999;
+		let mut resource_id: BoundedResource<T> = b"test-value".to_vec().try_into().unwrap();
 		let resources_matching_base_iter = pallet_rmrk_core::Resources::<T>::iter_prefix_values(
 			(
 				equipper_collection_id,
@@ -215,7 +215,7 @@ where
 
 						// The item being equipped must be have a resource equippable into that base.slot
 						let mut found_base_slot_resource_on_nft = false;
-						let mut to_equip_resource_id = 999;
+						let mut to_equip_resource_id: BoundedResource<T> = b"test-value".to_vec().try_into().unwrap();
 						let resources_matching_base_iter = pallet_rmrk_core::Resources::<T>::iter_prefix_values(
 							(
 								item_collection_id,

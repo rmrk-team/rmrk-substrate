@@ -51,6 +51,7 @@ parameter_types! {
 	pub ClassBondAmount: Balance = 100;
 	pub MaxMetadataLength: u32 = 256;
 	pub const MaxRecursions: u32 = 10;
+	pub const ResourceSymbolLimit: u32 = 10;
 }
 
 impl pallet_rmrk_core::Config for Test {
@@ -58,6 +59,7 @@ impl pallet_rmrk_core::Config for Test {
 	type Event = Event;
 	type ProtocolOrigin = EnsureRoot<AccountId>;
 	type MaxRecursions = MaxRecursions;
+	type ResourceSymbolLimit = ResourceSymbolLimit;
 }
 
 parameter_types! {

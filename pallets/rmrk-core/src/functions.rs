@@ -55,15 +55,15 @@ where
 	}
 }
 
-impl<T: Config> NewResource<StringLimitOf<T>, T::AccountId> for Pallet<T>
+impl<T: Config> NewResource<BoundedVec<u8, T::StringLimit>, T::AccountId, BoundedResource<T::ResourceSymbolLimit>> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
 	fn resource_add(
 		sender: T::AccountId,
-		resource_id: ResourceId,
 		collection_id: CollectionId,
 		nft_id: NftId,
+		resource_id: BoundedResource<T::ResourceSymbolLimit>,
 		base: Option<BaseId>,
 		src: Option<BoundedVec<u8, T::StringLimit>>,
 		metadata: Option<BoundedVec<u8, T::StringLimit>>,
@@ -71,7 +71,7 @@ where
 		license: Option<BoundedVec<u8, T::StringLimit>>,
 		thumb: Option<BoundedVec<u8, T::StringLimit>>,
 		parts: Option<Vec<PartId>>,
-	) -> Result<ResourceId, DispatchError> {
+	) -> Result<BoundedResource<T::ResourceSymbolLimit>, DispatchError> {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
 		// let resource_id = Self::get_next_resource_id()?;
@@ -87,8 +87,8 @@ where
 				thumb.is_none();
 		ensure!(!empty, Error::<T>::EmptyResource);
 
-		let res = NewResourceInfo {
-			id: resource_id,
+		let res = NewResourceInfo::<BoundedVec<u8, T::ResourceSymbolLimit>, BoundedVec<u8, T::StringLimit>> {
+			id: resource_id.clone(),
 			base,
 			src,
 			metadata,
@@ -98,7 +98,7 @@ where
 			parts,
 			pending: root_owner != sender,
 		};
-		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
+		Resources::<T>::insert((collection_id, nft_id, resource_id.clone()), res);
 
 		Ok(resource_id)
 	}
@@ -107,13 +107,13 @@ where
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: ResourceId,
+		resource_id: BoundedResource<T::ResourceSymbolLimit>,
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
 
 		Resources::<T>::try_mutate_exists(
-			(collection_id, nft_id, resource_id),
+			(collection_id, nft_id, resource_id.clone()),
 			|resource| -> DispatchResult {
 				if let Some(res) = resource {
 					res.pending = false;

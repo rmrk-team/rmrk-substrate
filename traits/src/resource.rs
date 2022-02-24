@@ -48,11 +48,11 @@ pub struct OldResourceInfo<ResourceId, BoundedString> {
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct NewResourceInfo<ResourceId, BoundedString> {
+pub struct NewResourceInfo<BoundedResource, BoundedString> {
 	/// id is a 5-character string of reasonable uniqueness.
 	/// The combination of base ID and resource id should be unique across the entire RMRK
 	/// ecosystem which
-	pub id: ResourceId,
+	pub id: BoundedResource,
 
 	/// If resource is sent to non-rootowned NFT, pending will be false and need to be accepted
 	pub pending: bool,
@@ -142,12 +142,12 @@ pub struct NewResourceInfo<ResourceId, BoundedString> {
 
 
 /// Abstraction over a Resource system.
-pub trait NewResource<BoundedString, AccountId> {
+pub trait NewResource<BoundedString, AccountId, BoundedResource> {
 	fn resource_add(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: ResourceId,
+		resource_id: BoundedResource,
 		base: Option<BaseId>,
 		src: Option<BoundedString>,
 		metadata: Option<BoundedString>,
@@ -155,12 +155,12 @@ pub trait NewResource<BoundedString, AccountId> {
 		license: Option<BoundedString>,
 		thumb: Option<BoundedString>,
 		parts: Option<Vec<PartId>>
-	) -> Result<ResourceId, DispatchError>;
+	) -> Result<BoundedResource, DispatchError>;
 	fn accept(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: ResourceId,
+		resource_id: BoundedResource,
 	) -> DispatchResult;
 }
 
