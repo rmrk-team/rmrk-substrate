@@ -334,10 +334,12 @@ parameter_types! {
 	pub const AttributeDepositBase: Balance = 10 * DOLLARS;
 	pub const DepositPerByte: Balance = DOLLARS;
 	pub const UniquesStringLimit: u32 = 128;
+	pub const MaxPartsPerBase: u32 = 100;
 }
 
 impl pallet_rmrk_equip::Config for Runtime {
 	type Event = Event;
+	type MaxPartsPerBase = MaxPartsPerBase;
 }
 
 impl pallet_uniques::Config for Runtime {

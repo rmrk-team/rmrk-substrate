@@ -39,10 +39,14 @@ frame_support::construct_runtime!(
 	}
 );
 
+parameter_types! {
+	pub const MaxPartsPerBase: u32 = 5;
+}
 
 impl pallet_rmrk_equip::Config for Test {
 	// type Currency = Balances;
 	type Event = Event;
+	type MaxPartsPerBase = MaxPartsPerBase;
 	// type ProtocolOrigin = EnsureRoot<AccountId>;
 	// type MaxRecursions = MaxRecursions;
 }

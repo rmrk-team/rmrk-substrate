@@ -52,6 +52,9 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_rmrk_core::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+
+		#[pallet::constant]
+		type MaxPartsPerBase: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -146,6 +149,7 @@ pub mod pallet {
 		NeedsDefaultThemeFirst,
 		AlreadyEquipped,
 		UnknownError,
+		ExceedsMaxPartsPerBase,
 	}
 
 	#[pallet::call]
@@ -234,6 +238,9 @@ pub mod pallet {
 			parts: Vec<NewPartTypes<StringLimitOf<T>>>
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
+			
+			let part_length: u32 = parts.len().try_into().unwrap();
+			ensure!(part_length <= T::MaxPartsPerBase::get(), Error::<T>::ExceedsMaxPartsPerBase);
 
 			let base_id = Self::base_create(sender.clone(), base_type, symbol, parts)?;
 

@@ -60,6 +60,32 @@ fn create_base_works() {
 	});
 }
 
+/// Base: Attempting to create a base with more the max parts fails
+#[test]
+fn exceeding_max_parts_per_base_fails() {
+	ExtBuilder::default().build().execute_with(|| {
+		let mut parts = Vec::<NewPartTypes<BoundedVec<u8, UniquesStringLimit>>>::new();
+		for i in 100..110 {
+			let fixed_part = FixedPart {
+				id: i,
+				z: 0,
+				src: stb("fixed_part_src"),
+			};
+			parts.push(NewPartTypes::FixedPart(fixed_part));
+		}
+		
+		assert_noop!(
+			RmrkEquip::create_base(
+				Origin::signed(ALICE), // origin
+				bvec![0u8; 20], // base_type
+				bvec![0u8; 20], // symbol
+				parts,
+			),
+			Error::<Test>::ExceedsMaxPartsPerBase,
+		);
+	});
+}
+
 /// Base: Basic equip tests
 #[test]
 fn equip_works() {
