@@ -241,37 +241,36 @@ where
 		
 
 	}
+
 	fn do_equippable(
 		issuer: T::AccountId,
 		base_id: BaseId,
-		slot_id: PartId,
+		part_id: PartId,
 		equippables: EquippableList
 	)-> Result<(BaseId, SlotId), DispatchError> {
-		
-		match Bases::<T>::get(base_id) {
-			None => return Err(Error::<T>::BaseDoesntExist.into()),
-			Some(base) => {
-				ensure!(base.issuer == issuer, Error::<T>::PermissionError);
+
+		// Base must exist
+		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);
+
+		// Caller must be issuer of base
+		ensure!(Bases::<T>::get(base_id).unwrap().issuer == issuer, Error::<T>::PermissionError);
+
+		// Part must exist
+		ensure!(Parts::<T>::get(base_id, part_id).is_some(), Error::<T>::PartDoesntExist);
+
+		match Parts::<T>::get(base_id, part_id).unwrap() {
+			NewPartTypes::FixedPart(_) => {
+				// Fixed part has no equippables
+				return Err(Error::<T>::NoEquippableOnFixedPart.into())
+			},
+			NewPartTypes::SlotPart(mut slot_part) => {
+				// Update equippable value
+				slot_part.equippable = equippables;
+				// Overwrite Parts entry for this base_id.part_id
+				Parts::<T>::insert(base_id, part_id, NewPartTypes::SlotPart(slot_part));
+				Ok((base_id, part_id))
 			},
 		}
-
-		let results = match Parts::<T>::get(base_id, slot_id) {
-			None => Err(Error::<T>::PartDoesntExist),
-			Some(part) => {
-				match part {
-					NewPartTypes::FixedPart(_) => {
-						Err(Error::<T>::NoEquippableOnFixedPart)
-					},
-					NewPartTypes::SlotPart(mut slot_part) => {
-						slot_part.equippable = equippables;
-						Parts::<T>::insert(base_id, slot_id, NewPartTypes::SlotPart(slot_part));
-						Ok((base_id, slot_id))
-					},
-				}
-			}
-		}?;
-
-		Ok(results)
 	}
 
 	fn add_theme(
