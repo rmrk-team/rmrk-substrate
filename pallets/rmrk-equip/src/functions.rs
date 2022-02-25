@@ -47,15 +47,15 @@ where
 		Bases::<T>::insert(base_id, base);
 		Ok(base_id)
 	}
+
 	fn do_equip(
-		issuer: T::AccountId, // Maybe don't need?
+		issuer: T::AccountId,
 		item_collection_id: CollectionId,
 		item_nft_id: NftId,
 		equipper_collection_id: CollectionId,
-		
 		equipper_nft_id: NftId,
-		base_id: BaseId, // Maybe BaseId ?
-		slot_id: SlotId, // Maybe SlotId ?
+		base_id: BaseId,
+		slot_id: SlotId,
 	)-> Result<(CollectionId, NftId, BaseId, SlotId, bool), DispatchError> {
 		
 		let item_is_equipped = Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id)).is_some();
@@ -151,137 +151,93 @@ where
 			Error::<T>::MustBeDirectParent
 		);
 
-		// Equipper must have a resource that is associated with the provided base ID?
+		// Equipper must have a resource that is associated with the provided base ID
 		// First we iterate through the resources added to this NFT in search of the base ID
 		let mut found_base_resource_on_nft = false;
-		let mut _resource_id: BoundedResource<T> = b"test-value".to_vec().try_into().unwrap();
 		let resources_matching_base_iter = pallet_rmrk_core::Resources::<T>::iter_prefix_values(
 			(
 				equipper_collection_id,
 				equipper_nft_id,
-				// Some(base_id)
 			)
 		);
 		for resource in resources_matching_base_iter {
 			if resource.base.is_some() {
 				if resource.base.unwrap() == base_id {
 					found_base_resource_on_nft = true;
-					_resource_id = resource.id;
 				}
 			}
-			// match resource {
-			// 	ResourceType::Base(_) => (),
-			// 	ResourceType::Slot(slot_resource) => {
-			// 		// println!("sr: {:?}", slot_resource.base);
-			// 		if slot_resource.base == base_id {
-			// 			found_base_resource_on_nft = true;
-			// 			resource_id = slot_resource.id;
-			// 		}
-			// 	},
-			// }
 		};
 
 		// If we don't find a matching base resource, we raise a NoResourceForThisBaseFoundOnNft error
-		if !found_base_resource_on_nft {
-			return Err(Error::<T>::NoResourceForThisBaseFoundOnNft.into())
-		}
+		ensure!(found_base_resource_on_nft, Error::<T>::NoResourceForThisBaseFoundOnNft);
 
-		// Find the specific Part to equip 
-		let results = match Self::parts(base_id, slot_id) {
-			// Part must exist
-			None => Err(Error::<T>::PartDoesntExist),
-			Some(part_type) => {
-				match part_type {
-					NewPartTypes::FixedPart(_) => {
-						// Part must be SlotPart type
-						Err(Error::<T>::CantEquipFixedPart)
-					},
-					NewPartTypes::SlotPart(v) => {
-						// Collection must be in item's equippable list?
-						match v.equippable {
-							EquippableList::Empty => return Err(Error::<T>::CollectionNotEquippable.into()),
-							EquippableList::All => (),
-							EquippableList::Custom(eq) => {
-								if !eq.contains(&item_collection_id) {
-									return Err(Error::<T>::CollectionNotEquippable.into())
-								}
-							}
-						}
-
-						// The item being equipped must be have a resource equippable into that base.slot
-						let mut found_base_slot_resource_on_nft = false;
-						let mut to_equip_resource_id: BoundedResource<T> = b"test-value".to_vec().try_into().unwrap();
-						let resources_matching_base_iter = pallet_rmrk_core::Resources::<T>::iter_prefix_values(
-							(
-								item_collection_id,
-								item_nft_id,
-								// None::<BaseId>
-							)
-						);
-
-						for resource in resources_matching_base_iter {
-							if resource.base.is_some() && resource.slot.is_some() {
-								if resource.base.unwrap() == base_id && resource.slot.unwrap() == slot_id {
-									found_base_slot_resource_on_nft = true;
-									to_equip_resource_id = resource.id;
-								}
-							}
-
-							// match resource {
-							// 	ResourceType::Base(b) => {
-							// 		if b.base == base_id && b.slot_id == slot_id {
-							// 			found_base_slot_resource_on_nft = true;
-							// 			to_equip_resource_id = b.id;
-							// 		}
-							// 	},
-							// 	ResourceType::Slot(_) => (),
-							// }
-						};
-
-						// Item has no resource to equip into that slot
-						if !found_base_slot_resource_on_nft {
-							return Err(Error::<T>::ItemHasNoResourceToEquipThere.into());
-						}
-
-						// Equip item
-						Equippings::<T>::insert(
-							((equipper_collection_id, equipper_nft_id), base_id, slot_id),
-							to_equip_resource_id
-						);
-
-						// Update item's equipped property
-						pallet_rmrk_core::Nfts::<T>::try_mutate_exists(
-								item_collection_id, 
-								item_nft_id,
-								|nft| -> DispatchResult {
-									if let Some(nft) = nft {
-										nft.equipped = true;
-									}
-									Ok(())
-								},
-							)?;
-
-						// Emit event
-						// Self::deposit_event(Event::SlotEquipped { 
-						// 	collection_id: equipper_collection_id,
-						// 	nft_id: equipper_nft_id,
-						// 	item_collection: item_collection_id,
-						// 	item_nft: item_nft_id,
-						// 	base_id: base_id,
-						// 	slot_id: slot_id,								
-						// });
-						Ok((
-							item_collection_id,
-							item_nft_id,
-							base_id,
-							slot_id,
-							true,
-						))
-					}
+		// The item being equipped must be have a resource that is equippable into that base.slot
+		let mut found_base_slot_resource_on_nft = false;
+		// initialized so the compiler doesn't complain, though it will be overwritten if it resource exists
+		let mut to_equip_resource_id: BoundedResource<T> = b"".to_vec().try_into().unwrap();
+		let resources_matching_base_iter = pallet_rmrk_core::Resources::<T>::iter_prefix_values(
+			(
+				item_collection_id,
+				item_nft_id,
+			)
+		);
+		for resource in resources_matching_base_iter {
+			if resource.base.is_some() && resource.slot.is_some() {
+				if resource.base.unwrap() == base_id && resource.slot.unwrap() == slot_id {
+					found_base_slot_resource_on_nft = true;
+					to_equip_resource_id = resource.id;
 				}
 			}
-		}?;
-		Ok(results)
+		};
+		ensure!(found_base_slot_resource_on_nft, Error::<T>::ItemHasNoResourceToEquipThere);
+
+		// Part must exist
+		ensure!(Self::parts(base_id, slot_id).is_some(), Error::<T>::PartDoesntExist);
+
+		// Returns Result
+		match Self::parts(base_id, slot_id).unwrap() {
+			NewPartTypes::FixedPart(_) => {
+				// Part must be SlotPart type
+				return Err(Error::<T>::CantEquipFixedPart.into());
+			},
+			NewPartTypes::SlotPart(slot_part) => {
+				// Collection must be in item's equippable list
+				match slot_part.equippable {
+					EquippableList::Empty => return Err(Error::<T>::CollectionNotEquippable.into()),
+					EquippableList::All => (),
+					EquippableList::Custom(eq) => {
+						if !eq.contains(&item_collection_id) {
+							return Err(Error::<T>::CollectionNotEquippable.into())
+						}
+					}
+				}
+
+				// Equip item (add to Equippings)
+				Equippings::<T>::insert(
+					((equipper_collection_id, equipper_nft_id), base_id, slot_id),
+					to_equip_resource_id
+				);
+
+				// Update item's equipped property
+				pallet_rmrk_core::Nfts::<T>::try_mutate_exists(
+						item_collection_id, 
+						item_nft_id,
+						|nft| -> DispatchResult {
+							if let Some(nft) = nft {
+								nft.equipped = true;
+							}
+							Ok(())
+						},
+					)?;
+				Ok((
+					item_collection_id,
+					item_nft_id,
+					base_id,
+					slot_id,
+					true,
+				))
+			}
+		}
 		
 
 	}
