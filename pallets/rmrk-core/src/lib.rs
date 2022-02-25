@@ -13,9 +13,7 @@ use sp_std::{convert::TryInto, vec::Vec};
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
 	Priority, Property, 
-	// Resource, 
 	NewResourceInfo, 
-	// ResourceType, 
 	NewResource
 };
 use sp_std::result::Result;
@@ -129,21 +127,6 @@ pub mod pallet {
 		ResourceOf<T, T::ResourceSymbolLimit>,
 		OptionQuery,
 	>;
-
-	// #[pallet::storage]
-	// #[pallet::getter(fn new_resources)]
-	// /// Stores resource info
-	// pub type NewResources<T: Config> = StorageNMap<
-	// 	_,
-	// 	(
-	// 		NMapKey<Blake2_128Concat, CollectionId>,
-	// 		NMapKey<Blake2_128Concat, NftId>,
-	// 		// NMapKey<Blake2_128Concat, Option<BaseId>>,
-	// 		NMapKey<Blake2_128Concat, ResourceId>,
-	// 	),
-	// 	NewResourceOf<T>,
-	// 	OptionQuery,
-	// >;
 
 	#[pallet::storage]
 	#[pallet::getter(fn properties)]
@@ -502,30 +485,6 @@ pub mod pallet {
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
 			Ok(())
 		}
-
-		// /// Create resource
-		// #[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		// #[transactional]
-		// pub fn new_add_resource(
-		// 	origin: OriginFor<T>,
-		// 	collection_id: CollectionId,
-		// 	nft_id: NftId,
-		// 	// base_id: Option<BaseId>,
-		// 	resource: NewResourceInfo<ResourceId, StringLimitOf<T>> 
-		// ) -> DispatchResult {
-		// 	let sender = ensure_signed(origin.clone())?;
-
-		// 	let resource_id = Self::resource_add(
-		// 		sender,
-		// 		collection_id,
-		// 		nft_id,
-		// 		// base_id,
-		// 		resource
-		// 	)?;
-
-		// 	Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
-		// 	Ok(())
-		// }
 
 		/// accept the addition of a new resource to an existing NFT
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]

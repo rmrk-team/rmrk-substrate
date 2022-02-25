@@ -41,15 +41,6 @@ mod tests;
 // Re-export pallet items so that they can be accessed from the crate namespace.
 pub use pallet::*;
 
-// pub type NewResourceOf<T> =
-// 	ResourceType<BaseId, SlotId, ResourceId, PartId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
-
-// pub type NewResourceOf<T> =
-// 	NewResourceInfo<ResourceId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
-
-// pub type ResourceOf<T> =
-// 	NewResourceInfo<ResourceId, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
-
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
 pub type BoundedResource<T> = BoundedVec<u8, <T as pallet_rmrk_core::Config>::ResourceSymbolLimit>;
