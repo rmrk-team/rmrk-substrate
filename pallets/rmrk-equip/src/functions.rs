@@ -34,15 +34,15 @@ where
 	) -> Result<BaseId, DispatchError> {
 		let base_id = Self::get_next_base_id()?;
 		for part in parts.clone() {
-			let mut pid = 0;
+			// let mut pid = 0;
 			match part.clone() {
 				NewPartTypes::SlotPart(p) => {
-					pid = p.id;
-					Parts::<T>::insert(base_id, pid, part);
+					// pid = p.id;
+					Parts::<T>::insert(base_id, p.id, part);
 				},
 				NewPartTypes::FixedPart(p) => {
-					pid = p.id;
-					Parts::<T>::insert(base_id, pid, part);
+					// pid = p.id;
+					Parts::<T>::insert(base_id, p.id, part);
 				}
 			}
 			// let part_id = Self::get_next_part_id(base_id)?;
@@ -159,7 +159,7 @@ where
 		// Equipper must have a resource that is associated with the provided base ID?
 		// First we iterate through the resources added to this NFT in search of the base ID
 		let mut found_base_resource_on_nft = false;
-		let mut resource_id: BoundedResource<T> = b"test-value".to_vec().try_into().unwrap();
+		let mut _resource_id: BoundedResource<T> = b"test-value".to_vec().try_into().unwrap();
 		let resources_matching_base_iter = pallet_rmrk_core::Resources::<T>::iter_prefix_values(
 			(
 				equipper_collection_id,
@@ -171,7 +171,7 @@ where
 			if resource.base.is_some() {
 				if resource.base.unwrap() == base_id {
 					found_base_resource_on_nft = true;
-					resource_id = resource.id;
+					_resource_id = resource.id;
 				}
 			}
 			// match resource {
@@ -197,7 +197,7 @@ where
 			None => Err(Error::<T>::PartDoesntExist),
 			Some(part_type) => {
 				match part_type {
-					NewPartTypes::FixedPart(v) => {
+					NewPartTypes::FixedPart(_) => {
 						// Part must be SlotPart type
 						Err(Error::<T>::CantEquipFixedPart)
 					},
@@ -308,9 +308,8 @@ where
 			None => Err(Error::<T>::PartDoesntExist),
 			Some(part) => {
 				match part {
-					NewPartTypes::FixedPart(fixed_part) => {
+					NewPartTypes::FixedPart(_) => {
 						Err(Error::<T>::NoEquippableOnFixedPart)
-
 					},
 					NewPartTypes::SlotPart(mut slot_part) => {
 						slot_part.equippable = equippables;

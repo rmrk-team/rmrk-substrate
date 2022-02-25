@@ -15,16 +15,13 @@ use rmrk_traits::{
 	BaseInfo, 
 	Base, 
 	NewPartTypes, 
-	FixedPart,
-	SlotPart, 
-	// ComposableResource, 
-	// NoncomposableResource, 
+	// FixedPart,
+	// SlotPart, 
 	AccountIdOrCollectionNftTuple, 
-	// ResourceType,
-	PartInfo,
+	// PartInfo,
 	EquippableList,
 	Theme,
-	ThemeProperty
+	// ThemeProperty
 	};
 
 mod functions;
@@ -222,7 +219,7 @@ pub mod pallet {
 		pub fn theme_add(origin: OriginFor<T>, base_id: BaseId, theme: Theme<BoundedVec<u8, T::StringLimit>>) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let theme_id = Self::add_theme(sender, base_id, theme)?;
+			let _theme_id = Self::add_theme(sender, base_id, theme)?;
 
 			// Self::deposit_event(Event::SomethingStored(something, sender));
 			Ok(())

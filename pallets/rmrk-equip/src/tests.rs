@@ -1,16 +1,11 @@
-use frame_support::{
-	assert_noop, 
-	assert_ok, 
-	// error::BadOrigin
-};
-use sp_runtime::Permill;
-
 use super::*;
+
+use rmrk_traits::{FixedPart, SlotPart, ThemeProperty};
+
+use frame_support::{assert_noop, assert_ok};
+use sp_runtime::Permill;
 use mock::{Event as MockEvent, *};
-use pallet_uniques as UNQ;
-
-use sp_std::{convert::TryInto, vec::Vec};
-
+use sp_std::convert::TryInto;
 type RMRKEquip = Pallet<Test>;
 
 /// Turns a string into a BoundedVec
@@ -51,7 +46,7 @@ fn create_base_works() {
 			]),
 		};
 
-		RmrkEquip::create_base(
+		assert_ok!(RmrkEquip::create_base(
 			Origin::signed(ALICE), // origin
 			bvec![0u8; 20], // base_type
 			bvec![0u8; 20], // symbol
@@ -59,7 +54,7 @@ fn create_base_works() {
 				NewPartTypes::FixedPart(fixed_part),
 				NewPartTypes::SlotPart(slot_part),
 				],
-		);
+		));
 
 		// println!("{:?}", RmrkEquip::bases(0).unwrap());
 	});
@@ -103,7 +98,7 @@ fn equip_works() {
 			]),
 		};
 		// Let's create a base with these 4 parts
-		RmrkEquip::create_base(
+		assert_ok!(RmrkEquip::create_base(
 			Origin::signed(ALICE), // origin
 			stb("svg"), // base_type
 			stb("KANPEOPLE"), // symbol
@@ -113,63 +108,63 @@ fn equip_works() {
 				NewPartTypes::SlotPart(slot_part_left_hand),
 				NewPartTypes::SlotPart(slot_part_right_hand),
 				],
-		);
+		));
 
 		// Create collection 0
-		RmrkCore::create_collection(
+		assert_ok!(RmrkCore::create_collection(
 			Origin::signed(ALICE),
 			stb("ipfs://col0-metadata"), // metadata
 			Some(5), // max
 			stb("COL1") // symbol
-		);
+		));
 
 		// Create collection 1
-		RmrkCore::create_collection(
+		assert_ok!(RmrkCore::create_collection(
 			Origin::signed(ALICE),
 			stb("ipfs://col1-metadata"), // metadata
 			Some(5), // max
 			stb("COL2") // symbol
-		);
+		));
 
 		// Mint NFT 0 from collection 0 (character-0)
-		RmrkCore::mint_nft(
+		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE, // owner
 			0, // collection ID
 			Some(ALICE), // recipient
 			Some(Permill::from_float(1.525)), // royalties
 			stb("ipfs://character-0-metadata"), // metadata
-		);
+		));
 
 		// Mint NFT 1 from collection 0 (character-1)
-		RmrkCore::mint_nft(
+		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE, // owner
 			0, // collection ID
 			Some(ALICE), // recipient
 			Some(Permill::from_float(1.525)), // royalties
 			stb("ipfs://character-1-metadata"), // metadata
-		);
+		));
 
 		// Mint NFT 0 from collection 1 (sword)
-		RmrkCore::mint_nft(
+		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE, // owner
 			1, // collection ID
 			Some(ALICE), // recipient
 			Some(Permill::from_float(1.525)), // royalties
 			stb("ipfs://sword-metadata"), // metadata
-		);
+		));
 
 		// Mint NFT 1 from collection 1 (flashlight)
-		RmrkCore::mint_nft(
+		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			ALICE, // owner
 			1, // collection ID
 			Some(ALICE), // recipient
 			Some(Permill::from_float(1.525)), // royalties
 			stb("ipfs://flashlight-metadata"), // metadata
-		);
+		));
 
 		// Attempt to equip sword should fail as character-0 doesn't own sword
 		assert_noop!(
@@ -429,7 +424,7 @@ fn equippable_works() {
 			])
 		};
 		// Let's create a base with these 4 parts
-		RmrkEquip::create_base(
+		assert_ok!(RmrkEquip::create_base(
 			Origin::signed(ALICE), // origin
 			stb("svg"), // base_type
 			stb("KANPEOPLE"), // symbol
@@ -439,7 +434,7 @@ fn equippable_works() {
 				NewPartTypes::SlotPart(slot_part_left_hand),
 				NewPartTypes::SlotPart(slot_part_right_hand),
 				],
-		);
+		));
 
 		// equippable extrinsic should work
 		assert_ok!(RmrkEquip::equippable(
