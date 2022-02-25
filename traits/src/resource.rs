@@ -5,7 +5,7 @@ use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
 use sp_std::cmp::Eq;
 use sp_std::{vec::Vec};
-// use serde::{Serialize, Deserialize};
+use serde::{Serialize, Deserialize};
 
 use crate::primitives::*;
 use sp_std::result::Result;
