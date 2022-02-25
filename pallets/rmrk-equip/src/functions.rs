@@ -278,17 +278,11 @@ where
 		base_id: BaseId,
 		theme: Theme<BoundedVec<u8, T::StringLimit>>,
 	) -> Result<(), DispatchError> {
-		// Check the referenced base exists
-		ensure!(
-			Bases::<T>::get(base_id).is_some(),
-			Error::<T>::BaseDoesntExist
-		);
+		// Base must exist
+		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);
 
-		// Check the sender of the tx is the issuer of the base
-		ensure!(
-			Bases::<T>::get(base_id).unwrap().issuer == issuer,
-			Error::<T>::PermissionError
-		);
+		// Sender must be issuer of the base
+		ensure!(Bases::<T>::get(base_id).unwrap().issuer == issuer, Error::<T>::PermissionError);
 
 		// The string "default" as a BoundedVec
 		let default_as_bv: BoundedVec<u8, T::StringLimit> = "default".as_bytes().to_vec().try_into().unwrap();
@@ -298,8 +292,6 @@ where
 
 		// If either the default theme doesn't already exist, nor is it currently being passed, we fail
 		ensure!(def_count >= 1 || theme.name == default_as_bv, Error::<T>::NeedsDefaultThemeFirst);
-
-		// TODO check length of properties against some maximum
 
 		// Iterate through each property
 		for prop in theme.properties {

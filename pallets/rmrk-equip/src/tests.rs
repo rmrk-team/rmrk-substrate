@@ -668,3 +668,85 @@ fn theme_add_works() {
 
 	});
 }
+
+
+/// Theme add fails when too many properties
+#[test]
+fn theme_add_too_many_properties_fails() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Build a base
+		assert_ok!(RmrkEquip::create_base(
+			Origin::signed(ALICE), // origin
+			bvec![0u8; 20], // base_type
+			bvec![0u8; 20], // symbol
+			vec![],
+		));
+
+		// Define a default theme with too many properties (10)
+		let default_theme = Theme {
+			name: stb("default"),
+			properties: vec![
+				ThemeProperty {
+					key: stb("1"),
+					value: stb("red"),
+					inherit: None,
+				},
+				ThemeProperty {
+					key: stb("2"),
+					value: stb("blue"),
+					inherit: None,
+				},
+				ThemeProperty {
+					key: stb("3"),
+					value: stb("red"),
+					inherit: None,
+				},
+				ThemeProperty {
+					key: stb("4"),
+					value: stb("blue"),
+					inherit: None,
+				},
+				ThemeProperty {
+					key: stb("5"),
+					value: stb("red"),
+					inherit: None,
+				},
+				ThemeProperty {
+					key: stb("6"),
+					value: stb("blue"),
+					inherit: None,
+				},
+				ThemeProperty {
+					key: stb("7"),
+					value: stb("red"),
+					inherit: None,
+				},
+				ThemeProperty {
+					key: stb("8"),
+					value: stb("blue"),
+					inherit: None,
+				},
+				ThemeProperty {
+					key: stb("9"),
+					value: stb("red"),
+					inherit: None,
+				},
+				ThemeProperty {
+					key: stb("10"),
+					value: stb("blue"),
+					inherit: None,
+				}
+			]
+		};
+
+		// Add default theme to base should fail (too many properties)
+		assert_noop!(
+			RmrkEquip::theme_add(
+				Origin::signed(ALICE),
+				0, // BaseID
+				default_theme
+			),
+			Error::<Test>::TooManyProperties
+		);
+	});
+}

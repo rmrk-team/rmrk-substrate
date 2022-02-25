@@ -55,6 +55,9 @@ pub mod pallet {
 
 		#[pallet::constant]
 		type MaxPartsPerBase: Get<u32>;
+
+		#[pallet::constant]
+		type MaxPropertiesPerTheme: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -150,6 +153,7 @@ pub mod pallet {
 		AlreadyEquipped,
 		UnknownError,
 		ExceedsMaxPartsPerBase,
+		TooManyProperties
 	}
 
 	#[pallet::call]
@@ -214,14 +218,17 @@ pub mod pallet {
 				equippables,
 			)?;
 
+
 			Self::deposit_event(Event::EquippablesUpdated {base_id, slot_id});
 			Ok(())
 		}
 
-		/// TODO: add a new theme to a base
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn theme_add(origin: OriginFor<T>, base_id: BaseId, theme: Theme<BoundedVec<u8, T::StringLimit>>) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
+
+			let number_of_properties: u32 = theme.properties.len().try_into().unwrap();
+			ensure!(number_of_properties <= T::MaxPropertiesPerTheme::get(), Error::<T>::TooManyProperties);
 
 			let _theme_id = Self::add_theme(sender, base_id, theme)?;
 

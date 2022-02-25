@@ -335,11 +335,13 @@ parameter_types! {
 	pub const DepositPerByte: Balance = DOLLARS;
 	pub const UniquesStringLimit: u32 = 128;
 	pub const MaxPartsPerBase: u32 = 100;
+	pub const MaxPropertiesPerTheme: u32 = 100;
 }
 
 impl pallet_rmrk_equip::Config for Runtime {
 	type Event = Event;
 	type MaxPartsPerBase = MaxPartsPerBase;
+	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
 }
 
 impl pallet_uniques::Config for Runtime {
