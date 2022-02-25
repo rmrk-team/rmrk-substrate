@@ -1,4 +1,8 @@
-use frame_support::{assert_noop, assert_ok, error::BadOrigin};
+use frame_support::{
+	assert_noop,
+	assert_ok,
+	// error::BadOrigin
+};
 // use sp_runtime::AccountId32;
 use sp_runtime::Permill;
 // use crate::types::ClassType;
