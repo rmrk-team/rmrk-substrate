@@ -12,7 +12,7 @@ use sp_std::result::Result;
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct NewResourceInfo<BoundedResource, BoundedString> {
+pub struct ResourceInfo<BoundedResource, BoundedString> {
 	/// id is a 5-character string of reasonable uniqueness.
 	/// The combination of base ID and resource id should be unique across the entire RMRK
 	/// ecosystem which
@@ -49,7 +49,7 @@ pub struct NewResourceInfo<BoundedResource, BoundedString> {
 }
 
 /// Abstraction over a Resource system.
-pub trait NewResource<BoundedString, AccountId, BoundedResource> {
+pub trait Resource<BoundedString, AccountId, BoundedResource> {
 	fn resource_add(
 		sender: AccountId,
 		collection_id: CollectionId,

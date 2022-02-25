@@ -13,8 +13,8 @@ use sp_std::{convert::TryInto, vec::Vec};
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
 	Priority, Property, 
-	NewResourceInfo, 
-	NewResource
+	ResourceInfo, 
+	Resource
 };
 use sp_std::result::Result;
 
@@ -30,7 +30,7 @@ pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
-pub type ResourceOf<T, R> = NewResourceInfo::<BoundedVec<u8, R>, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
+pub type ResourceOf<T, R> = ResourceInfo::<BoundedVec<u8, R>, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
 
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
