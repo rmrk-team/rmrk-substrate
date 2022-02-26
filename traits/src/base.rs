@@ -88,10 +88,8 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
 ) -> Result<BaseId, DispatchError>;
 	fn do_equip(
 		issuer: AccountId, // Maybe don't need?
-		equipping_item_collection_id: CollectionId,
-		equipping_item_nft_id: NftId,
-		equipper_collection_id: CollectionId,
-		equipper_nft_id: NftId,
+		item: (CollectionId, NftId),
+		equipper: (CollectionId, NftId),
 		base_id: BaseId, // Maybe BaseId ?
 		slot: SlotId // Maybe SlotId ?
 )-> Result<(CollectionId, NftId, BaseId, SlotId, bool), DispatchError>;

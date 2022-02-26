@@ -196,10 +196,8 @@ fn equip_works() {
 		assert_noop!(
 			RmrkEquip::equip(
 				Origin::signed(ALICE), // Signer
-				1, // Item CollectionId
-				0, // Item NftId
-				0, // Equipper CollectionId
-				0, // Equipper NftId
+				(1, 0), // item
+				(0, 0), // equipper
 				0, // BaseId
 				201, // SlotId
 			),
@@ -218,10 +216,8 @@ fn equip_works() {
 		assert_noop!(
 			RmrkEquip::equip(
 				Origin::signed(ALICE), // Signer
-				1, // Item CollectionId
-				0, // Item NftId
-				0, // Equipper CollectionId
-				0, // Equipper NftId
+				(1, 0), // item
+				(0, 0), // equipper
 				0, // BaseId
 				201, // SlotId
 			),
@@ -250,10 +246,8 @@ fn equip_works() {
 		assert_noop!(
 			RmrkEquip::equip(
 				Origin::signed(ALICE), // Signer
-				1, // Item CollectionId
-				0, // Item NftId
-				0, // Equipper CollectionId
-				0, // Equipper NftId
+				(1, 0), // item
+				(0, 0), // equipper
 				0, // BaseId
 				201, // SlotId
 			),
@@ -279,10 +273,8 @@ fn equip_works() {
 		// Equipping should now work
 		assert_ok!(RmrkEquip::equip(
 			Origin::signed(ALICE), // Signer
-			1, // Item CollectionId
-			0, // Item NftId
-			0, // Equipper CollectionId
-			0, // Equipper NftId
+			(1, 0), // item
+			(0, 0), // equipper
 			0, // BaseId
 			201, // SlotId
 		));
@@ -338,10 +330,8 @@ fn equip_works() {
 		assert_noop!(
 			RmrkEquip::equip(
 				Origin::signed(ALICE), // Signer
-				1, // Item CollectionId
-				0, // Item NftId
-				0, // Equipper CollectionId
-				0, // Equipper NftId
+				(1, 0), // item
+				(0, 0), // equipper
 				0, // BaseId
 				202, // SlotId
 			),
@@ -352,10 +342,8 @@ fn equip_works() {
 		assert_ok!(
 			RmrkEquip::equip(
 				Origin::signed(ALICE), // Signer
-				1, // Item CollectionId
-				0, // Item NftId
-				0, // Equipper CollectionId
-				0, // Equipper NftId
+				(1, 0), // item
+				(0, 0), // equipper
 				0, // BaseId
 				201, // SlotId
 			)
@@ -372,10 +360,8 @@ fn equip_works() {
 		assert_ok!(
 			RmrkEquip::equip(
 				Origin::signed(ALICE), // Signer
-				1, // Item CollectionId
-				0, // Item NftId
-				0, // Equipper CollectionId
-				0, // Equipper NftId
+				(1, 0), // item
+				(0, 0), // equipper
 				0, // BaseId
 				201, // SlotId
 			)
@@ -386,10 +372,8 @@ fn equip_works() {
 		assert_ok!(
 			RmrkEquip::equip(
 				Origin::signed(ALICE), // Signer
-				1, // Item CollectionId
-				0, // Item NftId
-				0, // Equipper CollectionId
-				0, // Equipper NftId
+				(1, 0), // item
+				(0, 0), // equipper
 				0, // BaseId
 				201, // SlotId
 			)
@@ -399,10 +383,8 @@ fn equip_works() {
 		assert_ok!(
 			RmrkEquip::equip(
 				Origin::signed(ALICE), // Signer
-				1, // Item CollectionId
-				0, // Item NftId
-				0, // Equipper CollectionId
-				0, // Equipper NftId
+				(1, 0), // item
+				(0, 0), // equipper
 				0, // BaseId
 				202, // SlotId
 			)

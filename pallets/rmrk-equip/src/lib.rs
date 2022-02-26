@@ -165,10 +165,8 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn equip(
 			origin: OriginFor<T>,
-			equipping_item_collection_id: CollectionId,
-			equipping_item_nft_id: NftId,
-			equipper_collection_id: CollectionId,
-			equipper_nft_id: NftId,
+			item: (CollectionId, NftId),
+			equipper: (CollectionId, NftId),
 			base: BaseId,
 			slot: SlotId) -> DispatchResult {
 
@@ -176,10 +174,8 @@ pub mod pallet {
 
 			let (collection_id, nft_id, base_id, slot_id, equipped) = Self::do_equip(
 				sender.clone(),
-				equipping_item_collection_id,
-				equipping_item_nft_id,
-				equipper_collection_id,
-				equipper_nft_id,
+				item,
+				equipper,
 				base,
 				slot
 			)?;

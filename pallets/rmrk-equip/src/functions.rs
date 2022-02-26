@@ -50,14 +50,17 @@ where
 
 	fn do_equip(
 		issuer: T::AccountId,
-		item_collection_id: CollectionId,
-		item_nft_id: NftId,
-		equipper_collection_id: CollectionId,
-		equipper_nft_id: NftId,
+		item: (CollectionId, NftId),
+		equipper: (CollectionId, NftId),
 		base_id: BaseId,
 		slot_id: SlotId,
 	)-> Result<(CollectionId, NftId, BaseId, SlotId, bool), DispatchError> {
-		
+
+		let item_collection_id = item.0;
+		let item_nft_id = item.1;
+		let equipper_collection_id = equipper.0;
+		let equipper_nft_id = equipper.1;
+
 		let item_is_equipped = Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id)).is_some();
 		let item_exists = pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id).is_some();
 		
