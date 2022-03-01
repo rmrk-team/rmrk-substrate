@@ -4,7 +4,7 @@ use sp_runtime::{RuntimeDebug, DispatchError};
 use crate::primitives::{BaseId, SlotId};
 use sp_std::{vec::Vec};
 use super::theme::{Theme};
-use super::part::{NewPartTypes, EquippableList};
+use super::part::{PartType, EquippableList};
 
 
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
@@ -17,7 +17,7 @@ pub struct BaseInfo<AccountId, BoundedString> {
 	/// User provided symbol during Base creation
 	pub symbol: BoundedString,
 	/// Parts, full list of both Fixed and Slot parts
-	pub parts: Vec<NewPartTypes<BoundedString>>,
+	pub parts: Vec<PartType<BoundedString>>,
 }
 
 // Abstraction over a Base system.
@@ -26,7 +26,7 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
 		issuer: AccountId,
 		base_type: BoundedString,
 		symbol: BoundedString,
-		parts: Vec<NewPartTypes<BoundedString>>
+		parts: Vec<PartType<BoundedString>>
 ) -> Result<BaseId, DispatchError>;
 	fn do_equip(
 		issuer: AccountId, // Maybe don't need?

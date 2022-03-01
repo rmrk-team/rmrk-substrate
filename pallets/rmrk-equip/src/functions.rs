@@ -30,15 +30,15 @@ where
 		issuer: T::AccountId,
 		base_type: StringLimitOf<T>,
 		symbol: StringLimitOf<T>,
-		parts: Vec<NewPartTypes<StringLimitOf<T>>>,
+		parts: Vec<PartType<StringLimitOf<T>>>,
 	) -> Result<BaseId, DispatchError> {
 		let base_id = Self::get_next_base_id()?;
 		for part in parts.clone() {
 			match part.clone() {
-				NewPartTypes::SlotPart(p) => {
+				PartType::SlotPart(p) => {
 					Parts::<T>::insert(base_id, p.id, part);
 				},
-				NewPartTypes::FixedPart(p) => {
+				PartType::FixedPart(p) => {
 					Parts::<T>::insert(base_id, p.id, part);
 				}
 			}
@@ -199,11 +199,11 @@ where
 
 		// Returns Result
 		match Self::parts(base_id, slot_id).unwrap() {
-			NewPartTypes::FixedPart(_) => {
+			PartType::FixedPart(_) => {
 				// Part must be SlotPart type
 				return Err(Error::<T>::CantEquipFixedPart.into());
 			},
-			NewPartTypes::SlotPart(slot_part) => {
+			PartType::SlotPart(slot_part) => {
 				// Collection must be in item's equippable list
 				match slot_part.equippable {
 					EquippableList::Empty => return Err(Error::<T>::CollectionNotEquippable.into()),
@@ -262,15 +262,15 @@ where
 		ensure!(Parts::<T>::get(base_id, part_id).is_some(), Error::<T>::PartDoesntExist);
 
 		match Parts::<T>::get(base_id, part_id).unwrap() {
-			NewPartTypes::FixedPart(_) => {
+			PartType::FixedPart(_) => {
 				// Fixed part has no equippables
 				return Err(Error::<T>::NoEquippableOnFixedPart.into())
 			},
-			NewPartTypes::SlotPart(mut slot_part) => {
+			PartType::SlotPart(mut slot_part) => {
 				// Update equippable value
 				slot_part.equippable = equippables;
 				// Overwrite Parts entry for this base_id.part_id
-				Parts::<T>::insert(base_id, part_id, NewPartTypes::SlotPart(slot_part));
+				Parts::<T>::insert(base_id, part_id, PartType::SlotPart(slot_part));
 				Ok((base_id, part_id))
 			},
 		}

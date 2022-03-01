@@ -11,7 +11,7 @@ pub mod theme;
 
 pub use base::{BaseInfo, Base};
 pub use theme::{Theme, ThemeProperty};
-pub use part::{NewPartTypes, FixedPart, SlotPart, EquippableList};
+pub use part::{PartType, FixedPart, SlotPart, EquippableList};
 // pub use part::{PartInfo};
 pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo};

@@ -14,7 +14,7 @@ use rmrk_traits::{
 	primitives::*, 
 	BaseInfo, 
 	Base, 
-	NewPartTypes, 
+	PartType, 
 	// FixedPart,
 	// SlotPart, 
 	AccountIdOrCollectionNftTuple, 
@@ -70,7 +70,7 @@ pub mod pallet {
 	#[pallet::getter(fn parts)]
 	/// Stores bases info
 	pub type Parts<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, NewPartTypes<StringLimitOf<T>>>;
+		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, PartType<StringLimitOf<T>>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn next_base_id)]
@@ -238,7 +238,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,
 			symbol: BoundedVec<u8, T::StringLimit>,
-			parts: Vec<NewPartTypes<StringLimitOf<T>>>
+			parts: Vec<PartType<StringLimitOf<T>>>
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 			

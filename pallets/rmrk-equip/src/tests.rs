@@ -51,8 +51,8 @@ fn create_base_works() {
 			bvec![0u8; 20], // base_type
 			bvec![0u8; 20], // symbol
 			vec![
-				NewPartTypes::FixedPart(fixed_part),
-				NewPartTypes::SlotPart(slot_part),
+				PartType::FixedPart(fixed_part),
+				PartType::SlotPart(slot_part),
 				],
 		));
 
@@ -64,14 +64,14 @@ fn create_base_works() {
 #[test]
 fn exceeding_max_parts_per_base_fails() {
 	ExtBuilder::default().build().execute_with(|| {
-		let mut parts = Vec::<NewPartTypes<BoundedVec<u8, UniquesStringLimit>>>::new();
+		let mut parts = Vec::<PartType<BoundedVec<u8, UniquesStringLimit>>>::new();
 		for i in 100..110 {
 			let fixed_part = FixedPart {
 				id: i,
 				z: 0,
 				src: stb("fixed_part_src"),
 			};
-			parts.push(NewPartTypes::FixedPart(fixed_part));
+			parts.push(PartType::FixedPart(fixed_part));
 		}
 		
 		assert_noop!(
@@ -129,10 +129,10 @@ fn equip_works() {
 			stb("svg"), // base_type
 			stb("KANPEOPLE"), // symbol
 			vec![
-				NewPartTypes::FixedPart(fixed_part_body_1),
-				NewPartTypes::FixedPart(fixed_part_body_2),
-				NewPartTypes::SlotPart(slot_part_left_hand),
-				NewPartTypes::SlotPart(slot_part_right_hand),
+				PartType::FixedPart(fixed_part_body_1),
+				PartType::FixedPart(fixed_part_body_2),
+				PartType::SlotPart(slot_part_left_hand),
+				PartType::SlotPart(slot_part_right_hand),
 				],
 		));
 
@@ -437,10 +437,10 @@ fn equippable_works() {
 			stb("svg"), // base_type
 			stb("KANPEOPLE"), // symbol
 			vec![
-				NewPartTypes::FixedPart(fixed_part_body_1),
-				NewPartTypes::FixedPart(fixed_part_body_2),
-				NewPartTypes::SlotPart(slot_part_left_hand),
-				NewPartTypes::SlotPart(slot_part_right_hand),
+				PartType::FixedPart(fixed_part_body_1),
+				PartType::FixedPart(fixed_part_body_2),
+				PartType::SlotPart(slot_part_left_hand),
+				PartType::SlotPart(slot_part_right_hand),
 				],
 		));
 
@@ -467,7 +467,7 @@ fn equippable_works() {
 		};
 		assert_eq!(
 			RmrkEquip::parts(0, 202).unwrap(),
-			NewPartTypes::SlotPart(should_be)
+			PartType::SlotPart(should_be)
 		);
 
 		// Should not be able to change equippable on non-existent base

@@ -30,7 +30,7 @@ pub struct SlotPart<BoundedString> {
 
 // #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
-pub enum NewPartTypes<BoundedString> {
+pub enum PartType<BoundedString> {
 	FixedPart(FixedPart<BoundedString>),
 	SlotPart(SlotPart<BoundedString>), 
 }
