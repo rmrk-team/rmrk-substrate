@@ -92,7 +92,6 @@ impl pallet_balances::Config for Test {
 }
 
 parameter_types! {
-	pub ClassBondAmount: Balance = 100;
 	pub MaxMetadataLength: u32 = 256;
 	pub const MaxRecursions: u32 = 10;
 }

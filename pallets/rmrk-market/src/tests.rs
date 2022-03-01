@@ -213,7 +213,7 @@ fn buy_wont_work_after_list_expires() {
 }
 
 #[test]
-fn buy_wont_work_if_traded_after_list() {
+fn send_wont_work_if_sent_after_list() {
 	new_test_ext().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
@@ -246,36 +246,28 @@ fn buy_wont_work_if_traded_after_list() {
 			),
 			Error::<Test>::CannotBuyOwnToken
 		);
-		// ALICE sends CHARLIE NFT [0,0]
-		assert_ok!(RmrkCore::send(
-			Origin::signed(ALICE),
-			COLLECTION_ID_0,
-			NFT_ID_0,
-			AccountIdOrCollectionNftTuple::AccountId(CHARLIE),
-		));
-		// Successful send to NFT triggers NFTSent event
-		System::assert_last_event(MockEvent::RmrkCore(pallet_rmrk_core::Event::NFTSent {
-			sender: ALICE,
-			recipient: AccountIdOrCollectionNftTuple::AccountId(CHARLIE),
-			collection_id: COLLECTION_ID_0,
-			nft_id: NFT_ID_0,
-			approval_required: false,
-		}));
+		// TODO: NFT Lock Tests Ensure ALICE cannot sends CHARLIE NFT [0,0] bc it is now locked
 		// BOB buys the NFT and the NFT is transferred from ALICE to BOB
-		assert_noop!(RmrkMarket::buy(
+		assert_ok!(RmrkMarket::buy(
 			Origin::signed(BOB),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			),
-			Error::<Test>::TokenNotForSale,
-		);
-		// Ensure Charlie is the still new owner of NFT (0,0)
-		assert_eq!(Uniques::owner(COLLECTION_ID_0, NFT_ID_0), Some(CHARLIE));
+		));
+		// Bought NFT should trigger TokenSold event
+		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenSold {
+			owner: ALICE,
+			buyer: BOB,
+			collection_id: 0,
+			nft_id: 0,
+			price: 10u128,
+		}));
+		// Ensure BOB is the still new owner of NFT (0,0)
+		assert_eq!(Uniques::owner(COLLECTION_ID_0, NFT_ID_0), Some(BOB));
 	});
 }
 
 #[test]
-fn buy_wont_work_if_traded_to_nft_after_list() {
+fn send_to_nft_wont_work_after_list() {
 	new_test_ext().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
@@ -309,29 +301,38 @@ fn buy_wont_work_if_traded_to_nft_after_list() {
 			),
 			Error::<Test>::CannotBuyOwnToken
 		);
-		// ALICE sends NFT [0,0] to NFT [0.1]
+		// TODO: NFT Lock Tests ALICE sends NFT [0,0] to NFT [0,1] won't work
+		// BOB buys the NFT and the NFT is transferred from ALICE to BOB
+		assert_ok!(RmrkMarket::buy(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+		));
+		// Bought NFT should trigger TokenSold event
+		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenSold {
+			owner: ALICE,
+			buyer: BOB,
+			collection_id: 0,
+			nft_id: 0,
+			price: 10u128,
+		}));
+		// Ensure BOB is the still new owner of NFT [0,0]
+		assert_eq!(Uniques::owner(COLLECTION_ID_0, NFT_ID_0), Some(BOB));
+		// BOB can now send NFT [0,0] to NFT [0,1] since NFT is not locked
 		assert_ok!(RmrkCore::send(
-			Origin::signed(ALICE),
+			Origin::signed(BOB),
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
 		));
-		// Successful send to NFT triggers NFTSent event
+		// Successful send triggers NFTSent event
 		System::assert_last_event(MockEvent::RmrkCore(pallet_rmrk_core::Event::NFTSent {
-			sender: ALICE,
+			sender: BOB,
 			recipient: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
 			collection_id: COLLECTION_ID_0,
 			nft_id: NFT_ID_0,
-			approval_required: false,
+			approval_required: true,
 		}));
-		// BOB buys the NFT and the NFT is transferred from ALICE to BOB
-		assert_noop!(RmrkMarket::buy(
-			Origin::signed(BOB),
-			COLLECTION_ID_0,
-			NFT_ID_0,
-			),
-			Error::<Test>::TokenNotForSale,
-		);
 	});
 }
 
@@ -783,13 +784,5 @@ fn accept_expired_offer_wont_works() {
 			Error::<Test>::OfferHasExpired
 		);
 
-	});
-}
-
-#[test]
-fn it_works_for_default_value() {
-	new_test_ext().execute_with(|| {
-		// TODO: test cases
-		assert_eq!(1, 1);
 	});
 }

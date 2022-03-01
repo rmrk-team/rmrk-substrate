@@ -237,6 +237,7 @@ pub mod pallet {
 		ResourceAlreadyExists,
 		EmptyResource,
 		TooManyRecursions,
+		NftIsLocked,
 		CannotAcceptNonOwnedNft,
 		CannotRejectNonOwnedNft,
 	}

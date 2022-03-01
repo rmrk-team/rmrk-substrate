@@ -18,6 +18,7 @@ where
 		nft_id: NftId,
 		priorities: Vec<Vec<u8>>,
 	) -> DispatchResult {
+		// TODO : Check NFT lock status
 		let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
 		for priority in priorities {
 			let bounded_priority = Self::to_bounded_string(priority)?;
@@ -44,6 +45,7 @@ where
 			Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		if let Some(nft_id) = &maybe_nft_id {
+			// TODO: Check NFT lock status
 			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id)?;
 			ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
 		}
@@ -75,6 +77,7 @@ where
 			Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
 			Error::<T>::ResourceAlreadyExists
 		);
+		// TODO: Check NFT lock status
 
 		let empty =
 			base.is_none() &&
@@ -106,6 +109,7 @@ where
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
+		// TODO: Check NFT lock status
 
 		Resources::<T>::try_mutate_exists(
 			(collection_id, nft_id, resource_id),
@@ -263,6 +267,8 @@ where
 		// Get NFT info
 		let mut sending_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+
+		// TODO: Check NFT lock status
 		
 		// Needs to be pending if the sending to an account or to a non-owned NFT
 		let mut approval_required = true;

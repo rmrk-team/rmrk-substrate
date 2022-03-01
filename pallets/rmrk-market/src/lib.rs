@@ -100,7 +100,7 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		/// The price for a token was updated \[owner, collection_id, nft_id, price\]
+		/// The price for a token was updated
 		TokenPriceUpdated {
 			owner: T::AccountId,
 			collection_id: CollectionId,
@@ -108,7 +108,6 @@ pub mod pallet {
 			price: Option<BalanceOf<T>>,
 		},
 		/// Token was sold to a new owner
-		/// \[owner, buyer, collection_id, nft_id, price, author\]
 		TokenSold {
 			owner: T::AccountId,
 			buyer: T::AccountId,
@@ -116,33 +115,33 @@ pub mod pallet {
 			nft_id: NftId,
 			price: BalanceOf<T>,
 		},
-		/// Token listed on Marketplace \[owner, collection_id, nft_id\]
+		/// Token listed on Marketplace
 		TokenListed {
 			owner: T::AccountId,
 			collection_id: CollectionId,
 			nft_id: NftId,
 			price: BalanceOf<T>,
 		},
-		/// Token unlisted on Marketplace \[owner, collection_id, nft_id\]
+		/// Token unlisted on Marketplace
 		TokenUnlisted {
 			owner: T::AccountId,
 			collection_id: CollectionId,
 			nft_id: NftId,
 		},
-		/// Offer was placed on a token \[offerer, collection_id, nft_id, price\]
+		/// Offer was placed on a token
 		OfferPlaced {
 			offerer: T::AccountId,
 			collection_id: CollectionId,
 			nft_id: NftId,
 			price: BalanceOf<T>,
 		},
-		/// Offer was withdrawn \[sender, collection_id, nft_id\]
+		/// Offer was withdrawn
 		OfferWithdrawn {
 			sender: T::AccountId,
 			collection_id: CollectionId,
 			nft_id: NftId,
 		},
-		/// Offer was accepted \[owner, buyer, collection_id, nft_id\]
+		/// Offer was accepted
 		OfferAccepted {
 			owner: T::AccountId,
 			buyer: T::AccountId,
@@ -201,7 +200,7 @@ pub mod pallet {
 			collection_id: CollectionId,
 			nft_id: NftId,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
 			Self::do_buy(sender, collection_id, nft_id, false)
 		}
@@ -225,15 +224,16 @@ pub mod pallet {
 			amount: BalanceOf<T>,
 			expires: Option<T::BlockNumber>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 			let owner =
 				pallet_uniques::Pallet::<T>::owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
 
 			// Ensure that the NFT is not owned by an NFT
 			ensure!(!Self::is_nft_owned_by_nft(collection_id, nft_id),
 				Error::<T>::CannotListNftOwnedByNft);
-			// Ensure sender is not the owner
+			// Ensure sender is the owner
 			ensure!(sender == owner, Error::<T>::NoPermission);
+			// TODO: Lock NFT to prevent transfers or interactions with the NFT
 
 			// Check if a prior listing is in storage from previous owner and update if found
 			if Self::is_nft_listed(collection_id, nft_id) {
@@ -274,13 +274,14 @@ pub mod pallet {
 			collection_id: CollectionId,
 			nft_id: NftId,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 			// Check if NFT is still in ListedNfts storage
 			ensure!(Self::is_nft_listed(collection_id, nft_id), Error::<T>::CannotUnlistToken);
 			let owner =
 				pallet_uniques::Pallet::<T>::owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
 			// Ensure owner of NFT is performing call to unlist
 			ensure!(sender == owner, Error::<T>::NoPermission);
+			// TODO: Set the NFT lock to flase to allow interactions with the NFT
 			// Remove from storage
 			ListedNfts::<T>::remove(collection_id, nft_id);
 			// Emit TokenUnlisted Event
@@ -311,7 +312,7 @@ pub mod pallet {
 			amount: BalanceOf<T>,
 			expires: Option<T::BlockNumber>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 			// Ensure amount is above the minimum threshold
 			ensure!(amount >= T::MinimumOfferAmount::get(), Error::<T>::OfferTooLow);
 			// Ensure NFT exists & sender is not owner
@@ -321,6 +322,9 @@ pub mod pallet {
 			ensure!(sender != owner, Error::<T>::CannotOfferOnOwnToken);
 			// If offer has already been made, must withdraw_offer first before making a new offer
 			ensure!(!Self::has_active_offer(collection_id, nft_id, sender.clone()), Error::<T>::AlreadyOffered);
+
+			// Reserve currency from offerer account
+			<T as pallet::Config>::Currency::reserve(&sender, amount)?;
 
 			let token_id = (collection_id, nft_id);
 			// Insert new offer into Offers storage
@@ -333,8 +337,7 @@ pub mod pallet {
 					expires
 				},
 			);
-			// Reserve currency from offerer account
-			<T as pallet::Config>::Currency::reserve(&sender, amount)?;
+
 			// Emit OfferPlaced event
 			Self::deposit_event(Event::OfferPlaced {
 				offerer: sender,
@@ -360,7 +363,7 @@ pub mod pallet {
 			collection_id: CollectionId,
 			nft_id: NftId,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
 			let token_id = (collection_id, nft_id);
 			// Ensure that offer exists from sender that is withdrawing their offer
@@ -373,7 +376,7 @@ pub mod pallet {
 				ensure!(sender == owner || sender == offer.maker, Error::<T>::CannotWithdrawOffer);
 
 				// Unreserve currency from offerer account
-				<T as pallet::Config>::Currency::unreserve(&sender, offer.amount);
+				<T as pallet::Config>::Currency::unreserve(&offer.maker, offer.amount);
 				// Emit OfferWithdrawn Event
 				Self::deposit_event(Event::OfferWithdrawn {
 					sender,
@@ -400,7 +403,7 @@ pub mod pallet {
 			nft_id: NftId,
 			offerer: T::AccountId,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 			// Ensure NFT exists & sender is not owner
 			let owner = pallet_uniques::Pallet::<T>::
 				owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
@@ -478,6 +481,7 @@ where
 			}
 			list_info.amount
 		};
+		// TODO: Set NFT Lock status to false to facilitate the purchase
 
 		// Transfer currency then transfer the NFT
 		<T as pallet::Config>::Currency::transfer(&buyer, &owner, list_price, ExistenceRequirement::KeepAlive)?;
