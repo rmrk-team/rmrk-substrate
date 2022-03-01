@@ -31,8 +31,6 @@ pub struct NftInfo<AccountId, BoundedString> {
 	pub royalty: Permill,
 	/// Arbitrary data about an instance, e.g. IPFS hash
 	pub metadata: BoundedString,
-	/// Lock status for NFT
-	pub lock: bool,
 }
 
 /// Abstraction over a Nft system.
