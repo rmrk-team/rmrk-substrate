@@ -5,6 +5,7 @@ members = [
     'pallets/template',
     'pallets/rmrk-core',
     'pallets/rmrk-market',
+    'pallets/uniques',
     'runtime',
 ]
 [profile.release]
