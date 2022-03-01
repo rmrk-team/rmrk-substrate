@@ -21,6 +21,7 @@ pub struct ResourceInfo<BoundedResource, BoundedString> {
 	/// If resource is sent to non-rootowned NFT, pending will be false and need to be accepted
 	pub pending: bool,
 
+	/// If a resource is composed, it will have an array of parts that compose it
 	pub parts: Option<Vec<PartId>>,
 
 	/// A Base is uniquely identified by the combination of the word `base`, its minting block

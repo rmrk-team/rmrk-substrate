@@ -1,49 +1,11 @@
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{RuntimeDebug, DispatchError};
-use sp_std::cmp::Eq;
-use crate::primitives::*;
+use crate::primitives::{BaseId, SlotId};
 use sp_std::{vec::Vec};
+use super::theme::{Theme};
+use super::part::{NewPartTypes, EquippableList};
 
-// // #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-// #[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
-// pub struct Equipping<BoundedString> {
-// 	// base
-// 	// pub base: BaseId,
-// 	// slot
-// 	pub slot: BoundedString,
-// }
-
-// #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
-pub struct FixedPart<BoundedString> {
-	pub id: PartId,
-	pub z: ZIndex,
-	pub src: BoundedString,
-}
-
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
-pub enum EquippableList {
-	All,
-	Empty,
-	Custom(Vec<CollectionId>)
-}
-
-// #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
-pub struct SlotPart<BoundedString> {
-	pub id: PartId,
-	pub equippable: EquippableList,
-	pub src: BoundedString,
-	pub z: ZIndex,
-}
-
-// #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
-pub enum NewPartTypes<BoundedString> {
-	FixedPart(FixedPart<BoundedString>),
-	SlotPart(SlotPart<BoundedString>), 
-}
 
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
@@ -56,26 +18,6 @@ pub struct BaseInfo<AccountId, BoundedString> {
 	pub symbol: BoundedString,
 	/// Parts, full list of both Fixed and Slot parts
 	pub parts: Vec<NewPartTypes<BoundedString>>,
-}
-
-#[cfg_attr(feature = "std", derive(Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq)]
-pub struct Theme<BoundedString> {
-	/// Name of the theme
-	pub name: BoundedString,
-	/// Theme properties
-	pub properties: Vec<ThemeProperty<BoundedString>>,
-}
-
-#[cfg_attr(feature = "std", derive(Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq)]
-pub struct ThemeProperty<BoundedString> {
-	/// Key of the property
-	pub key: BoundedString,
-	/// Value of the property
-	pub value: BoundedString,
-	/// Inheritability
-	pub inherit: Option<bool>,
 }
 
 // Abstraction over a Base system.

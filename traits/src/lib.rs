@@ -7,9 +7,12 @@ pub mod priority;
 pub mod property;
 pub mod resource;
 pub mod part;
+pub mod theme;
 
-pub use base::{BaseInfo, Base, NewPartTypes, FixedPart, SlotPart, EquippableList, Theme, ThemeProperty};
-pub use part::{PartInfo};
+pub use base::{BaseInfo, Base};
+pub use theme::{Theme, ThemeProperty};
+pub use part::{NewPartTypes, FixedPart, SlotPart, EquippableList};
+// pub use part::{PartInfo};
 pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo};
 pub use priority::Priority;
