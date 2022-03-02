@@ -568,18 +568,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let (owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-			ensure!(owner == sender, Error::<T>::NoPermission);
-
-			Resources::<T>::try_mutate_exists(
-				(collection_id, nft_id, resource_id),
-				|resource| -> DispatchResult {
-					if let Some(res) = resource.into_mut() {
-						res.pending = false;
-					}
-					Ok(())
-				},
-			)?;
+			let (nft_id, resource_id) = Self::accept_resource(sender, collection_id, nft_id, resource_id)?;
 
 			Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
 			Ok(())

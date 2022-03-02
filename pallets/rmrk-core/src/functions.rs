@@ -100,13 +100,43 @@ where
 
 		Ok(resource_id)
 	}
+/*
 
-	fn accept(
+		pub fn accept(
+			origin: OriginFor<T>,
+			collection_id: CollectionId,
+			nft_id: NftId,
+			resource_id: ResourceId,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin.clone())?;
+
+			// let (nft_id, resource_id) = Self::accept_resource(sender, collection_id, nft_id, resource_id)?;
+			ensure!(Resources::<T>::get((collection_id, nft_id, resource_id)).is_some(), Error::<T>::ResourceDoesntExist);
+			let (owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			ensure!(owner == sender, Error::<T>::NoPermission);
+
+			Resources::<T>::try_mutate_exists(
+				(collection_id, nft_id, resource_id),
+				|resource| -> DispatchResult {
+					if let Some(res) = resource.into_mut() {
+						res.pending = false;
+					}
+					Ok(())
+				},
+			)?;
+
+			Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
+			Ok(())
+		}
+
+*/
+	fn accept_resource(
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource_id: ResourceId,
-	) -> DispatchResult {
+	) -> Result<(NftId, ResourceId), DispatchError> {
+		ensure!(Resources::<T>::get((collection_id, nft_id, resource_id)).is_some(), Error::<T>::ResourceDoesntExist);
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
 		// TODO: Check NFT lock status
@@ -121,8 +151,7 @@ where
 			},
 		)?;
 
-		Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
-		Ok(())
+		Ok((nft_id, resource_id))
 	}
 }
 

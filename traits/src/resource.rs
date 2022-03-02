@@ -58,10 +58,10 @@ pub trait Resource<BoundedString, AccountId> {
 		license: Option<BoundedString>,
 		thumb: Option<BoundedString>,
 	) -> Result<ResourceId, DispatchError>;
-	fn accept(
+	fn accept_resource(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource_id: ResourceId,
-	) -> DispatchResult;
+	) -> Result<(NftId, ResourceId), DispatchError>;
 }
