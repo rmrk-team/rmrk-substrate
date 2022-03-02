@@ -76,12 +76,6 @@ where
 	) -> Result<BoundedResource<T::ResourceSymbolLimit>, DispatchError> {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
-		// let resource_id = Self::get_next_resource_id()?;
-		// ensure!(
-		// 	Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
-		// 	Error::<T>::ResourceAlreadyExists
-		// );
-
 		let empty =
 			base.is_none() &&
 				src.is_none() && metadata.is_none() &&
