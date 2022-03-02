@@ -140,6 +140,11 @@ fn change_issuer_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
+		// BOB can't change issuer because he is not the current issuer
+		assert_noop!(
+			RMRKCore::change_issuer(Origin::signed(BOB), 0, BOB),
+			Error::<Test>::NoPermission
+		);
 		// Change issuer from ALICE to BOB
 		assert_ok!(RMRKCore::change_issuer(Origin::signed(ALICE), 0, BOB));
 		// Changing issuer should trigger IssuerChanged event
