@@ -12,7 +12,7 @@ pub struct CollectionInfo<BoundedString, AccountId> {
 	/// Current bidder and bid price.
 	pub issuer: AccountId,
 	pub metadata: BoundedString,
-	pub max: u32,
+	pub max: Option<u32>,
 	pub symbol: BoundedString,
 	pub nfts_count: u32,
 }
@@ -24,7 +24,7 @@ pub trait Collection<BoundedString, AccountId> {
 	fn collection_create(
 		issuer: AccountId,
 		metadata: BoundedString,
-		max: u32,
+		max: Option<u32>,
 		symbol: BoundedString,
 	) -> Result<CollectionId, DispatchError>;
 	fn collection_burn(issuer: AccountId, collection_id: CollectionId) -> DispatchResult;

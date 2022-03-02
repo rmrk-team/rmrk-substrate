@@ -299,8 +299,6 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let max = max.unwrap_or_default();
-
 			let collection_id = Self::collection_create(sender.clone(), metadata, max, symbol)?;
 
 			pallet_uniques::Pallet::<T>::do_create_class(
