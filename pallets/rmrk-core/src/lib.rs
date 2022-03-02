@@ -475,6 +475,7 @@ pub mod pallet {
 			new_issuer: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
+			ensure!(Self::collections(collection_id).unwrap().issuer == sender, Error::<T>::NoPermission);
 			let new_issuer = T::Lookup::lookup(new_issuer)?;
 
 			ensure!(
