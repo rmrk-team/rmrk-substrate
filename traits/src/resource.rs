@@ -63,7 +63,7 @@ pub trait Resource<BoundedString, AccountId, BoundedResource> {
 		license: Option<BoundedString>,
 		thumb: Option<BoundedString>,
 		parts: Option<Vec<PartId>>
-	) -> Result<BoundedResource, DispatchError>;
+	) -> DispatchResult;
 	fn accept(
 		sender: AccountId,
 		collection_id: CollectionId,

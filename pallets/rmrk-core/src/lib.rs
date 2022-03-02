@@ -553,11 +553,11 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let resource_id = Self::resource_add(
+			Self::resource_add(
 				sender,
 				collection_id,
 				nft_id,
-				resource_id,
+				resource_id.clone(),
 				base,
 				src,
 				metadata,

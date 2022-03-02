@@ -73,7 +73,7 @@ where
 		license: Option<BoundedVec<u8, T::StringLimit>>,
 		thumb: Option<BoundedVec<u8, T::StringLimit>>,
 		parts: Option<Vec<PartId>>,
-	) -> Result<BoundedResource<T::ResourceSymbolLimit>, DispatchError> {
+	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
 		let empty =
@@ -94,9 +94,9 @@ where
 			parts,
 			pending: root_owner != sender,
 		};
-		Resources::<T>::insert((collection_id, nft_id, resource_id.clone()), res);
+		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
-		Ok(resource_id)
+		Ok(())
 	}
 
 	fn accept(
