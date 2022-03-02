@@ -240,6 +240,7 @@ pub mod pallet {
 		NftIsLocked,
 		CannotAcceptNonOwnedNft,
 		CannotRejectNonOwnedNft,
+		ResourceDoesntExist,
 	}
 
 	#[pallet::call]

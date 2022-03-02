@@ -660,6 +660,8 @@ fn add_resource_pending_works() {
 		assert_ok!(basic_collection());
 		// Mint NFT
 		assert_ok!(basic_mint());
+		// Accepting non-existent resource should fail
+		assert_noop!(RMRKCore::accept(Origin::signed(ALICE), 0, 0, 666), Error::<Test>::ResourceDoesntExist);
 		// BOB adds a resource to ALICE's NFT
 		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(BOB),
