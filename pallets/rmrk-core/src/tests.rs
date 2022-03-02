@@ -528,6 +528,23 @@ fn burn_nft_works() {
 		assert_ok!(basic_collection());
 		// Mint an NFT
 		assert_ok!(basic_mint());
+		// Add two resources to NFT (to test if burning also burns the resources)
+		for _ in 0..2 {
+			assert_ok!(RMRKCore::add_resource(
+				Origin::signed(ALICE),
+				0,
+				0,
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+			));
+		}
+		// Ensure resources are there
+		assert_eq!(Resources::<Test>::iter_prefix((COLLECTION_ID_0, NFT_ID_0)).count(), 2);
+
 		// BOB should not be able to burn ALICE's NFT
 		assert_noop!(
 			RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0),
@@ -549,6 +566,8 @@ fn burn_nft_works() {
 		);
 		// Burned NFT no longer exists
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, NFT_ID_0).is_none(), true);
+		// Resources associated with the NFT should no longer exist
+		assert_eq!(Resources::<Test>::iter_prefix((COLLECTION_ID_0, NFT_ID_0)).count(), 0);
 	});
 }
 
