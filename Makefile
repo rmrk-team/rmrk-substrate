@@ -16,6 +16,11 @@ check:
 test:
 	SKIP_WASM_BUILD= cargo test --all
 
+t:
+	cargo test -p pallet-rmrk-core -- --nocapture && \
+	cargo test -p pallet-rmrk-market -- --nocapture && \
+	cargo test -p pallet-rmrk-equip -- --nocapture
+
 purge:
 	cargo run -- purge-chain --dev -y
 
