@@ -581,6 +581,23 @@ fn burn_nft_with_great_grandchildren_works() {
 		for _ in 0..4 {
 			assert_ok!(basic_mint());
 		}
+		// Add two resources to the great-grandchild (0, 3)
+		for _ in 0..2 {
+			assert_ok!(RMRKCore::add_resource(
+				Origin::signed(ALICE),
+				0,
+				3,
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+				Some(bvec![0u8; 20]),
+			));
+		}
+		// Ensure resources are there
+		assert_eq!(Resources::<Test>::iter_prefix((COLLECTION_ID_0, 3)).count(), 2);
+
 		// ALICE sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -607,7 +624,9 @@ fn burn_nft_with_great_grandchildren_works() {
 		// Burn great-grandparent NFT (0, 0)
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		// Great-grandchild NFT (0, 3) is dead :'-(
-		assert!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_none())
+		assert!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_none());
+		// Great-grandchild resources are gone
+		assert_eq!(Resources::<Test>::iter_prefix((COLLECTION_ID_0, 3)).count(), 0);
 	});
 }
 
