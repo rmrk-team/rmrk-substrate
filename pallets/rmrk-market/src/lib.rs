@@ -179,6 +179,8 @@ pub mod pallet {
 		OfferHasExpired,
 		/// Listing has expired and cannot be bought
 		ListingHasExpired,
+		/// Price differs from when `buy` was executed
+		PriceDiffersFromExpected,
 	}
 
 	#[pallet::call]
@@ -193,16 +195,18 @@ pub mod pallet {
 		///	- `origin` - Account of the potential buyer
 		///	- `collection_id` - Collection id of the RMRK NFT
 		///	- `nft_id` - NFT id of the RMRK NFT
+		/// - `amount` - Optional price at which buyer purchased at
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn buy(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
+			amount: Option<BalanceOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			Self::do_buy(sender, collection_id, nft_id, false)
+			Self::do_buy(sender, collection_id, nft_id, amount, false)
 		}
 
 		/// List a RMRK NFT on the Marketplace for purchase. A listing can be cancelled, and is
@@ -424,7 +428,7 @@ pub mod pallet {
 					}
 
 					<T as pallet::Config>::Currency::unreserve(&offer.maker, offer.amount);
-					Self::do_buy(offer.maker, collection_id, nft_id, true)?;
+					Self::do_buy(offer.maker, collection_id, nft_id, None,true)?;
 					// Emit OfferAccepted event
 					Self::deposit_event(Event::OfferAccepted {
 						owner,
@@ -450,11 +454,13 @@ where
 	/// - `buyer`: The account that is buying the RMRK NFT
 	/// - `collection_id`: The collection id of the RMRK NFT
 	/// - `nft_id`: The id of the RMRK NFT
+	/// - `amount`: Optional amount at which the buyer purchased a RMRK NFT
 	/// - `is_offer`: Whether the call is from `accept_offer` or `buy`
 	fn do_buy(
 		buyer: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
+		amount: Option<BalanceOf<T>>,
 		is_offer: bool,
 	) -> DispatchResult {
 		// Ensure buyer is not the root owner
@@ -481,6 +487,10 @@ where
 			}
 			list_info.amount
 		};
+		// Check if list_price is equal to amount to prevent front running a buy
+		if let Some(amount) = amount {
+			ensure!(list_price == amount, Error::<T>::PriceDiffersFromExpected);
+		}
 		// TODO: Set NFT Lock status to false to facilitate the purchase
 
 		// Transfer currency then transfer the NFT
