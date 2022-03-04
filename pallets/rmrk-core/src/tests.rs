@@ -1,4 +1,8 @@
-use frame_support::{assert_noop, assert_ok, error::BadOrigin};
+use frame_support::{
+	assert_noop,
+	assert_ok,
+	// error::BadOrigin
+};
 // use sp_runtime::AccountId32;
 use sp_runtime::Permill;
 // use crate::types::ClassType;
@@ -12,6 +16,11 @@ type RMRKCore = Pallet<Test>;
 
 /// Turns a string into a BoundedVec
 fn stb(s: &str) -> BoundedVec<u8, ValueLimit> {
+	s.as_bytes().to_vec().try_into().unwrap()
+}
+
+/// Turns a string into a BoundedResource
+fn stbr(s: &str) -> BoundedResource<ResourceSymbolLimit> {
 	s.as_bytes().to_vec().try_into().unwrap()
 }
 
@@ -180,14 +189,15 @@ fn mint_nft_works() {
 			bvec![0u8; 20]
 		));
 		// BOB shouldn't be able to mint in ALICE's collection
-		assert_noop!(RMRKCore::mint_nft(
-			Origin::signed(BOB),
-			BOB,
-			COLLECTION_ID_0,
-			Some(CHARLIE),
-			Some(Permill::from_float(20.525)),
-			bvec![0u8; 20]
-		),
+		assert_noop!(
+			RMRKCore::mint_nft(
+				Origin::signed(BOB),
+				BOB,
+				COLLECTION_ID_0,
+				Some(CHARLIE),
+				Some(Permill::from_float(20.525)),
+				bvec![0u8; 20]
+			),
 			Error::<Test>::NoPermission
 		);
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 2);
@@ -600,14 +610,16 @@ fn create_resource_works() {
 		assert_noop!(
 			RMRKCore::add_resource(
 				Origin::signed(ALICE),
-				0,
-				0,
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
+				0, // collection_id
+				0, // nft_id
+				stbr("res-1"), // resource_id
+				Some(0), // base_id
+				None, // src
+				None, // metadata
+				None, // slot
+				None, // license
+				None, // thumb
+				None, // parts
 			),
 			Error::<Test>::NoAvailableNftId
 		);
@@ -621,36 +633,41 @@ fn create_resource_works() {
 				Origin::signed(ALICE),
 				COLLECTION_ID_0,
 				NFT_ID_0,
-				None,
-				None,
-				None,
-				None,
-				None,
-				None
+				stbr("res-2"), // resource_id
+				None, // base_id
+				None, // src
+				None, // metadata
+				None, // slot
+				None, // license
+				None, // thumb
+				None, // parts
 			),
 			Error::<Test>::EmptyResource
 		);
 		// Add resource to NFT
 		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(ALICE),
-			0,
-			0,
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-3"), // resource_id
+			Some(0), // base_id
+			None, // src
+			None, // metadata
+			None, // slot
+			None, // license
+			None, // thumb
+			None, // parts
 		));
 		// Successful resource addition should trigger ResourceAdded event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAdded {
 			nft_id: 0,
-			resource_id: 0,
+			resource_id: stbr("res-3"), // resource_id
 		}));
 		// Since ALICE rootowns NFT, pending status of resource should be false
-		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
+		assert_eq!(RMRKCore::resources((0, 0, stbr("res-3"))).unwrap().pending, false);
 	});
 }
+
 
 /// Resource: Resource addition with pending and accept (RMRK2.0 spec: ACCEPT)
 #[test]
@@ -663,28 +680,32 @@ fn add_resource_pending_works() {
 		// BOB adds a resource to ALICE's NFT
 		assert_ok!(RMRKCore::add_resource(
 			Origin::signed(BOB),
-			0,
-			0,
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-4"), // resource_id
+			Some(0), // base_id
+			None, // src
+			None, // metadata
+			None, // slot
+			None, // license
+			None, // thumb
+			None, // parts
 		));
 		// Since BOB doesn't root-own NFT, resource's pending status should be true
-		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, true);
+		assert_eq!(RMRKCore::resources((0, 0, stbr("res-4"))).unwrap().pending, true);
 		// BOB doesn't own ALICES's NFT, so accept should fail
-		assert_noop!(RMRKCore::accept(Origin::signed(BOB), 0, 0, 0), Error::<Test>::NoPermission);
+		assert_noop!(
+			RMRKCore::accept(Origin::signed(BOB), 0, 0, stbr("res-4")),
+			Error::<Test>::NoPermission);
 		// ALICE can accept her own NFT's pending resource
-		assert_ok!(RMRKCore::accept(Origin::signed(ALICE), 0, 0, 0));
+		assert_ok!(RMRKCore::accept(Origin::signed(ALICE), 0, 0, stbr("res-4")));
 		// Valid resource acceptance should trigger a ResourceAccepted event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAccepted {
 			nft_id: 0,
-			resource_id: 0,
+			resource_id: stbr("res-4"), // resource_id
 		}));
 		// Resource should now have false pending status
-		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
+		assert_eq!(RMRKCore::resources((0, 0, stbr("res-4"))).unwrap().pending, false);
 	});
 }
 

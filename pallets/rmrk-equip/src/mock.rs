@@ -1,23 +1,21 @@
 use super::*;
-use crate as pallet_rmrk_market;
+use crate as pallet_rmrk_equip;
 
 use frame_support::{
-	construct_runtime,
 	parameter_types,
 	traits::{ConstU32, Everything},
 	weights::Weight,
 };
-use frame_system as system;
-use frame_system::{ EnsureRoot };
+use frame_system::EnsureRoot;
 use sp_core::{crypto::AccountId32, H256};
-
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
+	Perbill,
 };
 
-mod rmrk_market {
-	// Re-export needed for `impl_outer_event!`
+mod nfc {
+	// Re-export needed for `impl_outer_event!`.
 	pub use super::super::*;
 }
 
@@ -27,71 +25,33 @@ type Block = frame_system::mocking::MockBlock<Test>;
 type Balance = u128;
 
 // Configure a mock runtime to test the pallet.
-construct_runtime!(
+frame_support::construct_runtime!(
 	pub enum Test where
 		Block = Block,
 		NodeBlock = Block,
 		UncheckedExtrinsic = UncheckedExtrinsic,
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+		Uniques: pallet_uniques::{Pallet, Storage, Event<T>},
+		RmrkEquip: pallet_rmrk_equip::{Pallet, Call, Event<T>},
+		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
-		Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
-		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
-		RmrkMarket: pallet_rmrk_market::{Pallet, Call, Storage, Event<T>},
 	}
 );
 
 parameter_types! {
-	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: Weight = 1024;
-	pub const MaximumBlockLength: u32 = 2 * 1024;
+	pub const MaxPartsPerBase: u32 = 5;
+	pub const MaxPropertiesPerTheme: u32 = 5;
 }
 
-impl frame_system::Config for Test {
-	type BaseCallFilter = Everything;
-	type BlockWeights = ();
-	type BlockLength = ();
-	type Origin = Origin;
-	type Call = Call;
-	type Index = u64;
-	type BlockNumber = u64;
-	type Hash = H256;
-	type Hashing = BlakeTwo256;
-	type AccountId = AccountId;
-	type Lookup = IdentityLookup<Self::AccountId>;
-	type Header = Header;
+impl pallet_rmrk_equip::Config for Test {
 	type Event = Event;
-	type BlockHashCount = BlockHashCount;
-	type DbWeight = ();
-	type Version = ();
-	type PalletInfo = PalletInfo;
-	type AccountData = pallet_balances::AccountData<Balance>;
-	type OnNewAccount = ();
-	type OnKilledAccount = ();
-	type SystemWeightInfo = ();
-	type SS58Prefix = ();
-	type OnSetCode = ();
-	type MaxConsumers = ConstU32<2>;
+	type MaxPartsPerBase = MaxPartsPerBase;
+	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
 }
 
 parameter_types! {
-	pub const ExistentialDeposit: u64 = 1;
-	pub const MaxReserves: u32 = 50;
-}
-
-impl pallet_balances::Config for Test {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type Event = Event;
-	type ExistentialDeposit = ExistentialDeposit;
-	type AccountStore = frame_system::Pallet<Test>;
-	type WeightInfo = ();
-	type MaxLocks = ();
-	type MaxReserves = MaxReserves;
-	type ReserveIdentifier = [u8; 8];
-}
-
-parameter_types! {
+	pub ClassBondAmount: Balance = 100;
 	pub MaxMetadataLength: u32 = 256;
 	pub const MaxRecursions: u32 = 10;
 	pub const ResourceSymbolLimit: u32 = 10;
@@ -135,43 +95,88 @@ impl pallet_uniques::Config for Test {
 }
 
 parameter_types! {
-	pub const MinimumOfferAmount: Balance = 50 * UNITS;
+	pub const BlockHashCount: u64 = 250;
+	pub const MaximumBlockWeight: Weight = 1024;
+	pub const MaximumBlockLength: u32 = 2 * 1024;
+	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
 
-impl Config for Test {
+impl frame_system::Config for Test {
+	type BaseCallFilter = Everything;
+	type BlockWeights = ();
+	type BlockLength = ();
+	type DbWeight = ();
+	type Origin = Origin;
+	type Call = Call;
+	type Index = u64;
+	type BlockNumber = u64;
+	type Hash = H256;
+	type Hashing = BlakeTwo256;
+	type AccountId = AccountId;
+	type Lookup = IdentityLookup<Self::AccountId>;
+	type Header = Header;
 	type Event = Event;
-	type ProtocolOrigin = EnsureRoot<AccountId>;
-	type Currency = Balances;
-	type MinimumOfferAmount = MinimumOfferAmount;
+	type BlockHashCount = BlockHashCount;
+	type Version = ();
+	type PalletInfo = PalletInfo;
+	type AccountData = pallet_balances::AccountData<Balance>;
+	type OnNewAccount = ();
+	type OnKilledAccount = ();
+	type SystemWeightInfo = ();
+	type SS58Prefix = ();
+	type OnSetCode = ();
+	type MaxConsumers = ConstU32<2>;
+}
+
+parameter_types! {
+	pub const ExistentialDeposit: u64 = 1;
+	pub const MaxReserves: u32 = 50;
+}
+impl pallet_balances::Config for Test {
+	type Balance = Balance;
+	type Event = Event;
+	type DustRemoval = ();
+	type ExistentialDeposit = ExistentialDeposit;
+	type AccountStore = frame_system::Pallet<Test>;
+	type MaxLocks = ();
+	type WeightInfo = ();
+	type MaxReserves = MaxReserves;
+	// type ReserveIdentifier = ReserveIdentifier;
+	type ReserveIdentifier = ();
 }
 
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
 pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
-pub const UNITS: Balance = 100_000_000_000;
 pub const RMRK: Balance = 1;
 pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::ClassId = 0;
 pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::ClassId = 1;
 pub const NFT_ID_0: <Test as pallet_uniques::Config>::InstanceId = 0;
-pub const NFT_ID_1: <Test as pallet_uniques::Config>::InstanceId = 1;
-pub const NOT_EXISTING_NFT_ID: <Test as pallet_uniques::Config>::ClassId = 999;
-pub const MIN_OFFER_ON_NFT: Balance = 50 * UNITS;
+pub const NOT_EXISTING_CLASS_ID: <Test as pallet_uniques::Config>::ClassId = 999;
 
-// Build genesis storage according to the mock runtime.
-pub fn new_test_ext() -> sp_io::TestExternalities {
-	let mut t = system::GenesisConfig::default().build_storage::<Test>().unwrap();
-
-	pallet_balances::GenesisConfig::<Test> {
-		balances: vec![
-			(ALICE, 100_000 * UNITS),
-			(BOB, 200_000 * UNITS),
-			(CHARLIE, 300_000 * UNITS),
-		],
+pub struct ExtBuilder;
+impl Default for ExtBuilder {
+	fn default() -> Self {
+		ExtBuilder
 	}
-	.assimilate_storage(&mut t)
-	.unwrap();
+}
 
-	let mut ext = sp_io::TestExternalities::new(t);
-	ext.execute_with(|| System::set_block_number(1));
-	ext
+impl ExtBuilder {
+	pub fn build(self) -> sp_io::TestExternalities {
+		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
+
+		pallet_balances::GenesisConfig::<Test> {
+			balances: vec![
+				(ALICE, 20_000_000 * RMRK),
+				(BOB, 15_000 * RMRK),
+				(CHARLIE, 150_000 * RMRK),
+			],
+		}
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+		let mut ext = sp_io::TestExternalities::new(t);
+		ext.execute_with(|| System::set_block_number(1));
+		ext
+	}
 }

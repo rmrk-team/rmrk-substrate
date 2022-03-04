@@ -1,9 +1,11 @@
 #![allow(clippy::too_many_arguments)]
 
-use sp_runtime::{traits::Saturating, ArithmeticError};
 use super::*;
 use codec::{Codec, Decode, Encode};
-use sp_runtime::traits::TrailingZeroInput;
+use sp_runtime::{
+	traits::{Saturating, TrailingZeroInput},
+	ArithmeticError,
+};
 
 // Randomness to generate NFT virtual accounts
 pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
@@ -55,7 +57,7 @@ where
 	}
 }
 
-impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T>
+impl<T: Config> Resource<BoundedVec<u8, T::StringLimit>, T::AccountId, BoundedResource<T::ResourceSymbolLimit>> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -63,21 +65,16 @@ where
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		base: Option<BoundedVec<u8, T::StringLimit>>,
+		resource_id: BoundedResource<T::ResourceSymbolLimit>,
+		base: Option<BaseId>,
 		src: Option<BoundedVec<u8, T::StringLimit>>,
 		metadata: Option<BoundedVec<u8, T::StringLimit>>,
-		slot: Option<BoundedVec<u8, T::StringLimit>>,
+		slot: Option<SlotId>,
 		license: Option<BoundedVec<u8, T::StringLimit>>,
 		thumb: Option<BoundedVec<u8, T::StringLimit>>,
-	) -> Result<ResourceId, DispatchError> {
+		parts: Option<Vec<PartId>>,
+	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-
-		let resource_id = Self::get_next_resource_id()?;
-		ensure!(
-			Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
-			Error::<T>::ResourceAlreadyExists
-		);
-		// TODO: Check NFT lock status
 
 		let empty =
 			base.is_none() &&
@@ -86,33 +83,34 @@ where
 				thumb.is_none();
 		ensure!(!empty, Error::<T>::EmptyResource);
 
-		let res = ResourceInfo {
-			id: resource_id,
+		let res = ResourceInfo::<BoundedVec<u8, T::ResourceSymbolLimit>, BoundedVec<u8, T::StringLimit>> {
+			id: resource_id.clone(),
 			base,
 			src,
 			metadata,
 			slot,
 			license,
 			thumb,
+			parts,
 			pending: root_owner != sender,
 		};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
-		Ok(resource_id)
+		Ok(())
 	}
 
 	fn accept(
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: ResourceId,
+		resource_id: BoundedResource<T::ResourceSymbolLimit>,
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
 		// TODO: Check NFT lock status
 
 		Resources::<T>::try_mutate_exists(
-			(collection_id, nft_id, resource_id),
+			(collection_id, nft_id, resource_id.clone()),
 			|resource| -> DispatchResult {
 				if let Some(res) = resource {
 					res.pending = false;
@@ -210,7 +208,7 @@ where
 
 		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
 
-		let nft = NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata };
+		let nft = NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata, equipped: false };
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 		NftsByOwner::<T>::append(owner, (collection_id, nft_id));
