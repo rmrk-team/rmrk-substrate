@@ -5,7 +5,7 @@
 Essential functionality for nested and multi-resourced NFTs.
 
 Typical use cases are:
-
+* Nested NFTs include anything non-stackably-visual: bundles of NFTs, mortgage NFT with photos of the house, music albums with songs, user-created curated collections for galleries, and more.
 * A set of NFTs can be combined as a single object that can be send and sell in an auction as a whole.
 * By following some special rules (defined in BASE), some NFTs can be combined in a meaningful way that produce some special effects. E.g. glasses can be equipped to a Kanaria bird and can be rendered as a complete portrait.
 
@@ -167,7 +167,7 @@ Current implementation [here](https://github.com/rmrk-team/rmrk-substrate/blob/m
 * ResourceAccepted
 * PrioritySet
 
-## Traits
+## Traits / Types
 Set of re-usable traits describing the total interface located [here](https://github.com/rmrk-team/rmrk-substrate/tree/main/traits/src)
 
 ### Primitives
@@ -175,10 +175,6 @@ Set of re-usable traits describing the total interface located [here](https://gi
 type CollectionId = u32;
 type ResourceId = u32;
 type NftId = u32;
-type BaseId = u32;
-type SlotId = u32;
-type PartId = u32;
-type ZIndex = u32;
 ```
 
 
