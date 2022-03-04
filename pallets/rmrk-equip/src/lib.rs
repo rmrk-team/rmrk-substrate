@@ -1,28 +1,17 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(dead_code)]
 
-use frame_support::{BoundedVec, ensure};
-use frame_support::dispatch::{
-	DispatchError, 
-	DispatchResult
+use frame_support::{
+	dispatch::{DispatchError, DispatchResult},
+	ensure, BoundedVec,
 };
 use sp_std::vec::Vec;
 
 pub use pallet::*;
 
 use rmrk_traits::{
-	primitives::*, 
-	BaseInfo, 
-	Base, 
-	PartType, 
-	// FixedPart,
-	// SlotPart, 
-	AccountIdOrCollectionNftTuple, 
-	// PartInfo,
-	EquippableList,
-	Theme,
-	// ThemeProperty
-	};
+	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, EquippableList, PartType, Theme,
+};
 
 mod functions;
 
@@ -41,7 +30,6 @@ pub use pallet::*;
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
 pub type BoundedResource<T> = BoundedVec<u8, <T as pallet_rmrk_core::Config>::ResourceSymbolLimit>;
-
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -100,7 +88,7 @@ pub mod pallet {
 	pub type Themes<T: Config> = StorageNMap<
 		_,
 		(
-			NMapKey<Blake2_128Concat, BaseId>, // Base ID
+			NMapKey<Blake2_128Concat, BaseId>,           // Base ID
 			NMapKey<Blake2_128Concat, StringLimitOf<T>>, // Theme name
 			NMapKey<Blake2_128Concat, StringLimitOf<T>>, // Property name (key)
 		),
@@ -115,7 +103,10 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		BaseCreated { issuer: T::AccountId, base_id: BaseId },
+		BaseCreated {
+			issuer: T::AccountId,
+			base_id: BaseId,
+		},
 		SlotEquipped {
 			item_collection: CollectionId,
 			item_nft: NftId,
@@ -131,7 +122,7 @@ pub mod pallet {
 		EquippablesUpdated {
 			base_id: BaseId,
 			slot_id: SlotId,
-		}
+		},
 	}
 
 	#[pallet::error]
@@ -153,11 +144,11 @@ pub mod pallet {
 		AlreadyEquipped,
 		UnknownError,
 		ExceedsMaxPartsPerBase,
-		TooManyProperties
+		TooManyProperties,
 	}
 
 	#[pallet::call]
-	impl<T: Config> Pallet<T> 
+	impl<T: Config> Pallet<T>
 	where
 		T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 	{
@@ -168,33 +159,28 @@ pub mod pallet {
 			item: (CollectionId, NftId),
 			equipper: (CollectionId, NftId),
 			base: BaseId,
-			slot: SlotId) -> DispatchResult {
-
+			slot: SlotId,
+		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let (collection_id, nft_id, base_id, slot_id, equipped) = Self::do_equip(
-				sender.clone(),
-				item,
-				equipper,
-				base,
-				slot
-			)?;
+			let (collection_id, nft_id, base_id, slot_id, equipped) =
+				Self::do_equip(sender, item, equipper, base, slot)?;
 
 			if equipped {
 				// Send Equip event
-				Self::deposit_event(Event::SlotEquipped { 
+				Self::deposit_event(Event::SlotEquipped {
 					item_collection: collection_id,
 					item_nft: nft_id,
-					base_id: base_id,
-					slot_id: slot_id,								
+					base_id,
+					slot_id,
 				});
 			} else {
 				// Send Unequip event
-				Self::deposit_event(Event::SlotUnequipped { 
+				Self::deposit_event(Event::SlotUnequipped {
 					item_collection: collection_id,
 					item_nft: nft_id,
-					base_id: base_id,
-					slot_id: slot_id,								
+					base_id,
+					slot_id,
 				});
 			}
 			Ok(())
@@ -203,28 +189,32 @@ pub mod pallet {
 		/// TODO: changes the list of equippable collections on a base's part
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn equippable(
-			origin: OriginFor<T>, base_id: BaseId, slot_id: SlotId, equippables: EquippableList
+			origin: OriginFor<T>,
+			base_id: BaseId,
+			slot_id: SlotId,
+			equippables: EquippableList,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let (base_id, slot_id) = Self::do_equippable(
-				sender,
-				base_id,
-				slot_id,
-				equippables,
-			)?;
+			let (base_id, slot_id) = Self::do_equippable(sender, base_id, slot_id, equippables)?;
 
-
-			Self::deposit_event(Event::EquippablesUpdated {base_id, slot_id});
+			Self::deposit_event(Event::EquippablesUpdated { base_id, slot_id });
 			Ok(())
 		}
 
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
-		pub fn theme_add(origin: OriginFor<T>, base_id: BaseId, theme: Theme<BoundedVec<u8, T::StringLimit>>) -> DispatchResult {
+		pub fn theme_add(
+			origin: OriginFor<T>,
+			base_id: BaseId,
+			theme: Theme<BoundedVec<u8, T::StringLimit>>,
+		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
 			let number_of_properties: u32 = theme.properties.len().try_into().unwrap();
-			ensure!(number_of_properties <= T::MaxPropertiesPerTheme::get(), Error::<T>::TooManyProperties);
+			ensure!(
+				number_of_properties <= T::MaxPropertiesPerTheme::get(),
+				Error::<T>::TooManyProperties
+			);
 
 			let _theme_id = Self::add_theme(sender, base_id, theme)?;
 
@@ -238,10 +228,10 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,
 			symbol: BoundedVec<u8, T::StringLimit>,
-			parts: Vec<PartType<StringLimitOf<T>>>
+			parts: Vec<PartType<StringLimitOf<T>>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
-			
+
 			let part_length: u32 = parts.len().try_into().unwrap();
 			ensure!(part_length <= T::MaxPartsPerBase::get(), Error::<T>::ExceedsMaxPartsPerBase);
 

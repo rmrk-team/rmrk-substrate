@@ -1,8 +1,8 @@
+use crate::primitives::*;
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::RuntimeDebug;
-use sp_std::{vec::Vec};
-use crate::primitives::*;
+use sp_std::vec::Vec;
 
 // #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
@@ -16,7 +16,7 @@ pub struct FixedPart<BoundedString> {
 pub enum EquippableList {
 	All,
 	Empty,
-	Custom(Vec<CollectionId>)
+	Custom(Vec<CollectionId>),
 }
 
 // #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
@@ -32,5 +32,5 @@ pub struct SlotPart<BoundedString> {
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq)]
 pub enum PartType<BoundedString> {
 	FixedPart(FixedPart<BoundedString>),
-	SlotPart(SlotPart<BoundedString>), 
+	SlotPart(SlotPart<BoundedString>),
 }

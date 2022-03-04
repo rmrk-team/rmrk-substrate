@@ -3,24 +3,21 @@
 pub mod base;
 pub mod collection;
 pub mod nft;
+pub mod part;
 pub mod priority;
 pub mod property;
 pub mod resource;
-pub mod part;
 pub mod theme;
 
-pub use base::{BaseInfo, Base};
+pub use base::{Base, BaseInfo};
+pub use part::{EquippableList, FixedPart, PartType, SlotPart};
 pub use theme::{Theme, ThemeProperty};
-pub use part::{PartType, FixedPart, SlotPart, EquippableList};
 // pub use part::{PartInfo};
 pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo};
 pub use priority::Priority;
 pub use property::Property;
-pub use resource::{
-	ResourceInfo,
-	Resource,
-};
+pub use resource::{Resource, ResourceInfo};
 pub mod primitives {
 	pub type CollectionId = u32;
 	pub type ResourceId = u32;

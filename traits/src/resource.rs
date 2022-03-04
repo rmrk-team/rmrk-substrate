@@ -2,13 +2,12 @@
 
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
+use serde::{Deserialize, Serialize};
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
-use sp_std::cmp::Eq;
-use sp_std::{vec::Vec};
-use serde::{Serialize, Deserialize};
+use sp_std::{cmp::Eq, vec::Vec};
 
 use crate::primitives::*;
-use sp_std::result::Result;
+
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
@@ -62,7 +61,7 @@ pub trait Resource<BoundedString, AccountId, BoundedResource> {
 		slot: Option<SlotId>,
 		license: Option<BoundedString>,
 		thumb: Option<BoundedString>,
-		parts: Option<Vec<PartId>>
+		parts: Option<Vec<PartId>>,
 	) -> DispatchResult;
 	fn accept(
 		sender: AccountId,

@@ -1,11 +1,12 @@
+use super::{
+	part::{EquippableList, PartType},
+	theme::Theme,
+};
+use crate::primitives::{BaseId, SlotId};
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_runtime::{RuntimeDebug, DispatchError};
-use crate::primitives::{BaseId, SlotId};
-use sp_std::{vec::Vec};
-use super::theme::{Theme};
-use super::part::{PartType, EquippableList};
-
+use sp_runtime::{DispatchError, RuntimeDebug};
+use sp_std::vec::Vec;
 
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
@@ -26,21 +27,21 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
 		issuer: AccountId,
 		base_type: BoundedString,
 		symbol: BoundedString,
-		parts: Vec<PartType<BoundedString>>
-) -> Result<BaseId, DispatchError>;
+		parts: Vec<PartType<BoundedString>>,
+	) -> Result<BaseId, DispatchError>;
 	fn do_equip(
 		issuer: AccountId, // Maybe don't need?
 		item: (CollectionId, NftId),
 		equipper: (CollectionId, NftId),
 		base_id: BaseId, // Maybe BaseId ?
-		slot: SlotId // Maybe SlotId ?
-)-> Result<(CollectionId, NftId, BaseId, SlotId, bool), DispatchError>;
+		slot: SlotId,    // Maybe SlotId ?
+	) -> Result<(CollectionId, NftId, BaseId, SlotId, bool), DispatchError>;
 	fn do_equippable(
-		issuer: AccountId, 
+		issuer: AccountId,
 		base_id: BaseId,
 		slot: SlotId,
 		equippables: EquippableList,
-	)-> Result<(BaseId, SlotId), DispatchError>;
+	) -> Result<(BaseId, SlotId), DispatchError>;
 	fn add_theme(
 		issuer: AccountId,
 		base_id: BaseId,
