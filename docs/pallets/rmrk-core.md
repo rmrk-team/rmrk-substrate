@@ -183,7 +183,7 @@ type ZIndex = u32;
 
 
 ### **CollectionInfo**
-```#rust
+```rust
 pub struct CollectionInfo<BoundedString, AccountId> {
 	/// Current bidder and bid price.
 	pub issuer: AccountId,
@@ -260,7 +260,7 @@ pub struct ResourceInfo<BoundedResource, BoundedString> {
 
 
 ### Property
-```
+```rust
 pub trait Property<KeyLimit, ValueLimit, AccountId> {
 	fn property_set(
 		sender: AccountId,
