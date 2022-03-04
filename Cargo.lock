@@ -3496,6 +3496,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-rmrk-auctions"
+version = "4.0.0-dev"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "pallet-balances",
+ "pallet-rmrk-core",
+ "pallet-uniques",
+ "parity-scale-codec",
+ "rmrk-traits",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-rmrk-core"
 version = "4.0.0-dev"
 dependencies = [
@@ -4484,6 +4504,7 @@ dependencies = [
  "pallet-balances",
  "pallet-grandpa",
  "pallet-randomness-collective-flip",
+ "pallet-rmrk-auctions",
  "pallet-rmrk-core",
  "pallet-rmrk-market",
  "pallet-sudo",

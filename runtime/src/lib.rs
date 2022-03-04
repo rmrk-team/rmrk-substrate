@@ -43,6 +43,8 @@ pub use pallet_rmrk_core;
 
 pub use pallet_rmrk_market;
 
+pub use pallet_rmrk_auctions;
+
 /// An index to a block.
 pub type BlockNumber = u32;
 
@@ -322,6 +324,10 @@ impl pallet_rmrk_market::Config for Runtime {
 	type MinimumOfferAmount = MinimumOfferAmount;
 }
 
+impl pallet_rmrk_auctions::Config for Runtime {
+	type Event = Event;
+}
+
 parameter_types! {
 	pub const ClassDeposit: Balance = 100 * DOLLARS;
 	pub const InstanceDeposit: Balance = DOLLARS;
@@ -376,6 +382,7 @@ construct_runtime!(
 		TemplateModule: pallet_template,
 		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>, Storage},
 		RmrkMarket: pallet_rmrk_market::{Pallet, Call, Storage, Event<T>},
+		RmrkAuctions: pallet_rmrk_auctions::{Pallet, Call, Storage, Event<T>},
 		Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
 		Utility: pallet_utility::{Pallet, Call, Storage, Event},
 	}
