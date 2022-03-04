@@ -7,7 +7,8 @@
   <meta name="description" content="Description">
   <meta name="viewport" content="width=device-width, initial-scale=1.0, minimum-scale=1.0">
   <link rel="stylesheet" href="//cdn.jsdelivr.net/npm/docsify@4/lib/themes/vue.css">
-
+  
+  <script src="//cdn.jsdelivr.net/npm/docsify-edit-on-github"></script>
 
 </head>
 <body>
@@ -18,11 +19,15 @@
       repo: 'https://github.com/rmrk-team/rmrk-substrate',
       loadSidebar: true,
       subMaxLevel: 4,
+      auto2top: true,
       search: {
         maxAge: 86400000, // Expiration time, the default one day
         paths: 'auto',
         placeholder: 'Search',
-      }
+      },
+      plugins: [
+        EditOnGithubPlugin.create('https://github.com/rmrk-team/rmrk-substrate/tree/main/docs/')
+      ]      
     }
   </script>
   <!-- Docsify v4 -->
@@ -30,5 +35,6 @@
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-bash.min.js"></script>
   <script src="//cdn.jsdelivr.net/npm/prismjs@1/components/prism-rust.min.js"></script> 
   <script src="//cdn.jsdelivr.net/npm/docsify/lib/plugins/search.min.js"></script>
+  
 </body>
 </html>
