@@ -1,58 +1,102 @@
 # Market Pallet Design
 
-## Table of Contents
-
-[TOC]
-
+Marketplace pallet. Should extend RMRK Core pallet.
 ## Calls
-> The external dispatchable calls. i.e. The methods user can invoke by sending a
-transaction
 
-Marketplace pallet. Should extend [**NFT Core**](https://hackmd.io/GNJXyhXnTJiXvg3X-r3l3Q)
+### **buy**
+Buy a listed NFT. Ensure that the NFT is available for purchase and has not recently been purchased, sent, or burned.
 
-* **buy**
-    * buy NFT
-* **list/unlist**
-    * list NFT for sale
-* **make_offer**(origin, collection_id, nft_id, amount: BalanceOf<T>, expires: T::BlockNumber) 
-* **withdraw_offer**(origin, collection_id, nft_id)
-    
+```rust 
+    collection_id: CollectionId,
+    nft_id: NftId
+```
+
+### **list**
+List a RMRK NFT on the Marketplace for purchase. A listing can be cancelled, and is
+automatically considered cancelled when a `buy` is executed on top of a given listing.
+An NFT that has another NFT as its owner CANNOT be listed. An NFT owned by a NFT must
+first be sent to an account before being listed.
+
+```rust
+    collection_id: CollectionId,
+    nft_id: NftId,
+    amount: BalanceOf<T>,
+    expires: Option<T::BlockNumber>
+```
+
+
+### **unlist** 
+Unlist a RMRK NFT on the Marketplace and remove from storage in `Listings`.
+
+```rust
+    collection_id: CollectionId,
+    nft_id: NftId
+```
+
+### **make_offer**
+Make an offer on a RMRK NFT for purchase. An offer can be set with an expiration where the offer can no longer be accepted by the RMRK NFT owner.
+
+```rust
+    collection_id: CollectionId,
+    nft_id: NftId,
+    amount: BalanceOf<T>,
+    expires: Option<T::BlockNumber>
+```
+
+### **withdraw_offer**
+Withdraw an offer on a RMRK NFT, such that it is no longer available to be accepted by the NFT owner.
+```rust
+    collection_id: CollectionId,
+    nft_id: NftId
+```
+
+### **accept_offer**
+Accept an offer on a RMRK NFT from a potential buyer.
+
+```rust
+    collection_id: CollectionId,
+    nft_id: NftId,
+    offerer: T::AccountId // Account that made the offer
+```
+
 ## Storages
-> Defines how to access on-chain storage  
+Current implementation [here](https://github.com/rmrk-team/rmrk-substrate/blob/main/pallets/rmrk-market/src/lib.rs#L74-L98)
 
+* ListedNfts
+* Offers
 
-
+## Events
+Current implementation [here](https://github.com/rmrk-team/rmrk-substrate/blob/main/pallets/rmrk-market/src/lib.rs#L102-L151)
+* TokenPriceUpdated
+* TokenSold
+* TokenListed
+* TokenUnlisted
+* OfferPlaced
+* OfferWithdrawn
+* OfferAccepted
 
 ## Types
-    
-    
-## Events
-> Defines the events that could be emitted by this pallet to indicate what happened
 
-Every call should implement relevant Event. ie Auctions pallet events:
-```#rust
-pub enum Event<T: Config> {
-    /// The price for a token was updated \[owner, collection_id, nft_id, price\]
-    TokenPriceUpdated(T::AccountId, T::NftId, T::NftId, Option<BalanceOf<T>>),
-    /// Token was sold to a new owner \[owner, buyer, collection_id, nft_id, price, author, royalty, royalty_amount\]
-    TokenSold(
-        T::AccountId,
-        T::AccountId,
-        T::CollectionId,
-        T::NftId,
-        BalanceOf<T>,
-        Option<(T::AccountId, u8)>,
-        BalanceOf<T>,
-    ),
-    /// Token listed on Marketplace \[owner, collection_id, nft_id, author royalty\]
-    TokenListed(T::AccountId, T::CollectionId, T::NftId, T::AccountId, u8),
-    /// Token listed on Marketplace \[collection_id, nft_id\]
-    TokenUnlisted(T::CollectionId, T::NftId),
-    /// Offer was placed on a token \[offerer, collection_id, nft_id, price\]
-    OfferPlaced(T::AccountId, T::CollectionId, T::NftId, BalanceOf<T>),
-    /// Offer was withdrawn \[sender, collection_id, nft_id\]
-    OfferWithdrawn(T::AccountId, T::CollectionId, T::NftId),
-    /// Offer was accepted \[sender, collection_id, nft_id\]
-    OfferAccepted(T::AccountId, T::CollectionId, T::NftId),
+### ListInfo
+```rust
+pub struct ListInfo<AccountId, Balance, BlockNumber> {
+    /// Owner who listed the NFT at the time
+    pub(super) listed_by: AccountId,
+    /// Listed amount
+    pub(super) amount: Balance,
+    /// After this block the listing can't be bought
+    pub(super) expires: Option<BlockNumber>,
+}
+```
+
+### Offer
+```rust
+pub struct Offer<AccountId, Balance, BlockNumber> {
+    /// User who made the offer
+    pub(super) maker: AccountId,
+    /// Offered amount
+    pub(super) amount: Balance,
+    /// After this block the offer can't be accepted
+    pub(super) expires: Option<BlockNumber>,
 }
 ```
