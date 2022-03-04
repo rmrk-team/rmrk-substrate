@@ -1,12 +1,11 @@
 [package]
 name = "pallet-rmrk-core"
-version = "4.0.0-dev"
+version = "0.0.1"
 description = "RMRK Core"
 authors = ["RMRK Team"]
 homepage = ""
 edition = "2021"
 license = "Apache-2.0"
-publish = false
 repository = "https://github.com/rmrk-team/rmrk-substrate"
 
 [package.metadata.docs.rs]
