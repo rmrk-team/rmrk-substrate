@@ -90,6 +90,7 @@ impl Config for Test {
 	type InstanceId = u32;
 	type Currency = Balances;
 	type ForceOrigin = frame_system::EnsureRoot<u64>;
+	type Locker = ();
 	type ClassDeposit = ConstU64<2>;
 	type InstanceDeposit = ConstU64<1>;
 	type MetadataDepositBase = ConstU64<1>;
