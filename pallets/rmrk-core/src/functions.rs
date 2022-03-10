@@ -202,7 +202,7 @@ where
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		
 		// Prevent minting when next NFT id is greater than the collection max.
-		if let Some(max) = collection.max.is_some() {
+		if let Some(max) = collection.max {
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 		}
 
