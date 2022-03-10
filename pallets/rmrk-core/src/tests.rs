@@ -416,11 +416,7 @@ fn reject_nft_works() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
 		// Bob rejects NFT (0,2) for Bob-owned NFT (0,0)
-		assert_ok!(RMRKCore::reject_nft(
-			Origin::signed(BOB),
-			0,
-			2,
-		));
+		assert_ok!(RMRKCore::reject_nft(Origin::signed(BOB), 0, 2,));
 	});
 }
 

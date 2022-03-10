@@ -2,13 +2,12 @@ use super::*;
 use crate as pallet_rmrk_market;
 
 use frame_support::{
-	construct_runtime,
-	parameter_types,
+	construct_runtime, parameter_types,
 	traits::{ConstU32, Everything},
 	weights::Weight,
 };
 use frame_system as system;
-use frame_system::{ EnsureRoot };
+use frame_system::EnsureRoot;
 use sp_core::{crypto::AccountId32, H256};
 
 use sp_runtime::{
