@@ -1,9 +1,11 @@
 #![allow(clippy::too_many_arguments)]
 
-use sp_runtime::{traits::Saturating, ArithmeticError};
 use super::*;
 use codec::{Codec, Decode, Encode};
-use sp_runtime::traits::TrailingZeroInput;
+use sp_runtime::{
+	traits::{Saturating, TrailingZeroInput},
+	ArithmeticError,
+};
 
 // Randomness to generate NFT virtual accounts
 pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
@@ -269,7 +271,7 @@ where
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
 		// TODO: Check NFT lock status
-		
+
 		// Needs to be pending if the sending to an account or to a non-owned NFT
 		let mut approval_required = true;
 
@@ -311,7 +313,6 @@ where
 		} else {
 			Nfts::<T>::insert(collection_id, nft_id, sending_nft);
 		}
-		
 
 		if let Some(current_owner) = parent {
 			// Handle Children StorageMap for NFTs
@@ -354,7 +355,6 @@ where
 		let new_owner_account = match new_owner.clone() {
 			AccountIdOrCollectionNftTuple::AccountId(id) => id,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
-
 				// Check if NFT target exists
 				ensure!(Nfts::<T>::contains_key(cid, nid), Error::<T>::NoAvailableNftId);
 
@@ -371,10 +371,7 @@ where
 				);
 
 				let (recipient_root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(cid, nid)?;
-				ensure!(
-					recipient_root_owner == root_owner,
-					Error::<T>::CannotAcceptNonOwnedNft
-				);
+				ensure!(recipient_root_owner == root_owner, Error::<T>::CannotAcceptNonOwnedNft);
 
 				// Convert to virtual account
 				Pallet::<T>::nft_to_account_id::<T::AccountId>(cid, nid)
@@ -383,7 +380,7 @@ where
 
 		sending_nft.owner = new_owner;
 		PendingNfts::<T>::remove(collection_id, nft_id);
-		Nfts::<T>::insert(collection_id, nft_id, sending_nft);	
+		Nfts::<T>::insert(collection_id, nft_id, sending_nft);
 
 		// Add child to new parent if NFT virtual address
 		let new_owner_cid_nid =
