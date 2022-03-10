@@ -233,7 +233,7 @@ where
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		Nfts::<T>::remove(collection_id, nft_id);
-		for resource in Resources::<T>::iter_prefix((collection_id, nft_id)) {
+		for resource in Resources::<T>::drain_prefix((collection_id, nft_id)) {
 			Resources::<T>::remove((collection_id, nft_id, resource.1.id));
 		}
 		let kids = Children::<T>::take((collection_id, nft_id));
