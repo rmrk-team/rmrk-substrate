@@ -568,19 +568,36 @@ fn burn_nft_works() {
 		// Mint an NFT
 		assert_ok!(basic_mint());
 		// Add two resources to NFT (to test if burning also burns the resources)
-		for _ in 0..2 {
-			assert_ok!(RMRKCore::add_resource(
-				Origin::signed(ALICE),
-				0,
-				0,
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-			));
-		}
+
+		assert_ok!(RMRKCore::add_resource(
+			Origin::signed(ALICE),
+			0,
+			0,
+			stbr("res-1"),
+			Some(0),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			None,
+			None,
+			None,
+			None
+		));
+
+		assert_ok!(RMRKCore::add_resource(
+			Origin::signed(ALICE),
+			0,
+			0,
+			stbr("res-2"),
+			Some(0),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			None,
+			None,
+			None,
+			None
+		));		
+
+
 		// Ensure resources are there
 		assert_eq!(Resources::<Test>::iter_prefix((COLLECTION_ID_0, NFT_ID_0)).count(), 2);
 
@@ -621,19 +638,34 @@ fn burn_nft_with_great_grandchildren_works() {
 			assert_ok!(basic_mint());
 		}
 		// Add two resources to the great-grandchild (0, 3)
-		for _ in 0..2 {
-			assert_ok!(RMRKCore::add_resource(
-				Origin::signed(ALICE),
-				0,
-				3,
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-				Some(bvec![0u8; 20]),
-			));
-		}
+		assert_ok!(RMRKCore::add_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			3,
+			stbr("res-1"),
+			Some(0),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			None,
+			None,
+			None,
+			None
+		));
+
+		assert_ok!(RMRKCore::add_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			3,
+			stbr("res-2"),
+			Some(0),
+			Some(bvec![0u8; 20]),
+			Some(bvec![0u8; 20]),
+			None,
+			None,
+			None,
+			None
+		));			
+		
 		// Ensure resources are there
 		assert_eq!(Resources::<Test>::iter_prefix((COLLECTION_ID_0, 3)).count(), 2);
 
