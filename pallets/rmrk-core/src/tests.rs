@@ -675,7 +675,7 @@ fn add_resource_pending_works() {
 			Some(bvec![0u8; 20]),
 		));
 		// Since BOB doesn't root-own NFT, resource's pending status should be true
-		assert!(RMRKCore::resources((0, 0, 0)).unwrap().pending);
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, true);
 		// BOB doesn't own ALICES's NFT, so accept should fail
 		assert_noop!(RMRKCore::accept(Origin::signed(BOB), 0, 0, 0), Error::<Test>::NoPermission);
 		// ALICE can accept her own NFT's pending resource
@@ -686,7 +686,7 @@ fn add_resource_pending_works() {
 			resource_id: 0,
 		}));
 		// Resource should now have false pending status
-		assert!(RMRKCore::resources((0, 0, 0)).unwrap().pending);
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 	});
 }
 
