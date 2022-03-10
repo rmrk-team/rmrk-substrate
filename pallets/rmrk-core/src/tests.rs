@@ -185,14 +185,15 @@ fn mint_nft_works() {
 			bvec![0u8; 20]
 		));
 		// BOB shouldn't be able to mint in ALICE's collection
-		assert_noop!(RMRKCore::mint_nft(
-			Origin::signed(BOB),
-			BOB,
-			COLLECTION_ID_0,
-			Some(CHARLIE),
-			Some(Permill::from_float(20.525)),
-			bvec![0u8; 20]
-		),
+		assert_noop!(
+			RMRKCore::mint_nft(
+				Origin::signed(BOB),
+				BOB,
+				COLLECTION_ID_0,
+				Some(CHARLIE),
+				Some(Permill::from_float(20.525)),
+				bvec![0u8; 20]
+			),
 			Error::<Test>::NoPermission
 		);
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 2);
@@ -411,11 +412,7 @@ fn reject_nft_works() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
 		// Bob rejects NFT (0,2) for Bob-owned NFT (0,0)
-		assert_ok!(RMRKCore::reject_nft(
-			Origin::signed(BOB),
-			0,
-			2,
-		));
+		assert_ok!(RMRKCore::reject_nft(Origin::signed(BOB), 0, 2,));
 	});
 }
 
@@ -678,7 +675,7 @@ fn add_resource_pending_works() {
 			Some(bvec![0u8; 20]),
 		));
 		// Since BOB doesn't root-own NFT, resource's pending status should be true
-		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, true);
+		assert!(RMRKCore::resources((0, 0, 0)).unwrap().pending);
 		// BOB doesn't own ALICES's NFT, so accept should fail
 		assert_noop!(RMRKCore::accept(Origin::signed(BOB), 0, 0, 0), Error::<Test>::NoPermission);
 		// ALICE can accept her own NFT's pending resource
@@ -689,7 +686,7 @@ fn add_resource_pending_works() {
 			resource_id: 0,
 		}));
 		// Resource should now have false pending status
-		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
+		assert!(RMRKCore::resources((0, 0, 0)).unwrap().pending);
 	});
 }
 
