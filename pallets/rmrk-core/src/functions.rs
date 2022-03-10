@@ -52,7 +52,6 @@ where
 			ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
 		}
 		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
-		Self::deposit_event(Event::PropertySet { collection_id, maybe_nft_id, key, value });
 		Ok(())
 	}
 }
