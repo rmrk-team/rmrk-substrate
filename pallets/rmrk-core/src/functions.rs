@@ -133,7 +133,7 @@ where
 	fn collection_create(
 		issuer: T::AccountId,
 		metadata: StringLimitOf<T>,
-		max: u32,
+		max: Option<u32>,
 		symbol: StringLimitOf<T>,
 	) -> Result<CollectionId, DispatchError> {
 		let collection = CollectionInfo { issuer, metadata, max, symbol, nfts_count: 0 };
@@ -174,7 +174,7 @@ where
 	fn collection_lock(collection_id: CollectionId) -> Result<CollectionId, DispatchError> {
 		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
 			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
-			collection.max = collection.nfts_count;
+			collection.max = Some(collection.nfts_count);
 			Ok(())
 		})?;
 		Ok(collection_id)
@@ -197,10 +197,11 @@ where
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-		let max: u32 = collection.max;
-
+		
 		// Prevent minting when next NFT id is greater than the collection max.
-		ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
+		if let Some(max) = collection.max {
+			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
+		}
 
 		let recipient = recipient.unwrap_or_else(|| owner.clone());
 		let royalty = royalty.unwrap_or_default();

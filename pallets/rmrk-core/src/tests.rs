@@ -90,6 +90,34 @@ fn create_collection_works() {
 	});
 }
 
+/// Collection: Creating collection with None max doesn't prevent NFTs from being minted
+#[test]
+fn create_collection_no_max_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a collection with max of None
+		assert_ok!(
+			RMRKCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], None, bvec![0u8; 15])
+		);
+		// Creating collection should trigger CollectionCreated event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::CollectionCreated {
+			issuer: ALICE,
+			collection_id: 0,
+		}));
+		// Mint 100 NFTs
+		for _ in 0..100 {
+			assert_ok!(
+				basic_mint()
+			);
+		}
+		// Last event should be the 100th NFT creation
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NftMinted {
+			owner: ALICE,
+			collection_id: 0,
+			nft_id: 99
+		}));
+	});
+}
+
 /// Collection: Locking collection tests (RMRK2.0 spec: LOCK)
 #[test]
 fn lock_collection_works() {
