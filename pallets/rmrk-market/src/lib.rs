@@ -487,10 +487,9 @@ where
 		if let Some(amount) = amount {
 			ensure!(list_price == amount, Error::<T>::PriceDiffersFromExpected);
 		}
-    
-    // Set NFT Lock status to false to facilitate the purchase
-		pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), false);
 
+		// Set NFT Lock status to false to facilitate the purchase
+		pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), false);
 
 		// Transfer currency then transfer the NFT
 		<T as pallet::Config>::Currency::transfer(

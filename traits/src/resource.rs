@@ -8,7 +8,6 @@ use sp_std::{cmp::Eq, vec::Vec};
 
 use crate::primitives::*;
 
-
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct ResourceInfo<BoundedResource, BoundedString> {

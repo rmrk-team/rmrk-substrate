@@ -1,4 +1,5 @@
 use super::*;
+use pallet_uniques::Locker;
 
 impl<T: Config> Pallet<T> {
 	pub fn get_next_base_id() -> Result<BaseId, Error<T>> {
@@ -57,6 +58,19 @@ where
 		let item_nft_id = item.1;
 		let equipper_collection_id = equipper.0;
 		let equipper_nft_id = equipper.1;
+		// Check item NFT lock status
+		ensure!(
+			!pallet_rmrk_core::Pallet::<T>::check_should_lock(item_collection_id, item_nft_id),
+			pallet_uniques::Error::<T>::Locked
+		);
+		// Check equipper NFT lock status
+		ensure!(
+			!pallet_rmrk_core::Pallet::<T>::check_should_lock(
+				equipper_collection_id,
+				equipper_nft_id
+			),
+			pallet_uniques::Error::<T>::Locked
+		);
 
 		let item_is_equipped =
 			Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id))

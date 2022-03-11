@@ -35,8 +35,8 @@ pub mod mock;
 mod tests;
 
 mod functions;
-mod impl_nonfungibles;
 mod impl_locker;
+mod impl_nonfungibles;
 mod types;
 
 pub mod migration;

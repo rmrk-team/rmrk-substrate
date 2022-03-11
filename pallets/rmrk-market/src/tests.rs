@@ -233,11 +233,12 @@ fn send_wont_work_if_sent_after_list() {
 			Error::<Test>::CannotBuyOwnToken
 		);
 		// NFT Lock Tests Ensure ALICE cannot sends CHARLIE NFT [0,0] bc it is now locked
-		assert_noop!(RmrkCore::send(
-			Origin::signed(ALICE),
-			COLLECTION_ID_0,
-			NFT_ID_0,
-			AccountIdOrCollectionNftTuple::AccountId(CHARLIE),
+		assert_noop!(
+			RmrkCore::send(
+				Origin::signed(ALICE),
+				COLLECTION_ID_0,
+				NFT_ID_0,
+				AccountIdOrCollectionNftTuple::AccountId(CHARLIE),
 			),
 			pallet_uniques::Error::<Test>::Locked
 		);
@@ -291,11 +292,12 @@ fn send_to_nft_wont_work_after_list() {
 			Error::<Test>::CannotBuyOwnToken
 		);
 		// NFT Lock Tests ALICE sends NFT [0,0] to NFT [0,1] won't work
-		assert_noop!(RmrkCore::send(
-			Origin::signed(ALICE),
-			COLLECTION_ID_0,
-			NFT_ID_0,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
+		assert_noop!(
+			RmrkCore::send(
+				Origin::signed(ALICE),
+				COLLECTION_ID_0,
+				NFT_ID_0,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
 			),
 			pallet_uniques::Error::<Test>::Locked
 		);

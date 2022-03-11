@@ -2,11 +2,11 @@
 
 use super::*;
 use codec::{Codec, Decode, Encode};
+use pallet_uniques::Locker;
 use sp_runtime::{
 	traits::{Saturating, TrailingZeroInput},
 	ArithmeticError,
 };
-use pallet_uniques::Locker;
 
 // Randomness to generate NFT virtual accounts
 pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
@@ -22,7 +22,10 @@ where
 		priorities: Vec<Vec<u8>>,
 	) -> DispatchResult {
 		// Check NFT lock status
-		ensure!(!Pallet::<T>::check_should_lock(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
+		ensure!(
+			!Pallet::<T>::check_should_lock(collection_id, nft_id),
+			pallet_uniques::Error::<T>::Locked
+		);
 		let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
 		for priority in priorities {
 			let bounded_priority = Self::to_bounded_string(priority)?;
@@ -50,7 +53,10 @@ where
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		if let Some(nft_id) = &maybe_nft_id {
 			// Check NFT lock status
-			ensure!(!Pallet::<T>::check_should_lock(collection_id, *nft_id), pallet_uniques::Error::<T>::Locked);
+			ensure!(
+				!Pallet::<T>::check_should_lock(collection_id, *nft_id),
+				pallet_uniques::Error::<T>::Locked
+			);
 			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id)?;
 			ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
 		}
@@ -59,7 +65,9 @@ where
 	}
 }
 
-impl<T: Config> Resource<BoundedVec<u8, T::StringLimit>, T::AccountId, BoundedResource<T::ResourceSymbolLimit>> for Pallet<T>
+impl<T: Config>
+	Resource<BoundedVec<u8, T::StringLimit>, T::AccountId, BoundedResource<T::ResourceSymbolLimit>>
+	for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -78,7 +86,10 @@ where
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		// Check NFT lock status
-		ensure!(!Pallet::<T>::check_should_lock(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
+		ensure!(
+			!Pallet::<T>::check_should_lock(collection_id, nft_id),
+			pallet_uniques::Error::<T>::Locked
+		);
 
 		let empty =
 			base.is_none() &&
@@ -87,7 +98,10 @@ where
 				thumb.is_none();
 		ensure!(!empty, Error::<T>::EmptyResource);
 
-		let res = ResourceInfo::<BoundedVec<u8, T::ResourceSymbolLimit>, BoundedVec<u8, T::StringLimit>> {
+		let res = ResourceInfo::<
+			BoundedVec<u8, T::ResourceSymbolLimit>,
+			BoundedVec<u8, T::StringLimit>,
+		> {
 			id: resource_id.clone(),
 			base,
 			src,
@@ -112,7 +126,10 @@ where
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
 		// Check NFT lock status
-		ensure!(!Pallet::<T>::check_should_lock(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
+		ensure!(
+			!Pallet::<T>::check_should_lock(collection_id, nft_id),
+			pallet_uniques::Error::<T>::Locked
+		);
 		Resources::<T>::try_mutate_exists(
 			(collection_id, nft_id, resource_id.clone()),
 			|resource| -> DispatchResult {
@@ -202,7 +219,7 @@ where
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-		
+
 		// Prevent minting when next NFT id is greater than the collection max.
 		if let Some(max) = collection.max {
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
@@ -213,7 +230,13 @@ where
 
 		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
 
-		let nft = NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata, equipped: false };
+		let nft = NftInfo {
+			owner: owner_as_maybe_account,
+			recipient,
+			royalty,
+			metadata,
+			equipped: false,
+		};
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 		NftsByOwner::<T>::append(owner, (collection_id, nft_id));

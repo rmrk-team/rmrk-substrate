@@ -7,13 +7,13 @@ use frame_support::{
 	weights::Weight,
 };
 use frame_system::EnsureRoot;
+use pallet_uniques::Locker;
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{BlakeTwo256, IdentityLookup},
 	Perbill,
 };
-use pallet_uniques::Locker;
 
 mod nfc {
 	// Re-export needed for `impl_outer_event!`.
