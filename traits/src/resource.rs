@@ -2,28 +2,31 @@
 
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
+use serde::{Deserialize, Serialize};
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
-use sp_std::cmp::Eq;
+use sp_std::{cmp::Eq, vec::Vec};
 
 use crate::primitives::*;
-use serde::{Deserialize, Serialize};
-use sp_std::result::Result;
 
-#[derive(Encode, Decode, Eq, Copy, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+
+#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct ResourceInfo<ResourceId, BoundedString> {
+pub struct ResourceInfo<BoundedResource, BoundedString> {
 	/// id is a 5-character string of reasonable uniqueness.
 	/// The combination of base ID and resource id should be unique across the entire RMRK
 	/// ecosystem which
-	pub id: ResourceId,
+	pub id: BoundedResource,
 
 	/// If resource is sent to non-rootowned NFT, pending will be false and need to be accepted
 	pub pending: bool,
 
+	/// If a resource is composed, it will have an array of parts that compose it
+	pub parts: Option<Vec<PartId>>,
+
 	/// A Base is uniquely identified by the combination of the word `base`, its minting block
 	/// number, and user provided symbol during Base creation, glued by dashes `-`, e.g.
 	/// base-4477293-kanaria_superbird.
-	pub base: Option<BoundedString>,
+	pub base: Option<BaseId>,
 	/// If the resource is Media, the base property is absent. Media src should be a URI like an
 	/// IPFS hash.
 	pub src: Option<BoundedString>,
@@ -32,7 +35,7 @@ pub struct ResourceInfo<ResourceId, BoundedString> {
 	/// The baseslot will be composed of two dot-delimited values, like so:
 	/// "base-4477293-kanaria_superbird.machine_gun_scope". This means: "This resource is
 	/// compatible with the machine_gun_scope slot of base base-4477293-kanaria_superbird
-	pub slot: Option<BoundedString>,
+	pub slot: Option<SlotId>,
 	/// The license field, if present, should contain a link to a license (IPFS or static HTTP
 	/// url), or an identifier, like RMRK_nocopy or ipfs://ipfs/someHashOfLicense.
 	pub license: Option<BoundedString>,
@@ -46,22 +49,24 @@ pub struct ResourceInfo<ResourceId, BoundedString> {
 }
 
 /// Abstraction over a Resource system.
-pub trait Resource<BoundedString, AccountId> {
+pub trait Resource<BoundedString, AccountId, BoundedResource> {
 	fn resource_add(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		base: Option<BoundedString>,
+		resource_id: BoundedResource,
+		base: Option<BaseId>,
 		src: Option<BoundedString>,
 		metadata: Option<BoundedString>,
-		slot: Option<BoundedString>,
+		slot: Option<SlotId>,
 		license: Option<BoundedString>,
 		thumb: Option<BoundedString>,
-	) -> Result<ResourceId, DispatchError>;
+		parts: Option<Vec<PartId>>,
+	) -> DispatchResult;
 	fn accept(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: ResourceId,
+		resource_id: BoundedResource,
 	) -> DispatchResult;
 }

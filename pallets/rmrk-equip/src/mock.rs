@@ -1,5 +1,5 @@
 use super::*;
-use crate as pallet_rmrk_core;
+use crate as pallet_rmrk_equip;
 
 use frame_support::{
 	parameter_types,
@@ -13,7 +13,6 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	Perbill,
 };
-use pallet_uniques::Locker;
 
 mod nfc {
 	// Re-export needed for `impl_outer_event!`.
@@ -34,10 +33,22 @@ frame_support::construct_runtime!(
 	{
 		System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
 		Uniques: pallet_uniques::{Pallet, Storage, Event<T>},
+		RmrkEquip: pallet_rmrk_equip::{Pallet, Call, Event<T>},
 		RmrkCore: pallet_rmrk_core::{Pallet, Call, Event<T>},
 		Balances: pallet_balances::{Pallet, Call, Storage, Config<T>, Event<T>},
 	}
 );
+
+parameter_types! {
+	pub const MaxPartsPerBase: u32 = 5;
+	pub const MaxPropertiesPerTheme: u32 = 5;
+}
+
+impl pallet_rmrk_equip::Config for Test {
+	type Event = Event;
+	type MaxPartsPerBase = MaxPartsPerBase;
+	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
+}
 
 parameter_types! {
 	pub ClassBondAmount: Balance = 100;
@@ -71,7 +82,6 @@ impl pallet_uniques::Config for Test {
 	type InstanceId = u32;
 	type Currency = Balances;
 	type ForceOrigin = EnsureRoot<AccountId>;
-	type Locker = pallet_rmrk_core::Pallet<Test>;
 	type ClassDeposit = ClassDeposit;
 	type InstanceDeposit = InstanceDeposit;
 	type MetadataDepositBase = UniquesMetadataDepositBase;
@@ -140,7 +150,7 @@ pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const RMRK: Balance = 1;
 pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::ClassId = 0;
-// pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::ClassId = 1;
+pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::ClassId = 1;
 pub const NFT_ID_0: <Test as pallet_uniques::Config>::InstanceId = 0;
 pub const NOT_EXISTING_CLASS_ID: <Test as pallet_uniques::Config>::ClassId = 999;
 

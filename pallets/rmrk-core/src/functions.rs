@@ -1,9 +1,11 @@
 #![allow(clippy::too_many_arguments)]
 
-use sp_runtime::{traits::Saturating, ArithmeticError};
 use super::*;
 use codec::{Codec, Decode, Encode};
-use sp_runtime::traits::TrailingZeroInput;
+use sp_runtime::{
+	traits::{Saturating, TrailingZeroInput},
+	ArithmeticError,
+};
 use pallet_uniques::Locker;
 
 // Randomness to generate NFT virtual accounts
@@ -53,12 +55,11 @@ where
 			ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
 		}
 		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
-		Self::deposit_event(Event::PropertySet { collection_id, maybe_nft_id, key, value });
 		Ok(())
 	}
 }
 
-impl<T: Config> Resource<StringLimitOf<T>, T::AccountId> for Pallet<T>
+impl<T: Config> Resource<BoundedVec<u8, T::StringLimit>, T::AccountId, BoundedResource<T::ResourceSymbolLimit>> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -66,13 +67,15 @@ where
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		base: Option<BoundedVec<u8, T::StringLimit>>,
+		resource_id: BoundedResource<T::ResourceSymbolLimit>,
+		base: Option<BaseId>,
 		src: Option<BoundedVec<u8, T::StringLimit>>,
 		metadata: Option<BoundedVec<u8, T::StringLimit>>,
-		slot: Option<BoundedVec<u8, T::StringLimit>>,
+		slot: Option<SlotId>,
 		license: Option<BoundedVec<u8, T::StringLimit>>,
 		thumb: Option<BoundedVec<u8, T::StringLimit>>,
-	) -> Result<ResourceId, DispatchError> {
+		parts: Option<Vec<PartId>>,
+	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
 		let resource_id = Self::get_next_resource_id()?;
@@ -90,33 +93,34 @@ where
 				thumb.is_none();
 		ensure!(!empty, Error::<T>::EmptyResource);
 
-		let res = ResourceInfo {
-			id: resource_id,
+		let res = ResourceInfo::<BoundedVec<u8, T::ResourceSymbolLimit>, BoundedVec<u8, T::StringLimit>> {
+			id: resource_id.clone(),
 			base,
 			src,
 			metadata,
 			slot,
 			license,
 			thumb,
+			parts,
 			pending: root_owner != sender,
 		};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
-		Ok(resource_id)
+		Ok(())
 	}
 
 	fn accept(
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: ResourceId,
+		resource_id: BoundedResource<T::ResourceSymbolLimit>,
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
 		// Check NFT lock status
 		ensure!(!Pallet::<T>::check_should_lock(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 		Resources::<T>::try_mutate_exists(
-			(collection_id, nft_id, resource_id),
+			(collection_id, nft_id, resource_id.clone()),
 			|resource| -> DispatchResult {
 				if let Some(res) = resource {
 					res.pending = false;
@@ -140,7 +144,7 @@ where
 	fn collection_create(
 		issuer: T::AccountId,
 		metadata: StringLimitOf<T>,
-		max: u32,
+		max: Option<u32>,
 		symbol: StringLimitOf<T>,
 	) -> Result<CollectionId, DispatchError> {
 		let collection = CollectionInfo { issuer, metadata, max, symbol, nfts_count: 0 };
@@ -181,7 +185,7 @@ where
 	fn collection_lock(collection_id: CollectionId) -> Result<CollectionId, DispatchError> {
 		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
 			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
-			collection.max = collection.nfts_count;
+			collection.max = Some(collection.nfts_count);
 			Ok(())
 		})?;
 		Ok(collection_id)
@@ -204,17 +208,18 @@ where
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-		let max: u32 = collection.max;
-
+		
 		// Prevent minting when next NFT id is greater than the collection max.
-		ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
+		if let Some(max) = collection.max {
+			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
+		}
 
 		let recipient = recipient.unwrap_or_else(|| owner.clone());
 		let royalty = royalty.unwrap_or_default();
 
 		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
 
-		let nft = NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata };
+		let nft = NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata, equipped: false };
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 		NftsByOwner::<T>::append(owner, (collection_id, nft_id));
@@ -237,6 +242,9 @@ where
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		Nfts::<T>::remove(collection_id, nft_id);
+		for resource in Resources::<T>::drain_prefix((collection_id, nft_id)) {
+			Resources::<T>::remove((collection_id, nft_id, resource.1.id));
+		}
 		let kids = Children::<T>::take((collection_id, nft_id));
 		for (child_collection_id, child_nft_id) in kids {
 			// Remove child from Children StorageMap
@@ -273,7 +281,7 @@ where
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
 		// TODO: Check NFT lock status
-		
+
 		// Needs to be pending if the sending to an account or to a non-owned NFT
 		let mut approval_required = true;
 
@@ -315,7 +323,6 @@ where
 		} else {
 			Nfts::<T>::insert(collection_id, nft_id, sending_nft);
 		}
-		
 
 		if let Some(current_owner) = parent {
 			// Handle Children StorageMap for NFTs
@@ -358,7 +365,6 @@ where
 		let new_owner_account = match new_owner.clone() {
 			AccountIdOrCollectionNftTuple::AccountId(id) => id,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
-
 				// Check if NFT target exists
 				ensure!(Nfts::<T>::contains_key(cid, nid), Error::<T>::NoAvailableNftId);
 
@@ -375,10 +381,7 @@ where
 				);
 
 				let (recipient_root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(cid, nid)?;
-				ensure!(
-					recipient_root_owner == root_owner,
-					Error::<T>::CannotAcceptNonOwnedNft
-				);
+				ensure!(recipient_root_owner == root_owner, Error::<T>::CannotAcceptNonOwnedNft);
 
 				// Convert to virtual account
 				Pallet::<T>::nft_to_account_id::<T::AccountId>(cid, nid)
@@ -387,7 +390,7 @@ where
 
 		sending_nft.owner = new_owner;
 		PendingNfts::<T>::remove(collection_id, nft_id);
-		Nfts::<T>::insert(collection_id, nft_id, sending_nft);	
+		Nfts::<T>::insert(collection_id, nft_id, sending_nft);
 
 		// Add child to new parent if NFT virtual address
 		let new_owner_cid_nid =
