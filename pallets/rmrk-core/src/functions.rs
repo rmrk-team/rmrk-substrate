@@ -77,12 +77,6 @@ where
 		parts: Option<Vec<PartId>>,
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-
-		let resource_id = Self::get_next_resource_id()?;
-		ensure!(
-			Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
-			Error::<T>::ResourceAlreadyExists
-		);
 		// Check NFT lock status
 		ensure!(!Pallet::<T>::check_should_lock(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 
