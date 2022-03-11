@@ -53,21 +53,8 @@ use sp_std::prelude::*;
 
 pub use pallet::*;
 pub use types::*;
+pub use impl_locker::Locker;
 pub use weights::WeightInfo;
-
-/// Trait to handle NFT Locking mechanism to ensure interactions with the NFT can be implemented
-/// downstream to extend logic of Uniques current functionality
-#[allow(clippy::upper_case_acronyms)]
-pub trait Locker<ClassId, InstanceId> {
-	/// Check if the NFT should be locked and prevent interactions with the NFT from executing
-	fn check_should_lock(class: ClassId, instance: InstanceId) -> bool;
-}
-
-impl<ClassId, InstanceId> Locker<ClassId, InstanceId> for () {
-	fn check_should_lock(_class: ClassId, _instance: InstanceId) -> bool {
-		false
-	}
-}
 
 #[frame_support::pallet]
 pub mod pallet {

@@ -301,6 +301,16 @@ fn send_to_nft_wont_work_after_list() {
 			),
 			pallet_uniques::Error::<Test>::Locked
 		);
+		// NFT Lock test directly calling the Uniques:do_transfer should fail
+		assert_noop!(
+			Uniques::do_transfer(
+				COLLECTION_ID_0,
+				NFT_ID_0,
+				CHARLIE,
+				|_class_details, _details| Ok(()),
+			),
+			pallet_uniques::Error::<Test>::Locked
+		);
 		// BOB buys the NFT and the NFT is transferred from ALICE to BOB
 		assert_ok!(RmrkMarket::buy(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0, Some(10u128),));
 		// Bought NFT should trigger TokenSold event
