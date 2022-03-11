@@ -233,8 +233,8 @@ pub mod pallet {
 				Error::<T>::CannotListNftOwnedByNft);
 			// Ensure sender is the owner
 			ensure!(sender == owner, Error::<T>::NoPermission);
-			// TODO: Lock NFT to prevent transfers or interactions with the NFT
-
+			// Lock NFT to prevent transfers or interactions with the NFT
+			pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), true);
 			// Check if a prior listing is in storage from previous owner and update if found
 			if Self::is_nft_listed(collection_id, nft_id) {
 				ListedNfts::<T>::remove(collection_id, nft_id);
@@ -281,7 +281,8 @@ pub mod pallet {
 				pallet_uniques::Pallet::<T>::owner(collection_id, nft_id).ok_or(Error::<T>::TokenDoesNotExist)?;
 			// Ensure owner of NFT is performing call to unlist
 			ensure!(sender == owner, Error::<T>::NoPermission);
-			// TODO: Set the NFT lock to flase to allow interactions with the NFT
+			// Set the NFT lock to false to allow interactions with the NFT
+			pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), false);
 			// Remove from storage
 			ListedNfts::<T>::remove(collection_id, nft_id);
 			// Emit TokenUnlisted Event
@@ -481,7 +482,8 @@ where
 			}
 			list_info.amount
 		};
-		// TODO: Set NFT Lock status to false to facilitate the purchase
+		// Set NFT Lock status to false to facilitate the purchase
+		pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), false);
 
 		// Transfer currency then transfer the NFT
 		<T as pallet::Config>::Currency::transfer(&buyer, &owner, list_price, ExistenceRequirement::KeepAlive)?;

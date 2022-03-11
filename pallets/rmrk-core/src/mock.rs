@@ -13,6 +13,7 @@ use sp_runtime::{
 	traits::{BlakeTwo256, IdentityLookup},
 	Perbill,
 };
+use pallet_uniques::Locker;
 
 mod nfc {
 	// Re-export needed for `impl_outer_event!`.
@@ -68,6 +69,7 @@ impl pallet_uniques::Config for Test {
 	type InstanceId = u32;
 	type Currency = Balances;
 	type ForceOrigin = EnsureRoot<AccountId>;
+	type Locker = pallet_rmrk_core::Pallet<Test>;
 	type ClassDeposit = ClassDeposit;
 	type InstanceDeposit = InstanceDeposit;
 	type MetadataDepositBase = UniquesMetadataDepositBase;

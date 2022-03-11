@@ -546,7 +546,6 @@ pub mod pallet {
 		) -> DispatchResult {
 			let origin = ensure_signed(origin)?;
 			let dest = T::Lookup::lookup(dest)?;
-			ensure!(!T::Locker::check_should_lock(class, instance), Error::<T, I>::Locked);
 
 			Self::do_transfer(class, instance, dest, |class_details, details| {
 				if details.owner != origin && class_details.admin != origin {

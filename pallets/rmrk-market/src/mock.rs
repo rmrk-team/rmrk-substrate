@@ -120,6 +120,7 @@ impl pallet_uniques::Config for Test {
 	type InstanceId = u32;
 	type Currency = Balances;
 	type ForceOrigin = EnsureRoot<AccountId>;
+	type Locker = pallet_rmrk_core::Pallet<Test>;
 	type ClassDeposit = ClassDeposit;
 	type InstanceDeposit = InstanceDeposit;
 	type MetadataDepositBase = UniquesMetadataDepositBase;
