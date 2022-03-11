@@ -231,9 +231,9 @@ where
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		Nfts::<T>::remove(collection_id, nft_id);
-		for resource in Resources::<T>::drain_prefix((collection_id, nft_id)) {
-			Resources::<T>::remove((collection_id, nft_id, resource.1.id));
-		}
+
+		for _ in Resources::<T>::drain_prefix((collection_id, nft_id)) {}		
+
 		let kids = Children::<T>::take((collection_id, nft_id));
 		for (child_collection_id, child_nft_id) in kids {
 			// Remove child from Children StorageMap
