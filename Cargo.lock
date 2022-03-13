@@ -1440,7 +1440,7 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 [[package]]
 name = "fork-tree"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "parity-scale-codec",
 ]
@@ -1458,7 +1458,7 @@ dependencies = [
 [[package]]
 name = "frame-benchmarking"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1480,7 +1480,7 @@ dependencies = [
 [[package]]
 name = "frame-benchmarking-cli"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "Inflector",
  "chrono",
@@ -1507,7 +1507,7 @@ dependencies = [
 [[package]]
 name = "frame-executive"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1535,7 +1535,7 @@ dependencies = [
 [[package]]
 name = "frame-support"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "bitflags",
  "frame-metadata",
@@ -1564,7 +1564,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "Inflector",
  "frame-support-procedural-tools",
@@ -1576,7 +1576,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-support-procedural-tools-derive",
  "proc-macro-crate 1.1.3",
@@ -1588,7 +1588,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools-derive"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1598,7 +1598,7 @@ dependencies = [
 [[package]]
 name = "frame-system"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-support",
  "log",
@@ -1615,7 +1615,7 @@ dependencies = [
 [[package]]
 name = "frame-system-benchmarking"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -1630,7 +1630,7 @@ dependencies = [
 [[package]]
 name = "frame-system-rpc-runtime-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
@@ -3358,14 +3358,15 @@ dependencies = [
 
 [[package]]
 name = "mio"
-version = "0.8.0"
+version = "0.8.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ba272f85fa0b41fc91872be579b3bbe0f56b792aa361a380eb669469f68dafb2"
+checksum = "7ba42135c6a5917b9db9cd7b293e5409e1c6b041e6f9825e92e55a894c63b6f8"
 dependencies = [
  "libc",
  "log",
  "miow 0.3.7",
  "ntapi",
+ "wasi 0.11.0+wasi-snapshot-preview1",
  "winapi 0.3.9",
 ]
 
@@ -3734,7 +3735,7 @@ dependencies = [
 [[package]]
 name = "pallet-aura"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3750,7 +3751,7 @@ dependencies = [
 [[package]]
 name = "pallet-authorship"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3765,7 +3766,7 @@ dependencies = [
 [[package]]
 name = "pallet-balances"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -3780,7 +3781,7 @@ dependencies = [
 [[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -3803,7 +3804,7 @@ dependencies = [
 [[package]]
 name = "pallet-randomness-collective-flip"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3876,7 +3877,7 @@ dependencies = [
 [[package]]
 name = "pallet-session"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3897,7 +3898,7 @@ dependencies = [
 [[package]]
 name = "pallet-sudo"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3925,7 +3926,7 @@ dependencies = [
 [[package]]
 name = "pallet-timestamp"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -3943,7 +3944,7 @@ dependencies = [
 [[package]]
 name = "pallet-transaction-payment"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3960,7 +3961,7 @@ dependencies = [
 [[package]]
 name = "pallet-transaction-payment-rpc"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -3977,7 +3978,7 @@ dependencies = [
 [[package]]
 name = "pallet-transaction-payment-rpc-runtime-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "pallet-transaction-payment",
  "parity-scale-codec",
@@ -3988,16 +3989,14 @@ dependencies = [
 [[package]]
 name = "pallet-uniques"
 version = "4.0.0-dev"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
  "log",
- "pallet-balances",
  "parity-scale-codec",
  "scale-info",
- "sp-core",
- "sp-io",
  "sp-runtime",
  "sp-std",
 ]
@@ -4005,7 +4004,7 @@ dependencies = [
 [[package]]
 name = "pallet-utility"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -5059,7 +5058,7 @@ dependencies = [
 [[package]]
 name = "sc-allocator"
 version = "4.1.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "log",
  "sp-core",
@@ -5070,7 +5069,7 @@ dependencies = [
 [[package]]
 name = "sc-basic-authorship"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "futures 0.3.21",
  "futures-timer",
@@ -5093,7 +5092,7 @@ dependencies = [
 [[package]]
 name = "sc-block-builder"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "parity-scale-codec",
  "sc-client-api",
@@ -5109,7 +5108,7 @@ dependencies = [
 [[package]]
 name = "sc-chain-spec"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "impl-trait-for-tuples",
  "memmap2 0.5.3",
@@ -5126,7 +5125,7 @@ dependencies = [
 [[package]]
 name = "sc-chain-spec-derive"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "proc-macro-crate 1.1.3",
  "proc-macro2",
@@ -5137,7 +5136,7 @@ dependencies = [
 [[package]]
 name = "sc-cli"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "chrono",
  "clap",
@@ -5175,7 +5174,7 @@ dependencies = [
 [[package]]
 name = "sc-client-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "fnv",
  "futures 0.3.21",
@@ -5203,7 +5202,7 @@ dependencies = [
 [[package]]
 name = "sc-client-db"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "hash-db",
  "kvdb",
@@ -5228,7 +5227,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "futures 0.3.21",
@@ -5252,7 +5251,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus-aura"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "futures 0.3.21",
@@ -5281,7 +5280,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus-slots"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "futures 0.3.21",
@@ -5306,7 +5305,7 @@ dependencies = [
 [[package]]
 name = "sc-executor"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "lazy_static",
  "libsecp256k1",
@@ -5334,7 +5333,7 @@ dependencies = [
 [[package]]
 name = "sc-executor-common"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "environmental",
  "parity-scale-codec",
@@ -5351,7 +5350,7 @@ dependencies = [
 [[package]]
 name = "sc-executor-wasmi"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "log",
  "parity-scale-codec",
@@ -5367,7 +5366,7 @@ dependencies = [
 [[package]]
 name = "sc-executor-wasmtime"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "cfg-if 1.0.0",
  "libc",
@@ -5385,7 +5384,7 @@ dependencies = [
 [[package]]
 name = "sc-finality-grandpa"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "dyn-clone",
@@ -5423,7 +5422,7 @@ dependencies = [
 [[package]]
 name = "sc-informant"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "ansi_term",
  "futures 0.3.21",
@@ -5440,7 +5439,7 @@ dependencies = [
 [[package]]
 name = "sc-keystore"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "hex",
@@ -5455,7 +5454,7 @@ dependencies = [
 [[package]]
 name = "sc-network"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-std",
  "async-trait",
@@ -5505,7 +5504,7 @@ dependencies = [
 [[package]]
 name = "sc-network-gossip"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "futures 0.3.21",
  "futures-timer",
@@ -5521,7 +5520,7 @@ dependencies = [
 [[package]]
 name = "sc-offchain"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "bytes 1.1.0",
  "fnv",
@@ -5549,7 +5548,7 @@ dependencies = [
 [[package]]
 name = "sc-peerset"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "futures 0.3.21",
  "libp2p",
@@ -5562,7 +5561,7 @@ dependencies = [
 [[package]]
 name = "sc-proposer-metrics"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "log",
  "substrate-prometheus-endpoint",
@@ -5571,7 +5570,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "futures 0.3.21",
  "hash-db",
@@ -5602,7 +5601,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc-api"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "futures 0.3.21",
  "jsonrpc-core",
@@ -5627,7 +5626,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc-server"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "futures 0.3.21",
  "jsonrpc-core",
@@ -5644,7 +5643,7 @@ dependencies = [
 [[package]]
 name = "sc-service"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "directories",
@@ -5708,7 +5707,7 @@ dependencies = [
 [[package]]
 name = "sc-state-db"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "log",
  "parity-scale-codec",
@@ -5722,7 +5721,7 @@ dependencies = [
 [[package]]
 name = "sc-telemetry"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "chrono",
  "futures 0.3.21",
@@ -5740,7 +5739,7 @@ dependencies = [
 [[package]]
 name = "sc-tracing"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "ansi_term",
  "atty",
@@ -5771,7 +5770,7 @@ dependencies = [
 [[package]]
 name = "sc-tracing-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "proc-macro-crate 1.1.3",
  "proc-macro2",
@@ -5782,7 +5781,7 @@ dependencies = [
 [[package]]
 name = "sc-transaction-pool"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "futures 0.3.21",
  "futures-timer",
@@ -5809,7 +5808,7 @@ dependencies = [
 [[package]]
 name = "sc-transaction-pool-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "futures 0.3.21",
  "log",
@@ -5822,7 +5821,7 @@ dependencies = [
 [[package]]
 name = "sc-utils"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "futures 0.3.21",
  "futures-timer",
@@ -6222,7 +6221,7 @@ dependencies = [
 [[package]]
 name = "sp-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "hash-db",
  "log",
@@ -6239,7 +6238,7 @@ dependencies = [
 [[package]]
 name = "sp-api-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "blake2-rfc",
  "proc-macro-crate 1.1.3",
@@ -6251,7 +6250,7 @@ dependencies = [
 [[package]]
 name = "sp-application-crypto"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -6264,7 +6263,7 @@ dependencies = [
 [[package]]
 name = "sp-arithmetic"
 version = "4.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "integer-sqrt",
  "num-traits",
@@ -6279,7 +6278,7 @@ dependencies = [
 [[package]]
 name = "sp-authorship"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "parity-scale-codec",
@@ -6291,7 +6290,7 @@ dependencies = [
 [[package]]
 name = "sp-block-builder"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
@@ -6303,7 +6302,7 @@ dependencies = [
 [[package]]
 name = "sp-blockchain"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "futures 0.3.21",
  "log",
@@ -6321,7 +6320,7 @@ dependencies = [
 [[package]]
 name = "sp-consensus"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "futures 0.3.21",
@@ -6340,7 +6339,7 @@ dependencies = [
 [[package]]
 name = "sp-consensus-aura"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "parity-scale-codec",
@@ -6358,7 +6357,7 @@ dependencies = [
 [[package]]
 name = "sp-consensus-slots"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -6370,7 +6369,7 @@ dependencies = [
 [[package]]
 name = "sp-core"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "base58",
  "bitflags",
@@ -6418,7 +6417,7 @@ dependencies = [
 [[package]]
 name = "sp-core-hashing"
 version = "4.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "blake2-rfc",
  "byteorder",
@@ -6431,7 +6430,7 @@ dependencies = [
 [[package]]
 name = "sp-core-hashing-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6442,7 +6441,7 @@ dependencies = [
 [[package]]
 name = "sp-database"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "kvdb",
  "parking_lot",
@@ -6451,7 +6450,7 @@ dependencies = [
 [[package]]
 name = "sp-debug-derive"
 version = "4.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6461,7 +6460,7 @@ dependencies = [
 [[package]]
 name = "sp-externalities"
 version = "0.11.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "environmental",
  "parity-scale-codec",
@@ -6472,7 +6471,7 @@ dependencies = [
 [[package]]
 name = "sp-finality-grandpa"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "finality-grandpa",
  "log",
@@ -6490,7 +6489,7 @@ dependencies = [
 [[package]]
 name = "sp-inherents"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "impl-trait-for-tuples",
@@ -6504,7 +6503,7 @@ dependencies = [
 [[package]]
 name = "sp-io"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "futures 0.3.21",
  "hash-db",
@@ -6528,7 +6527,7 @@ dependencies = [
 [[package]]
 name = "sp-keyring"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "lazy_static",
  "sp-core",
@@ -6539,7 +6538,7 @@ dependencies = [
 [[package]]
 name = "sp-keystore"
 version = "0.11.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "futures 0.3.21",
@@ -6556,7 +6555,7 @@ dependencies = [
 [[package]]
 name = "sp-maybe-compressed-blob"
 version = "4.1.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "thiserror",
  "zstd",
@@ -6565,7 +6564,7 @@ dependencies = [
 [[package]]
 name = "sp-offchain"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "sp-api",
  "sp-core",
@@ -6575,7 +6574,7 @@ dependencies = [
 [[package]]
 name = "sp-panic-handler"
 version = "4.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "backtrace",
  "lazy_static",
@@ -6585,7 +6584,7 @@ dependencies = [
 [[package]]
 name = "sp-rpc"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "rustc-hash",
  "serde",
@@ -6595,7 +6594,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "either",
  "hash256-std-hasher",
@@ -6617,7 +6616,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec",
@@ -6634,7 +6633,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface-proc-macro"
 version = "4.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "Inflector",
  "proc-macro-crate 1.1.3",
@@ -6646,7 +6645,7 @@ dependencies = [
 [[package]]
 name = "sp-serializer"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "serde",
  "serde_json",
@@ -6655,7 +6654,7 @@ dependencies = [
 [[package]]
 name = "sp-session"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -6669,7 +6668,7 @@ dependencies = [
 [[package]]
 name = "sp-staking"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -6680,7 +6679,7 @@ dependencies = [
 [[package]]
 name = "sp-state-machine"
 version = "0.11.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "hash-db",
  "log",
@@ -6703,12 +6702,12 @@ dependencies = [
 [[package]]
 name = "sp-std"
 version = "4.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 
 [[package]]
 name = "sp-storage"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "impl-serde",
  "parity-scale-codec",
@@ -6721,7 +6720,7 @@ dependencies = [
 [[package]]
 name = "sp-tasks"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "log",
  "sp-core",
@@ -6734,7 +6733,7 @@ dependencies = [
 [[package]]
 name = "sp-timestamp"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "futures-timer",
@@ -6750,7 +6749,7 @@ dependencies = [
 [[package]]
 name = "sp-tracing"
 version = "4.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "parity-scale-codec",
  "sp-std",
@@ -6762,7 +6761,7 @@ dependencies = [
 [[package]]
 name = "sp-transaction-pool"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "sp-api",
  "sp-runtime",
@@ -6771,7 +6770,7 @@ dependencies = [
 [[package]]
 name = "sp-transaction-storage-proof"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-trait",
  "log",
@@ -6787,7 +6786,7 @@ dependencies = [
 [[package]]
 name = "sp-trie"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "hash-db",
  "memory-db",
@@ -6802,7 +6801,7 @@ dependencies = [
 [[package]]
 name = "sp-version"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "impl-serde",
  "parity-scale-codec",
@@ -6819,7 +6818,7 @@ dependencies = [
 [[package]]
 name = "sp-version-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "parity-scale-codec",
  "proc-macro2",
@@ -6830,7 +6829,7 @@ dependencies = [
 [[package]]
 name = "sp-wasm-interface"
 version = "5.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "impl-trait-for-tuples",
  "log",
@@ -6929,7 +6928,7 @@ dependencies = [
 [[package]]
 name = "substrate-build-script-utils"
 version = "3.0.0"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "platforms",
 ]
@@ -6937,7 +6936,7 @@ dependencies = [
 [[package]]
 name = "substrate-frame-rpc-system"
 version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "frame-system-rpc-runtime-api",
  "futures 0.3.21",
@@ -6959,7 +6958,7 @@ dependencies = [
 [[package]]
 name = "substrate-prometheus-endpoint"
 version = "0.10.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "async-std",
  "futures-util",
@@ -6973,7 +6972,7 @@ dependencies = [
 [[package]]
 name = "substrate-wasm-builder"
 version = "5.0.0-dev"
-source = "git+https://github.com/paritytech/substrate.git?branch=polkadot-v0.9.17#22d40c761a985482f93bbbea5ba4199bdba74f8e"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#fcff4b7d5442a2ff84648f69b7bea940ad180ca5"
 dependencies = [
  "ansi_term",
  "build-helper",
@@ -7157,7 +7156,7 @@ dependencies = [
  "bytes 1.1.0",
  "libc",
  "memchr",
- "mio 0.8.0",
+ "mio 0.8.1",
  "num_cpus",
  "once_cell",
  "pin-project-lite 0.2.8",
@@ -7593,6 +7592,12 @@ name = "wasi"
 version = "0.10.0+wasi-snapshot-preview1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1a143597ca7c7793eff794def352d41792a93c481eb1042423ff7ff72ba2c31f"
+
+[[package]]
+name = "wasi"
+version = "0.11.0+wasi-snapshot-preview1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9c8d87e72b64a3b4db28d11ce29237c246188f4f51057d65a7eab63b7987e423"
 
 [[package]]
 name = "wasm-bindgen"

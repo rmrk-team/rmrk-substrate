@@ -9,9 +9,7 @@ impl<T: Config> Pallet<T> {
 			Ok(current_id)
 		})
 	}
-}
 
-impl<T: Config> Pallet<T> {
 	pub fn get_next_part_id(base_id: BaseId) -> Result<BaseId, Error<T>> {
 		NextPartId::<T>::try_mutate(base_id, |id| {
 			let current_id = *id;
