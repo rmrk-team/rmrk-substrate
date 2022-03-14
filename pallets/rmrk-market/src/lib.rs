@@ -194,7 +194,7 @@ pub mod pallet {
 		/// 	- `origin` - Account of the potential buyer
 		/// 	- `collection_id` - Collection id of the RMRK NFT
 		/// 	- `nft_id` - NFT id of the RMRK NFT
-		/// - `amount` - Optional price at which buyer purchased at
+		/// 	- `amount` - Optional price at which buyer purchased at
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn buy(
@@ -217,7 +217,8 @@ pub mod pallet {
 		/// 	- `origin` - Account of owner of the RMRK NFT to be listed
 		/// 	- `collection_id` - Collection id of the RMRK NFT
 		/// 	- `nft_id` - NFT id of the RMRK NFT
-		/// - `amount` - Price of the RMRK NFT
+		/// 	- `amount` - Price of the RMRK NFT
+		/// 	- `expires` - Optional BlockNumber for when the listing expires
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn list(

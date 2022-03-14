@@ -23,7 +23,7 @@ where
 	) -> DispatchResult {
 		// Check NFT lock status
 		ensure!(
-			!Pallet::<T>::check_should_lock(collection_id, nft_id),
+			!Pallet::<T>::is_locked(collection_id, nft_id),
 			pallet_uniques::Error::<T>::Locked
 		);
 		let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
@@ -54,7 +54,7 @@ where
 		if let Some(nft_id) = &maybe_nft_id {
 			// Check NFT lock status
 			ensure!(
-				!Pallet::<T>::check_should_lock(collection_id, *nft_id),
+				!Pallet::<T>::is_locked(collection_id, *nft_id),
 				pallet_uniques::Error::<T>::Locked
 			);
 			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id)?;
@@ -87,7 +87,7 @@ where
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		// Check NFT lock status
 		ensure!(
-			!Pallet::<T>::check_should_lock(collection_id, nft_id),
+			!Pallet::<T>::is_locked(collection_id, nft_id),
 			pallet_uniques::Error::<T>::Locked
 		);
 
@@ -127,7 +127,7 @@ where
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
 		// Check NFT lock status
 		ensure!(
-			!Pallet::<T>::check_should_lock(collection_id, nft_id),
+			!Pallet::<T>::is_locked(collection_id, nft_id),
 			pallet_uniques::Error::<T>::Locked
 		);
 		Resources::<T>::try_mutate_exists(
@@ -443,7 +443,7 @@ impl<T: Config> Locker<CollectionId, NftId> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
-	fn check_should_lock(collection_id: CollectionId, nft_id: NftId) -> bool {
+	fn is_locked(collection_id: CollectionId, nft_id: NftId) -> bool {
 		Lock::<T>::get((collection_id, nft_id))
 	}
 }

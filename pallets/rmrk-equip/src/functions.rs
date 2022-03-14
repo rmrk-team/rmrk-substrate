@@ -58,12 +58,12 @@ where
 		let equipper_nft_id = equipper.1;
 		// Check item NFT lock status
 		ensure!(
-			!pallet_rmrk_core::Pallet::<T>::check_should_lock(item_collection_id, item_nft_id),
+			!pallet_rmrk_core::Pallet::<T>::is_locked(item_collection_id, item_nft_id),
 			pallet_uniques::Error::<T>::Locked
 		);
 		// Check equipper NFT lock status
 		ensure!(
-			!pallet_rmrk_core::Pallet::<T>::check_should_lock(
+			!pallet_rmrk_core::Pallet::<T>::is_locked(
 				equipper_collection_id,
 				equipper_nft_id
 			),
