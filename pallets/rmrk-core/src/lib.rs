@@ -249,6 +249,7 @@ pub mod pallet {
 		NftIsLocked,
 		CannotAcceptNonOwnedNft,
 		CannotRejectNonOwnedNft,
+		ResourceDoesntExist,
 	}
 
 	#[pallet::call]
@@ -578,6 +579,7 @@ pub mod pallet {
 			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
+			ensure!(Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(), Error::<T>::ResourceDoesntExist);
 
 			let (owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 			ensure!(owner == sender, Error::<T>::NoPermission);
