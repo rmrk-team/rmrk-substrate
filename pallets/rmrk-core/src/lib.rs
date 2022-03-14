@@ -571,7 +571,7 @@ pub mod pallet {
 		/// accept the addition of a new resource to an existing NFT
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
-		pub fn accept(
+		pub fn accept_resource(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
