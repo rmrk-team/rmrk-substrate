@@ -220,7 +220,7 @@ where
 		let nft = NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata, equipped: false };
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
-		NftsByOwner::<T>::append(owner, (collection_id, nft_id));
+		NftsByOwner::<T>::insert((&owner, &collection_id, &nft_id), ());
 
 		// increment nfts counter
 		let nfts_count = collection.nfts_count.checked_add(1).ok_or(ArithmeticError::Overflow)?;

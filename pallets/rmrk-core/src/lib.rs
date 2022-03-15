@@ -94,8 +94,16 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn get_nfts_by_owner)]
 	/// Stores collections info
-	pub type NftsByOwner<T: Config> =
-		StorageMap<_, Twox64Concat, T::AccountId, Vec<(CollectionId, NftId)>>;
+	pub type NftsByOwner<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, T::AccountId>,
+			NMapKey<Blake2_128Concat, CollectionId>,
+			NMapKey<Blake2_128Concat, NftId>,
+		),
+		(),
+		OptionQuery,
+	>;	
 
 	#[pallet::storage]
 	#[pallet::getter(fn nfts)]
