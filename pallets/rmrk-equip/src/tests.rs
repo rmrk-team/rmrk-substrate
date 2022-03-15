@@ -79,6 +79,13 @@ fn exceeding_max_parts_per_base_fails() {
 	});
 }
 
+#[test]
+#[should_panic]
+fn exceeding_parts_bound_panics() {
+	// PartsLimit bound is 10 per mock.rs, 11 should panic on unwrap
+	let partsBoundedVec: BoundedVec<PartId, PartsLimit> = bvec![1,2,3,4,5,6,7,8,9,10,11];
+}
+
 /// Base: Basic equip tests
 #[test]
 fn equip_works() {
@@ -222,7 +229,7 @@ fn equip_works() {
 			None,                           // slot
 			None,                           // license
 			None,                           // thumb
-			Some(vec![
+			Some(bvec![
 				// parts
 				101, // ID of body-1 part
 				201, // ID of left-hand slot

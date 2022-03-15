@@ -11,7 +11,7 @@ use crate::primitives::*;
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct ResourceInfo<BoundedResource, BoundedString> {
+pub struct ResourceInfo<BoundedResource, BoundedString, BoundedParts> {
 	/// id is a 5-character string of reasonable uniqueness.
 	/// The combination of base ID and resource id should be unique across the entire RMRK
 	/// ecosystem which
@@ -21,7 +21,7 @@ pub struct ResourceInfo<BoundedResource, BoundedString> {
 	pub pending: bool,
 
 	/// If a resource is composed, it will have an array of parts that compose it
-	pub parts: Option<Vec<PartId>>,
+	pub parts: Option<BoundedParts>,
 
 	/// A Base is uniquely identified by the combination of the word `base`, its minting block
 	/// number, and user provided symbol during Base creation, glued by dashes `-`, e.g.
@@ -49,7 +49,7 @@ pub struct ResourceInfo<BoundedResource, BoundedString> {
 }
 
 /// Abstraction over a Resource system.
-pub trait Resource<BoundedString, AccountId, BoundedResource> {
+pub trait Resource<BoundedString, AccountId, BoundedResource, BoundedPart> {
 	fn resource_add(
 		sender: AccountId,
 		collection_id: CollectionId,
@@ -61,7 +61,7 @@ pub trait Resource<BoundedString, AccountId, BoundedResource> {
 		slot: Option<SlotId>,
 		license: Option<BoundedString>,
 		thumb: Option<BoundedString>,
-		parts: Option<Vec<PartId>>,
+		parts: Option<BoundedPart>,
 	) -> DispatchResult;
 	fn accept(
 		sender: AccountId,

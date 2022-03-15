@@ -30,7 +30,11 @@ pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
-pub type ResourceOf<T, R> = ResourceInfo::<BoundedVec<u8, R>, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
+pub type ResourceOf<T, R, P> = ResourceInfo::<
+	BoundedVec<u8, R>,
+	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+	BoundedVec<PartId, P>
+	>;
 
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
@@ -62,6 +66,10 @@ pub mod pallet {
 		/// The maximum resource symbol length
 		#[pallet::constant]
 		type ResourceSymbolLimit: Get<u32>;
+
+		/// The maximum number of parts each resource may have
+		#[pallet::constant]
+		type PartsLimit: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -130,7 +138,7 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, BoundedResource<T::ResourceSymbolLimit>>
 			,
 		),
-		ResourceOf<T, T::ResourceSymbolLimit>,
+		ResourceOf<T, T::ResourceSymbolLimit, T::PartsLimit>,
 		OptionQuery,
 	>;
 
@@ -547,7 +555,7 @@ pub mod pallet {
 			slot: Option<SlotId>,
 			license: Option<BoundedVec<u8, T::StringLimit>>,
 			thumb: Option<BoundedVec<u8, T::StringLimit>>,
-			parts: Option<Vec<PartId>>,
+			parts: Option<BoundedVec<PartId, T::PartsLimit>>
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 

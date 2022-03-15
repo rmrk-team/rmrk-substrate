@@ -56,7 +56,12 @@ where
 	}
 }
 
-impl<T: Config> Resource<BoundedVec<u8, T::StringLimit>, T::AccountId, BoundedResource<T::ResourceSymbolLimit>> for Pallet<T>
+impl<T: Config> Resource<
+	BoundedVec<u8, T::StringLimit>,
+	T::AccountId,
+	BoundedResource<T::ResourceSymbolLimit>,
+	BoundedVec<PartId, T::PartsLimit>
+	> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -71,7 +76,7 @@ where
 		slot: Option<SlotId>,
 		license: Option<BoundedVec<u8, T::StringLimit>>,
 		thumb: Option<BoundedVec<u8, T::StringLimit>>,
-		parts: Option<Vec<PartId>>,
+		parts: Option<BoundedVec<PartId, T::PartsLimit>>,
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
@@ -82,7 +87,11 @@ where
 				thumb.is_none();
 		ensure!(!empty, Error::<T>::EmptyResource);
 
-		let res = ResourceInfo::<BoundedVec<u8, T::ResourceSymbolLimit>, BoundedVec<u8, T::StringLimit>> {
+		let res = ResourceInfo::<
+			BoundedVec<u8, T::ResourceSymbolLimit>,
+			BoundedVec<u8, T::StringLimit>,
+			BoundedVec<PartId, T::PartsLimit>
+			> {
 			id: resource_id.clone(),
 			base,
 			src,
