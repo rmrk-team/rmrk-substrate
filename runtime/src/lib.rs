@@ -305,13 +305,14 @@ impl pallet_template::Config for Runtime {
 parameter_types! {
 	pub const MaxRecursions: u32 = 10;
 	pub const ResourceSymbolLimit: u32 = 10;
-	pub const PartsLimit: u32 = 1000;
+	pub const PartsLimit: u32 = 3;
 }
 
 impl pallet_rmrk_core::Config for Runtime {
 	type Event = Event;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
 	type MaxRecursions = MaxRecursions;
+	type ResourceSymbolLimit = ResourceSymbolLimit;
 	type PartsLimit = PartsLimit;
 }
 
@@ -335,13 +336,15 @@ parameter_types! {
 	pub const AttributeDepositBase: Balance = 10 * DOLLARS;
 	pub const DepositPerByte: Balance = DOLLARS;
 	pub const UniquesStringLimit: u32 = 128;
-	pub const MaxPartsPerBase: u32 = 100;
+	// no longer needed as we use PartsLimit on BoundedVec
+	// pub const MaxPartsPerBase: u32 = 100;
 	pub const MaxPropertiesPerTheme: u32 = 100;
 }
 
 impl pallet_rmrk_equip::Config for Runtime {
 	type Event = Event;
-	type MaxPartsPerBase = MaxPartsPerBase;
+	// no longer needed as we use PartsLimit on BoundedVec
+	// type MaxPartsPerBase = MaxPartsPerBase;
 	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
 }
 

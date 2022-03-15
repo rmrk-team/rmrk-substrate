@@ -10,7 +10,7 @@ use sp_std::vec::Vec;
 
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
-pub struct BaseInfo<AccountId, BoundedString> {
+pub struct BaseInfo<AccountId, BoundedString, BoundedParts> {
 	/// Original creator of the Base
 	pub issuer: AccountId,
 	/// Specifies how an NFT should be rendered, ie "svg"
@@ -18,16 +18,16 @@ pub struct BaseInfo<AccountId, BoundedString> {
 	/// User provided symbol during Base creation
 	pub symbol: BoundedString,
 	/// Parts, full list of both Fixed and Slot parts
-	pub parts: Vec<PartType<BoundedString>>,
+	pub parts: BoundedParts,
 }
 
 // Abstraction over a Base system.
-pub trait Base<AccountId, CollectionId, NftId, BoundedString> {
+pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts> {
 	fn base_create(
 		issuer: AccountId,
 		base_type: BoundedString,
 		symbol: BoundedString,
-		parts: Vec<PartType<BoundedString>>,
+		parts: BoundedParts,
 	) -> Result<BaseId, DispatchError>;
 	fn do_equip(
 		issuer: AccountId, // Maybe don't need?

@@ -50,40 +50,53 @@ fn create_base_works() {
 			Origin::signed(ALICE), // origin
 			bvec![0u8; 20],        // base_type
 			bvec![0u8; 20],        // symbol
-			vec![PartType::FixedPart(fixed_part), PartType::SlotPart(slot_part),],
+			bvec![PartType::FixedPart(fixed_part), PartType::SlotPart(slot_part),],
 		));
 
 		// println!("{:?}", RmrkEquip::bases(0).unwrap());
 	});
 }
 
-/// Base: Attempting to create a base with more the max parts fails
-#[test]
-fn exceeding_max_parts_per_base_fails() {
-	ExtBuilder::default().build().execute_with(|| {
-		let mut parts = Vec::<PartType<BoundedVec<u8, UniquesStringLimit>>>::new();
-		for i in 100..110 {
-			let fixed_part = FixedPart { id: i, z: 0, src: stb("fixed_part_src") };
-			parts.push(PartType::FixedPart(fixed_part));
-		}
+// no longer needed as we use PartsLimit on BoundedVec
+// Base: Attempting to create a base with more the max parts fails
+// #[test]
+// fn exceeding_max_parts_per_base_fails() {
+// 	ExtBuilder::default().build().execute_with(|| {
+// 		let mut parts: BoundedVec::<PartType<BoundedVec<u8, UniquesStringLimit>>, PartsLimit> = bvec![
+// 			PartType::FixedPart(FixedPart { id: 100, z: 0, src: stb("fixed_part_src") }),
+// 			PartType::FixedPart(FixedPart { id: 101, z: 0, src: stb("fixed_part_src") }),
+// 			PartType::FixedPart(FixedPart { id: 102, z: 0, src: stb("fixed_part_src") }),
+// 			PartType::FixedPart(FixedPart { id: 103, z: 0, src: stb("fixed_part_src") }),
+// 			PartType::FixedPart(FixedPart { id: 104, z: 0, src: stb("fixed_part_src") }),
+// 			PartType::FixedPart(FixedPart { id: 105, z: 0, src: stb("fixed_part_src") }),
+// 			PartType::FixedPart(FixedPart { id: 106, z: 0, src: stb("fixed_part_src") }),
+// 			PartType::FixedPart(FixedPart { id: 107, z: 0, src: stb("fixed_part_src") }),
+// 			PartType::FixedPart(FixedPart { id: 108, z: 0, src: stb("fixed_part_src") }),
+// 			PartType::FixedPart(FixedPart { id: 109, z: 0, src: stb("fixed_part_src") }),
+// 			PartType::FixedPart(FixedPart { id: 110, z: 0, src: stb("fixed_part_src") }),
+// 		];
+// 		// for i in 100..110 {
+// 		// 	let fixed_part = FixedPart { id: i, z: 0, src: stb("fixed_part_src") };
+// 		// 	parts.push(PartType::FixedPart(fixed_part).clone());
+// 		// }
 
-		assert_noop!(
-			RmrkEquip::create_base(
-				Origin::signed(ALICE), // origin
-				bvec![0u8; 20],        // base_type
-				bvec![0u8; 20],        // symbol
-				parts,
-			),
-			Error::<Test>::ExceedsMaxPartsPerBase,
-		);
-	});
-}
+// 		assert_noop!(
+// 			RmrkEquip::create_base(
+// 				Origin::signed(ALICE), // origin
+// 				bvec![0u8; 20],        // base_type
+// 				bvec![0u8; 20],        // symbol
+// 				parts,
+// 			),
+// 			Error::<Test>::ExceedsMaxPartsPerBase,
+// 		);
+// 	});
+// }
 
 #[test]
 #[should_panic]
 fn exceeding_parts_bound_panics() {
 	// PartsLimit bound is 10 per mock.rs, 11 should panic on unwrap
-	let partsBoundedVec: BoundedVec<PartId, PartsLimit> = bvec![1,2,3,4,5,6,7,8,9,10,11];
+	let parts_bounded_vec: BoundedVec<PartId, PartsLimit> = bvec![1,2,3,4,5,6,7,8,9,10,11,12];
 }
 
 /// Base: Basic equip tests
@@ -120,7 +133,7 @@ fn equip_works() {
 			Origin::signed(ALICE), // origin
 			stb("svg"),            // base_type
 			stb("KANPEOPLE"),      // symbol
-			vec![
+			bvec![
 				PartType::FixedPart(fixed_part_body_1),
 				PartType::FixedPart(fixed_part_body_2),
 				PartType::SlotPart(slot_part_left_hand),
@@ -408,7 +421,7 @@ fn equippable_works() {
 			Origin::signed(ALICE), // origin
 			stb("svg"),            // base_type
 			stb("KANPEOPLE"),      // symbol
-			vec![
+			bvec![
 				PartType::FixedPart(fixed_part_body_1),
 				PartType::FixedPart(fixed_part_body_2),
 				PartType::SlotPart(slot_part_left_hand),
@@ -533,7 +546,7 @@ fn theme_add_works() {
 			Origin::signed(ALICE), // origin
 			bvec![0u8; 20],        // base_type
 			bvec![0u8; 20],        // symbol
-			vec![],
+			bvec![],
 		));
 
 		// Add non-default theme to base (should fail w/o default)
@@ -610,7 +623,7 @@ fn theme_add_too_many_properties_fails() {
 			Origin::signed(ALICE), // origin
 			bvec![0u8; 20],        // base_type
 			bvec![0u8; 20],        // symbol
-			vec![],
+			bvec![],
 		));
 
 		// Define a default theme with too many properties (10)

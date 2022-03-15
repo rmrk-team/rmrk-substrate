@@ -40,13 +40,15 @@ frame_support::construct_runtime!(
 );
 
 parameter_types! {
-	pub const MaxPartsPerBase: u32 = 5;
+	// no longer needed as we use PartsLimit on the BoundedVec
+	// pub const MaxPartsPerBase: u32 = 5;
 	pub const MaxPropertiesPerTheme: u32 = 5;
 }
 
 impl pallet_rmrk_equip::Config for Test {
 	type Event = Event;
-	type MaxPartsPerBase = MaxPartsPerBase;
+	// no longer needed as we use PartsLimit on the BoundedVec
+	// type MaxPartsPerBase = MaxPartsPerBase;
 	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
 }
 

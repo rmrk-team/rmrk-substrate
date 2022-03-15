@@ -41,8 +41,9 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + pallet_rmrk_core::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		#[pallet::constant]
-		type MaxPartsPerBase: Get<u32>;
+		// No longer needed as we use PartsLimit in BoundedVec now
+		// #[pallet::constant]
+		// type MaxPartsPerBase: Get<u32>;
 
 		#[pallet::constant]
 		type MaxPropertiesPerTheme: Get<u32>;
@@ -52,7 +53,7 @@ pub mod pallet {
 	#[pallet::getter(fn bases)]
 	/// Stores bases info
 	pub type Bases<T: Config> =
-		StorageMap<_, Twox64Concat, BaseId, BaseInfo<T::AccountId, StringLimitOf<T>>>;
+		StorageMap<_, Twox64Concat, BaseId, BaseInfo<T::AccountId, StringLimitOf<T>, BoundedVec<PartType<StringLimitOf<T>>, T::PartsLimit>>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn parts)]
@@ -144,7 +145,8 @@ pub mod pallet {
 		NeedsDefaultThemeFirst,
 		AlreadyEquipped,
 		UnknownError,
-		ExceedsMaxPartsPerBase,
+		// no longer needed because we use PartsLimit in BoundedVec
+		// ExceedsMaxPartsPerBase,
 		TooManyProperties,
 	}
 
@@ -229,12 +231,14 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,
 			symbol: BoundedVec<u8, T::StringLimit>,
-			parts: Vec<PartType<StringLimitOf<T>>>,
+			parts: BoundedVec<PartType<StringLimitOf<T>>, T::PartsLimit>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
 			let part_length: u32 = parts.len().try_into().unwrap();
-			ensure!(part_length <= T::MaxPartsPerBase::get(), Error::<T>::ExceedsMaxPartsPerBase);
+
+			// We no longer need this because our bound is now on the BoundedVec of parts (PartsLimit)
+			// ensure!(part_length <= T::MaxPartsPerBase::get(), Error::<T>::ExceedsMaxPartsPerBase);
 
 			let base_id = Self::base_create(sender.clone(), base_type, symbol, parts)?;
 

@@ -20,7 +20,12 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> Base<T::AccountId, CollectionId, NftId, StringLimitOf<T>> for Pallet<T>
+impl<T: Config> Base<
+	T::AccountId,
+	CollectionId,
+	NftId,
+	StringLimitOf<T>,
+	BoundedVec<PartType<StringLimitOf<T>>, T::PartsLimit>> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -28,7 +33,7 @@ where
 		issuer: T::AccountId,
 		base_type: StringLimitOf<T>,
 		symbol: StringLimitOf<T>,
-		parts: Vec<PartType<StringLimitOf<T>>>,
+		parts: BoundedVec<PartType<StringLimitOf<T>>, T::PartsLimit>,
 	) -> Result<BaseId, DispatchError> {
 		let base_id = Self::get_next_base_id()?;
 		for part in parts.clone() {
