@@ -350,7 +350,7 @@ fn send_nft_to_minted_nft_works() {
 		// Bob-rootowned NFT (0,1) [child] is owned by Bob-rootowned NFT (0,0) [parent]
 		assert_eq!(UNQ::Pallet::<Test>::owner(0, 1), Some(RMRKCore::nft_to_account_id(0, 0)),);
 		// NFT (0,0) has NFT (0,1) in Children StorageMap
-		assert_eq!(RMRKCore::children((0, 0)), vec![(0, 1)]);
+		assert!(RMRKCore::children((0, 0), (0, 1)).is_some());
 		// Attempt to send NFT to self should fail
 		assert_noop!(
 			RMRKCore::send(
@@ -468,7 +468,7 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
 		// NFT (0,0) has NFT (0,1) in Children StorageMap
-		assert_eq!(RMRKCore::children((0, 0)), vec![(0, 1)]);
+		assert!(RMRKCore::children((0, 0), (0, 1)).is_some());
 		// ALICE sends NFT (0, 2) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -477,7 +477,8 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
 		// NFT (0,0) has NFT (0,1) & (0,2) in Children StorageMap
-		assert_eq!(RMRKCore::children((0, 0)), vec![(0, 1), (0, 2)]);
+		assert!(RMRKCore::children((0, 0), (0,1)).is_some());
+		assert!(RMRKCore::children((0, 0), (0,2)).is_some());
 	});
 }
 
@@ -506,7 +507,8 @@ fn send_nft_removes_existing_parent() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
 		// NFT (0, 0) is parent of NFT (0, 1)
-		assert_eq!(RMRKCore::children((0, 0)), vec![(0, 1), (0, 2)]);
+		assert!(RMRKCore::children((0, 0), (0, 1)).is_some());
+		assert!(RMRKCore::children((0, 0), (0, 2)).is_some());
 		// ALICE sends NFT (0, 1) to NFT (0, 2)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
@@ -515,7 +517,7 @@ fn send_nft_removes_existing_parent() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
 		));
 		// NFT (0, 0) is no longer parent of NFT (0, 1)
-		assert_eq!(RMRKCore::children((0, 0)), vec![(0, 2)]);
+		assert!(RMRKCore::children((0, 0), (0, 1)).is_none());
 	});
 }
 

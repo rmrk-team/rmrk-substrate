@@ -251,9 +251,8 @@ where
 
 		for _ in Resources::<T>::drain_prefix((collection_id, nft_id)) {}
 
-		let kids = Children::<T>::take((collection_id, nft_id));
-		for (child_collection_id, child_nft_id) in kids {
-			// Remove child from Children StorageMap
+		let c = Children::<T>::iter_prefix((collection_id, nft_id,)).count();
+		for ((child_collection_id, child_nft_id), _) in Children::<T>::iter_prefix((collection_id, nft_id,)) {
 			Pallet::<T>::remove_child((collection_id, nft_id), (child_collection_id, child_nft_id));
 			Self::nft_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 		}
@@ -514,7 +513,7 @@ where
 	/// Output:
 	/// - Adding a `child` to the Children StorageMap of the `parent`
 	pub fn add_child(parent: (CollectionId, NftId), child: (CollectionId, NftId)) {
-		Children::<T>::mutate(parent, |v| v.push(child));
+		Children::<T>::insert((parent.0, parent.1), (child.0, child.1), ());
 	}
 
 	/// Remove a child from a parent NFT
@@ -526,11 +525,10 @@ where
 	/// Output:
 	/// - Removing a `child` from the Children StorageMap of the `parent`
 	pub fn remove_child(parent: (CollectionId, NftId), child: (CollectionId, NftId)) {
-		Children::<T>::mutate(parent, |v| {
-			*v = v.iter().filter(|&nft| *nft != child).cloned().collect();
-		});
+		Children::<T>::remove((parent.0, parent.1), (child.0, child.1));
 	}
 
+	/// I don't think we use this at all? [delete this statement if i'm wrong or this function if not]
 	/// Has a child NFT present in the Children StorageMap of the parent NFT
 	///
 	/// Parameters:
@@ -540,7 +538,7 @@ where
 	/// Output:
 	/// - `bool`
 	pub fn has_child(parent: (CollectionId, NftId)) -> bool {
-		!Children::<T>::get(parent).is_empty()
+		Children::<T>::iter_prefix_values(parent).count() != 0
 	}
 
 	/// Check whether a NFT is descends from a suspected parent NFT
@@ -585,6 +583,7 @@ where
 		}
 	}
 
+	/// I don't think we use this at all? [delete this line if untrue, or this function if true]
 	/// `recursive_burn` function will recursively call itself to burn the NFT and all the children
 	/// of the NFT. Any caller functions must be #[transactional]
 	///
@@ -599,8 +598,8 @@ where
 	) -> DispatchResult {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		Nfts::<T>::remove(collection_id, nft_id);
-		let kids = Children::<T>::take((collection_id, nft_id));
-		for (child_collection_id, child_nft_id) in kids {
+
+		for ((child_collection_id, child_nft_id), _) in Children::<T>::iter_prefix((collection_id, nft_id,)) {
 			Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 		}
 		Ok(())

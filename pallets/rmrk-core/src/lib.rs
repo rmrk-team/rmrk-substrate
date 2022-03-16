@@ -138,11 +138,27 @@ pub mod pallet {
 
 
 
+	// #[pallet::storage]
+	// #[pallet::getter(fn children)]
+	// /// Stores nft children info
+	// pub type Children<T: Config> =
+	// 	StorageMap<_, Twox64Concat, (CollectionId, NftId), Vec<(CollectionId, NftId)>, ValueQuery>;
+
 	#[pallet::storage]
 	#[pallet::getter(fn children)]
 	/// Stores nft children info
-	pub type Children<T: Config> =
-		StorageMap<_, Twox64Concat, (CollectionId, NftId), Vec<(CollectionId, NftId)>, ValueQuery>;
+	pub type Children<T: Config> = StorageDoubleMap<_, Twox64Concat, (CollectionId, NftId), Twox64Concat, (CollectionId, NftId), ()>;
+	
+	// <
+	// 	_,
+	// 	(
+	// 		NMapKey<Blake2_128Concat, (CollectionId, NftId)>,
+	// 		NMapKey<Blake2_128Concat, CollectionId>,
+	// 		NMapKey<Blake2_128Concat, NftId>,
+	// 	),
+	// 	(),
+	// 	OptionQuery,
+	// >;
 
 	#[pallet::storage]
 	#[pallet::getter(fn resources)]
@@ -572,7 +588,7 @@ pub mod pallet {
 			slot: Option<SlotId>,
 			license: Option<BoundedVec<u8, T::StringLimit>>,
 			thumb: Option<BoundedVec<u8, T::StringLimit>>,
-			parts: Option<BoundedVec<PartId, T::PartsLimit>>
+			parts: Option<BoundedVec<PartId, T::PartsLimit>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
@@ -587,7 +603,7 @@ pub mod pallet {
 				slot,
 				license,
 				thumb,
-				parts
+				parts,
 			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
@@ -604,7 +620,10 @@ pub mod pallet {
 			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			ensure!(Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(), Error::<T>::ResourceDoesntExist);
+			ensure!(
+				Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(),
+				Error::<T>::ResourceDoesntExist
+			);
 
 			let (owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 			ensure!(owner == sender, Error::<T>::NoPermission);
