@@ -7,9 +7,11 @@ use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, RuntimeDebug};
 use sp_std::vec::Vec;
+use frame_support::pallet_prelude::MaxEncodedLen;
+
 
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub struct BaseInfo<AccountId, BoundedString, BoundedParts> {
 	/// Original creator of the Base
 	pub issuer: AccountId,
@@ -22,7 +24,7 @@ pub struct BaseInfo<AccountId, BoundedString, BoundedParts> {
 }
 
 // Abstraction over a Base system.
-pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts> {
+pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts, BoundedCollectionList> {
 	fn base_create(
 		issuer: AccountId,
 		base_type: BoundedString,
@@ -40,7 +42,7 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts> {
 		issuer: AccountId,
 		base_id: BaseId,
 		slot: SlotId,
-		equippables: EquippableList,
+		equippables: EquippableList<BoundedCollectionList>,
 	) -> Result<(BaseId, SlotId), DispatchError>;
 	fn add_theme(
 		issuer: AccountId,

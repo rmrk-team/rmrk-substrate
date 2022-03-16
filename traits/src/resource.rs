@@ -5,11 +5,12 @@ use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
 use sp_std::{cmp::Eq, vec::Vec};
+use frame_support::pallet_prelude::MaxEncodedLen;
 
 use crate::primitives::*;
 
 
-#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct ResourceInfo<BoundedResource, BoundedString, BoundedParts> {
 	/// id is a 5-character string of reasonable uniqueness.
