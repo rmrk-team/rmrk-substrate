@@ -605,19 +605,6 @@ where
 		Ok(())
 	}
 
-	pub fn to_bounded_string(name: Vec<u8>) -> Result<BoundedVec<u8, T::StringLimit>, Error<T>> {
-		name.try_into().map_err(|_| Error::<T>::TooLong)
-	}
-
-	pub fn to_optional_bounded_string(
-		name: Option<Vec<u8>>,
-	) -> Result<Option<BoundedVec<u8, T::StringLimit>>, Error<T>> {
-		Ok(match name {
-			Some(n) => Some(Self::to_bounded_string(n)?),
-			None => None,
-		})
-	}
-
 	pub fn get_next_nft_id(collection_id: CollectionId) -> Result<NftId, Error<T>> {
 		NextNftId::<T>::try_mutate(collection_id, |id| {
 			let current_id = *id;
