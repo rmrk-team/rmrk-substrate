@@ -70,6 +70,11 @@ pub mod pallet {
 		/// The maximum number of parts each resource may have
 		#[pallet::constant]
 		type PartsLimit: Get<u32>;
+
+		/// The maximum number of resources that can be included in a setpriority extrinsic
+		#[pallet::constant]
+		type MaxPriorities: Get<u32>;
+
 	}
 
 	#[pallet::storage]
@@ -120,14 +125,18 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn priorities)]
 	/// Stores priority info
-	pub type Priorities<T: Config> = StorageDoubleMap<
+	pub type Priorities<T: Config> = StorageNMap<
 		_,
-		Twox64Concat,
-		CollectionId,
-		Twox64Concat,
-		NftId,
-		Vec<BoundedVec<u8, T::StringLimit>>,
+		(
+			NMapKey<Blake2_128Concat, CollectionId>,
+			NMapKey<Blake2_128Concat, NftId>,
+			NMapKey<Blake2_128Concat, ResourceId>,
+		),
+		u32,
+		OptionQuery,
 	>;
+
+
 
 	#[pallet::storage]
 	#[pallet::getter(fn children)]
@@ -621,7 +630,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			priorities: Vec<Vec<u8>>,
+			priorities: BoundedVec<ResourceId, T::MaxPriorities>,
 		) -> DispatchResult {
 			let _sender = ensure_signed(origin.clone())?;
 			Self::priority_set(_sender, collection_id, nft_id, priorities)?;

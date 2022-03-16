@@ -44,6 +44,7 @@ parameter_types! {
 	pub const MaxRecursions: u32 = 10;
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 10;
+	pub const MaxPriorities: u32 = 3;
 }
 
 impl pallet_rmrk_core::Config for Test {
@@ -53,6 +54,7 @@ impl pallet_rmrk_core::Config for Test {
 	type MaxRecursions = MaxRecursions;
 	type ResourceSymbolLimit = ResourceSymbolLimit;
 	type PartsLimit = PartsLimit;
+	type MaxPriorities = MaxPriorities;
 }
 
 parameter_types! {
@@ -143,6 +145,9 @@ pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::ClassId = 0;
 // pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::ClassId = 1;
 pub const NFT_ID_0: <Test as pallet_uniques::Config>::InstanceId = 0;
 pub const NOT_EXISTING_CLASS_ID: <Test as pallet_uniques::Config>::ClassId = 999;
+pub const RESOURCE_ZERO: ResourceId = 0;
+pub const RESOURCE_ONE: ResourceId = 1;
+pub const RESOURCE_TWO: ResourceId = 2;
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {

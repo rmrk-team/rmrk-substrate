@@ -10,7 +10,8 @@ use sp_runtime::{
 // Randomness to generate NFT virtual accounts
 pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
 
-impl<T: Config> Priority<StringLimitOf<T>, T::AccountId> for Pallet<T>
+impl<T: Config> Priority<StringLimitOf<T>, T::AccountId, BoundedVec<ResourceId, T::MaxPriorities>>
+	for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -18,15 +19,15 @@ where
 		_sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		priorities: Vec<Vec<u8>>,
+		priorities: BoundedVec<ResourceId, T::MaxPriorities>,
 	) -> DispatchResult {
 		// TODO : Check NFT lock status
-		let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
-		for priority in priorities {
-			let bounded_priority = Self::to_bounded_string(priority)?;
-			bounded_priorities.push(bounded_priority);
+		for _ in Priorities::<T>::drain_prefix((collection_id, nft_id)) {}
+		let mut priority_index = 0;
+		for resource_id in priorities {
+			Priorities::<T>::insert((collection_id, nft_id, resource_id), priority_index);
+			priority_index += 1;
 		}
-		Priorities::<T>::insert(collection_id, nft_id, bounded_priorities);
 		Self::deposit_event(Event::PrioritySet { collection_id, nft_id });
 		Ok(())
 	}
@@ -56,11 +57,12 @@ where
 	}
 }
 
-impl<T: Config> Resource<
-	BoundedVec<u8, T::StringLimit>,
-	T::AccountId,
-	BoundedResource<T::ResourceSymbolLimit>,
-	BoundedVec<PartId, T::PartsLimit>
+impl<T: Config>
+	Resource<
+		BoundedVec<u8, T::StringLimit>,
+		T::AccountId,
+		BoundedResource<T::ResourceSymbolLimit>,
+		BoundedVec<PartId, T::PartsLimit>,
 	> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
@@ -90,8 +92,8 @@ where
 		let res = ResourceInfo::<
 			BoundedVec<u8, T::ResourceSymbolLimit>,
 			BoundedVec<u8, T::StringLimit>,
-			BoundedVec<PartId, T::PartsLimit>
-			> {
+			BoundedVec<PartId, T::PartsLimit>,
+		> {
 			id: resource_id.clone(),
 			base,
 			src,
@@ -206,7 +208,7 @@ where
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-		
+
 		// Prevent minting when next NFT id is greater than the collection max.
 		if let Some(max) = collection.max {
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
@@ -217,7 +219,13 @@ where
 
 		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
 
-		let nft = NftInfo { owner: owner_as_maybe_account, recipient, royalty, metadata, equipped: false };
+		let nft = NftInfo {
+			owner: owner_as_maybe_account,
+			recipient,
+			royalty,
+			metadata,
+			equipped: false,
+		};
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 		NftsByOwner::<T>::insert((&owner, &collection_id, &nft_id), ());
@@ -241,7 +249,7 @@ where
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		Nfts::<T>::remove(collection_id, nft_id);
 
-		for _ in Resources::<T>::drain_prefix((collection_id, nft_id)) {}		
+		for _ in Resources::<T>::drain_prefix((collection_id, nft_id)) {}
 
 		let kids = Children::<T>::take((collection_id, nft_id));
 		for (child_collection_id, child_nft_id) in kids {
