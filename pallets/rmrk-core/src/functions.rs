@@ -2,7 +2,7 @@
 
 use super::*;
 use codec::{Codec, Decode, Encode};
-use pallet_uniques::Locker;
+use frame_support::traits::Locker;
 use sp_runtime::{
 	traits::{Saturating, TrailingZeroInput},
 	ArithmeticError,
