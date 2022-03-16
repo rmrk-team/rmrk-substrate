@@ -8,7 +8,7 @@ use frame_support::{
 use frame_system::ensure_signed;
 
 use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
-use sp_std::{convert::TryInto, vec::Vec};
+use sp_std::convert::TryInto;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
@@ -136,30 +136,11 @@ pub mod pallet {
 		OptionQuery,
 	>;
 
-
-
-	// #[pallet::storage]
-	// #[pallet::getter(fn children)]
-	// /// Stores nft children info
-	// pub type Children<T: Config> =
-	// 	StorageMap<_, Twox64Concat, (CollectionId, NftId), Vec<(CollectionId, NftId)>, ValueQuery>;
-
 	#[pallet::storage]
 	#[pallet::getter(fn children)]
 	/// Stores nft children info
 	pub type Children<T: Config> = StorageDoubleMap<_, Twox64Concat, (CollectionId, NftId), Twox64Concat, (CollectionId, NftId), ()>;
 	
-	// <
-	// 	_,
-	// 	(
-	// 		NMapKey<Blake2_128Concat, (CollectionId, NftId)>,
-	// 		NMapKey<Blake2_128Concat, CollectionId>,
-	// 		NMapKey<Blake2_128Concat, NftId>,
-	// 	),
-	// 	(),
-	// 	OptionQuery,
-	// >;
-
 	#[pallet::storage]
 	#[pallet::getter(fn resources)]
 	/// Stores resource info
@@ -190,7 +171,6 @@ pub mod pallet {
 	>;
 
 	#[pallet::pallet]
-	#[pallet::without_storage_info]
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
