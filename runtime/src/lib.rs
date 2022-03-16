@@ -339,6 +339,7 @@ parameter_types! {
 	// no longer needed as we use PartsLimit on BoundedVec
 	// pub const MaxPartsPerBase: u32 = 100;
 	pub const MaxPropertiesPerTheme: u32 = 100;
+	pub const MaxCollectionsEquippablePerPart: u32 = 100;
 }
 
 impl pallet_rmrk_equip::Config for Runtime {
@@ -346,6 +347,7 @@ impl pallet_rmrk_equip::Config for Runtime {
 	// no longer needed as we use PartsLimit on BoundedVec
 	// type MaxPartsPerBase = MaxPartsPerBase;
 	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
+	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
 }
 
 impl pallet_uniques::Config for Runtime {

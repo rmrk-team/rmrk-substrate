@@ -25,7 +25,10 @@ impl<T: Config> Base<
 	CollectionId,
 	NftId,
 	StringLimitOf<T>,
-	BoundedVec<PartType<StringLimitOf<T>>, T::PartsLimit>> for Pallet<T>
+	BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
+	T::PartsLimit>,
+	BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>
+	> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -33,7 +36,7 @@ where
 		issuer: T::AccountId,
 		base_type: StringLimitOf<T>,
 		symbol: StringLimitOf<T>,
-		parts: BoundedVec<PartType<StringLimitOf<T>>, T::PartsLimit>,
+		parts: BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>, T::PartsLimit>,
 	) -> Result<BaseId, DispatchError> {
 		let base_id = Self::get_next_base_id()?;
 		for part in parts.clone() {
@@ -238,7 +241,7 @@ where
 		issuer: T::AccountId,
 		base_id: BaseId,
 		part_id: PartId,
-		equippables: EquippableList,
+		equippables: EquippableList<BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
 	) -> Result<(BaseId, SlotId), DispatchError> {
 		// Base must exist
 		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);

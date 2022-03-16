@@ -5,7 +5,6 @@ use frame_support::{
 	dispatch::{DispatchError, DispatchResult},
 	ensure, BoundedVec,
 };
-use sp_std::vec::Vec;
 
 pub use pallet::*;
 
@@ -47,19 +46,29 @@ pub mod pallet {
 
 		#[pallet::constant]
 		type MaxPropertiesPerTheme: Get<u32>;
+
+		// How many collections can be equippable per slot part
+		#[pallet::constant]
+		type MaxCollectionsEquippablePerPart: Get<u32>;		
 	}
 
 	#[pallet::storage]
 	#[pallet::getter(fn bases)]
 	/// Stores bases info
 	pub type Bases<T: Config> =
-		StorageMap<_, Twox64Concat, BaseId, BaseInfo<T::AccountId, StringLimitOf<T>, BoundedVec<PartType<StringLimitOf<T>>, T::PartsLimit>>>;
+		StorageMap<
+		_, 
+		Twox64Concat, BaseId, 
+		BaseInfo<
+			T::AccountId, StringLimitOf<T>, BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
+			T::PartsLimit>>
+		>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn parts)]
 	/// Stores bases info
 	pub type Parts<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, PartType<StringLimitOf<T>>>;
+		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn next_base_id)]
@@ -98,7 +107,6 @@ pub mod pallet {
 	>;
 
 	#[pallet::pallet]
-	#[pallet::without_storage_info]
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
@@ -195,7 +203,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_id: BaseId,
 			slot_id: SlotId,
-			equippables: EquippableList,
+			equippables: EquippableList<BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -231,7 +239,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,
 			symbol: BoundedVec<u8, T::StringLimit>,
-			parts: BoundedVec<PartType<StringLimitOf<T>>, T::PartsLimit>,
+			parts: BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>, T::PartsLimit>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
