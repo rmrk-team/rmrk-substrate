@@ -40,7 +40,7 @@ fn create_base_works() {
 			id: 102,
 			z: 0,
 			src: stb("slot_part_src"),
-			equippable: EquippableList::Custom(vec![
+			equippable: EquippableList::Custom(bvec![
 				0, // Collection 0
 				1, // Collection 1
 			]),
@@ -113,7 +113,7 @@ fn equip_works() {
 			id: 201,
 			z: 0,
 			src: stb("left-hand"),
-			equippable: EquippableList::Custom(vec![
+			equippable: EquippableList::Custom(bvec![
 				0, // Collection 0
 				1, // Collection 1
 			]),
@@ -123,7 +123,7 @@ fn equip_works() {
 			id: 202,
 			z: 0,
 			src: stb("right-hand"),
-			equippable: EquippableList::Custom(vec![
+			equippable: EquippableList::Custom(bvec![
 				0, // Collection 2
 				1, // Collection 3
 			]),
@@ -401,7 +401,7 @@ fn equippable_works() {
 			id: 201,
 			z: 0,
 			src: stb("left-hand"),
-			equippable: EquippableList::Custom(vec![
+			equippable: EquippableList::Custom(bvec![
 				0, // Collection 0
 				1, // Collection 1
 			]),
@@ -411,7 +411,7 @@ fn equippable_works() {
 			id: 202,
 			z: 0,
 			src: stb("right-hand"),
-			equippable: EquippableList::Custom(vec![
+			equippable: EquippableList::Custom(bvec![
 				2, // Collection 2
 				3, // Collection 3
 			]),
@@ -434,7 +434,7 @@ fn equippable_works() {
 			Origin::signed(ALICE),
 			0,                                     // base ID
 			202,                                   // slot ID
-			EquippableList::Custom(vec![5, 6, 7]), // equippable collections
+			EquippableList::Custom(bvec![5, 6, 7]), // equippable collections
 		));
 
 		// Last event should be EquippablesUpdated
@@ -448,7 +448,7 @@ fn equippable_works() {
 			id: 202,
 			z: 0,
 			src: stb("right-hand"),
-			equippable: EquippableList::Custom(vec![5, 6, 7]),
+			equippable: EquippableList::Custom(bvec![5, 6, 7]),
 		};
 		assert_eq!(RmrkEquip::parts(0, 202).unwrap(), PartType::SlotPart(should_be));
 
@@ -458,7 +458,7 @@ fn equippable_works() {
 				Origin::signed(ALICE),
 				666,                                   // base ID
 				202,                                   // slot ID
-				EquippableList::Custom(vec![5, 6, 7]), // equippable collections
+				EquippableList::Custom(bvec![5, 6, 7]), // equippable collections
 			),
 			Error::<Test>::BaseDoesntExist
 		);
@@ -469,7 +469,7 @@ fn equippable_works() {
 				Origin::signed(ALICE),
 				0,                                     // base ID
 				200,                                   // slot ID
-				EquippableList::Custom(vec![5, 6, 7]), // equippable collections
+				EquippableList::Custom(bvec![5, 6, 7]), // equippable collections
 			),
 			Error::<Test>::PartDoesntExist
 		);
@@ -480,7 +480,7 @@ fn equippable_works() {
 				Origin::signed(ALICE),
 				0,                                           // base ID
 				101,                                         // slot ID
-				EquippableList::Custom(vec![5, 6, 7, 8, 9]), // equippable collections
+				EquippableList::Custom(bvec![5, 6, 7, 8, 9]), // equippable collections
 			),
 			Error::<Test>::NoEquippableOnFixedPart
 		);
@@ -491,7 +491,7 @@ fn equippable_works() {
 				Origin::signed(BOB),
 				0,                                     // base ID
 				201,                                   // slot ID
-				EquippableList::Custom(vec![3, 4, 5]), // equippable collections
+				EquippableList::Custom(bvec![3, 4, 5]), // equippable collections
 			),
 			Error::<Test>::PermissionError
 		);
