@@ -25,6 +25,13 @@ macro_rules! bvec {
 	}
 }
 
+/// Attempt to convert a &str to a BoundedVec of some sort
+macro_rules! sbvec {
+	($( $x:tt )*) => {
+		$( $x )*.as_bytes().to_vec().try_into().unwrap()
+	}
+}
+
 /// Base: Basic base tests
 #[test]
 fn create_base_works() {
@@ -126,7 +133,7 @@ fn equip_works() {
 			Origin::signed(ALICE),
 			stb("ipfs://col0-metadata"), // metadata
 			Some(5),                     // max
-			stb("COL1")                  // symbol
+			sbvec!["COL0"]                  // symbol
 		));
 
 		// Create collection 1
@@ -134,7 +141,7 @@ fn equip_works() {
 			Origin::signed(ALICE),
 			stb("ipfs://col1-metadata"), // metadata
 			Some(5),                     // max
-			stb("COL2")                  // symbol
+			sbvec!["COL1"]                  // symbol
 		));
 
 		// Mint NFT 0 from collection 0 (character-0)
