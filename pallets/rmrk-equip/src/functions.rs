@@ -1,5 +1,5 @@
 use super::*;
-use pallet_uniques::Locker;
+use frame_support::traits::Locker;
 
 impl<T: Config> Pallet<T> {
 	pub fn get_next_base_id() -> Result<BaseId, Error<T>> {
@@ -63,10 +63,7 @@ where
 		);
 		// Check equipper NFT lock status
 		ensure!(
-			!pallet_rmrk_core::Pallet::<T>::is_locked(
-				equipper_collection_id,
-				equipper_nft_id
-			),
+			!pallet_rmrk_core::Pallet::<T>::is_locked(equipper_collection_id, equipper_nft_id),
 			pallet_uniques::Error::<T>::Locked
 		);
 

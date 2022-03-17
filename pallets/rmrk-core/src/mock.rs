@@ -3,11 +3,10 @@ use crate as pallet_rmrk_core;
 
 use frame_support::{
 	parameter_types,
-	traits::{ConstU32, Everything},
+	traits::{ConstU32, Everything, Locker},
 	weights::Weight,
 };
 use frame_system::EnsureRoot;
-use pallet_uniques::Locker;
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
 	testing::Header,
