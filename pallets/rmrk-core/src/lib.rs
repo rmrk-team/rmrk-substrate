@@ -250,6 +250,8 @@ pub mod pallet {
 		CannotAcceptNonOwnedNft,
 		CannotRejectNonOwnedNft,
 		ResourceDoesntExist,
+		/// Accepting a resource that is not pending should fail
+		ResourceNotPending,
 	}
 
 	#[pallet::call]
@@ -588,6 +590,7 @@ pub mod pallet {
 				(collection_id, nft_id, resource_id.clone()),
 				|resource| -> DispatchResult {
 					if let Some(res) = resource.into_mut() {
+						ensure!(res.pending, Error::<T>::ResourceNotPending);
 						res.pending = false;
 					}
 					Ok(())
