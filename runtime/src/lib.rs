@@ -306,6 +306,7 @@ parameter_types! {
 	pub const MaxRecursions: u32 = 10;
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 3;
+	pub const MaxPriorities: u32 = 3;
 }
 
 impl pallet_rmrk_core::Config for Runtime {
@@ -314,6 +315,7 @@ impl pallet_rmrk_core::Config for Runtime {
 	type MaxRecursions = MaxRecursions;
 	type ResourceSymbolLimit = ResourceSymbolLimit;
 	type PartsLimit = PartsLimit;
+	type MaxPriorities = MaxPriorities;
 }
 
 parameter_types! {
