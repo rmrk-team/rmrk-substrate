@@ -1,6 +1,10 @@
 use super::*;
 
 impl<T: Config> Pallet<T> {
+	/// Helper function for getting next base ID
+	/// Currently, BaseId is auto-incremented from zero, may be worth changing
+	/// to BoundedVec to allow arbitrary/unique naming, making cross-chain functionality
+	/// more tenable
 	pub fn get_next_base_id() -> Result<BaseId, Error<T>> {
 		NextBaseId::<T>::try_mutate(|id| {
 			let current_id = *id;
@@ -11,6 +15,10 @@ impl<T: Config> Pallet<T> {
 }
 
 impl<T: Config> Pallet<T> {
+	/// Helper function for getting next part ID for a base
+	/// Like BaseId, PartId is auto-incremented from zero, which similarly may be worth changing
+	/// to BoundedVec to allow arbitrary/unique naming, making cross-chain functionality
+	/// more tenable
 	pub fn get_next_part_id(base_id: BaseId) -> Result<BaseId, Error<T>> {
 		NextPartId::<T>::try_mutate(base_id, |id| {
 			let current_id = *id;
@@ -24,6 +32,15 @@ impl<T: Config> Base<T::AccountId, CollectionId, NftId, StringLimitOf<T>> for Pa
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
+	/// Implementation of the base_create function for the Base trait
+	/// Called by the create_base extrinsic to create a new Base.
+	/// Modeled after [base interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/base.md)
+	///
+	/// Parameters:
+	/// - issuer: The issuer of the Base, implied as the caller/creator
+	/// - base_type: media type, e.g. "svg"
+	/// - symbol: arbitrary client-chosen symbol, e.g. "kanaria_superbird"
+	/// - parts: array of Fixed and Slot parts composing the base, confined in length by PartsLimit
 	fn base_create(
 		issuer: T::AccountId,
 		base_type: StringLimitOf<T>,
@@ -46,6 +63,21 @@ where
 		Ok(base_id)
 	}
 
+	/// Implementation of the do_equip function for the Base trait
+	/// Called by the equip extrinsic to equip a child NFT's resource to a parent's slot, if all are available.
+	/// Also can be called to unequip, which can be successful if
+	/// - Item has beeen burned
+	/// - Item is equipped and extrinsic called by equipping item owner
+	/// - Item is equipped and extrinsic called by equipper NFT owner
+	/// Equipping operations are maintained inside the Equippings storage.
+	/// Modeled after [equip interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/equip.md)
+	///
+	/// Parameters:
+	/// - issuer: The caller of the function, not necessarily anything else
+	/// - item: Child NFT being equipped (or unequipped)
+	/// - equipper: Parent NFT which will equip (or unequip) the item
+	/// - base_id: ID of the base which the item and equipper must each have a resource referencing
+	/// - slot_id: ID of the slot which the item and equipper must each have a resource referencing
 	fn do_equip(
 		issuer: T::AccountId,
 		item: (CollectionId, NftId),
@@ -229,6 +261,18 @@ where
 		}
 	}
 
+	/// Implementation of the equippable function for the Base trait
+	/// Called by the equippable extrinsic to update the array of Collections allowed
+	/// to be equipped to a Base's specified Slot Part.
+	/// Modeled after [equippable interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/equippable.md)
+	///
+	/// Parameters:
+	/// - issuer: The caller of the function, must be issuer of the base
+	/// - base_id: The Base containing the Slot Part to be updated
+	/// - part_id: The Slot Part whose Equippable List is being updated
+	/// - equippables: The list of equippables that will override the current Equippaables list
+	/// TODO: address https://github.com/rmrk-team/rmrk-substrate/issues/97
+	/// Should be able to handle additions/deletions, not just overrides
 	fn do_equippable(
 		issuer: T::AccountId,
 		base_id: BaseId,
@@ -259,6 +303,20 @@ where
 		}
 	}
 
+	/// Implementation of the add_theme function for the Base trait
+	/// Called by the theme_add extrinsic to add a theme to a Base.
+	/// Modeled after [themeadd interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/themeadd.md)
+	/// Themes are stored in the Themes storage
+	/// A "default" theme is required prior to adding other Themes.
+	/// 
+	/// Parameters:
+	/// - issuer: The caller of the function, must be issuer of the base
+	/// - base_id: The Base containing the Theme to be updated
+	/// - theme: The Theme to add to the Base.  A Theme has a name and properties, which are an
+	///   array of [key, value, inherit].  This array is bounded by MaxPropertiesPerTheme.
+	///   - key: arbitrary BoundedString, defined by client
+	///   - value: arbitrary BoundedString, defined by client
+	///   - inherit: optional bool
 	fn add_theme(
 		issuer: T::AccountId,
 		base_id: BaseId,
