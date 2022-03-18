@@ -31,7 +31,8 @@ pub type InstanceInfoOf<T> = NftInfo<
 
 pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
 
-pub type ResourceOf<T, R> = ResourceInfo::<BoundedVec<u8, R>, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
+pub type ResourceOf<T, R> =
+	ResourceInfo<BoundedVec<u8, R>, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
 
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
@@ -82,8 +83,12 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn collections)]
 	/// Stores collections info
-	pub type Collections<T: Config> =
-		StorageMap<_, Twox64Concat, CollectionId, CollectionInfo<StringLimitOf<T>, BoundedCollectionSymbolOf<T>, T::AccountId>>;
+	pub type Collections<T: Config> = StorageMap<
+		_,
+		Twox64Concat,
+		CollectionId,
+		CollectionInfo<StringLimitOf<T>, BoundedCollectionSymbolOf<T>, T::AccountId>,
+	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_nfts_by_owner)]
@@ -585,7 +590,10 @@ pub mod pallet {
 			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			ensure!(Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(), Error::<T>::ResourceDoesntExist);
+			ensure!(
+				Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(),
+				Error::<T>::ResourceDoesntExist
+			);
 
 			let (owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 			ensure!(owner == sender, Error::<T>::NoPermission);

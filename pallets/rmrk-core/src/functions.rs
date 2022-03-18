@@ -22,10 +22,7 @@ where
 		priorities: Vec<Vec<u8>>,
 	) -> DispatchResult {
 		// Check NFT lock status
-		ensure!(
-			!Pallet::<T>::is_locked(collection_id, nft_id),
-			pallet_uniques::Error::<T>::Locked
-		);
+		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 		let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
 		for priority in priorities {
 			let bounded_priority = Self::to_bounded_string(priority)?;
@@ -86,10 +83,7 @@ where
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		// Check NFT lock status
-		ensure!(
-			!Pallet::<T>::is_locked(collection_id, nft_id),
-			pallet_uniques::Error::<T>::Locked
-		);
+		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 
 		let empty =
 			base.is_none() &&
@@ -126,10 +120,7 @@ where
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
 		// Check NFT lock status
-		ensure!(
-			!Pallet::<T>::is_locked(collection_id, nft_id),
-			pallet_uniques::Error::<T>::Locked
-		);
+		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 		Resources::<T>::try_mutate_exists(
 			(collection_id, nft_id, resource_id.clone()),
 			|resource| -> DispatchResult {
@@ -145,7 +136,8 @@ where
 	}
 }
 
-impl<T: Config> Collection<StringLimitOf<T>, BoundedCollectionSymbolOf<T>, T::AccountId> for Pallet<T>
+impl<T: Config> Collection<StringLimitOf<T>, BoundedCollectionSymbolOf<T>, T::AccountId>
+	for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -260,7 +252,7 @@ where
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		Nfts::<T>::remove(collection_id, nft_id);
 
-		for _ in Resources::<T>::drain_prefix((collection_id, nft_id)) {}		
+		for _ in Resources::<T>::drain_prefix((collection_id, nft_id)) {}
 
 		let kids = Children::<T>::take((collection_id, nft_id));
 		for (child_collection_id, child_nft_id) in kids {

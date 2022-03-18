@@ -14,7 +14,6 @@ impl<T: Config> Pallet<T> {
 		})
 	}
 
-impl<T: Config> Pallet<T> {
 	/// Helper function for getting next part ID for a base
 	/// Like BaseId, PartId is auto-incremented from zero, which similarly may be worth changing
 	/// to BoundedVec to allow arbitrary/unique naming, making cross-chain functionality
@@ -64,8 +63,8 @@ where
 	}
 
 	/// Implementation of the do_equip function for the Base trait
-	/// Called by the equip extrinsic to equip a child NFT's resource to a parent's slot, if all are available.
-	/// Also can be called to unequip, which can be successful if
+	/// Called by the equip extrinsic to equip a child NFT's resource to a parent's slot, if all are
+	/// available. Also can be called to unequip, which can be successful if
 	/// - Item has beeen burned
 	/// - Item is equipped and extrinsic called by equipping item owner
 	/// - Item is equipped and extrinsic called by equipper NFT owner
@@ -318,7 +317,7 @@ where
 	/// Modeled after [themeadd interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/themeadd.md)
 	/// Themes are stored in the Themes storage
 	/// A "default" theme is required prior to adding other Themes.
-	/// 
+	///
 	/// Parameters:
 	/// - issuer: The caller of the function, must be issuer of the base
 	/// - base_id: The Base containing the Theme to be updated

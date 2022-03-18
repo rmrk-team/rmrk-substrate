@@ -133,7 +133,7 @@ fn equip_works() {
 			Origin::signed(ALICE),
 			stb("ipfs://col0-metadata"), // metadata
 			Some(5),                     // max
-			sbvec!["COL0"]                  // symbol
+			sbvec!["COL0"]               // symbol
 		));
 
 		// Create collection 1
@@ -141,7 +141,7 @@ fn equip_works() {
 			Origin::signed(ALICE),
 			stb("ipfs://col1-metadata"), // metadata
 			Some(5),                     // max
-			sbvec!["COL1"]                  // symbol
+			sbvec!["COL1"]               // symbol
 		));
 
 		// Mint NFT 0 from collection 0 (character-0)
