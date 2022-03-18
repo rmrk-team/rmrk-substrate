@@ -30,6 +30,9 @@ pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
+
+pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
+
 pub type ResourceOf<T, R> = ResourceInfo::<BoundedVec<u8, R>, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
 
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
@@ -62,6 +65,7 @@ pub mod pallet {
 		/// The maximum resource symbol length
 		#[pallet::constant]
 		type ResourceSymbolLimit: Get<u32>;
+		type CollectionSymbolLimit: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -81,7 +85,7 @@ pub mod pallet {
 	#[pallet::getter(fn collections)]
 	/// Stores collections info
 	pub type Collections<T: Config> =
-		StorageMap<_, Twox64Concat, CollectionId, CollectionInfo<StringLimitOf<T>, T::AccountId>>;
+		StorageMap<_, Twox64Concat, CollectionId, CollectionInfo<StringLimitOf<T>, BoundedCollectionSymbolOf<T>, T::AccountId>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn get_nfts_by_owner)]
@@ -307,7 +311,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			metadata: BoundedVec<u8, T::StringLimit>,
 			max: Option<u32>,
-			symbol: BoundedVec<u8, T::StringLimit>,
+			symbol: BoundedCollectionSymbolOf<T>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
