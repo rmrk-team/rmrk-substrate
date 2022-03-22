@@ -1,14 +1,15 @@
 [package]
-name = "rmrk-traits"
-description = "Shared traits"
-repository = "https://github.com/rmrk-team/rmrk-substrate"
-license = "Apache-2.0"
+name = "pallet-rmrk-equip"
 version = "0.0.1"
+description = "RMRK Equip"
 authors = ["RMRK Team"]
+homepage = ""
 edition = "2021"
+license = "Apache 2.0"
+repository = "https://github.com/rmrk-team/rmrk-substrate"
 
 [package.metadata.docs.rs]
-targets = ['x86_64-unknown-linux-gnu']
+targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 serde = { version = "1.0.111", default-features = false, features = ["derive"] }
@@ -22,24 +23,33 @@ frame-support = { default-features = false, version = "4.0.0-dev", git = "https:
 frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
 frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17", optional = true }
 
+pallet-uniques = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
 pallet-balances = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
 
+# Local Dependencies
+pallet-rmrk-core = { default-features = false, version = "0.0.1", path = "../rmrk-core" }
+rmrk-traits = { default-features = false, version = "0.0.1", path = "../../traits" }
+
+
 [dev-dependencies]
+sp-core = { default-features = false, version = "5.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
+sp-io = { default-features = false, version = "5.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
 sp-runtime = { default-features = false, version = "5.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
 sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.17" }
 
 [features]
 default = ["std"]
 std = [
+	"pallet-uniques/std",
 	"serde/std",
 	"codec/std",
 	"scale-info/std",
 	"frame-support/std",
 	"frame-system/std",
 	"frame-benchmarking/std",
-    "pallet-balances/std",
+	"pallet-rmrk-core/std",
+	"pallet-balances/std",
 ]
-
 
 runtime-benchmarks = ["frame-benchmarking/runtime-benchmarks"]
 try-runtime = ["frame-support/try-runtime"]
