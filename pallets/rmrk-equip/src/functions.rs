@@ -1,5 +1,5 @@
 use super::*;
-use frame_support::traits::Locker;
+use frame_support::traits::tokens::Locker;
 
 impl<T: Config> Pallet<T> {
 	/// Helper function for getting next base ID
