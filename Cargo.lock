@@ -44,7 +44,7 @@ checksum = "9e8b47f52ea9bae42228d07ec09eb676433d7c4ed1ebdf0f1d1c29ed446f1ab8"
 dependencies = [
  "cfg-if 1.0.0",
  "cipher",
- "cpufeatures 0.2.1",
+ "cpufeatures 0.2.2",
  "opaque-debug 0.3.0",
 ]
 
@@ -236,9 +236,9 @@ dependencies = [
 
 [[package]]
 name = "async-std"
-version = "1.10.0"
+version = "1.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f8056f1455169ab86dd47b47391e4ab0cbd25410a70e9fe675544f49bafaf952"
+checksum = "52580991739c5cdb36cde8b2a516371c0a3b70dda36d916cc08b82372916808c"
 dependencies = [
  "async-channel",
  "async-global-executor",
@@ -841,9 +841,9 @@ dependencies = [
 
 [[package]]
 name = "cpufeatures"
-version = "0.2.1"
+version = "0.2.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "95059428f66df56b63431fdb4e1947ed2190586af5c5a8a8b71122bdf5a7f469"
+checksum = "59a6001667ab124aebae2a495118e11d30984c3a653e99d86d58971708cf5e4b"
 dependencies = [
  "libc",
 ]
@@ -948,9 +948,9 @@ dependencies = [
 
 [[package]]
 name = "crossbeam-channel"
-version = "0.5.3"
+version = "0.5.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "fdbfe11fe19ff083c48923cf179540e8cd0535903dc35e178a1fdeeb59aef51f"
+checksum = "5aaa7bd5fb665c6864b5f963dd9097905c54125909c7aa94c9e18507cdbe6c53"
 dependencies = [
  "cfg-if 1.0.0",
  "crossbeam-utils",
@@ -1038,9 +1038,9 @@ dependencies = [
 
 [[package]]
 name = "ctor"
-version = "0.1.21"
+version = "0.1.22"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ccc0a48a9b826acdf4028595adc9db92caea352f7af011a3034acd172a52a0aa"
+checksum = "f877be4f7c9f246b183111634f75baa039715e3f46ce860677d3b19a69fb229c"
 dependencies = [
  "quote",
  "syn",
@@ -1251,9 +1251,9 @@ checksum = "21e50f3adc76d6a43f5ed73b698a87d0760ca74617f60f7c3b879003536fdd28"
 
 [[package]]
 name = "ed25519"
-version = "1.4.0"
+version = "1.4.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "eed12bbf7b5312f8da1c2722bc06d8c6b12c2d86a7fb35a194c7f3e6fc2bbe39"
+checksum = "3d5c4b5e5959dc2c2b89918d8e2cc40fcdd623cef026ed09d2f0ee05199dc8e4"
 dependencies = [
  "signature",
 ]
@@ -1441,7 +1441,7 @@ checksum = "3f9eec918d3f24069decb9af1554cad7c880e2da24a9afd88aca000531ab82c1"
 [[package]]
 name = "fork-tree"
 version = "3.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "parity-scale-codec",
 ]
@@ -1459,7 +1459,7 @@ dependencies = [
 [[package]]
 name = "frame-benchmarking"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1481,7 +1481,7 @@ dependencies = [
 [[package]]
 name = "frame-benchmarking-cli"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "Inflector",
  "chrono",
@@ -1508,7 +1508,7 @@ dependencies = [
 [[package]]
 name = "frame-executive"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -1536,7 +1536,7 @@ dependencies = [
 [[package]]
 name = "frame-support"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "bitflags",
  "frame-metadata",
@@ -1565,7 +1565,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "Inflector",
  "frame-support-procedural-tools",
@@ -1577,7 +1577,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-support-procedural-tools-derive",
  "proc-macro-crate 1.1.3",
@@ -1589,7 +1589,7 @@ dependencies = [
 [[package]]
 name = "frame-support-procedural-tools-derive"
 version = "3.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -1599,7 +1599,7 @@ dependencies = [
 [[package]]
 name = "frame-system"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-support",
  "log",
@@ -1616,7 +1616,7 @@ dependencies = [
 [[package]]
 name = "frame-system-benchmarking"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -1631,7 +1631,7 @@ dependencies = [
 [[package]]
 name = "frame-system-rpc-runtime-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
@@ -2097,9 +2097,9 @@ checksum = "9a3a5bfb195931eeb336b2a7b4d761daec841b97f947d34394601737a7bba5e4"
 
 [[package]]
 name = "hyper"
-version = "0.14.17"
+version = "0.14.18"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "043f0e083e9901b6cc658a77d1eb86f4fc650bbb977a4337dd63192826aa85dd"
+checksum = "b26ae0a80afebe130861d90abf98e3814a4f28a4c6ffeb5ab8ebb2be311e0ef2"
 dependencies = [
  "bytes 1.1.0",
  "futures-channel",
@@ -2544,9 +2544,9 @@ checksum = "830d08ce1d1d941e6b30645f1a0eb5643013d835ce3779a5fc208261dbe10f55"
 
 [[package]]
 name = "libc"
-version = "0.2.120"
+version = "0.2.121"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ad5c14e80759d0939d013e6ca49930e59fc53dd8e5009132f76240c179380c09"
+checksum = "efaa7b300f3b5fe8eb6bf21ce3895e1751d9665086af2d64b42f19701015ff4f"
 
 [[package]]
 name = "libloading"
@@ -3160,9 +3160,9 @@ dependencies = [
 
 [[package]]
 name = "log"
-version = "0.4.14"
+version = "0.4.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "51b9bbe6c47d51fc3e1a9b945965946b4c44142ab8792c50835a980d362c2710"
+checksum = "6389c490849ff5bc16be905ae24bc913a9c8892e19b2341dbc175e14c341c2b8"
 dependencies = [
  "cfg-if 1.0.0",
  "value-bag",
@@ -3604,6 +3604,16 @@ dependencies = [
 ]
 
 [[package]]
+name = "num-format"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "bafe4179722c2894288ee77a9f044f02811c86af699344c498b0840c698a2465"
+dependencies = [
+ "arrayvec 0.4.12",
+ "itoa 0.4.8",
+]
+
+[[package]]
 name = "num-integer"
 version = "0.1.44"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -3735,7 +3745,7 @@ dependencies = [
 [[package]]
 name = "pallet-aura"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3751,7 +3761,7 @@ dependencies = [
 [[package]]
 name = "pallet-authorship"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3766,7 +3776,7 @@ dependencies = [
 [[package]]
 name = "pallet-balances"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -3781,7 +3791,7 @@ dependencies = [
 [[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -3804,7 +3814,7 @@ dependencies = [
 [[package]]
 name = "pallet-randomness-collective-flip"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3877,7 +3887,7 @@ dependencies = [
 [[package]]
 name = "pallet-session"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3898,7 +3908,7 @@ dependencies = [
 [[package]]
 name = "pallet-sudo"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3926,7 +3936,7 @@ dependencies = [
 [[package]]
 name = "pallet-timestamp"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -3944,7 +3954,7 @@ dependencies = [
 [[package]]
 name = "pallet-transaction-payment"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -3961,7 +3971,7 @@ dependencies = [
 [[package]]
 name = "pallet-transaction-payment-rpc"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "jsonrpc-core",
  "jsonrpc-core-client",
@@ -3978,7 +3988,7 @@ dependencies = [
 [[package]]
 name = "pallet-transaction-payment-rpc-runtime-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "pallet-transaction-payment",
  "parity-scale-codec",
@@ -3989,7 +3999,7 @@ dependencies = [
 [[package]]
 name = "pallet-uniques"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -4004,7 +4014,7 @@ dependencies = [
 [[package]]
 name = "pallet-utility"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -4018,9 +4028,9 @@ dependencies = [
 
 [[package]]
 name = "parity-db"
-version = "0.3.8"
+version = "0.3.9"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "865edee5b792f537356d9e55cbc138e7f4718dc881a7ea45a18b37bf61c21e3d"
+checksum = "3d121a9af17a43efd0a38c6afa508b927ba07785bd4709efb2ac03bf77efef8d"
 dependencies = [
  "blake2-rfc",
  "crc32fast",
@@ -4356,7 +4366,7 @@ version = "0.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "048aeb476be11a4b6ca432ca569e375810de9294ae78f4774e78ea98a9246ede"
 dependencies = [
- "cpufeatures 0.2.1",
+ "cpufeatures 0.2.2",
  "opaque-debug 0.3.0",
  "universal-hash",
 ]
@@ -4368,7 +4378,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8419d2b623c7c0896ff2d5d96e2cb4ede590fed28fcc34934f4c33c036e620a1"
 dependencies = [
  "cfg-if 1.0.0",
- "cpufeatures 0.2.1",
+ "cpufeatures 0.2.2",
  "opaque-debug 0.3.0",
  "universal-hash",
 ]
@@ -5059,7 +5069,7 @@ dependencies = [
 [[package]]
 name = "sc-allocator"
 version = "4.1.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "log",
  "sp-core",
@@ -5070,7 +5080,7 @@ dependencies = [
 [[package]]
 name = "sc-basic-authorship"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "futures 0.3.21",
  "futures-timer",
@@ -5093,7 +5103,7 @@ dependencies = [
 [[package]]
 name = "sc-block-builder"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "parity-scale-codec",
  "sc-client-api",
@@ -5109,7 +5119,7 @@ dependencies = [
 [[package]]
 name = "sc-chain-spec"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "impl-trait-for-tuples",
  "memmap2 0.5.3",
@@ -5126,7 +5136,7 @@ dependencies = [
 [[package]]
 name = "sc-chain-spec-derive"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "proc-macro-crate 1.1.3",
  "proc-macro2",
@@ -5137,7 +5147,7 @@ dependencies = [
 [[package]]
 name = "sc-cli"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "chrono",
  "clap",
@@ -5175,7 +5185,7 @@ dependencies = [
 [[package]]
 name = "sc-client-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "fnv",
  "futures 0.3.21",
@@ -5203,7 +5213,7 @@ dependencies = [
 [[package]]
 name = "sc-client-db"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "hash-db",
  "kvdb",
@@ -5228,7 +5238,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "futures 0.3.21",
@@ -5252,7 +5262,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus-aura"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "futures 0.3.21",
@@ -5281,7 +5291,7 @@ dependencies = [
 [[package]]
 name = "sc-consensus-slots"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "futures 0.3.21",
@@ -5306,7 +5316,7 @@ dependencies = [
 [[package]]
 name = "sc-executor"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "lazy_static",
  "libsecp256k1",
@@ -5334,7 +5344,7 @@ dependencies = [
 [[package]]
 name = "sc-executor-common"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "environmental",
  "parity-scale-codec",
@@ -5351,7 +5361,7 @@ dependencies = [
 [[package]]
 name = "sc-executor-wasmi"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "log",
  "parity-scale-codec",
@@ -5367,7 +5377,7 @@ dependencies = [
 [[package]]
 name = "sc-executor-wasmtime"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "cfg-if 1.0.0",
  "libc",
@@ -5385,7 +5395,7 @@ dependencies = [
 [[package]]
 name = "sc-finality-grandpa"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "dyn-clone",
@@ -5423,7 +5433,7 @@ dependencies = [
 [[package]]
 name = "sc-informant"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "ansi_term",
  "futures 0.3.21",
@@ -5440,7 +5450,7 @@ dependencies = [
 [[package]]
 name = "sc-keystore"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "hex",
@@ -5455,7 +5465,7 @@ dependencies = [
 [[package]]
 name = "sc-network"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-std",
  "async-trait",
@@ -5505,7 +5515,7 @@ dependencies = [
 [[package]]
 name = "sc-network-gossip"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "futures 0.3.21",
  "futures-timer",
@@ -5521,7 +5531,7 @@ dependencies = [
 [[package]]
 name = "sc-offchain"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "bytes 1.1.0",
  "fnv",
@@ -5549,7 +5559,7 @@ dependencies = [
 [[package]]
 name = "sc-peerset"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "futures 0.3.21",
  "libp2p",
@@ -5562,7 +5572,7 @@ dependencies = [
 [[package]]
 name = "sc-proposer-metrics"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "log",
  "substrate-prometheus-endpoint",
@@ -5571,7 +5581,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "futures 0.3.21",
  "hash-db",
@@ -5602,7 +5612,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc-api"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "futures 0.3.21",
  "jsonrpc-core",
@@ -5627,7 +5637,7 @@ dependencies = [
 [[package]]
 name = "sc-rpc-server"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "futures 0.3.21",
  "jsonrpc-core",
@@ -5644,7 +5654,7 @@ dependencies = [
 [[package]]
 name = "sc-service"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "directories",
@@ -5708,7 +5718,7 @@ dependencies = [
 [[package]]
 name = "sc-state-db"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "log",
  "parity-scale-codec",
@@ -5722,7 +5732,7 @@ dependencies = [
 [[package]]
 name = "sc-telemetry"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "chrono",
  "futures 0.3.21",
@@ -5740,7 +5750,7 @@ dependencies = [
 [[package]]
 name = "sc-tracing"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "ansi_term",
  "atty",
@@ -5771,7 +5781,7 @@ dependencies = [
 [[package]]
 name = "sc-tracing-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "proc-macro-crate 1.1.3",
  "proc-macro2",
@@ -5782,7 +5792,7 @@ dependencies = [
 [[package]]
 name = "sc-transaction-pool"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "futures 0.3.21",
  "futures-timer",
@@ -5809,7 +5819,7 @@ dependencies = [
 [[package]]
 name = "sc-transaction-pool-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "futures 0.3.21",
  "log",
@@ -5822,7 +5832,7 @@ dependencies = [
 [[package]]
 name = "sc-utils"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "futures 0.3.21",
  "futures-timer",
@@ -6041,7 +6051,7 @@ checksum = "99cd6713db3cf16b6c84e06321e049a9b9f699826e16096d23bbcc44d15d51a6"
 dependencies = [
  "block-buffer 0.9.0",
  "cfg-if 1.0.0",
- "cpufeatures 0.2.1",
+ "cpufeatures 0.2.2",
  "digest 0.9.0",
  "opaque-debug 0.3.0",
 ]
@@ -6066,7 +6076,7 @@ checksum = "4d58a1e1bf39749807d89cf2d98ac2dfa0ff1cb3faa38fbb64dd88ac8013d800"
 dependencies = [
  "block-buffer 0.9.0",
  "cfg-if 1.0.0",
- "cpufeatures 0.2.1",
+ "cpufeatures 0.2.2",
  "digest 0.9.0",
  "opaque-debug 0.3.0",
 ]
@@ -6078,7 +6088,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "55deaec60f81eefe3cce0dc50bda92d6d8e88f2a27df7c5033b42afeb1ed2676"
 dependencies = [
  "cfg-if 1.0.0",
- "cpufeatures 0.2.1",
+ "cpufeatures 0.2.2",
  "digest 0.10.3",
 ]
 
@@ -6222,7 +6232,7 @@ dependencies = [
 [[package]]
 name = "sp-api"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "hash-db",
  "log",
@@ -6239,7 +6249,7 @@ dependencies = [
 [[package]]
 name = "sp-api-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "blake2-rfc",
  "proc-macro-crate 1.1.3",
@@ -6251,7 +6261,7 @@ dependencies = [
 [[package]]
 name = "sp-application-crypto"
 version = "5.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -6264,7 +6274,7 @@ dependencies = [
 [[package]]
 name = "sp-arithmetic"
 version = "4.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "integer-sqrt",
  "num-traits",
@@ -6279,7 +6289,7 @@ dependencies = [
 [[package]]
 name = "sp-authorship"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "parity-scale-codec",
@@ -6291,7 +6301,7 @@ dependencies = [
 [[package]]
 name = "sp-block-builder"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "parity-scale-codec",
  "sp-api",
@@ -6303,7 +6313,7 @@ dependencies = [
 [[package]]
 name = "sp-blockchain"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "futures 0.3.21",
  "log",
@@ -6321,7 +6331,7 @@ dependencies = [
 [[package]]
 name = "sp-consensus"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "futures 0.3.21",
@@ -6340,7 +6350,7 @@ dependencies = [
 [[package]]
 name = "sp-consensus-aura"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "parity-scale-codec",
@@ -6358,7 +6368,7 @@ dependencies = [
 [[package]]
 name = "sp-consensus-slots"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -6370,7 +6380,7 @@ dependencies = [
 [[package]]
 name = "sp-core"
 version = "5.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "base58",
  "bitflags",
@@ -6418,7 +6428,7 @@ dependencies = [
 [[package]]
 name = "sp-core-hashing"
 version = "4.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "blake2-rfc",
  "byteorder",
@@ -6431,7 +6441,7 @@ dependencies = [
 [[package]]
 name = "sp-core-hashing-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6442,7 +6452,7 @@ dependencies = [
 [[package]]
 name = "sp-database"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "kvdb",
  "parking_lot",
@@ -6451,7 +6461,7 @@ dependencies = [
 [[package]]
 name = "sp-debug-derive"
 version = "4.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -6461,7 +6471,7 @@ dependencies = [
 [[package]]
 name = "sp-externalities"
 version = "0.11.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "environmental",
  "parity-scale-codec",
@@ -6472,7 +6482,7 @@ dependencies = [
 [[package]]
 name = "sp-finality-grandpa"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "finality-grandpa",
  "log",
@@ -6490,7 +6500,7 @@ dependencies = [
 [[package]]
 name = "sp-inherents"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "impl-trait-for-tuples",
@@ -6504,7 +6514,7 @@ dependencies = [
 [[package]]
 name = "sp-io"
 version = "5.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "futures 0.3.21",
  "hash-db",
@@ -6528,7 +6538,7 @@ dependencies = [
 [[package]]
 name = "sp-keyring"
 version = "5.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "lazy_static",
  "sp-core",
@@ -6539,7 +6549,7 @@ dependencies = [
 [[package]]
 name = "sp-keystore"
 version = "0.11.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "futures 0.3.21",
@@ -6556,7 +6566,7 @@ dependencies = [
 [[package]]
 name = "sp-maybe-compressed-blob"
 version = "4.1.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "thiserror",
  "zstd",
@@ -6565,7 +6575,7 @@ dependencies = [
 [[package]]
 name = "sp-offchain"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "sp-api",
  "sp-core",
@@ -6575,7 +6585,7 @@ dependencies = [
 [[package]]
 name = "sp-panic-handler"
 version = "4.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "backtrace",
  "lazy_static",
@@ -6585,7 +6595,7 @@ dependencies = [
 [[package]]
 name = "sp-rpc"
 version = "5.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "rustc-hash",
  "serde",
@@ -6595,7 +6605,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime"
 version = "5.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "either",
  "hash256-std-hasher",
@@ -6617,7 +6627,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface"
 version = "5.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "impl-trait-for-tuples",
  "parity-scale-codec",
@@ -6634,7 +6644,7 @@ dependencies = [
 [[package]]
 name = "sp-runtime-interface-proc-macro"
 version = "4.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "Inflector",
  "proc-macro-crate 1.1.3",
@@ -6646,7 +6656,7 @@ dependencies = [
 [[package]]
 name = "sp-serializer"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "serde",
  "serde_json",
@@ -6655,7 +6665,7 @@ dependencies = [
 [[package]]
 name = "sp-session"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -6669,7 +6679,7 @@ dependencies = [
 [[package]]
 name = "sp-staking"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "parity-scale-codec",
  "scale-info",
@@ -6680,7 +6690,7 @@ dependencies = [
 [[package]]
 name = "sp-state-machine"
 version = "0.11.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "hash-db",
  "log",
@@ -6703,12 +6713,12 @@ dependencies = [
 [[package]]
 name = "sp-std"
 version = "4.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 
 [[package]]
 name = "sp-storage"
 version = "5.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "impl-serde",
  "parity-scale-codec",
@@ -6721,7 +6731,7 @@ dependencies = [
 [[package]]
 name = "sp-tasks"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "log",
  "sp-core",
@@ -6734,7 +6744,7 @@ dependencies = [
 [[package]]
 name = "sp-timestamp"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "futures-timer",
@@ -6750,7 +6760,7 @@ dependencies = [
 [[package]]
 name = "sp-tracing"
 version = "4.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "parity-scale-codec",
  "sp-std",
@@ -6762,7 +6772,7 @@ dependencies = [
 [[package]]
 name = "sp-transaction-pool"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "sp-api",
  "sp-runtime",
@@ -6771,7 +6781,7 @@ dependencies = [
 [[package]]
 name = "sp-transaction-storage-proof"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-trait",
  "log",
@@ -6787,7 +6797,7 @@ dependencies = [
 [[package]]
 name = "sp-trie"
 version = "5.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "hash-db",
  "memory-db",
@@ -6802,7 +6812,7 @@ dependencies = [
 [[package]]
 name = "sp-version"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "impl-serde",
  "parity-scale-codec",
@@ -6819,7 +6829,7 @@ dependencies = [
 [[package]]
 name = "sp-version-proc-macro"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "parity-scale-codec",
  "proc-macro2",
@@ -6830,7 +6840,7 @@ dependencies = [
 [[package]]
 name = "sp-wasm-interface"
 version = "5.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "impl-trait-for-tuples",
  "log",
@@ -6848,11 +6858,12 @@ checksum = "6e63cff320ae2c57904679ba7cb63280a3dc4613885beafb148ee7bf9aa9042d"
 
 [[package]]
 name = "ss58-registry"
-version = "1.15.0"
+version = "1.17.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2f9799e6d412271cb2414597581128b03f3285f260ea49f5363d07df6a332b3e"
+checksum = "7b84a70894df7a73666e0694f44b41a9571625e9546fb58a0818a565d2c7e084"
 dependencies = [
  "Inflector",
+ "num-format",
  "proc-macro2",
  "quote",
  "serde",
@@ -6929,7 +6940,7 @@ dependencies = [
 [[package]]
 name = "substrate-build-script-utils"
 version = "3.0.0"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "platforms",
 ]
@@ -6937,7 +6948,7 @@ dependencies = [
 [[package]]
 name = "substrate-frame-rpc-system"
 version = "4.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "frame-system-rpc-runtime-api",
  "futures 0.3.21",
@@ -6959,7 +6970,7 @@ dependencies = [
 [[package]]
 name = "substrate-prometheus-endpoint"
 version = "0.10.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "async-std",
  "futures-util",
@@ -6973,7 +6984,7 @@ dependencies = [
 [[package]]
 name = "substrate-wasm-builder"
 version = "5.0.0-dev"
-source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#5ef78e38c47530b7234349d310fea8da1bb720f0"
+source = "git+https://github.com/HashWarlock/substrate.git?branch=hw-uniques-locker-trait#de191cd0b65f18f81c7e0a8cd79d7576bd4f97d0"
 dependencies = [
  "ansi_term",
  "build-helper",
@@ -7924,9 +7935,9 @@ dependencies = [
 
 [[package]]
 name = "which"
-version = "4.2.4"
+version = "4.2.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2a5a7e487e921cf220206864a94a89b6c6905bfc19f1057fa26a4cb360e5c1d2"
+checksum = "5c4fb54e6113b6a8772ee41c3404fb0301ac79604489467e0a9ce1f3e97c24ae"
 dependencies = [
  "either",
  "lazy_static",
