@@ -13,7 +13,7 @@ use sp_std::{convert::TryInto, vec::Vec};
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
 	Priority, Property, 
-	ResourceInfo, 
+	ResourceInfo,
 	Resource
 };
 use sp_std::result::Result;
@@ -139,6 +139,21 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn pending_resource_removals)]
+	/// Stores nft info
+	pub type PendingResourceRemovals<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, CollectionId>,
+			NMapKey<Blake2_128Concat, NftId>,
+			NMapKey<Blake2_128Concat, BoundedResource<T::ResourceSymbolLimit>>
+			,
+		),
+		(),
+		OptionQuery,
+	>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn properties)]
 	/// Metadata of an asset class.
 	pub(super) type Properties<T: Config> = StorageNMap<
@@ -218,6 +233,14 @@ pub mod pallet {
 			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 		},
 		ResourceAccepted {
+			nft_id: NftId,
+			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+		},
+		ResourceRemoval {
+			nft_id: NftId,
+			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+		},
+		ResourceRemovalAccepted {
 			nft_id: NftId,
 			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 		},
@@ -599,6 +622,50 @@ pub mod pallet {
 			)?;
 
 			Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
+			Ok(())
+		}
+		/// Create resource
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn remove_resource(
+			origin: OriginFor<T>,
+			collection_id: CollectionId,
+			nft_id: NftId,
+			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin.clone())?;
+
+			Self::resource_remove(
+				sender,
+				collection_id,
+				nft_id,
+				resource_id.clone()
+			)?;
+
+			Self::deposit_event(Event::ResourceRemoval { nft_id, resource_id });
+			Ok(())
+		}
+
+		/// accept the addition of a new resource to an existing NFT
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn accept_resource_removal(
+			origin: OriginFor<T>,
+			collection_id: CollectionId,
+			nft_id: NftId,
+			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin.clone())?;
+			ensure!(Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(), Error::<T>::ResourceDoesntExist);
+
+			Self::accept_removal(
+				sender,
+				collection_id,
+				nft_id,
+				resource_id.clone()
+			)?;
+
+			Self::deposit_event(Event::ResourceRemovalAccepted { nft_id, resource_id });
 			Ok(())
 		}
 

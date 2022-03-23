@@ -69,4 +69,16 @@ pub trait Resource<BoundedString, AccountId, BoundedResource> {
 		nft_id: NftId,
 		resource_id: BoundedResource,
 	) -> DispatchResult;
+	fn resource_remove(
+		sender: AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		resource_id: BoundedResource,
+	) -> DispatchResult;
+	fn accept_removal(
+		sender: AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		resource_id: BoundedResource,
+	) -> DispatchResult;
 }

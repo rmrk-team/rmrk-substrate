@@ -121,6 +121,39 @@ where
 		Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
 		Ok(())
 	}
+
+	fn resource_remove(
+		sender: T::AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		resource_id: BoundedResource<T::ResourceSymbolLimit>,
+	) -> DispatchResult {
+		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+
+		if root_owner == sender {
+			Resources::<T>::remove((collection_id, nft_id, resource_id));
+		} else {
+			PendingResourceRemovals::<T>::insert((collection_id, nft_id, resource_id), ());
+		}
+
+		Ok(())
+	}
+
+	fn accept_removal(
+		sender: T::AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		resource_id: BoundedResource<T::ResourceSymbolLimit>,
+	) -> DispatchResult {
+		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		ensure!(root_owner == sender, Error::<T>::NoPermission);
+
+		if PendingResourceRemovals::<T>::contains_key((collection_id, nft_id, &resource_id)) {
+			Resources::<T>::remove((collection_id, nft_id, resource_id));
+		}
+
+		Ok(())
+	}
 }
 
 impl<T: Config> Collection<StringLimitOf<T>, BoundedCollectionSymbolOf<T>, T::AccountId> for Pallet<T>
