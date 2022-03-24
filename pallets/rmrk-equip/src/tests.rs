@@ -57,46 +57,18 @@ fn create_base_works() {
 	});
 }
 
-// no longer needed as we use PartsLimit on BoundedVec
-// Base: Attempting to create a base with more the max parts fails
-// #[test]
-// fn exceeding_max_parts_per_base_fails() {
-// 	ExtBuilder::default().build().execute_with(|| {
-// 		let mut parts: BoundedVec::<PartType<BoundedVec<u8, UniquesStringLimit>>, PartsLimit> = bvec![
-// 			PartType::FixedPart(FixedPart { id: 100, z: 0, src: stb("fixed_part_src") }),
-// 			PartType::FixedPart(FixedPart { id: 101, z: 0, src: stb("fixed_part_src") }),
-// 			PartType::FixedPart(FixedPart { id: 102, z: 0, src: stb("fixed_part_src") }),
-// 			PartType::FixedPart(FixedPart { id: 103, z: 0, src: stb("fixed_part_src") }),
-// 			PartType::FixedPart(FixedPart { id: 104, z: 0, src: stb("fixed_part_src") }),
-// 			PartType::FixedPart(FixedPart { id: 105, z: 0, src: stb("fixed_part_src") }),
-// 			PartType::FixedPart(FixedPart { id: 106, z: 0, src: stb("fixed_part_src") }),
-// 			PartType::FixedPart(FixedPart { id: 107, z: 0, src: stb("fixed_part_src") }),
-// 			PartType::FixedPart(FixedPart { id: 108, z: 0, src: stb("fixed_part_src") }),
-// 			PartType::FixedPart(FixedPart { id: 109, z: 0, src: stb("fixed_part_src") }),
-// 			PartType::FixedPart(FixedPart { id: 110, z: 0, src: stb("fixed_part_src") }),
-// 		];
-// 		// for i in 100..110 {
-// 		// 	let fixed_part = FixedPart { id: i, z: 0, src: stb("fixed_part_src") };
-// 		// 	parts.push(PartType::FixedPart(fixed_part).clone());
-// 		// }
-
-// 		assert_noop!(
-// 			RmrkEquip::create_base(
-// 				Origin::signed(ALICE), // origin
-// 				bvec![0u8; 20],        // base_type
-// 				bvec![0u8; 20],        // symbol
-// 				parts,
-// 			),
-// 			Error::<Test>::ExceedsMaxPartsPerBase,
-// 		);
-// 	});
-// }
-
 #[test]
 #[should_panic]
 fn exceeding_parts_bound_panics() {
-	// PartsLimit bound is 10 per mock.rs, 11 should panic on unwrap
-	let parts_bounded_vec: BoundedVec<PartId, PartsLimit> = bvec![1,2,3,4,5,6,7,8,9,10,11,12];
+	// PartsLimit bound is 50 per mock.rs, 60 should panic on unwrap
+	let parts_bounded_vec: BoundedVec<PartId, PartsLimit> = bvec![
+		1,2,3,4,5,6,7,8,9,10,
+		1,2,3,4,5,6,7,8,9,10,
+		1,2,3,4,5,6,7,8,9,10,
+		1,2,3,4,5,6,7,8,9,10,
+		1,2,3,4,5,6,7,8,9,10,
+		1,2,3,4,5,6,7,8,9,10,
+		];
 }
 
 /// Base: Basic equip tests

@@ -40,10 +40,6 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + pallet_rmrk_core::Config {
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 
-		// No longer needed as we use PartsLimit in BoundedVec now
-		// #[pallet::constant]
-		// type MaxPartsPerBase: Get<u32>;
-
 		#[pallet::constant]
 		type MaxPropertiesPerTheme: Get<u32>;
 
@@ -153,8 +149,6 @@ pub mod pallet {
 		NeedsDefaultThemeFirst,
 		AlreadyEquipped,
 		UnknownError,
-		// no longer needed because we use PartsLimit in BoundedVec
-		// ExceedsMaxPartsPerBase,
 		TooManyProperties,
 	}
 

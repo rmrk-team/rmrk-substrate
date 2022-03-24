@@ -528,19 +528,6 @@ where
 		Children::<T>::remove((parent.0, parent.1), (child.0, child.1));
 	}
 
-	/// I don't think we use this at all? [delete this statement if i'm wrong or this function if not]
-	/// Has a child NFT present in the Children StorageMap of the parent NFT
-	///
-	/// Parameters:
-	/// - `collection_id`: Collection ID of the NFT to lookup the root owner
-	/// - `nft_id`: NFT ID that is to be looked up for the root owner
-	///
-	/// Output:
-	/// - `bool`
-	pub fn has_child(parent: (CollectionId, NftId)) -> bool {
-		Children::<T>::iter_prefix_values(parent).count() != 0
-	}
-
 	/// Check whether a NFT is descends from a suspected parent NFT
 	/// and return a `bool` if NFT is or not
 	///
@@ -581,29 +568,7 @@ where
 				found_child
 			},
 		}
-	}
-
-	/// I don't think we use this at all? [delete this line if untrue, or this function if true]
-	/// `recursive_burn` function will recursively call itself to burn the NFT and all the children
-	/// of the NFT. Any caller functions must be #[transactional]
-	///
-	/// Parameters:
-	/// - `collection_id`: Collection ID of the NFT to be burned
-	/// - `nft_id`: NFT ID that is to be burned
-	/// - `max_recursion`: Maximum number of recursion allowed
-	pub fn recursive_burn(
-		collection_id: CollectionId,
-		nft_id: NftId,
-		max_recursions: u32,
-	) -> DispatchResult {
-		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
-		Nfts::<T>::remove(collection_id, nft_id);
-
-		for ((child_collection_id, child_nft_id), _) in Children::<T>::iter_prefix((collection_id, nft_id,)) {
-			Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
-		}
-		Ok(())
-	}
+	}	
 
 	pub fn get_next_nft_id(collection_id: CollectionId) -> Result<NftId, Error<T>> {
 		NextNftId::<T>::try_mutate(collection_id, |id| {
