@@ -830,6 +830,13 @@ fn resource_removal_works() {
 			None, // thumb
 			None, // parts
 		));
+		// Resource res-1 doesn't exist
+		assert_noop!(RMRKCore::remove_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-1"), // resource_id
+		), Error::<Test>::ResourceDoesntExist);
 		// Remove resource
 		assert_ok!(RMRKCore::remove_resource(
 			Origin::signed(ALICE),
@@ -877,11 +884,15 @@ fn resource_removal_pending_works() {
 			stbr("res-0"), // resource_id
 		));
 		// Since BOB doesn't root-own NFT, resource's removal is waiting for acceptance
-		assert_eq!(RMRKCore::pending_resource_removals((0, 0, stbr("res-0"))), Some(()));
+		assert_eq!(RMRKCore::resources((0, 0, stbr("res-0"))).unwrap().pending_removal, true);
 		// BOB doesn't own ALICE's NFT, so accept should fail
 		assert_noop!(
 			RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, stbr("res-0")),
 			Error::<Test>::NoPermission);
+		// Resource res-1 doesn't exist
+		assert_noop!(
+			RMRKCore::accept_resource_removal(Origin::signed(ALICE), 0, 0, stbr("res-1")),
+			Error::<Test>::ResourceDoesntExist);
 		// ALICE can accept his own NFT's pending resource
 		assert_ok!(RMRKCore::accept_resource_removal(Origin::signed(ALICE), 0, 0, stbr("res-0")));
 		// Successful resource removal acceptance should trigger ResourceRemovalAccepted event

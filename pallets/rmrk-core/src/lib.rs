@@ -139,21 +139,6 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn pending_resource_removals)]
-	/// Stores nft info
-	pub type PendingResourceRemovals<T: Config> = StorageNMap<
-		_,
-		(
-			NMapKey<Blake2_128Concat, CollectionId>,
-			NMapKey<Blake2_128Concat, NftId>,
-			NMapKey<Blake2_128Concat, BoundedResource<T::ResourceSymbolLimit>>
-			,
-		),
-		(),
-		OptionQuery,
-	>;
-
-	#[pallet::storage]
 	#[pallet::getter(fn properties)]
 	/// Metadata of an asset class.
 	pub(super) type Properties<T: Config> = StorageNMap<
@@ -624,7 +609,8 @@ pub mod pallet {
 			Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
 			Ok(())
 		}
-		/// Create resource
+
+		/// remove resource
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn remove_resource(
@@ -646,7 +632,7 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// accept the addition of a new resource to an existing NFT
+		/// accept the removal of a resource of an existing NFT
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn accept_resource_removal(
@@ -656,7 +642,6 @@ pub mod pallet {
 			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			ensure!(Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(), Error::<T>::ResourceDoesntExist);
 
 			Self::accept_removal(
 				sender,

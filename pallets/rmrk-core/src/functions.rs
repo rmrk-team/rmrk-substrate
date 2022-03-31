@@ -92,6 +92,7 @@ where
 			thumb,
 			parts,
 			pending: root_owner != sender,
+			pending_removal: false,
 		};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
@@ -129,11 +130,20 @@ where
 		resource_id: BoundedResource<T::ResourceSymbolLimit>,
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-
+		ensure!(Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(), Error::<T>::ResourceDoesntExist);
+		
 		if root_owner == sender {
 			Resources::<T>::remove((collection_id, nft_id, resource_id));
 		} else {
-			PendingResourceRemovals::<T>::insert((collection_id, nft_id, resource_id), ());
+			Resources::<T>::try_mutate_exists(
+				(collection_id, nft_id, resource_id.clone()),
+				|resource| -> DispatchResult {
+					if let Some(res) = resource {
+						res.pending_removal = true;
+					}
+					Ok(())
+				},
+			)?;
 		}
 
 		Ok(())
@@ -147,10 +157,19 @@ where
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
+		ensure!(Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(), Error::<T>::ResourceDoesntExist);
 
-		if PendingResourceRemovals::<T>::contains_key((collection_id, nft_id, &resource_id)) {
-			Resources::<T>::remove((collection_id, nft_id, resource_id));
-		}
+		Resources::<T>::try_mutate_exists(
+			(collection_id, nft_id, resource_id.clone()),
+			|resource| -> DispatchResult {
+				if let Some(res) = resource {
+					if res.pending_removal {
+						*resource = None;
+					}
+				}
+				Ok(())
+			},
+		)?;
 
 		Ok(())
 	}

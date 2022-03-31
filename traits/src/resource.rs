@@ -20,6 +20,9 @@ pub struct ResourceInfo<BoundedResource, BoundedString> {
 	/// If resource is sent to non-rootowned NFT, pending will be false and need to be accepted
 	pub pending: bool,
 
+	/// If resource removal request is sent by non-rootowned NFT, pending will be true and need to be accepted
+	pub pending_removal: bool,
+
 	/// If a resource is composed, it will have an array of parts that compose it
 	pub parts: Option<Vec<PartId>>,
 
