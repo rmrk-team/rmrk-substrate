@@ -292,16 +292,16 @@ pub mod pallet {
 			}
 
 			let (collection_id, nft_id) =
-				Self::nft_mint(sender.clone(), owner, collection_id, recipient, royalty, metadata)?;
+				Self::nft_mint(sender.clone(), owner.clone(), collection_id, recipient, royalty, metadata)?;
 
 			pallet_uniques::Pallet::<T>::do_mint(
 				collection_id,
 				nft_id,
-				sender.clone(),
+				owner.clone(),
 				|_details| Ok(()),
 			)?;
 
-			Self::deposit_event(Event::NftMinted { owner: sender, collection_id, nft_id });
+			Self::deposit_event(Event::NftMinted { owner, collection_id, nft_id });
 
 			Ok(())
 		}
