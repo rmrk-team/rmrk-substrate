@@ -805,6 +805,8 @@ fn add_resource_pending_works() {
 		}));
 		// Resource should now have false pending status
 		assert_eq!(RMRKCore::resources((0, 0, stbr("res-4"))).unwrap().pending, false);
+		// Accepting resource again should fail with ResourceNotPending
+		assert_noop!(RMRKCore::accept_resource(Origin::signed(ALICE), 0, 0, stbr("res-4")), Error::<Test>::ResourceNotPending);
 	});
 }
 
