@@ -130,6 +130,8 @@ where
 		resource_id: BoundedResource<T::ResourceSymbolLimit>,
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		ensure!(Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(), Error::<T>::ResourceDoesntExist);
 		
 		if root_owner == sender {
