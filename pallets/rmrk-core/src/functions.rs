@@ -73,6 +73,8 @@ where
 		thumb: Option<BoundedVec<u8, T::StringLimit>>,
 		parts: Option<Vec<PartId>>,
 	) -> DispatchResult {
+		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
 		let empty =

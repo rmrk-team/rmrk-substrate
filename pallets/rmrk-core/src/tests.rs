@@ -720,7 +720,7 @@ fn create_resource_works() {
 				None, // thumb
 				None, // parts
 			),
-			Error::<Test>::NoAvailableNftId
+			Error::<Test>::CollectionUnknown
 		);
 		// Create a basic collection
 		assert_ok!(basic_collection());
@@ -775,9 +775,16 @@ fn add_resource_pending_works() {
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// Mint NFT
-		assert_ok!(basic_mint());
-		// BOB adds a resource to ALICE's NFT
-		assert_ok!(RMRKCore::add_resource(
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			BOB,
+			COLLECTION_ID_0,
+			Some(BOB),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+		));
+		// Since BOB isn't collection issuer, he can't add resources
+		assert_noop!(RMRKCore::add_resource(
 			Origin::signed(BOB),
 			COLLECTION_ID_0,
 			NFT_ID_0,
@@ -789,15 +796,28 @@ fn add_resource_pending_works() {
 			None, // license
 			None, // thumb
 			None, // parts
+		), Error::<Test>::NoPermission);
+		// Collection issuer can add resource
+		assert_ok!(RMRKCore::add_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-4"), // resource_id
+			Some(0), // base_id
+			None, // src
+			None, // metadata
+			None, // slot
+			None, // license
+			None, // thumb
+			None, // parts
 		));
-		// Since BOB doesn't root-own NFT, resource's pending status should be true
 		assert_eq!(RMRKCore::resources((0, 0, stbr("res-4"))).unwrap().pending, true);
-		// BOB doesn't own ALICES's NFT, so accept should fail
+		// ALICE doesn't own BOB's NFT, so accept should fail
 		assert_noop!(
-			RMRKCore::accept_resource(Origin::signed(BOB), 0, 0, stbr("res-4")),
+			RMRKCore::accept_resource(Origin::signed(ALICE), 0, 0, stbr("res-4")),
 			Error::<Test>::NoPermission);
-		// ALICE can accept her own NFT's pending resource
-		assert_ok!(RMRKCore::accept_resource(Origin::signed(ALICE), 0, 0, stbr("res-4")));
+		// BOB can accept his own NFT's pending resource
+		assert_ok!(RMRKCore::accept_resource(Origin::signed(BOB), 0, 0, stbr("res-4")));
 		// Valid resource acceptance should trigger a ResourceAccepted event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAccepted {
 			nft_id: 0,
@@ -806,7 +826,7 @@ fn add_resource_pending_works() {
 		// Resource should now have false pending status
 		assert_eq!(RMRKCore::resources((0, 0, stbr("res-4"))).unwrap().pending, false);
 		// Accepting resource again should fail with ResourceNotPending
-		assert_noop!(RMRKCore::accept_resource(Origin::signed(ALICE), 0, 0, stbr("res-4")), Error::<Test>::ResourceNotPending);
+		assert_noop!(RMRKCore::accept_resource(Origin::signed(BOB), 0, 0, stbr("res-4")), Error::<Test>::ResourceNotPending);
 	});
 }
 
