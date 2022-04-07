@@ -898,6 +898,10 @@ fn resource_removal_pending_works() {
 			NFT_ID_0,
 			stbr("res-0"),
 		));
+		// Accepting a resource removal that is not pending should fail
+		assert_noop!(
+			RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, stbr("res-0")),
+			Error::<Test>::ResourceNotPending);
 		// Only collection's issuer can request resource removal
 		assert_noop!(RMRKCore::remove_resource(
 			Origin::signed(BOB),

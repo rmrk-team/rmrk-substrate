@@ -132,13 +132,13 @@ where
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
-		ensure!(Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(), Error::<T>::ResourceDoesntExist);
+		ensure!(Resources::<T>::contains_key((collection_id, nft_id, &resource_id)), Error::<T>::ResourceDoesntExist);
 		
 		if root_owner == sender {
 			Resources::<T>::remove((collection_id, nft_id, resource_id));
 		} else {
 			Resources::<T>::try_mutate_exists(
-				(collection_id, nft_id, resource_id.clone()),
+				(collection_id, nft_id, resource_id),
 				|resource| -> DispatchResult {
 					if let Some(res) = resource {
 						res.pending_removal = true;
@@ -159,15 +159,14 @@ where
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
-		ensure!(Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(), Error::<T>::ResourceDoesntExist);
+		ensure!(Resources::<T>::contains_key((collection_id, nft_id, &resource_id)), Error::<T>::ResourceDoesntExist);
 
 		Resources::<T>::try_mutate_exists(
-			(collection_id, nft_id, resource_id.clone()),
+			(collection_id, nft_id, resource_id),
 			|resource| -> DispatchResult {
 				if let Some(res) = resource {
-					if res.pending_removal {
-						*resource = None;
-					}
+					ensure!(res.pending_removal, Error::<T>::ResourceNotPending);
+					*resource = None;
 				}
 				Ok(())
 			},
