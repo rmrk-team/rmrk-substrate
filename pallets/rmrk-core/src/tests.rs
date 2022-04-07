@@ -830,6 +830,135 @@ fn add_resource_pending_works() {
 	});
 }
 
+/// Resource: Basic resource removal
+#[test]
+fn resource_removal_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint NFT
+		assert_ok!(basic_mint());
+		// Add resource to NFT
+		assert_ok!(RMRKCore::add_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-0"), // resource_id
+			Some(0), // base_id
+			None, // src
+			None, // metadata
+			None, // slot
+			None, // license
+			None, // thumb
+			None, // parts
+		));
+		// Resource res-1 doesn't exist
+		assert_noop!(RMRKCore::remove_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-1"), // resource_id
+		), Error::<Test>::ResourceDoesntExist);
+		// Only collection issuer can request resource removal
+		assert_noop!(RMRKCore::remove_resource(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-0"), // resource_id
+		), Error::<Test>::NoPermission);
+		// Remove resource
+		assert_ok!(RMRKCore::remove_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-0"), // resource_id
+		));
+		// Successful resource removal should trigger ResourceRemoval event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceRemoval {
+			nft_id: 0,
+			resource_id: stbr("res-0"), // resource_id
+		}));
+		// Since ALICE rootowns NFT, resource should be removed
+		assert_eq!(RMRKCore::resources((0, 0, stbr("res-0"))), None);
+	});
+}
+
+/// Resource: Resource removal with pending and accept
+#[test]
+fn resource_removal_pending_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint NFT
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			BOB,
+			COLLECTION_ID_0,
+			Some(BOB),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+		));
+		// Add resource to NFT
+		assert_ok!(RMRKCore::add_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-0"), // resource_id
+			Some(0), // base_id
+			None, // src
+			None, // metadata
+			None, // slot
+			None, // license
+			None, // thumb
+			None, // parts
+		));
+		assert_ok!(RMRKCore::accept_resource(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-0"),
+		));
+		// Accepting a resource removal that is not pending should fail
+		assert_noop!(
+			RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, stbr("res-0")),
+			Error::<Test>::ResourceNotPending);
+		// Only collection's issuer can request resource removal
+		assert_noop!(RMRKCore::remove_resource(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-0"), // resource_id
+		), Error::<Test>::NoPermission);
+		// Resource removal requested by the collection issuer
+		assert_ok!(RMRKCore::remove_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-0"), // resource_id
+		));
+		// Since ALICE doesn't root-own NFT, resource's removal is waiting for acceptance
+		assert_eq!(RMRKCore::resources((0, 0, stbr("res-0"))).unwrap().pending_removal, true);
+		// ALICE doesn't own BOB's NFT, so accept should fail
+		assert_noop!(
+			RMRKCore::accept_resource_removal(Origin::signed(ALICE), 0, 0, stbr("res-0")),
+			Error::<Test>::NoPermission);
+		// Resource res-1 doesn't exist
+		assert_noop!(
+			RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, stbr("res-1")),
+			Error::<Test>::ResourceDoesntExist);
+		// BOB can accept his own NFT's pending resource removal
+		assert_ok!(RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, stbr("res-0")));
+		// Successful resource removal acceptance should trigger ResourceRemovalAccepted event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceRemovalAccepted {
+			nft_id: 0,
+			resource_id: stbr("res-0"), // resource_id
+		}));
+		// Resource removed
+		assert_eq!(RMRKCore::resources((0, 0, stbr("res-0"))), None);
+	});
+}
+
+
 /// Property: Setting property tests (RMRK2.0 spec: SETPROPERTY)
 #[test]
 fn set_property_works() {

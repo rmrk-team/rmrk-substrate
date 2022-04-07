@@ -94,6 +94,7 @@ where
 			thumb,
 			parts,
 			pending: root_owner != sender,
+			pending_removal: false,
 		};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
@@ -121,6 +122,58 @@ where
 		)?;
 
 		Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
+		Ok(())
+	}
+
+	fn resource_remove(
+		sender: T::AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		resource_id: BoundedResource<T::ResourceSymbolLimit>,
+	) -> DispatchResult {
+		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
+		ensure!(Resources::<T>::contains_key((collection_id, nft_id, &resource_id)), Error::<T>::ResourceDoesntExist);
+		
+		if root_owner == sender {
+			Resources::<T>::remove((collection_id, nft_id, resource_id));
+		} else {
+			Resources::<T>::try_mutate_exists(
+				(collection_id, nft_id, resource_id),
+				|resource| -> DispatchResult {
+					if let Some(res) = resource {
+						res.pending_removal = true;
+					}
+					Ok(())
+				},
+			)?;
+		}
+
+		Ok(())
+	}
+
+	fn accept_removal(
+		sender: T::AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		resource_id: BoundedResource<T::ResourceSymbolLimit>,
+	) -> DispatchResult {
+		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		ensure!(root_owner == sender, Error::<T>::NoPermission);
+		ensure!(Resources::<T>::contains_key((collection_id, nft_id, &resource_id)), Error::<T>::ResourceDoesntExist);
+
+		Resources::<T>::try_mutate_exists(
+			(collection_id, nft_id, resource_id),
+			|resource| -> DispatchResult {
+				if let Some(res) = resource {
+					ensure!(res.pending_removal, Error::<T>::ResourceNotPending);
+					*resource = None;
+				}
+				Ok(())
+			},
+		)?;
+
 		Ok(())
 	}
 }
