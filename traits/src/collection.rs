@@ -32,5 +32,8 @@ pub trait Collection<BoundedString, BoundedSymbol, AccountId> {
 		collection_id: CollectionId,
 		new_issuer: AccountId,
 	) -> Result<(AccountId, CollectionId), DispatchError>;
-	fn collection_lock(collection_id: CollectionId) -> Result<CollectionId, DispatchError>;
+	fn collection_lock(
+		sender: AccountId,
+		collection_id: CollectionId,
+	) -> Result<CollectionId, DispatchError>;
 }
