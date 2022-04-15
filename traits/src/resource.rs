@@ -3,7 +3,7 @@
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
-use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
+use sp_runtime::{DispatchResult, RuntimeDebug};
 use sp_std::{cmp::Eq, vec::Vec};
 
 use crate::primitives::*;
