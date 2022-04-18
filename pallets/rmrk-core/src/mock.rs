@@ -45,6 +45,7 @@ parameter_types! {
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 50;
 	pub const MaxPriorities: u32 = 3;
+	pub const CollectionSymbolLimit: u32 = 100;
 }
 
 impl pallet_rmrk_core::Config for Test {
@@ -55,6 +56,7 @@ impl pallet_rmrk_core::Config for Test {
 	type ResourceSymbolLimit = ResourceSymbolLimit;
 	type PartsLimit = PartsLimit;
 	type MaxPriorities = MaxPriorities;
+	type CollectionSymbolLimit = CollectionSymbolLimit;
 }
 
 parameter_types! {

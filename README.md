@@ -1,9 +1,10 @@
 # RMRK Substrate
 
 Additional documentation [https://rmrk-team.github.io/rmrk-substrate](https://rmrk-team.github.io/rmrk-substrate)
+
 ### Rust Setup
 
-First, complete the [basic Rust setup instructions](./docs/rust-setup.md).
+First, complete the [basic Rust setup instructions](./rust-setup.md).
 
 ### Run
 
