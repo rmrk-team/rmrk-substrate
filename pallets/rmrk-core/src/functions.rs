@@ -296,7 +296,6 @@ where
 		};
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
-		NftsByOwner::<T>::insert((&owner, &collection_id, &nft_id), ());
 
 		// increment nfts counter
 		let nfts_count = collection.nfts_count.checked_add(1).ok_or(ArithmeticError::Overflow)?;
