@@ -319,7 +319,6 @@ where
 
 		for _ in Resources::<T>::drain_prefix((collection_id, nft_id)) {}
 
-		let c = Children::<T>::iter_prefix((collection_id, nft_id,)).count();
 		for ((child_collection_id, child_nft_id), _) in Children::<T>::iter_prefix((collection_id, nft_id,)) {
 			Pallet::<T>::remove_child((collection_id, nft_id), (child_collection_id, child_nft_id));
 			Self::nft_burn(child_collection_id, child_nft_id, max_recursions - 1)?;

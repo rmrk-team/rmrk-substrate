@@ -8,8 +8,6 @@ use sp_std::result::Result;
 
 /// Collection info.
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-// #[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
-// pub struct CollectionInfo<BoundedString, AccountId> {
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub struct CollectionInfo<BoundedString, BoundedSymbol, AccountId> {
 	/// Current bidder and bid price.

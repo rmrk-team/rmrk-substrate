@@ -340,16 +340,12 @@ parameter_types! {
 	pub const AttributeDepositBase: Balance = 10 * DOLLARS;
 	pub const DepositPerByte: Balance = DOLLARS;
 	pub const UniquesStringLimit: u32 = 128;
-	// no longer needed as we use PartsLimit on BoundedVec
-	// pub const MaxPartsPerBase: u32 = 100;
 	pub const MaxPropertiesPerTheme: u32 = 100;
 	pub const MaxCollectionsEquippablePerPart: u32 = 100;
 }
 
 impl pallet_rmrk_equip::Config for Runtime {
 	type Event = Event;
-	// no longer needed as we use PartsLimit on BoundedVec
-	// type MaxPartsPerBase = MaxPartsPerBase;
 	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
 	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
 }

@@ -313,10 +313,6 @@ pub mod pallet {
 			let sender = ensure_signed(origin)?;
 
 			let part_length: u32 = parts.len().try_into().unwrap();
-
-			// We no longer need this because our bound is now on the BoundedVec of parts (PartsLimit)
-			// ensure!(part_length <= T::MaxPartsPerBase::get(), Error::<T>::ExceedsMaxPartsPerBase);
-
 			let base_id = Self::base_create(sender.clone(), base_type, symbol, parts)?;
 
 			Self::deposit_event(Event::BaseCreated { issuer: sender, base_id });

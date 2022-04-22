@@ -36,9 +36,6 @@ pub type ResourceOf<T, R, P> = ResourceInfo::<
 
 pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
 
-// pub type ResourceOf<T, R> =
-// 	ResourceInfo<BoundedVec<u8, R>, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
-
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
 pub type BoundedResource<R> = BoundedVec<u8, R>;
