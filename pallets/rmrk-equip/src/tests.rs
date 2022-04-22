@@ -64,6 +64,37 @@ fn create_base_works() {
 	});
 }
 
+/// Base: Change issuer tests (RMRK2.0 spec: CHANGEISSUER)=
+#[test]
+fn change_base_issuer_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a base
+		assert_ok!(RmrkEquip::create_base(
+			Origin::signed(ALICE), // origin
+			bvec![0u8; 20],        // base_type
+			bvec![0u8; 20],        // symbol
+			vec![], // parts
+		));
+		// Issuer should be Alice
+		assert_eq!(RmrkEquip::bases(0).unwrap().issuer, ALICE);
+		// Bob can't change issuer (no permission)
+		assert_noop!(
+			RmrkEquip::change_base_issuer(Origin::signed(BOB), 0, BOB),
+			Error::<Test>::PermissionError);
+		// Changing Base Issuer should be Alice
+		assert_ok!(RmrkEquip::change_base_issuer(Origin::signed(ALICE), 0, BOB));
+		// Issuer should be Bob
+		assert_eq!(RmrkEquip::bases(0).unwrap().issuer, BOB);
+		// Last event should be BaseIssuerChanged
+		System::assert_last_event(MockEvent::RmrkEquip(crate::Event::BaseIssuerChanged {
+			old_issuer: ALICE,
+			new_issuer: BOB,
+			base_id: 0,
+		}));
+
+	});
+}
+
 /// Base: Attempting to create a base with more the max parts fails
 #[test]
 fn exceeding_max_parts_per_base_fails() {
