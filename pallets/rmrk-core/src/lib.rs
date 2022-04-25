@@ -97,12 +97,6 @@ pub mod pallet {
 		StorageDoubleMap<_, Twox64Concat, CollectionId, Twox64Concat, NftId, InstanceInfoOf<T>>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn pending_nfts)]
-	/// Stores nft info
-	pub type PendingNfts<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, CollectionId, Twox64Concat, NftId, InstanceInfoOf<T>>;
-
-	#[pallet::storage]
 	#[pallet::getter(fn priorities)]
 	/// Stores priority info
 	pub type Priorities<T: Config> = StorageDoubleMap<
@@ -481,7 +475,8 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let (sender, collection_id, nft_id) = Self::nft_reject(sender, collection_id, nft_id)?;
+			let max_recursions = T::MaxRecursions::get();
+			let (sender, collection_id, nft_id) = Self::nft_reject(sender, collection_id, nft_id, max_recursions)?;
 
 			Self::deposit_event(Event::NFTRejected { sender, collection_id, nft_id });
 			Ok(())

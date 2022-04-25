@@ -33,6 +33,8 @@ pub struct NftInfo<AccountId, BoundedString> {
 	pub metadata: BoundedString,
 	/// Equipped state
 	pub equipped: bool,
+	/// Pending state (if sent to NFT)
+	pub pending: bool,
 }
 
 /// Abstraction over a Nft system.
@@ -69,5 +71,6 @@ pub trait Nft<AccountId, BoundedString> {
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
+		max_recursions: u32,
 	) -> Result<(AccountId, CollectionId, NftId), DispatchError>;
 }
