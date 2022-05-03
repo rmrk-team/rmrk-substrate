@@ -435,28 +435,33 @@ fn reject_nft_works() {
 		for _ in 0..3 {
 			assert_ok!(basic_mint());
 		}
-		// ALICE sends NFT (0, 0) [parent] to Bob
-		assert_ok!(RMRKCore::send(
-			Origin::signed(ALICE),
-			0,
-			0,
-			AccountIdOrCollectionNftTuple::AccountId(BOB),
-		));
+		// ALICE sends NFT (0, 1) to NFT (0, 0)
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			1,
-			AccountIdOrCollectionNftTuple::AccountId(BOB),
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
-		// ALICE sends NFT (0, 2) to Bob-owned NFT (0,0)
+		// ALICE sends NFT (0, 2) to BOB 
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			2,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+			AccountIdOrCollectionNftTuple::AccountId(BOB),
+		));
+		// ALICE sends NFT (0, 0) to Bob-owned NFT (0,2)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			0,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
 		));
 		// Bob rejects NFT (0,2) for Bob-owned NFT (0,0)
 		assert_ok!(RMRKCore::reject_nft(Origin::signed(BOB), 0, 2,));
+		// Rejected NFT gets burned
+		assert_eq!(RMRKCore::nfts(0, 0).is_none(), true);
+		// Child is burned if parent is rejected
+		assert_eq!(RMRKCore::nfts(0, 1).is_none(), true);
 	});
 }
 

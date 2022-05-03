@@ -10,7 +10,6 @@ type RMRKEquip = Pallet<Test>;
 
 /// Turns a string into a BoundedVec
 fn stb(s: &str) -> BoundedVec<u8, UniquesStringLimit> {
-	// println!("len: {:?}", s.as_bytes().to_vec().len());
 	s.as_bytes().to_vec().try_into().unwrap()
 }
 
@@ -59,8 +58,6 @@ fn create_base_works() {
 			bvec![0u8; 20],        // symbol
 			bvec![PartType::FixedPart(fixed_part), PartType::SlotPart(slot_part),],
 		));
-
-		// println!("{:?}", RmrkEquip::bases(0).unwrap());
 	});
 }
 
