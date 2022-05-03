@@ -24,7 +24,7 @@ where
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(sender == root_owner, Error::<T>::NoPermission);
 		// TODO : Check NFT lock status
-		for _ in Priorities::<T>::drain_prefix((collection_id, nft_id)) {}
+		Priorities::<T>::remove_prefix((collection_id, nft_id), None);
 		let mut priority_index = 0;
 		for resource_id in priorities {
 			Priorities::<T>::insert((collection_id, nft_id, resource_id), priority_index);
@@ -317,7 +317,7 @@ where
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
 		Nfts::<T>::remove(collection_id, nft_id);
 
-		for _ in Resources::<T>::drain_prefix((collection_id, nft_id)) {}
+		Resources::<T>::remove_prefix((collection_id, nft_id), None);
 
 		for ((child_collection_id, child_nft_id), _) in Children::<T>::iter_prefix((collection_id, nft_id,)) {
 			for _ in Children::<T>::drain_prefix((collection_id, nft_id)) {}
