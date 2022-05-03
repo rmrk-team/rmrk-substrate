@@ -10,6 +10,8 @@ pub struct Theme<BoundedString> {
 	pub name: BoundedString,
 	/// Theme properties
 	pub properties: Vec<ThemeProperty<BoundedString>>,
+	/// Inheritability
+	pub inherit: bool,
 }
 
 #[cfg_attr(feature = "std", derive(Eq))]
@@ -19,6 +21,4 @@ pub struct ThemeProperty<BoundedString> {
 	pub key: BoundedString,
 	/// Value of the property
 	pub value: BoundedString,
-	/// Inheritability
-	pub inherit: Option<bool>,
 }
