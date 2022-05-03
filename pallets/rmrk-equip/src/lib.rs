@@ -7,6 +7,8 @@ use frame_support::{
 };
 use sp_std::vec::Vec;
 
+use sp_runtime::{traits::StaticLookup};
+
 pub use pallet::*;
 
 use rmrk_traits::{
@@ -136,6 +138,12 @@ pub mod pallet {
 			base_id: BaseId,
 			slot_id: SlotId,
 		},
+		// Base's issuer has changed
+		BaseIssuerChanged {
+			old_issuer: T::AccountId,
+			new_issuer: T::AccountId,
+			base_id: BaseId,
+		},
 	}
 
 	#[pallet::error]
@@ -188,6 +196,39 @@ pub mod pallet {
 	where
 		T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 	{
+		/// Change the issuer of a Base
+		///
+		/// Parameters:
+		/// - `origin`: sender of the transaction
+		/// - `base_id`: base_id to change issuer of
+		/// - `new_issuer`: Base's new issuer
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn change_base_issuer(
+			origin: OriginFor<T>,
+			base_id: BaseId,
+			new_issuer: <T::Lookup as StaticLookup>::Source,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin.clone())?;
+			let base =
+				Self::bases(base_id).ok_or(Error::<T>::BaseDoesntExist)?;
+			ensure!(base.issuer == sender, Error::<T>::PermissionError);
+			let new_owner = T::Lookup::lookup(new_issuer.clone())?;
+
+			ensure!(
+				Bases::<T>::contains_key(base_id),
+				Error::<T>::NoAvailableBaseId
+			);
+
+			let (new_owner, base_id) =
+				Self::base_change_issuer(base_id, new_owner)?;
+
+			Self::deposit_event(Event::BaseIssuerChanged {
+				old_issuer: sender,
+				new_issuer: new_owner,
+				base_id,
+			});
+			Ok(())
+		}
 		/// Equips a child NFT's resource to a parent's slot, if all are available.
 		/// Also can be called to unequip, which can be successful if
 		/// - Item has beeen burned

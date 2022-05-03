@@ -73,8 +73,8 @@ Rejects an NFT sent from another account to self or owned NFT
     nft_id: NftId
 ```
 
-### **change_issuer** 
-changing the issuer of a collection or base
+### **change_collection_issuer** 
+changing the issuer of a collection
 ```rust
     collection_id: CollectionId,
     new_issuer: <T::Lookup as StaticLookup>::Source
