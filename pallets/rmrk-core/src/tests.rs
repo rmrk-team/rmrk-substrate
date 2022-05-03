@@ -714,6 +714,61 @@ fn burn_nft_with_great_grandchildren_works() {
 	});
 }
 
+/// NFT: Burn beyond max_recursions fails gracefully
+#[test]
+fn burn_nft_beyond_max_recursions_fails_gracefully() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint NFTs (0, 0), (0, 1), (0, 2), (0, 3)
+		for _ in 0..5 {
+			assert_ok!(basic_mint());
+		}
+		// ALICE sends NFT (0, 1) to NFT (0, 0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+		// ALICE sends NFT (0, 2) to NFT (0, 1)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			2,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 1),
+		));
+		// ALICE sends NFT (0, 3) to NFT (0, 2)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			3,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
+		));
+		// ALICE sends NFT (0, 4) to NFT (0, 3)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			4,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 3),
+		));
+		// All NFTs exist
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 0).is_some(), true);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 1).is_some(), true);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 2).is_some(), true);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_some(), true);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 4).is_some(), true);
+		// Burn great-grandparent NFT (0, 0)
+		assert_noop!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::TooManyRecursions);
+		// All NFTs still exist
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 0).is_some(), true);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 1).is_some(), true);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 2).is_some(), true);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_some(), true);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 4).is_some(), true);
+	});
+}
+
 /// Resource: Basic resource addition (RMRK2.0 spec: RESADD)
 #[test]
 fn create_resource_works() {
@@ -1076,3 +1131,4 @@ fn set_priority_works() {
 		assert!(RMRKCore::priorities((COLLECTION_ID_0, NFT_ID_0, 500)).is_none(),);
 	});
 }
+
