@@ -10,7 +10,8 @@ use sp_runtime::{
 // Randomness to generate NFT virtual accounts
 pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
 
-impl<T: Config> Priority<StringLimitOf<T>, T::AccountId> for Pallet<T>
+impl<T: Config> Priority<StringLimitOf<T>, T::AccountId, BoundedVec<ResourceId, T::MaxPriorities>>
+	for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -18,17 +19,17 @@ where
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		priorities: Vec<Vec<u8>>,
+		priorities: BoundedVec<ResourceId, T::MaxPriorities>,
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(sender == root_owner, Error::<T>::NoPermission);
 		// TODO : Check NFT lock status
-		let mut bounded_priorities = Vec::<BoundedVec<u8, T::StringLimit>>::new();
-		for priority in priorities {
-			let bounded_priority = Self::to_bounded_string(priority)?;
-			bounded_priorities.push(bounded_priority);
+		for _ in Priorities::<T>::drain_prefix((collection_id, nft_id)) {}
+		let mut priority_index = 0;
+		for resource_id in priorities {
+			Priorities::<T>::insert((collection_id, nft_id, resource_id), priority_index);
+			priority_index += 1;
 		}
-		Priorities::<T>::insert(collection_id, nft_id, bounded_priorities);
 		Self::deposit_event(Event::PrioritySet { collection_id, nft_id });
 		Ok(())
 	}
@@ -59,8 +60,12 @@ where
 }
 
 impl<T: Config>
-	Resource<BoundedVec<u8, T::StringLimit>, T::AccountId, BoundedResource<T::ResourceSymbolLimit>>
-	for Pallet<T>
+	Resource<
+		BoundedVec<u8, T::StringLimit>,
+		T::AccountId,
+		BoundedResource<T::ResourceSymbolLimit>,
+		BoundedVec<PartId, T::PartsLimit>,
+	> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -75,7 +80,7 @@ where
 		slot: Option<SlotId>,
 		license: Option<BoundedVec<u8, T::StringLimit>>,
 		thumb: Option<BoundedVec<u8, T::StringLimit>>,
-		parts: Option<Vec<PartId>>,
+		parts: Option<BoundedVec<PartId, T::PartsLimit>>,
 	) -> DispatchResult {
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
@@ -91,6 +96,7 @@ where
 		let res = ResourceInfo::<
 			BoundedVec<u8, T::ResourceSymbolLimit>,
 			BoundedVec<u8, T::StringLimit>,
+			BoundedVec<PartId, T::PartsLimit>,
 		> {
 			id: resource_id.clone(),
 			base,
@@ -312,10 +318,8 @@ where
 
 		for _ in Resources::<T>::drain_prefix((collection_id, nft_id)) {}
 
-		let kids = Children::<T>::take((collection_id, nft_id));
-		for (child_collection_id, child_nft_id) in kids {
-			// Remove child from Children StorageMap
-			Pallet::<T>::remove_child((collection_id, nft_id), (child_collection_id, child_nft_id));
+		for ((child_collection_id, child_nft_id), _) in Children::<T>::iter_prefix((collection_id, nft_id,)) {
+			for _ in Children::<T>::drain_prefix((collection_id, nft_id)) {}
 			Self::nft_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 		}
 
@@ -575,7 +579,7 @@ where
 	/// Output:
 	/// - Adding a `child` to the Children StorageMap of the `parent`
 	pub fn add_child(parent: (CollectionId, NftId), child: (CollectionId, NftId)) {
-		Children::<T>::mutate(parent, |v| v.push(child));
+		Children::<T>::insert((parent.0, parent.1), (child.0, child.1), ());
 	}
 
 	/// Remove a child from a parent NFT
@@ -587,21 +591,7 @@ where
 	/// Output:
 	/// - Removing a `child` from the Children StorageMap of the `parent`
 	pub fn remove_child(parent: (CollectionId, NftId), child: (CollectionId, NftId)) {
-		Children::<T>::mutate(parent, |v| {
-			*v = v.iter().filter(|&nft| *nft != child).cloned().collect();
-		});
-	}
-
-	/// Has a child NFT present in the Children StorageMap of the parent NFT
-	///
-	/// Parameters:
-	/// - `collection_id`: Collection ID of the NFT to lookup the root owner
-	/// - `nft_id`: NFT ID that is to be looked up for the root owner
-	///
-	/// Output:
-	/// - `bool`
-	pub fn has_child(parent: (CollectionId, NftId)) -> bool {
-		!Children::<T>::get(parent).is_empty()
+		Children::<T>::remove((parent.0, parent.1), (child.0, child.1));
 	}
 
 	/// Check whether a NFT is descends from a suspected parent NFT
@@ -644,41 +634,7 @@ where
 				found_child
 			},
 		}
-	}
-
-	/// `recursive_burn` function will recursively call itself to burn the NFT and all the children
-	/// of the NFT. Any caller functions must be #[transactional]
-	///
-	/// Parameters:
-	/// - `collection_id`: Collection ID of the NFT to be burned
-	/// - `nft_id`: NFT ID that is to be burned
-	/// - `max_recursion`: Maximum number of recursion allowed
-	pub fn recursive_burn(
-		collection_id: CollectionId,
-		nft_id: NftId,
-		max_recursions: u32,
-	) -> DispatchResult {
-		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
-		Nfts::<T>::remove(collection_id, nft_id);
-		let kids = Children::<T>::take((collection_id, nft_id));
-		for (child_collection_id, child_nft_id) in kids {
-			Pallet::<T>::recursive_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
-		}
-		Ok(())
-	}
-
-	pub fn to_bounded_string(name: Vec<u8>) -> Result<BoundedVec<u8, T::StringLimit>, Error<T>> {
-		name.try_into().map_err(|_| Error::<T>::TooLong)
-	}
-
-	pub fn to_optional_bounded_string(
-		name: Option<Vec<u8>>,
-	) -> Result<Option<BoundedVec<u8, T::StringLimit>>, Error<T>> {
-		Ok(match name {
-			Some(n) => Some(Self::to_bounded_string(n)?),
-			None => None,
-		})
-	}
+	}	
 
 	pub fn get_next_nft_id(collection_id: CollectionId) -> Result<NftId, Error<T>> {
 		NextNftId::<T>::try_mutate(collection_id, |id| {

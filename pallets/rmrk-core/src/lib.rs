@@ -8,7 +8,7 @@ use frame_support::{
 use frame_system::ensure_signed;
 
 use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
-use sp_std::{convert::TryInto, vec::Vec};
+use sp_std::convert::TryInto;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
@@ -28,11 +28,13 @@ pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
+pub type ResourceOf<T, R, P> = ResourceInfo::<
+	BoundedVec<u8, R>,
+	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+	BoundedVec<PartId, P>
+	>;
 
 pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
-
-pub type ResourceOf<T, R> =
-	ResourceInfo<BoundedVec<u8, R>, BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>;
 
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
@@ -64,6 +66,15 @@ pub mod pallet {
 		/// The maximum resource symbol length
 		#[pallet::constant]
 		type ResourceSymbolLimit: Get<u32>;
+
+		/// The maximum number of parts each resource may have
+		#[pallet::constant]
+		type PartsLimit: Get<u32>;
+
+		/// The maximum number of resources that can be included in a setpriority extrinsic
+		#[pallet::constant]
+		type MaxPriorities: Get<u32>;
+
 		type CollectionSymbolLimit: Get<u32>;
 	}
 
@@ -105,21 +116,22 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn priorities)]
 	/// Stores priority info
-	pub type Priorities<T: Config> = StorageDoubleMap<
+	pub type Priorities<T: Config> = StorageNMap<
 		_,
-		Twox64Concat,
-		CollectionId,
-		Twox64Concat,
-		NftId,
-		Vec<BoundedVec<u8, T::StringLimit>>,
+		(
+			NMapKey<Blake2_128Concat, CollectionId>,
+			NMapKey<Blake2_128Concat, NftId>,
+			NMapKey<Blake2_128Concat, ResourceId>,
+		),
+		u32,
+		OptionQuery,
 	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn children)]
 	/// Stores nft children info
-	pub type Children<T: Config> =
-		StorageMap<_, Twox64Concat, (CollectionId, NftId), Vec<(CollectionId, NftId)>, ValueQuery>;
-
+	pub type Children<T: Config> = StorageDoubleMap<_, Twox64Concat, (CollectionId, NftId), Twox64Concat, (CollectionId, NftId), ()>;
+	
 	#[pallet::storage]
 	#[pallet::getter(fn resources)]
 	/// Stores resource info
@@ -130,7 +142,7 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, NftId>,
 			NMapKey<Blake2_128Concat, BoundedResource<T::ResourceSymbolLimit>>,
 		),
-		ResourceOf<T, T::ResourceSymbolLimit>,
+		ResourceOf<T, T::ResourceSymbolLimit, T::PartsLimit>,
 		OptionQuery,
 	>;
 
@@ -149,7 +161,6 @@ pub mod pallet {
 	>;
 
 	#[pallet::pallet]
-	#[pallet::without_storage_info]
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
@@ -570,7 +581,7 @@ pub mod pallet {
 			slot: Option<SlotId>,
 			license: Option<BoundedVec<u8, T::StringLimit>>,
 			thumb: Option<BoundedVec<u8, T::StringLimit>>,
-			parts: Option<Vec<PartId>>,
+			parts: Option<BoundedVec<PartId, T::PartsLimit>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
@@ -666,7 +677,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			priorities: Vec<Vec<u8>>,
+			priorities: BoundedVec<ResourceId, T::MaxPriorities>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			Self::priority_set(sender, collection_id, nft_id, priorities)?;

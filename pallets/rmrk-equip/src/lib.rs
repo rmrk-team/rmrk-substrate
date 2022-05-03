@@ -5,7 +5,6 @@ use frame_support::{
 	dispatch::{DispatchError, DispatchResult},
 	ensure, BoundedVec,
 };
-use sp_std::vec::Vec;
 
 use sp_runtime::{traits::StaticLookup};
 
@@ -45,11 +44,11 @@ pub mod pallet {
 
 		/// Maximum allowed Parts (either Fixed or Slot) per Base
 		#[pallet::constant]
-		type MaxPartsPerBase: Get<u32>;
+		type MaxPropertiesPerTheme: Get<u32>;
 
 		/// Maximum number of Properties allowed for any Theme
 		#[pallet::constant]
-		type MaxPropertiesPerTheme: Get<u32>;
+		type MaxCollectionsEquippablePerPart: Get<u32>;		
 	}
 
 	#[pallet::storage]
@@ -58,7 +57,13 @@ pub mod pallet {
 	/// TODO https://github.com/rmrk-team/rmrk-substrate/issues/98
 	/// Delete Parts from Bases info, as it's kept in Parts storage
 	pub type Bases<T: Config> =
-		StorageMap<_, Twox64Concat, BaseId, BaseInfo<T::AccountId, StringLimitOf<T>>>;
+		StorageMap<
+		_, 
+		Twox64Concat, BaseId, 
+		BaseInfo<
+			T::AccountId, StringLimitOf<T>, BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
+			T::PartsLimit>>
+		>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn parts)]
@@ -66,7 +71,7 @@ pub mod pallet {
 	/// - SlotPart: id, equippable (list), src, z
 	/// - FixedPart: id, src, z
 	pub type Parts<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, PartType<StringLimitOf<T>>>;
+		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn next_base_id)]
@@ -107,7 +112,6 @@ pub mod pallet {
 	>;
 
 	#[pallet::pallet]
-	#[pallet::without_storage_info]
 	#[pallet::generate_store(pub(super) trait Store)]
 	pub struct Pallet<T>(_);
 
@@ -289,7 +293,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_id: BaseId,
 			slot_id: SlotId,
-			equippables: EquippableList,
+			equippables: EquippableList<BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -345,13 +349,11 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,
 			symbol: BoundedVec<u8, T::StringLimit>,
-			parts: Vec<PartType<StringLimitOf<T>>>,
+			parts: BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>, T::PartsLimit>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
 			let part_length: u32 = parts.len().try_into().unwrap();
-			ensure!(part_length <= T::MaxPartsPerBase::get(), Error::<T>::ExceedsMaxPartsPerBase);
-
 			let base_id = Self::base_create(sender.clone(), base_type, symbol, parts)?;
 
 			Self::deposit_event(Event::BaseCreated { issuer: sender, base_id });

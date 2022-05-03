@@ -40,14 +40,14 @@ frame_support::construct_runtime!(
 );
 
 parameter_types! {
-	pub const MaxPartsPerBase: u32 = 5;
 	pub const MaxPropertiesPerTheme: u32 = 5;
+	pub const MaxCollectionsEquippablePerPart: u32 = 10;
 }
 
 impl pallet_rmrk_equip::Config for Test {
 	type Event = Event;
-	type MaxPartsPerBase = MaxPartsPerBase;
 	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
+	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
 }
 
 parameter_types! {
@@ -55,6 +55,8 @@ parameter_types! {
 	pub MaxMetadataLength: u32 = 256;
 	pub const MaxRecursions: u32 = 10;
 	pub const ResourceSymbolLimit: u32 = 10;
+	pub const PartsLimit: u32 = 10;
+	pub const MaxPriorities: u32 = 3;
 	pub const CollectionSymbolLimit: u32 = 100;
 }
 
@@ -64,6 +66,8 @@ impl pallet_rmrk_core::Config for Test {
 	type ProtocolOrigin = EnsureRoot<AccountId>;
 	type MaxRecursions = MaxRecursions;
 	type ResourceSymbolLimit = ResourceSymbolLimit;
+	type PartsLimit = PartsLimit;
+	type MaxPriorities = MaxPriorities;
 	type CollectionSymbolLimit = CollectionSymbolLimit;
 }
 

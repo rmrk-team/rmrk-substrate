@@ -94,6 +94,8 @@ parameter_types! {
 	pub MaxMetadataLength: u32 = 256;
 	pub const MaxRecursions: u32 = 10;
 	pub const ResourceSymbolLimit: u32 = 10;
+	pub const PartsLimit: u32 = 10;
+	pub const MaxPriorities: u32 = 3;
 	pub const CollectionSymbolLimit: u32 = 100;
 }
 
@@ -103,6 +105,8 @@ impl pallet_rmrk_core::Config for Test {
 	type ProtocolOrigin = EnsureRoot<AccountId>;
 	type MaxRecursions = MaxRecursions;
 	type ResourceSymbolLimit = ResourceSymbolLimit;
+	type PartsLimit = PartsLimit;
+	type MaxPriorities = MaxPriorities;
 	type CollectionSymbolLimit = CollectionSymbolLimit;
 }
 

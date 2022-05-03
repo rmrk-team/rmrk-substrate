@@ -1,13 +1,14 @@
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
+use frame_support::pallet_prelude::MaxEncodedLen;
 
 use crate::primitives::*;
 use sp_std::result::Result;
 
 /// Collection info.
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub struct CollectionInfo<BoundedString, BoundedSymbol, AccountId> {
 	/// Current bidder and bid price.
 	pub issuer: AccountId,
