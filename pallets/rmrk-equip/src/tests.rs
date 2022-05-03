@@ -64,18 +64,47 @@ fn create_base_works() {
 	});
 }
 
+/// Base: Change issuer tests (RMRK2.0 spec: CHANGEISSUER)=
+#[test]
+fn change_base_issuer_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a base
+		assert_ok!(RmrkEquip::create_base(
+			Origin::signed(ALICE), // origin
+			bvec![0u8; 20],        // base_type
+			bvec![0u8; 20],        // symbol
+			bvec![],               // parts
+		));
+		// Issuer should be Alice
+		assert_eq!(RmrkEquip::bases(0).unwrap().issuer, ALICE);
+		// Bob can't change issuer (no permission)
+		assert_noop!(
+			RmrkEquip::change_base_issuer(Origin::signed(BOB), 0, BOB),
+			Error::<Test>::PermissionError
+		);
+		// Changing Base Issuer should be Alice
+		assert_ok!(RmrkEquip::change_base_issuer(Origin::signed(ALICE), 0, BOB));
+		// Issuer should be Bob
+		assert_eq!(RmrkEquip::bases(0).unwrap().issuer, BOB);
+		// Last event should be BaseIssuerChanged
+		System::assert_last_event(MockEvent::RmrkEquip(crate::Event::BaseIssuerChanged {
+			old_issuer: ALICE,
+			new_issuer: BOB,
+			base_id: 0,
+		}));
+	});
+}
+
+/// Base: Attempting to create a base with more the max parts fails
 #[test]
 #[should_panic]
 fn exceeding_parts_bound_panics() {
 	// PartsLimit bound is 50 per mock.rs, 60 should panic on unwrap
 	let parts_bounded_vec: BoundedVec<PartId, PartsLimit> = bvec![
-		1,2,3,4,5,6,7,8,9,10,
-		1,2,3,4,5,6,7,8,9,10,
-		1,2,3,4,5,6,7,8,9,10,
-		1,2,3,4,5,6,7,8,9,10,
-		1,2,3,4,5,6,7,8,9,10,
-		1,2,3,4,5,6,7,8,9,10,
-		];
+		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+		10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8,
+		9, 10,
+	];
 }
 
 /// Base: Basic equip tests
@@ -125,7 +154,7 @@ fn equip_works() {
 			Origin::signed(ALICE),
 			stb("ipfs://col0-metadata"), // metadata
 			Some(5),                     // max
-			sbvec!["COL0"]                  // symbol
+			sbvec!["COL0"]               // symbol
 		));
 
 		// Create collection 1
@@ -133,7 +162,7 @@ fn equip_works() {
 			Origin::signed(ALICE),
 			stb("ipfs://col1-metadata"), // metadata
 			Some(5),                     // max
-			sbvec!["COL1"]                  // symbol
+			sbvec!["COL1"]               // symbol
 		));
 
 		// Mint NFT 0 from collection 0 (character-0)
@@ -411,8 +440,8 @@ fn equippable_works() {
 		// equippable extrinsic should work
 		assert_ok!(RmrkEquip::equippable(
 			Origin::signed(ALICE),
-			0,                                     // base ID
-			202,                                   // slot ID
+			0,                                      // base ID
+			202,                                    // slot ID
 			EquippableList::Custom(bvec![5, 6, 7]), // equippable collections
 		));
 
@@ -435,8 +464,8 @@ fn equippable_works() {
 		assert_noop!(
 			RmrkEquip::equippable(
 				Origin::signed(ALICE),
-				666,                                   // base ID
-				202,                                   // slot ID
+				666,                                    // base ID
+				202,                                    // slot ID
 				EquippableList::Custom(bvec![5, 6, 7]), // equippable collections
 			),
 			Error::<Test>::BaseDoesntExist
@@ -446,8 +475,8 @@ fn equippable_works() {
 		assert_noop!(
 			RmrkEquip::equippable(
 				Origin::signed(ALICE),
-				0,                                     // base ID
-				200,                                   // slot ID
+				0,                                      // base ID
+				200,                                    // slot ID
 				EquippableList::Custom(bvec![5, 6, 7]), // equippable collections
 			),
 			Error::<Test>::PartDoesntExist
@@ -457,8 +486,8 @@ fn equippable_works() {
 		assert_noop!(
 			RmrkEquip::equippable(
 				Origin::signed(ALICE),
-				0,                                           // base ID
-				101,                                         // slot ID
+				0,                                            // base ID
+				101,                                          // slot ID
 				EquippableList::Custom(bvec![5, 6, 7, 8, 9]), // equippable collections
 			),
 			Error::<Test>::NoEquippableOnFixedPart
@@ -468,8 +497,8 @@ fn equippable_works() {
 		assert_noop!(
 			RmrkEquip::equippable(
 				Origin::signed(BOB),
-				0,                                     // base ID
-				201,                                   // slot ID
+				0,                                      // base ID
+				201,                                    // slot ID
 				EquippableList::Custom(bvec![3, 4, 5]), // equippable collections
 			),
 			Error::<Test>::PermissionError

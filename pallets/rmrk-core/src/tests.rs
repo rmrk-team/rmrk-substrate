@@ -175,17 +175,17 @@ fn destroy_collection_works() {
 
 /// Collection: Change issuer tests (RMRK2.0 spec: CHANGEISSUER)=
 #[test]
-fn change_issuer_works() {
+fn change_collection_issuer_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// BOB can't change issuer because he is not the current issuer
 		assert_noop!(
-			RMRKCore::change_issuer(Origin::signed(BOB), 0, BOB),
+			RMRKCore::change_collection_issuer(Origin::signed(BOB), 0, BOB),
 			Error::<Test>::NoPermission
 		);
 		// Change issuer from ALICE to BOB
-		assert_ok!(RMRKCore::change_issuer(Origin::signed(ALICE), 0, BOB));
+		assert_ok!(RMRKCore::change_collection_issuer(Origin::signed(ALICE), 0, BOB));
 		// Changing issuer should trigger IssuerChanged event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::IssuerChanged {
 			old_issuer: ALICE,

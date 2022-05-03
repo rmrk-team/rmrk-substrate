@@ -498,10 +498,15 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// changing the issuer of a collection or a base
+		/// Change the issuer of a collection
+		///
+		/// Parameters:
+		/// - `origin`: sender of the transaction
+		/// - `collection_id`: collection id of the nft to change issuer of
+		/// - `new_issuer`: Collection's new issuer
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
-		pub fn change_issuer(
+		pub fn change_collection_issuer(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			new_issuer: <T::Lookup as StaticLookup>::Source,

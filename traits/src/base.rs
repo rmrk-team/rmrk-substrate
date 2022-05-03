@@ -31,6 +31,10 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts, Boun
 		symbol: BoundedString,
 		parts: BoundedParts,
 	) -> Result<BaseId, DispatchError>;
+	fn base_change_issuer(
+		base_id: BaseId,
+		new_issuer: AccountId,
+	) -> Result<(AccountId, CollectionId), DispatchError>;
 	fn do_equip(
 		issuer: AccountId, // Maybe don't need?
 		item: (CollectionId, NftId),
