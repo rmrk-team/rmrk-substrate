@@ -274,6 +274,59 @@ fn mint_collection_max_logic_works() {
 	});
 }
 
+/// NFT: Royalty defaults to self when amount provided but no recipient
+#[test]
+fn royalty_recipient_default_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint an NFT
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			None, // No royalty recipient
+			Some(Permill::from_float(20.525)),
+			bvec![0u8; 20]
+		));
+		// Royalty recipient should default to issuer (ALICE)
+		assert_eq!(RmrkCore::nfts(0, 0).unwrap().royalty.unwrap().recipient, ALICE);
+		// Mint another NFT
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(BOB), // Royalty recipient is BOB
+			Some(Permill::from_float(20.525)),
+			bvec![0u8; 20]
+		));
+		// Royalty recipient should be BOB
+		assert_eq!(RmrkCore::nfts(0, 1).unwrap().royalty.unwrap().recipient, BOB);
+		// Mint another NFT
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			None, // No royalty recipient is BOB
+			None, // No royalty amount
+			bvec![0u8; 20]
+		));
+		// Royalty should not exist
+		assert!(RmrkCore::nfts(0, 2).unwrap().royalty.is_none());
+		// Mint another NFT
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE), // Royalty recipient is ALICE
+			None, // No royalty amount
+			bvec![0u8; 20]
+		));
+		// Royalty should not exist
+		assert!(RmrkCore::nfts(0, 3).unwrap().royalty.is_none());
+	});
+}
+
 /// NFT: Send tests (RMRK2.0 spec: SEND)
 #[test]
 fn send_nft_to_minted_nft_works() {

@@ -270,8 +270,8 @@ where
 		_sender: T::AccountId,
 		owner: T::AccountId,
 		collection_id: CollectionId,
-		recipient: Option<T::AccountId>,
-		royalty: Option<Permill>,
+		royalty_recipient: Option<T::AccountId>,
+		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
@@ -282,14 +282,23 @@ where
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 		}
 
-		let recipient = recipient.unwrap_or_else(|| owner.clone());
-		let royalty = royalty.unwrap_or_default();
+		let mut royalty: Option<RoyaltyInfo::<T::AccountId>> = None;
+
+		if let Some(amount) = royalty_amount {
+			match royalty_recipient {
+				Some(recipient) => {
+					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient, amount });
+				},
+				None => {
+					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient: owner.clone(), amount });
+				}
+			}
+		};
 
 		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
 
 		let nft = NftInfo {
 			owner: owner_as_maybe_account,
-			recipient,
 			royalty,
 			metadata,
 			equipped: false,

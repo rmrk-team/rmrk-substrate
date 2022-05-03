@@ -19,16 +19,24 @@ pub enum AccountIdOrCollectionNftTuple<AccountId> {
 	CollectionAndNftTuple(CollectionId, NftId),
 }
 
+/// Royalty information (recipient and amount)
+#[cfg_attr(feature = "std", derive(PartialEq, Eq))]
+#[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+pub struct RoyaltyInfo<AccountId> {
+	/// Recipient (AccountId) of the royalty
+    pub recipient: AccountId,
+	/// Amount (Permill) of the royalty
+    pub amount: Permill,
+}
+
 /// Nft info.
 #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub struct NftInfo<AccountId, BoundedString> {
 	/// The owner of the NFT, can be either an Account or a tuple (CollectionId, NftId)
 	pub owner: AccountIdOrCollectionNftTuple<AccountId>,
-	/// The user account which receives the royalty
-	pub recipient: AccountId,
-	/// Royalty in per mille (1/1000)
-	pub royalty: Permill,
+	/// Royalty (optional)
+	pub royalty: Option<RoyaltyInfo<AccountId>>,
 	/// Arbitrary data about an instance, e.g. IPFS hash
 	pub metadata: BoundedString,
 	/// Equipped state
@@ -46,8 +54,8 @@ pub trait Nft<AccountId, BoundedString> {
 		sender: AccountId,
 		owner: AccountId,
 		collection_id: CollectionId,
-		recipient: Option<AccountId>,
-		royalty: Option<Permill>,
+		royalty_recipient: Option<AccountId>,
+		royalty_amount: Option<Permill>,
 		metadata: BoundedString,
 	) -> Result<(CollectionId, NftId), DispatchError>;
 	fn nft_burn(
