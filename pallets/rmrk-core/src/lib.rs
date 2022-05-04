@@ -12,7 +12,7 @@ use sp_std::convert::TryInto;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
-	Priority, Property, Resource, ResourceInfo,
+	Priority, Property, Resource, ResourceInfo, RoyaltyInfo
 };
 use sp_std::result::Result;
 
