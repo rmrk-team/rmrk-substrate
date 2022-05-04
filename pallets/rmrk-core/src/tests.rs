@@ -636,32 +636,27 @@ fn burn_nft_works() {
 		assert_ok!(basic_mint());
 		// Add two resources to NFT (to test if burning also burns the resources)
 
-		assert_ok!(RMRKCore::add_resource(
+		let basic_resource = BasicResource {
+			src: None,
+			metadata: None,
+			license: None,
+			thumb: None,
+		};
+
+		assert_ok!(RMRKCore::add_basic_resource(
 			Origin::signed(ALICE),
 			0,
 			0,
 			stbr("res-1"),
-			Some(0),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			None,
-			None,
-			None,
-			None
+			basic_resource.clone(),
 		));
 
-		assert_ok!(RMRKCore::add_resource(
+		assert_ok!(RMRKCore::add_basic_resource(
 			Origin::signed(ALICE),
 			0,
 			0,
 			stbr("res-2"),
-			Some(0),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			None,
-			None,
-			None,
-			None
+			basic_resource,
 		));
 
 		// Ensure resources are there
@@ -703,33 +698,29 @@ fn burn_nft_with_great_grandchildren_works() {
 		for _ in 0..4 {
 			assert_ok!(basic_mint());
 		}
+
+		let basic_resource = BasicResource {
+			src: None,
+			metadata: None,
+			license: None,
+			thumb: None,
+		};
+		
 		// Add two resources to the great-grandchild (0, 3)
-		assert_ok!(RMRKCore::add_resource(
+		assert_ok!(RMRKCore::add_basic_resource(
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			3,
 			stbr("res-1"),
-			Some(0),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			None,
-			None,
-			None,
-			None
+			basic_resource.clone(),
 		));
 
-		assert_ok!(RMRKCore::add_resource(
+		assert_ok!(RMRKCore::add_basic_resource(
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			3,
 			stbr("res-2"),
-			Some(0),
-			Some(bvec![0u8; 20]),
-			Some(bvec![0u8; 20]),
-			None,
-			None,
-			None,
-			None
+			basic_resource,
 		));
 
 		// Ensure resources are there
@@ -826,20 +817,21 @@ fn burn_nft_beyond_max_recursions_fails_gracefully() {
 #[test]
 fn create_resource_works() {
 	ExtBuilder::default().build().execute_with(|| {
+		let basic_resource = BasicResource {
+			src: None,
+			metadata: None,
+			license: None,
+			thumb: None,
+		};
+
 		// Adding a resource to non-existent NFT should fail
 		assert_noop!(
-			RMRKCore::add_resource(
+			RMRKCore::add_basic_resource(
 				Origin::signed(ALICE),
 				0,             // collection_id
 				0,             // nft_id
 				stbr("res-1"), // resource_id
-				Some(0),       // base_id
-				None,          // src
-				None,          // metadata
-				None,          // slot
-				None,          // license
-				None,          // thumb
-				None,          // parts
+				basic_resource,
 			),
 			Error::<Test>::CollectionUnknown
 		);
@@ -847,36 +839,21 @@ fn create_resource_works() {
 		assert_ok!(basic_collection());
 		// Mint NFT
 		assert_ok!(basic_mint());
-		// Adding an empty resource should fail
-		assert_noop!(
-			RMRKCore::add_resource(
-				Origin::signed(ALICE),
-				COLLECTION_ID_0,
-				NFT_ID_0,
-				stbr("res-2"), // resource_id
-				None,          // base_id
-				None,          // src
-				None,          // metadata
-				None,          // slot
-				None,          // license
-				None,          // thumb
-				None,          // parts
-			),
-			Error::<Test>::EmptyResource
-		);
+
+		let basic_resource = BasicResource {
+			src: None,
+			metadata: None,
+			license: None,
+			thumb: None,
+		};
+
 		// Add resource to NFT
-		assert_ok!(RMRKCore::add_resource(
+		assert_ok!(RMRKCore::add_basic_resource(
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			stbr("res-3"), // resource_id
-			Some(0),       // base_id
-			None,          // src
-			None,          // metadata
-			None,          // slot
-			None,          // license
-			None,          // thumb
-			None,          // parts
+			basic_resource,
 		));
 		// Successful resource addition should trigger ResourceAdded event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAdded {
@@ -885,6 +862,9 @@ fn create_resource_works() {
 		}));
 		// Since ALICE rootowns NFT, pending status of resource should be false
 		assert_eq!(RMRKCore::resources((0, 0, stbr("res-3"))).unwrap().pending, false);
+
+		// TODO add composable resource works
+		// TODO add slot resource works
 	});
 }
 
@@ -903,37 +883,35 @@ fn add_resource_pending_works() {
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
 		));
+
+		let basic_resource = BasicResource {
+			src: None,
+			metadata: None,
+			license: None,
+			thumb: None,
+		};
+
 		// Since BOB isn't collection issuer, he can't add resources
 		assert_noop!(
-			RMRKCore::add_resource(
+			RMRKCore::add_basic_resource(
 				Origin::signed(BOB),
 				COLLECTION_ID_0,
 				NFT_ID_0,
 				stbr("res-4"), // resource_id
-				Some(0),       // base_id
-				None,          // src
-				None,          // metadata
-				None,          // slot
-				None,          // license
-				None,          // thumb
-				None,          // parts
+				basic_resource.clone(),
 			),
 			Error::<Test>::NoPermission
 		);
+
 		// Collection issuer can add resource
-		assert_ok!(RMRKCore::add_resource(
+		assert_ok!(RMRKCore::add_basic_resource(
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			stbr("res-4"), // resource_id
-			Some(0),       // base_id
-			None,          // src
-			None,          // metadata
-			None,          // slot
-			None,          // license
-			None,          // thumb
-			None,          // parts
+			basic_resource
 		));
+
 		assert_eq!(RMRKCore::resources((0, 0, stbr("res-4"))).unwrap().pending, true);
 		// ALICE doesn't own BOB's NFT, so accept should fail
 		assert_noop!(
@@ -965,19 +943,21 @@ fn resource_removal_works() {
 		assert_ok!(basic_collection());
 		// Mint NFT
 		assert_ok!(basic_mint());
+
+		let basic_resource = BasicResource {
+			src: None,
+			metadata: None,
+			license: None,
+			thumb: None,
+		};
+
 		// Add resource to NFT
-		assert_ok!(RMRKCore::add_resource(
+		assert_ok!(RMRKCore::add_basic_resource(
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			stbr("res-0"), // resource_id
-			Some(0),       // base_id
-			None,          // src
-			None,          // metadata
-			None,          // slot
-			None,          // license
-			None,          // thumb
-			None,          // parts
+			basic_resource,
 		));
 		// Resource res-1 doesn't exist
 		assert_noop!(
@@ -1031,20 +1011,23 @@ fn resource_removal_pending_works() {
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
 		));
+
+		let basic_resource = BasicResource {
+			src: None,
+			metadata: None,
+			license: None,
+			thumb: None,
+		};
+
 		// Add resource to NFT
-		assert_ok!(RMRKCore::add_resource(
+		assert_ok!(RMRKCore::add_basic_resource(
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			stbr("res-0"), // resource_id
-			Some(0),       // base_id
-			None,          // src
-			None,          // metadata
-			None,          // slot
-			None,          // license
-			None,          // thumb
-			None,          // parts
+			basic_resource,
 		));
+
 		assert_ok!(RMRKCore::accept_resource(
 			Origin::signed(BOB),
 			COLLECTION_ID_0,
