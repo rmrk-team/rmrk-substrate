@@ -27,7 +27,15 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> Base<T::AccountId, CollectionId, NftId, StringLimitOf<T>> for Pallet<T>
+impl<T: Config> Base<
+	T::AccountId,
+	CollectionId,
+	NftId,
+	StringLimitOf<T>,
+	BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
+	T::PartsLimit>,
+	BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>
+	> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -44,7 +52,7 @@ where
 		issuer: T::AccountId,
 		base_type: StringLimitOf<T>,
 		symbol: StringLimitOf<T>,
-		parts: Vec<PartType<StringLimitOf<T>>>,
+		parts: BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>, T::PartsLimit>,
 	) -> Result<BaseId, DispatchError> {
 		let base_id = Self::get_next_base_id()?;
 		for part in parts.clone() {
@@ -60,6 +68,28 @@ where
 		let base = BaseInfo { issuer, base_type, symbol, parts };
 		Bases::<T>::insert(base_id, base);
 		Ok(base_id)
+	}
+
+	/// Implementation of the base_change_issuer function for the Base trait
+	/// Called by the change_base_issuer extrinsic to change the issuer of a base
+	///
+	/// Parameters:
+	/// - base_id: The Base ID to change the issuer of
+	/// - new_issuer: The Account to become the new issuer
+	fn base_change_issuer(
+		base_id: BaseId,
+		new_issuer: T::AccountId,
+	) -> Result<(T::AccountId, CollectionId), DispatchError> {
+		ensure!(Bases::<T>::contains_key(base_id), Error::<T>::NoAvailableBaseId);
+
+		Bases::<T>::try_mutate_exists(base_id, |base| -> DispatchResult {
+			if let Some(b) = base {
+				b.issuer = new_issuer.clone();
+			}
+			Ok(())
+		})?;
+
+		Ok((new_issuer, base_id))
 	}
 
 	/// Implementation of the do_equip function for the Base trait
@@ -286,7 +316,7 @@ where
 		issuer: T::AccountId,
 		base_id: BaseId,
 		part_id: PartId,
-		equippables: EquippableList,
+		equippables: EquippableList<BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
 	) -> Result<(BaseId, SlotId), DispatchError> {
 		// Base must exist
 		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);

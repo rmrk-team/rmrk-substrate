@@ -10,7 +10,6 @@ type RMRKEquip = Pallet<Test>;
 
 /// Turns a string into a BoundedVec
 fn stb(s: &str) -> BoundedVec<u8, UniquesStringLimit> {
-	// println!("len: {:?}", s.as_bytes().to_vec().len());
 	s.as_bytes().to_vec().try_into().unwrap()
 }
 
@@ -47,7 +46,7 @@ fn create_base_works() {
 			id: 102,
 			z: 0,
 			src: stb("slot_part_src"),
-			equippable: EquippableList::Custom(vec![
+			equippable: EquippableList::Custom(bvec![
 				0, // Collection 0
 				1, // Collection 1
 			]),
@@ -57,33 +56,52 @@ fn create_base_works() {
 			Origin::signed(ALICE), // origin
 			bvec![0u8; 20],        // base_type
 			bvec![0u8; 20],        // symbol
-			vec![PartType::FixedPart(fixed_part), PartType::SlotPart(slot_part),],
+			bvec![PartType::FixedPart(fixed_part), PartType::SlotPart(slot_part),],
 		));
+	});
+}
 
-		// println!("{:?}", RmrkEquip::bases(0).unwrap());
+/// Base: Change issuer tests (RMRK2.0 spec: CHANGEISSUER)=
+#[test]
+fn change_base_issuer_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a base
+		assert_ok!(RmrkEquip::create_base(
+			Origin::signed(ALICE), // origin
+			bvec![0u8; 20],        // base_type
+			bvec![0u8; 20],        // symbol
+			bvec![],               // parts
+		));
+		// Issuer should be Alice
+		assert_eq!(RmrkEquip::bases(0).unwrap().issuer, ALICE);
+		// Bob can't change issuer (no permission)
+		assert_noop!(
+			RmrkEquip::change_base_issuer(Origin::signed(BOB), 0, BOB),
+			Error::<Test>::PermissionError
+		);
+		// Changing Base Issuer should be Alice
+		assert_ok!(RmrkEquip::change_base_issuer(Origin::signed(ALICE), 0, BOB));
+		// Issuer should be Bob
+		assert_eq!(RmrkEquip::bases(0).unwrap().issuer, BOB);
+		// Last event should be BaseIssuerChanged
+		System::assert_last_event(MockEvent::RmrkEquip(crate::Event::BaseIssuerChanged {
+			old_issuer: ALICE,
+			new_issuer: BOB,
+			base_id: 0,
+		}));
 	});
 }
 
 /// Base: Attempting to create a base with more the max parts fails
 #[test]
-fn exceeding_max_parts_per_base_fails() {
-	ExtBuilder::default().build().execute_with(|| {
-		let mut parts = Vec::<PartType<BoundedVec<u8, UniquesStringLimit>>>::new();
-		for i in 100..110 {
-			let fixed_part = FixedPart { id: i, z: 0, src: stb("fixed_part_src") };
-			parts.push(PartType::FixedPart(fixed_part));
-		}
-
-		assert_noop!(
-			RmrkEquip::create_base(
-				Origin::signed(ALICE), // origin
-				bvec![0u8; 20],        // base_type
-				bvec![0u8; 20],        // symbol
-				parts,
-			),
-			Error::<Test>::ExceedsMaxPartsPerBase,
-		);
-	});
+#[should_panic]
+fn exceeding_parts_bound_panics() {
+	// PartsLimit bound is 50 per mock.rs, 60 should panic on unwrap
+	let parts_bounded_vec: BoundedVec<PartId, PartsLimit> = bvec![
+		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9,
+		10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8,
+		9, 10,
+	];
 }
 
 /// Base: Basic equip tests
@@ -100,7 +118,7 @@ fn equip_works() {
 			id: 201,
 			z: 0,
 			src: stb("left-hand"),
-			equippable: EquippableList::Custom(vec![
+			equippable: EquippableList::Custom(bvec![
 				0, // Collection 0
 				1, // Collection 1
 			]),
@@ -110,7 +128,7 @@ fn equip_works() {
 			id: 202,
 			z: 0,
 			src: stb("right-hand"),
-			equippable: EquippableList::Custom(vec![
+			equippable: EquippableList::Custom(bvec![
 				0, // Collection 2
 				1, // Collection 3
 			]),
@@ -120,7 +138,7 @@ fn equip_works() {
 			Origin::signed(ALICE), // origin
 			stb("svg"),            // base_type
 			stb("KANPEOPLE"),      // symbol
-			vec![
+			bvec![
 				PartType::FixedPart(fixed_part_body_1),
 				PartType::FixedPart(fixed_part_body_2),
 				PartType::SlotPart(slot_part_left_hand),
@@ -229,7 +247,7 @@ fn equip_works() {
 			None,                           // slot
 			None,                           // license
 			None,                           // thumb
-			Some(vec![
+			Some(bvec![
 				// parts
 				101, // ID of body-1 part
 				201, // ID of left-hand slot
@@ -388,7 +406,7 @@ fn equippable_works() {
 			id: 201,
 			z: 0,
 			src: stb("left-hand"),
-			equippable: EquippableList::Custom(vec![
+			equippable: EquippableList::Custom(bvec![
 				0, // Collection 0
 				1, // Collection 1
 			]),
@@ -398,7 +416,7 @@ fn equippable_works() {
 			id: 202,
 			z: 0,
 			src: stb("right-hand"),
-			equippable: EquippableList::Custom(vec![
+			equippable: EquippableList::Custom(bvec![
 				2, // Collection 2
 				3, // Collection 3
 			]),
@@ -408,7 +426,7 @@ fn equippable_works() {
 			Origin::signed(ALICE), // origin
 			stb("svg"),            // base_type
 			stb("KANPEOPLE"),      // symbol
-			vec![
+			bvec![
 				PartType::FixedPart(fixed_part_body_1),
 				PartType::FixedPart(fixed_part_body_2),
 				PartType::SlotPart(slot_part_left_hand),
@@ -419,9 +437,9 @@ fn equippable_works() {
 		// equippable extrinsic should work
 		assert_ok!(RmrkEquip::equippable(
 			Origin::signed(ALICE),
-			0,                                     // base ID
-			202,                                   // slot ID
-			EquippableList::Custom(vec![5, 6, 7]), // equippable collections
+			0,                                      // base ID
+			202,                                    // slot ID
+			EquippableList::Custom(bvec![5, 6, 7]), // equippable collections
 		));
 
 		// Last event should be EquippablesUpdated
@@ -435,7 +453,7 @@ fn equippable_works() {
 			id: 202,
 			z: 0,
 			src: stb("right-hand"),
-			equippable: EquippableList::Custom(vec![5, 6, 7]),
+			equippable: EquippableList::Custom(bvec![5, 6, 7]),
 		};
 		assert_eq!(RmrkEquip::parts(0, 202).unwrap(), PartType::SlotPart(should_be));
 
@@ -443,9 +461,9 @@ fn equippable_works() {
 		assert_noop!(
 			RmrkEquip::equippable(
 				Origin::signed(ALICE),
-				666,                                   // base ID
-				202,                                   // slot ID
-				EquippableList::Custom(vec![5, 6, 7]), // equippable collections
+				666,                                    // base ID
+				202,                                    // slot ID
+				EquippableList::Custom(bvec![5, 6, 7]), // equippable collections
 			),
 			Error::<Test>::BaseDoesntExist
 		);
@@ -454,9 +472,9 @@ fn equippable_works() {
 		assert_noop!(
 			RmrkEquip::equippable(
 				Origin::signed(ALICE),
-				0,                                     // base ID
-				200,                                   // slot ID
-				EquippableList::Custom(vec![5, 6, 7]), // equippable collections
+				0,                                      // base ID
+				200,                                    // slot ID
+				EquippableList::Custom(bvec![5, 6, 7]), // equippable collections
 			),
 			Error::<Test>::PartDoesntExist
 		);
@@ -465,9 +483,9 @@ fn equippable_works() {
 		assert_noop!(
 			RmrkEquip::equippable(
 				Origin::signed(ALICE),
-				0,                                           // base ID
-				101,                                         // slot ID
-				EquippableList::Custom(vec![5, 6, 7, 8, 9]), // equippable collections
+				0,                                            // base ID
+				101,                                          // slot ID
+				EquippableList::Custom(bvec![5, 6, 7, 8, 9]), // equippable collections
 			),
 			Error::<Test>::NoEquippableOnFixedPart
 		);
@@ -476,9 +494,9 @@ fn equippable_works() {
 		assert_noop!(
 			RmrkEquip::equippable(
 				Origin::signed(BOB),
-				0,                                     // base ID
-				201,                                   // slot ID
-				EquippableList::Custom(vec![3, 4, 5]), // equippable collections
+				0,                                      // base ID
+				201,                                    // slot ID
+				EquippableList::Custom(bvec![3, 4, 5]), // equippable collections
 			),
 			Error::<Test>::PermissionError
 		);
@@ -533,7 +551,7 @@ fn theme_add_works() {
 			Origin::signed(ALICE), // origin
 			bvec![0u8; 20],        // base_type
 			bvec![0u8; 20],        // symbol
-			vec![],
+			bvec![],
 		));
 
 		// Add non-default theme to base (should fail w/o default)
@@ -610,7 +628,7 @@ fn theme_add_too_many_properties_fails() {
 			Origin::signed(ALICE), // origin
 			bvec![0u8; 20],        // base_type
 			bvec![0u8; 20],        // symbol
-			vec![],
+			bvec![],
 		));
 
 		// Define a default theme with too many properties (10)
