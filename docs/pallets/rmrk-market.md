@@ -9,6 +9,7 @@ Buy a listed NFT. Ensure that the NFT is available for purchase and has not rece
 ```rust 
     collection_id: CollectionId,
     nft_id: NftId
+    amount: Option<BalanceOf<T>>
 ```
 
 ### **list**

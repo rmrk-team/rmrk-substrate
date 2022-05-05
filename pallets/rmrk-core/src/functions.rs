@@ -2,6 +2,7 @@
 
 use super::*;
 use codec::{Codec, Decode, Encode};
+use frame_support::traits::tokens::Locker;
 use sp_runtime::{
 	traits::{Saturating, TrailingZeroInput},
 	ArithmeticError,
@@ -23,7 +24,8 @@ where
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(sender == root_owner, Error::<T>::NoPermission);
-		// TODO : Check NFT lock status
+		// Check NFT lock status
+		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 		Priorities::<T>::remove_prefix((collection_id, nft_id), None);
 		let mut priority_index = 0;
 		for resource_id in priorities {
@@ -50,7 +52,11 @@ where
 			Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		if let Some(nft_id) = &maybe_nft_id {
-			// TODO: Check NFT lock status
+			// Check NFT lock status
+			ensure!(
+				!Pallet::<T>::is_locked(collection_id, *nft_id),
+				pallet_uniques::Error::<T>::Locked
+			);
 			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id)?;
 			ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
 		}
@@ -85,6 +91,8 @@ where
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		// Check NFT lock status
+		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 
 		let empty =
 			base.is_none() &&
@@ -122,8 +130,8 @@ where
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
-		// TODO: Check NFT lock status
-
+		// Check NFT lock status
+		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 		Resources::<T>::try_mutate_exists(
 			(collection_id, nft_id, resource_id.clone()),
 			|resource| -> DispatchResult {
@@ -503,6 +511,15 @@ where
 	}
 }
 
+impl<T: Config> Locker<CollectionId, NftId> for Pallet<T>
+where
+	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+{
+	fn is_locked(collection_id: CollectionId, nft_id: NftId) -> bool {
+		Lock::<T>::get((collection_id, nft_id))
+	}
+}
+
 impl<T: Config> Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
@@ -644,7 +661,7 @@ where
 				found_child
 			},
 		}
-	}	
+	}
 
 	pub fn get_next_nft_id(collection_id: CollectionId) -> Result<NftId, Error<T>> {
 		NextNftId::<T>::try_mutate(collection_id, |id| {
@@ -660,5 +677,13 @@ where
 			*id = id.checked_add(1).ok_or(Error::<T>::NoAvailableCollectionId)?;
 			Ok(current_id)
 		})
+	}
+
+	pub fn set_lock(nft: (CollectionId, NftId), lock_status: bool) -> bool {
+		Lock::<T>::mutate(nft, |lock| {
+			*lock = lock_status;
+			*lock
+		});
+		lock_status
 	}
 }

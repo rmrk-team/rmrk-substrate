@@ -19,44 +19,44 @@ targets = ["x86_64-unknown-linux-gnu"]
 [dependencies]
 clap = { version = "3.0", features = ["derive"] }
 
-sc-cli = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18", features = ["wasmtime"] }
-sp-core = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sc-executor = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18", features = ["wasmtime"]  }
-sc-service = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18", features = ["wasmtime"]  }
-sc-telemetry = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sc-keystore = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sc-transaction-pool = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sc-transaction-pool-api = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sc-consensus-aura = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-consensus-aura = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-consensus = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sc-consensus = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sc-finality-grandpa = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-finality-grandpa = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sc-client-api = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-runtime = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-timestamp = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
+sc-cli = { version = "0.10.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait", features = ["wasmtime"] }
+sp-core = { version = "5.0.0", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sc-executor = { version = "0.10.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait", features = ["wasmtime"]  }
+sc-service = { version = "0.10.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait", features = ["wasmtime"]  }
+sc-telemetry = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sc-keystore = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sc-transaction-pool = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sc-transaction-pool-api = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sc-consensus-aura = { version = "0.10.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-consensus-aura = { version = "0.10.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-consensus = { version = "0.10.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sc-consensus = { version = "0.10.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sc-finality-grandpa = { version = "0.10.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-finality-grandpa = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sc-client-api = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-runtime = { version = "5.0.0", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-timestamp = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
 
 # These dependencies are used for the node template"s RPCs
 jsonrpc-core = "18.0.0"
-sc-rpc = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-api = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sc-rpc-api = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-blockchain = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-block-builder = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sc-basic-authorship = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-substrate-frame-rpc-system = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-pallet-transaction-payment-rpc = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
+sc-rpc = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-api = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sc-rpc-api = { version = "0.10.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-blockchain = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-block-builder = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sc-basic-authorship = { version = "0.10.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+substrate-frame-rpc-system = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+pallet-transaction-payment-rpc = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
 
 # These dependencies are used for runtime benchmarking
-frame-benchmarking = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
+frame-benchmarking = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
 
 # Local Dependencies
 rmrk-substrate-runtime = { version = "4.0.0-dev", path = "../runtime" }
 
 [build-dependencies]
-substrate-build-script-utils = { version = "3.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
+substrate-build-script-utils = { version = "3.0.0", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
 
 [features]
 default = []

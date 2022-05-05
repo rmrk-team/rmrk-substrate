@@ -13,40 +13,40 @@ repository = "https://github.com/rmrk-team/rmrk-substrate"
 targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = ["derive"] }
-scale-info = { version = "2.0.1", default-features = false, features = ["derive"] }
+codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
+scale-info = { version = "1.0", default-features = false, features = ["derive"] }
 
-pallet-uniques = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-pallet-utility = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-pallet-aura = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-pallet-grandpa = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-pallet-randomness-collective-flip = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-pallet-timestamp = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-pallet-transaction-payment = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-frame-executive = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-block-builder = {  version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18"}
-sp-consensus-aura = { version = "0.10.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-core = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-inherents = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18"}
-sp-offchain = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-runtime = { version = "6.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-session = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-std = { version = "4.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-transaction-pool = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-sp-version = { version = "5.0.0", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
+pallet-uniques = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+pallet-utility = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+pallet-aura = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+pallet-balances = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+frame-support = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+pallet-grandpa = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+pallet-randomness-collective-flip = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+pallet-sudo = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+frame-system = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+pallet-timestamp = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+pallet-transaction-payment = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+frame-executive = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-block-builder = {  version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait"}
+sp-consensus-aura = { version = "0.10.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-core = { version = "5.0.0", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-inherents = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait"}
+sp-offchain = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-runtime = { version = "5.0.0", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-session = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-std = { version = "4.0.0", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-transaction-pool = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-version = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
 
 # Used for the node template"s RPCs
-frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
-pallet-transaction-payment-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
+frame-system-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+pallet-transaction-payment-rpc-runtime-api = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
 
 # Used for runtime benchmarking
-frame-benchmarking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18", optional = true }
-frame-system-benchmarking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18", optional = true }
+frame-benchmarking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait", optional = true }
+frame-system-benchmarking = { version = "4.0.0-dev", default-features = false, git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait", optional = true }
 hex-literal = { version = "0.3.4", optional = true }
 
 # Local Dependencies
@@ -56,7 +56,7 @@ pallet-rmrk-equip = { version = "0.0.1", default-features = false, path = "../pa
 pallet-rmrk-market = { version = "0.0.1", default-features = false, path = "../pallets/rmrk-market" }
 
 [build-dependencies]
-substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.18" }
+substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
 
 [features]
 default = ["std"]
@@ -69,7 +69,7 @@ std = [
 	"frame-system/std",
 	"pallet-rmrk-core/std",
 	"pallet-rmrk-market/std",
-	"pallet-rmrk-market/std",
+	"pallet-rmrk-equip/std",
 	"pallet-uniques/std",
 	"pallet-utility/std",
 	"pallet-aura/std",

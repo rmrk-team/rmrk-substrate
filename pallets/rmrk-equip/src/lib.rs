@@ -90,8 +90,8 @@ pub mod pallet {
 		_,
 		(
 			NMapKey<Blake2_128Concat, (CollectionId, NftId)>, // Equipper
-			NMapKey<Blake2_128Concat, BaseId>, // Base ID
-			NMapKey<Blake2_128Concat, SlotId>, // Slot ID
+			NMapKey<Blake2_128Concat, BaseId>,                // Base ID
+			NMapKey<Blake2_128Concat, SlotId>,                // Slot ID
 		),
 		BoundedResource<T>, // Equipped Resource
 		OptionQuery,
@@ -103,7 +103,7 @@ pub mod pallet {
 	pub type Themes<T: Config> = StorageNMap<
 		_,
 		(
-			NMapKey<Blake2_128Concat, BaseId>, // Base ID
+			NMapKey<Blake2_128Concat, BaseId>,           // Base ID
 			NMapKey<Blake2_128Concat, StringLimitOf<T>>, // Theme name
 			NMapKey<Blake2_128Concat, StringLimitOf<T>>, // Property name (key)
 		),
@@ -307,7 +307,7 @@ pub mod pallet {
 		/// Modeled after [themeadd interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/themeadd.md)
 		/// Themes are stored in the Themes storage
 		/// A Theme named "default" is required prior to adding other Themes.
-		/// 
+		///
 		/// Parameters:
 		/// - origin: The caller of the function, must be issuer of the base
 		/// - base_id: The Base containing the Theme to be updated
@@ -343,7 +343,8 @@ pub mod pallet {
 		/// - origin: Caller, will be assigned as the issuer of the Base
 		/// - base_type: media type, e.g. "svg"
 		/// - symbol: arbitrary client-chosen symbol, e.g. "kanaria_superbird"
-		/// - parts: array of Fixed and Slot parts composing the base, confined in length by PartsLimit
+		/// - parts: array of Fixed and Slot parts composing the base, confined in length by
+		///   PartsLimit
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn create_base(
 			origin: OriginFor<T>,

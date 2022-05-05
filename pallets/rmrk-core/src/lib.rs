@@ -125,7 +125,7 @@ pub mod pallet {
 	#[pallet::getter(fn children)]
 	/// Stores nft children info
 	pub type Children<T: Config> = StorageDoubleMap<_, Twox64Concat, (CollectionId, NftId), Twox64Concat, (CollectionId, NftId), ()>;
-	
+
 	#[pallet::storage]
 	#[pallet::getter(fn resources)]
 	/// Stores resource info
@@ -153,6 +153,11 @@ pub mod pallet {
 		ValueLimitOf<T>,
 		OptionQuery,
 	>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn lock)]
+	/// Lock for NFTs
+	pub type Lock<T: Config> = StorageMap<_, Twox64Concat, (CollectionId, NftId), bool, ValueQuery>;
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]

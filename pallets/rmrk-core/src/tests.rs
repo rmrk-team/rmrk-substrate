@@ -495,7 +495,7 @@ fn reject_nft_works() {
 			1,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
-		// ALICE sends NFT (0, 2) to BOB 
+		// ALICE sends NFT (0, 2) to BOB
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
