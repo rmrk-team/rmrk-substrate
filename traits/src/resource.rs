@@ -35,12 +35,12 @@ pub struct BasicResource<BoundedString> {
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
 pub struct ComposableResource<BoundedString, BoundedParts> {
 	/// If a resource is composed, it will have an array of parts that compose it
-	pub parts: Option<BoundedParts>,
+	pub parts: BoundedParts,
 
 	/// A Base is uniquely identified by the combination of the word `base`, its minting block
 	/// number, and user provided symbol during Base creation, glued by dashes `-`, e.g.
 	/// base-4477293-kanaria_superbird.
-	pub base: Option<BaseId>,
+	pub base: BaseId,
 
 	/// If the resource is Media, the base property is absent. Media src should be a URI like an
 	/// IPFS hash.

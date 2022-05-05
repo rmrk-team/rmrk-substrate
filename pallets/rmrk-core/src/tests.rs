@@ -25,6 +25,11 @@ fn stbk(s: &str) -> BoundedVec<u8, KeyLimit> {
 	s.as_bytes().to_vec().try_into().unwrap()
 }
 
+/// Turns a string into a BoundedVec
+fn stbd(s: &str) -> StringLimitOf<Test> {
+	s.as_bytes().to_vec().try_into().unwrap()
+}
+
 /// Turns a string into a Vec
 fn stv(s: &str) -> Vec<u8> {
 	s.as_bytes().to_vec()
@@ -863,8 +868,43 @@ fn create_resource_works() {
 		// Since ALICE rootowns NFT, pending status of resource should be false
 		assert_eq!(RMRKCore::resources((0, 0, stbr("res-3"))).unwrap().pending, false);
 
-		// TODO add composable resource works
-		// TODO add slot resource works
+		// Create Composable resource
+		let composable_resource = ComposableResource {
+			parts: vec![0, 1].try_into().unwrap(), // BoundedVec of Parts
+			src: Some(stbd("composable-resource")),
+			base: 0, // BaseID
+			license: None,
+			metadata: None,
+			thumb: None,
+		};
+
+		// Composable resource addition works
+		assert_ok!(RMRKCore::add_composable_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-3"), // resource_id
+			composable_resource,
+		));
+		
+		// Create Slot resource
+		let slot_resource = SlotResource {
+			src: Some(stbd("slot-resource")),
+			base: 0, // BaseID
+			license: None,
+			metadata: None,
+			slot: 0, // SlotID
+			thumb: None,
+		};
+
+		// Slot resource addition works
+		assert_ok!(RMRKCore::add_slot_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			stbr("res-3"), // resource_id
+			slot_resource,
+		));
 	});
 }
 
@@ -885,7 +925,7 @@ fn add_resource_pending_works() {
 		));
 
 		let basic_resource = BasicResource {
-			src: None,
+			src: Some(stbd("res-src")),
 			metadata: None,
 			license: None,
 			thumb: None,
