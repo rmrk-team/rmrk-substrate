@@ -219,10 +219,17 @@ where
 			equipper_collection_id,
 			equipper_nft_id,
 		));
+
 		for resource in resources_matching_base_iter {
-			if resource.base.is_some() && resource.base.unwrap() == base_id {
-				found_base_resource_on_nft = true;
+			match resource.resource {
+				ResourceTypes::Composable(res) => {
+					if res.base == base_id {
+						found_base_resource_on_nft = true;
+					}
+				},
+				_ => (),
 			}
+			
 		}
 
 		// If we don't find a matching base resource, we raise a NoResourceForThisBaseFoundOnNft
@@ -231,20 +238,23 @@ where
 
 		// The item being equipped must be have a resource that is equippable into that base.slot
 		let mut found_base_slot_resource_on_nft = false;
+
 		// initialized so the compiler doesn't complain, though it will be overwritten if it
 		// resource exists
 		let mut to_equip_resource_id: BoundedResource<T> = b"".to_vec().try_into().unwrap();
+
 		let resources_matching_base_iter =
 			pallet_rmrk_core::Resources::<T>::iter_prefix_values((item_collection_id, item_nft_id));
 
 		for resource in resources_matching_base_iter {
-			if resource.base.is_some() &&
-				resource.slot.is_some() &&
-				resource.base.unwrap() == base_id &&
-				resource.slot.unwrap() == slot_id
-			{
-				found_base_slot_resource_on_nft = true;
-				to_equip_resource_id = resource.id;
+			match resource.resource {
+				ResourceTypes::Slot(res) => {
+					if res.slot == slot_id && res.base == base_id {
+						found_base_slot_resource_on_nft = true;
+						to_equip_resource_id = resource.id;
+					}
+				},
+				_ => (),
 			}
 		}
 		ensure!(found_base_slot_resource_on_nft, Error::<T>::ItemHasNoResourceToEquipThere);

@@ -18,6 +18,11 @@ fn stbr(s: &str) -> BoundedVec<u8, ResourceSymbolLimit> {
 	s.as_bytes().to_vec().try_into().unwrap()
 }
 
+/// Turns a string into a BoundedVec (pallet_uniqes StringLimit)
+fn stbd(s: &str) -> StringLimitOf<Test> {
+	s.as_bytes().to_vec().try_into().unwrap()
+}
+
 macro_rules! bvec {
 	($( $x:tt )*) => {
 		vec![$( $x )*].try_into().unwrap()
@@ -235,23 +240,34 @@ fn equip_works() {
 			Error::<Test>::NoResourceForThisBaseFoundOnNft
 		);
 
+		// Create Composable resource
+		let composable_resource = ComposableResource {
+			parts: vec![101, 201].try_into().unwrap(), // BoundedVec of Parts
+			src: Some(stbd("ipfs://backup-src")),
+			base: 0, // BaseID
+			license: None,
+			metadata: None,
+			thumb: None,
+		};
+
 		// Add a Base 0 resource (body-1 and left-hand slot) to our character-0 nft
-		assert_ok!(RmrkCore::add_resource(
+		assert_ok!(RmrkCore::add_composable_resource(
 			Origin::signed(ALICE),
 			0,                              // collection_id
 			0,                              // nft id
 			stbr("res-1"),                  // resource_id
-			Some(0),                        // pub base: BaseId,
-			Some(stb("ipfs://backup-src")), // pub src: BoundedString,
-			None,                           // metadata
-			None,                           // slot
-			None,                           // license
-			None,                           // thumb
-			Some(bvec![
-				// parts
-				101, // ID of body-1 part
-				201, // ID of left-hand slot
-			]),
+			composable_resource,
+			// Some(0),                        // pub base: BaseId,
+			// Some(stb("ipfs://backup-src")), // pub src: BoundedString,
+			// None,                           // metadata
+			// None,                           // slot
+			// None,                           // license
+			// None,                           // thumb
+			// Some(bvec![
+			// 	// parts
+			// 	101, // ID of body-1 part
+			// 	201, // ID of left-hand slot
+			// ]),
 		));
 
 		// Attempt to equip sword should fail as the sword doesn't have a resource that is
@@ -267,19 +283,22 @@ fn equip_works() {
 			Error::<Test>::ItemHasNoResourceToEquipThere
 		);
 
+		let sword_slot_resource_left = SlotResource {
+			src: Some(stbd("ipfs://sword-metadata-left")),
+			base: 0, // BaseID
+			license: None,
+			metadata: None,
+			slot: 201, // SlotID
+			thumb: None,
+		};
+
 		// Add our sword left-hand resource to our sword NFT
-		assert_ok!(RmrkCore::add_resource(
+		assert_ok!(RmrkCore::add_slot_resource(
 			Origin::signed(ALICE),
 			1,                                       // collection id
 			0,                                       // nft id
 			stbr("res-777"),                         // resource_id
-			Some(0),                                 // pub base: BaseId,
-			Some(stb("ipfs://sword-metadata-left")), // pub src: BoundedString,
-			None,                                    // metadata
-			Some(201),                               // slot
-			None,                                    // license
-			None,                                    // thumb
-			None,                                    // parts
+			sword_slot_resource_left
 		));
 
 		// Equipping should now work
@@ -306,34 +325,22 @@ fn equip_works() {
 		// Resource for equipped item should exist
 		assert!(RmrkCore::resources((1, 0, equipped.unwrap())).is_some());
 
-		// Add our sword left-hand resource to our sword NFT
-		assert_ok!(RmrkCore::add_resource(
-			Origin::signed(ALICE),
-			1,                                       // collection id
-			0,                                       // nft id
-			stbr("res-130"),                         // resource_id
-			Some(0),                                 // pub base: BaseId,
-			Some(stb("ipfs://sword-metadata-left")), // pub src: BoundedString,
-			None,                                    // metadata
-			Some(201),                               // slot
-			None,                                    // license
-			None,                                    // thumb
-			None,                                    // parts
-		));
+		let sword_slot_resource_right = SlotResource {
+			src: Some(stbd("ipfs://sword-metadata-right")),
+			base: 0, // BaseID
+			license: None,
+			metadata: None,
+			slot: 202, // SlotID
+			thumb: None,
+		};
 
 		// Add our sword right-hand resource to our sword NFT
-		assert_ok!(RmrkCore::add_resource(
+		assert_ok!(RmrkCore::add_slot_resource(
 			Origin::signed(ALICE),
 			1,                                        // collection id
 			0,                                        // nft id
 			stbr("res-130"),                          // resource_id
-			Some(0),                                  // pub base: BaseId,
-			Some(stb("ipfs://sword-metadata-right")), // pub src: BoundedString,
-			None,                                     // metadata
-			Some(202),                                // slot
-			None,                                     // license
-			None,                                     // thumb
-			None,                                     // parts
+			sword_slot_resource_right,
 		));
 
 		// Equipping to right-hand should fail (already equipped in left hand)
