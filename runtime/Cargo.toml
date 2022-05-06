@@ -101,6 +101,7 @@ runtime-benchmarks = [
 	"hex-literal",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-template/runtime-benchmarks",
+	"pallet-rmrk-core/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
 ]

@@ -2,8 +2,12 @@
 #![allow(clippy::unused_unit)]
 #![allow(clippy::too_many_arguments)]
 
+#[cfg(feature = "runtime-benchmarks")]
+mod benchmarking;
+
 use frame_support::{
 	dispatch::DispatchResult, ensure, traits::tokens::nonfungibles::*, transactional, BoundedVec,
+	traits::Currency,
 };
 use frame_system::ensure_signed;
 
