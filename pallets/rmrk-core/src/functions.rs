@@ -75,29 +75,10 @@ where
 		nft_id: NftId,
 		resource_id: BoundedResource<T::ResourceSymbolLimit>,
 		resource: ResourceTypes<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>>,
-		// base: Option<BaseId>,
-		// src: Option<BoundedVec<u8, T::StringLimit>>,
-		// metadata: Option<BoundedVec<u8, T::StringLimit>>,
-		// slot: Option<SlotId>,
-		// license: Option<BoundedVec<u8, T::StringLimit>>,
-		// thumb: Option<BoundedVec<u8, T::StringLimit>>,
-		// parts: Option<BoundedVec<PartId, T::PartsLimit>>,
 	) -> DispatchResult {
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-
-		// match resource {
-		// 	ResourceTypes::Basic(res) => {
-				
-		// 	},
-		// 	ResourceTypes::Composable(res) => {
-				
-		// 	},
-		// 	ResourceTypes::Slot(res) => {
-				
-		// 	}
-		// }
 
 		let res = ResourceInfo::<
 			BoundedVec<u8, T::ResourceSymbolLimit>,
@@ -105,13 +86,6 @@ where
 			BoundedVec<PartId, T::PartsLimit>,
 		> {
 			id: resource_id.clone(),
-			// base,
-			// src,
-			// metadata,
-			// slot,
-			// license,
-			// thumb,
-			// parts,
 			pending: root_owner != sender,
 			pending_removal: false,
 			resource
