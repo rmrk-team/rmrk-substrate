@@ -531,9 +531,10 @@ fn theme_add_works() {
 		let non_default_theme = Theme {
 			name: stb("doglover"),
 			properties: vec![
-				ThemeProperty { key: stb("sound"), value: stb("woof"), inherit: Some(true) },
-				ThemeProperty { key: stb("secondary_color"), value: stb("blue"), inherit: None },
+				ThemeProperty { key: stb("sound"), value: stb("woof") },
+				ThemeProperty { key: stb("secondary_color"), value: stb("blue") },
 			],
+			inherit: false,
 		};
 
 		// Attempt to add theme (should fail: Base must exist)
@@ -568,9 +569,10 @@ fn theme_add_works() {
 		let default_theme = Theme {
 			name: stb("default"),
 			properties: vec![
-				ThemeProperty { key: stb("primary_color"), value: stb("red"), inherit: None },
-				ThemeProperty { key: stb("secondary_color"), value: stb("blue"), inherit: None },
+				ThemeProperty { key: stb("primary_color"), value: stb("red") },
+				ThemeProperty { key: stb("secondary_color"), value: stb("blue") },
 			],
+			inherit: false,
 		};
 
 		// Attempt to add default theme (should fail: Signer must be issuer of base)
@@ -635,17 +637,18 @@ fn theme_add_too_many_properties_fails() {
 		let default_theme = Theme {
 			name: stb("default"),
 			properties: vec![
-				ThemeProperty { key: stb("1"), value: stb("red"), inherit: None },
-				ThemeProperty { key: stb("2"), value: stb("blue"), inherit: None },
-				ThemeProperty { key: stb("3"), value: stb("red"), inherit: None },
-				ThemeProperty { key: stb("4"), value: stb("blue"), inherit: None },
-				ThemeProperty { key: stb("5"), value: stb("red"), inherit: None },
-				ThemeProperty { key: stb("6"), value: stb("blue"), inherit: None },
-				ThemeProperty { key: stb("7"), value: stb("red"), inherit: None },
-				ThemeProperty { key: stb("8"), value: stb("blue"), inherit: None },
-				ThemeProperty { key: stb("9"), value: stb("red"), inherit: None },
-				ThemeProperty { key: stb("10"), value: stb("blue"), inherit: None },
+				ThemeProperty { key: stb("1"), value: stb("red") },
+				ThemeProperty { key: stb("2"), value: stb("blue") },
+				ThemeProperty { key: stb("3"), value: stb("red") },
+				ThemeProperty { key: stb("4"), value: stb("blue") },
+				ThemeProperty { key: stb("5"), value: stb("red") },
+				ThemeProperty { key: stb("6"), value: stb("blue") },
+				ThemeProperty { key: stb("7"), value: stb("red") },
+				ThemeProperty { key: stb("8"), value: stb("blue") },
+				ThemeProperty { key: stb("9"), value: stb("red") },
+				ThemeProperty { key: stb("10"), value: stb("blue") },
 			],
+			inherit: false,
 		};
 
 		// Add default theme to base should fail (too many properties)
