@@ -1,7 +1,7 @@
 use codec::{Decode, Encode};
+use frame_support::pallet_prelude::MaxEncodedLen;
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
-use frame_support::pallet_prelude::MaxEncodedLen;
 
 use crate::primitives::*;
 use sp_std::result::Result;

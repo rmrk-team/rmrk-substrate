@@ -24,9 +24,9 @@ pub enum AccountIdOrCollectionNftTuple<AccountId> {
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub struct RoyaltyInfo<AccountId> {
 	/// Recipient (AccountId) of the royalty
-    pub recipient: AccountId,
+	pub recipient: AccountId,
 	/// Amount (Permill) of the royalty
-    pub amount: Permill,
+	pub amount: Permill,
 }
 
 /// Nft info.

@@ -1,14 +1,13 @@
 #![allow(clippy::too_many_arguments)]
 
 use codec::{Decode, Encode};
+use frame_support::pallet_prelude::MaxEncodedLen;
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
 use sp_runtime::{DispatchResult, RuntimeDebug};
 use sp_std::{cmp::Eq, vec::Vec};
-use frame_support::pallet_prelude::MaxEncodedLen;
 
 use crate::primitives::*;
-
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
@@ -21,7 +20,8 @@ pub struct ResourceInfo<BoundedResource, BoundedString, BoundedParts> {
 	/// If resource is sent to non-rootowned NFT, pending will be false and need to be accepted
 	pub pending: bool,
 
-	/// If resource removal request is sent by non-rootowned NFT, pending will be true and need to be accepted
+	/// If resource removal request is sent by non-rootowned NFT, pending will be true and need to
+	/// be accepted
 	pub pending_removal: bool,
 
 	/// If a resource is composed, it will have an array of parts that compose it

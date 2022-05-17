@@ -6,7 +6,7 @@ use frame_support::{
 	ensure, BoundedVec,
 };
 
-use sp_runtime::{traits::StaticLookup};
+use sp_runtime::traits::StaticLookup;
 
 pub use pallet::*;
 
@@ -48,7 +48,7 @@ pub mod pallet {
 
 		/// Maximum number of Properties allowed for any Theme
 		#[pallet::constant]
-		type MaxCollectionsEquippablePerPart: Get<u32>;		
+		type MaxCollectionsEquippablePerPart: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -56,22 +56,36 @@ pub mod pallet {
 	/// Stores Bases info (issuer, base_type, symbol, parts)
 	/// TODO https://github.com/rmrk-team/rmrk-substrate/issues/98
 	/// Delete Parts from Bases info, as it's kept in Parts storage
-	pub type Bases<T: Config> =
-		StorageMap<
-		_, 
-		Twox64Concat, BaseId, 
+	pub type Bases<T: Config> = StorageMap<
+		_,
+		Twox64Concat,
+		BaseId,
 		BaseInfo<
-			T::AccountId, StringLimitOf<T>, BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
-			T::PartsLimit>>
-		>;
+			T::AccountId,
+			StringLimitOf<T>,
+			BoundedVec<
+				PartType<
+					StringLimitOf<T>,
+					BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+				>,
+				T::PartsLimit,
+			>,
+		>,
+	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn parts)]
 	/// Stores Parts (either FixedPart or SlotPart)
 	/// - SlotPart: id, equippable (list), src, z
 	/// - FixedPart: id, src, z
-	pub type Parts<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>>;
+	pub type Parts<T: Config> = StorageDoubleMap<
+		_,
+		Twox64Concat,
+		BaseId,
+		Twox64Concat,
+		PartId,
+		PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
+	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn next_base_id)]
@@ -90,8 +104,8 @@ pub mod pallet {
 		_,
 		(
 			NMapKey<Blake2_128Concat, (CollectionId, NftId)>, // Equipper
-			NMapKey<Blake2_128Concat, BaseId>, // Base ID
-			NMapKey<Blake2_128Concat, SlotId>, // Slot ID
+			NMapKey<Blake2_128Concat, BaseId>,                // Base ID
+			NMapKey<Blake2_128Concat, SlotId>,                // Slot ID
 		),
 		BoundedResource<T>, // Equipped Resource
 		OptionQuery,
@@ -103,7 +117,7 @@ pub mod pallet {
 	pub type Themes<T: Config> = StorageNMap<
 		_,
 		(
-			NMapKey<Blake2_128Concat, BaseId>, // Base ID
+			NMapKey<Blake2_128Concat, BaseId>,           // Base ID
 			NMapKey<Blake2_128Concat, StringLimitOf<T>>, // Theme name
 			NMapKey<Blake2_128Concat, StringLimitOf<T>>, // Property name (key)
 		),
@@ -213,18 +227,13 @@ pub mod pallet {
 			new_issuer: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			let base =
-				Self::bases(base_id).ok_or(Error::<T>::BaseDoesntExist)?;
+			let base = Self::bases(base_id).ok_or(Error::<T>::BaseDoesntExist)?;
 			ensure!(base.issuer == sender, Error::<T>::PermissionError);
 			let new_owner = T::Lookup::lookup(new_issuer.clone())?;
 
-			ensure!(
-				Bases::<T>::contains_key(base_id),
-				Error::<T>::NoAvailableBaseId
-			);
+			ensure!(Bases::<T>::contains_key(base_id), Error::<T>::NoAvailableBaseId);
 
-			let (new_owner, base_id) =
-				Self::base_change_issuer(base_id, new_owner)?;
+			let (new_owner, base_id) = Self::base_change_issuer(base_id, new_owner)?;
 
 			Self::deposit_event(Event::BaseIssuerChanged {
 				old_issuer: sender,
@@ -293,7 +302,9 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_id: BaseId,
 			slot_id: SlotId,
-			equippables: EquippableList<BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
+			equippables: EquippableList<
+				BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+			>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -307,7 +318,7 @@ pub mod pallet {
 		/// Modeled after [themeadd interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/themeadd.md)
 		/// Themes are stored in the Themes storage
 		/// A Theme named "default" is required prior to adding other Themes.
-		/// 
+		///
 		/// Parameters:
 		/// - origin: The caller of the function, must be issuer of the base
 		/// - base_id: The Base containing the Theme to be updated
@@ -343,13 +354,20 @@ pub mod pallet {
 		/// - origin: Caller, will be assigned as the issuer of the Base
 		/// - base_type: media type, e.g. "svg"
 		/// - symbol: arbitrary client-chosen symbol, e.g. "kanaria_superbird"
-		/// - parts: array of Fixed and Slot parts composing the base, confined in length by PartsLimit
+		/// - parts: array of Fixed and Slot parts composing the base, confined in length by
+		///   PartsLimit
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		pub fn create_base(
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,
 			symbol: BoundedVec<u8, T::StringLimit>,
-			parts: BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>, T::PartsLimit>,
+			parts: BoundedVec<
+				PartType<
+					StringLimitOf<T>,
+					BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+				>,
+				T::PartsLimit,
+			>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 

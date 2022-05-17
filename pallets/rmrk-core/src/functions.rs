@@ -282,7 +282,7 @@ where
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 		}
 
-		let mut royalty: Option<RoyaltyInfo::<T::AccountId>> = None;
+		let mut royalty: Option<RoyaltyInfo<T::AccountId>> = None;
 
 		if let Some(amount) = royalty_amount {
 			match royalty_recipient {
@@ -290,8 +290,9 @@ where
 					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient, amount });
 				},
 				None => {
-					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient: owner.clone(), amount });
-				}
+					royalty =
+						Some(RoyaltyInfo::<T::AccountId> { recipient: owner.clone(), amount });
+				},
 			}
 		};
 
@@ -328,7 +329,9 @@ where
 
 		Resources::<T>::remove_prefix((collection_id, nft_id), None);
 
-		for ((child_collection_id, child_nft_id), _) in Children::<T>::drain_prefix((collection_id, nft_id,)) {
+		for ((child_collection_id, child_nft_id), _) in
+			Children::<T>::drain_prefix((collection_id, nft_id))
+		{
 			Self::nft_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 		}
 
@@ -398,7 +401,6 @@ where
 		// Nfts::<T>::insert(collection_id, nft_id, sending_nft);
 
 		if approval_required {
-
 			Nfts::<T>::try_mutate_exists(collection_id, nft_id, |nft| -> DispatchResult {
 				if let Some(nft) = nft {
 					nft.pending = true;
@@ -470,7 +472,6 @@ where
 				Pallet::<T>::nft_to_account_id::<T::AccountId>(cid, nid)
 			},
 		};
-
 
 		Nfts::<T>::try_mutate(collection_id, nft_id, |nft| -> DispatchResult {
 			if let Some(nft) = nft {
@@ -644,7 +645,7 @@ where
 				found_child
 			},
 		}
-	}	
+	}
 
 	pub fn get_next_nft_id(collection_id: CollectionId) -> Result<NftId, Error<T>> {
 		NextNftId::<T>::try_mutate(collection_id, |id| {

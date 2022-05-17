@@ -3,7 +3,7 @@ use crate as pallet_rmrk_equip;
 
 use frame_support::{
 	parameter_types,
-	traits::{ConstU32, Everything},
+	traits::{AsEnsureOriginWithArg, ConstU32, Everything},
 	weights::Weight,
 };
 use frame_system::EnsureRoot;
@@ -97,6 +97,7 @@ impl pallet_uniques::Config for Test {
 	type KeyLimit = KeyLimit;
 	type ValueLimit = ValueLimit;
 	type WeightInfo = ();
+	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<AccountId>>;
 	// type InstanceReserveStrategy = NFT;
 }
 

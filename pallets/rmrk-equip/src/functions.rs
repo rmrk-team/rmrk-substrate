@@ -28,14 +28,20 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> Base<
-	T::AccountId,
-	CollectionId,
-	NftId,
-	StringLimitOf<T>,
-	BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
-	T::PartsLimit>,
-	BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>
+impl<T: Config>
+	Base<
+		T::AccountId,
+		CollectionId,
+		NftId,
+		StringLimitOf<T>,
+		BoundedVec<
+			PartType<
+				StringLimitOf<T>,
+				BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+			>,
+			T::PartsLimit,
+		>,
+		BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
 	> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
@@ -53,7 +59,13 @@ where
 		issuer: T::AccountId,
 		base_type: StringLimitOf<T>,
 		symbol: StringLimitOf<T>,
-		parts: BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>, T::PartsLimit>,
+		parts: BoundedVec<
+			PartType<
+				StringLimitOf<T>,
+				BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+			>,
+			T::PartsLimit,
+		>,
 	) -> Result<BaseId, DispatchError> {
 		let base_id = Self::get_next_base_id()?;
 		for part in parts.clone() {
@@ -94,8 +106,8 @@ where
 	}
 
 	/// Implementation of the do_equip function for the Base trait
-	/// Called by the equip extrinsic to equip a child NFT's resource to a parent's slot, if all are available.
-	/// Also can be called to unequip, which can be successful if
+	/// Called by the equip extrinsic to equip a child NFT's resource to a parent's slot, if all are
+	/// available. Also can be called to unequip, which can be successful if
 	/// - Item has beeen burned
 	/// - Item is equipped and extrinsic called by equipping item owner
 	/// - Item is equipped and extrinsic called by equipper NFT owner
@@ -338,7 +350,7 @@ where
 	/// Modeled after [themeadd interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/themeadd.md)
 	/// Themes are stored in the Themes storage
 	/// A "default" theme is required prior to adding other Themes.
-	/// 
+	///
 	/// Parameters:
 	/// - issuer: The caller of the function, must be issuer of the base
 	/// - base_id: The Base containing the Theme to be updated
