@@ -12,7 +12,7 @@ use sp_std::convert::TryInto;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
-	Priority, Property, Resource, ResourceInfo, RoyaltyInfo
+	Priority, Property, Resource, ResourceInfo, RoyaltyInfo,
 };
 use sp_std::result::Result;
 
@@ -28,11 +28,11 @@ pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
-pub type ResourceOf<T, R, P> = ResourceInfo::<
+pub type ResourceOf<T, R, P> = ResourceInfo<
 	BoundedVec<u8, R>,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
-	BoundedVec<PartId, P>
-	>;
+	BoundedVec<PartId, P>,
+>;
 
 pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
 
@@ -124,7 +124,14 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn children)]
 	/// Stores nft children info
-	pub type Children<T: Config> = StorageDoubleMap<_, Twox64Concat, (CollectionId, NftId), Twox64Concat, (CollectionId, NftId), ()>;
+	pub type Children<T: Config> = StorageDoubleMap<
+		_,
+		Twox64Concat,
+		(CollectionId, NftId),
+		Twox64Concat,
+		(CollectionId, NftId),
+		(),
+	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn resources)]
@@ -297,8 +304,7 @@ pub mod pallet {
 			metadata: BoundedVec<u8, T::StringLimit>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			if let Some(collection_issuer) =
-				pallet_uniques::Pallet::<T>::class_owner(&collection_id)
+			if let Some(collection_issuer) = pallet_uniques::Pallet::<T>::class_owner(collection_id)
 			{
 				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
 			} else {
@@ -492,7 +498,8 @@ pub mod pallet {
 			let sender = ensure_signed(origin.clone())?;
 
 			let max_recursions = T::MaxRecursions::get();
-			let (sender, collection_id, nft_id) = Self::nft_reject(sender, collection_id, nft_id, max_recursions)?;
+			let (sender, collection_id, nft_id) =
+				Self::nft_reject(sender, collection_id, nft_id, max_recursions)?;
 
 			Self::deposit_event(Event::NFTRejected { sender, collection_id, nft_id });
 			Ok(())

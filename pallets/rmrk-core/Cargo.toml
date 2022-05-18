@@ -13,28 +13,28 @@ targets = ["x86_64-unknown-linux-gnu"]
 
 [dependencies]
 serde = { version = "1.0.111", default-features = false, features = ["derive"] }
-sp-runtime = { default-features = false, version = "5.0.0", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
-sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
-codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = [
+sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
+sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
+codec = { package = "parity-scale-codec", version = "3.0.0", default-features = false, features = [
 	"derive",
 ] }
-scale-info = { version = "1.0", default-features = false, features = ["derive"] }
-frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait"}
-frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
-frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait", optional = true }
+scale-info = { version = "2.0.1", default-features = false, features = ["derive"] }
+frame-support = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22"}
+frame-system = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
+frame-benchmarking = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22", optional = true }
 
-pallet-uniques = { default-features = false, version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
-pallet-balances = { default-features = false, version = "4.0.0-dev", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+pallet-uniques = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
+pallet-balances = { default-features = false, version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
 
 
 # Local Dependencies
 rmrk-traits = { default-features = false, version = "0.0.1", path = "../../traits" }
 
 [dev-dependencies]
-sp-core = { default-features = false, version = "5.0.0", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
-sp-io = { default-features = false, version = "5.0.0", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
-sp-runtime = { default-features = false, version = "5.0.0", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
-sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/HashWarlock/substrate.git", branch = "hw-uniques-locker-trait" }
+sp-core = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
+sp-io = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
+sp-runtime = { default-features = false, version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
+sp-std = { default-features = false, version = "4.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
 
 [features]
 default = ["std"]

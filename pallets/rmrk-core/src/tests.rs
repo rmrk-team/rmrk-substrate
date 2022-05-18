@@ -184,6 +184,8 @@ fn change_collection_issuer_works() {
 			RMRKCore::change_collection_issuer(Origin::signed(BOB), 0, BOB),
 			Error::<Test>::NoPermission
 		);
+		// Must set ownership acceptance with BOB before transfer due to uniques dependency
+		assert_ok!(Uniques::set_accept_ownership(Origin::signed(BOB), Some(0)));
 		// Change issuer from ALICE to BOB
 		assert_ok!(RMRKCore::change_collection_issuer(Origin::signed(ALICE), 0, BOB));
 		// Changing issuer should trigger IssuerChanged event
@@ -197,7 +199,7 @@ fn change_collection_issuer_works() {
 		// BOB can't change issuer if calls transfer_ownership in uniques
 		assert_noop!(
 			UNQ::Pallet::<Test>::transfer_ownership(Origin::signed(ALICE), 0, ALICE),
-			UNQ::Error::<Test>::NoPermission
+			UNQ::Error::<Test>::Unaccepted
 		);
 	});
 }
@@ -319,7 +321,7 @@ fn royalty_recipient_default_works() {
 			ALICE,
 			COLLECTION_ID_0,
 			Some(ALICE), // Royalty recipient is ALICE
-			None, // No royalty amount
+			None,        // No royalty amount
 			bvec![0u8; 20]
 		));
 		// Royalty should not exist
@@ -545,8 +547,8 @@ fn send_two_nfts_to_same_nft_creates_two_children() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
 		// NFT (0,0) has NFT (0,1) & (0,2) in Children StorageMap
-		assert!(RMRKCore::children((0, 0), (0,1)).is_some());
-		assert!(RMRKCore::children((0, 0), (0,2)).is_some());
+		assert!(RMRKCore::children((0, 0), (0, 1)).is_some());
+		assert!(RMRKCore::children((0, 0), (0, 2)).is_some());
 	});
 }
 
@@ -812,7 +814,10 @@ fn burn_nft_beyond_max_recursions_fails_gracefully() {
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_some(), true);
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 4).is_some(), true);
 		// Burn great-grandparent NFT (0, 0)
-		assert_noop!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0), Error::<Test>::TooManyRecursions);
+		assert_noop!(
+			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0),
+			Error::<Test>::TooManyRecursions
+		);
 		// All NFTs still exist
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 0).is_some(), true);
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 1).is_some(), true);
@@ -1145,12 +1150,7 @@ fn set_priority_works() {
 		// BOB cannot set priority on NFT
 
 		assert_noop!(
-			RMRKCore::set_priority(
-				Origin::signed(BOB),
-				COLLECTION_ID_0,
-				NFT_ID_0,
-				bvec![100, 500]
-			),
+			RMRKCore::set_priority(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0, bvec![100, 500]),
 			Error::<Test>::NoPermission
 		);
 		// ALICE sets priority on NFT
@@ -1184,4 +1184,3 @@ fn set_priority_works() {
 		assert!(RMRKCore::priorities((COLLECTION_ID_0, NFT_ID_0, 500)).is_none(),);
 	});
 }
-
