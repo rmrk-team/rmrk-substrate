@@ -232,10 +232,20 @@ fn send_wont_work_if_sent_after_list() {
 			RmrkMarket::buy(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, None,),
 			Error::<Test>::CannotBuyOwnToken
 		);
-		// TODO: NFT Lock Tests Ensure ALICE cannot sends CHARLIE NFT [0,0] bc it is now locked
+		// NFT Lock Tests Ensure ALICE cannot sends CHARLIE NFT [0,0] bc it is now locked
+		assert_noop!(
+			RmrkCore::send(
+				Origin::signed(ALICE),
+				COLLECTION_ID_0,
+				NFT_ID_0,
+				AccountIdOrCollectionNftTuple::AccountId(CHARLIE),
+			),
+			pallet_uniques::Error::<Test>::Locked
+		);
 		// BOB buys the NFT at whatever price is in storage and the NFT is transferred from ALICE to
 		// BOB
 		assert_ok!(RmrkMarket::buy(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0, None,));
+
 		// Bought NFT should trigger TokenSold event
 		System::assert_last_event(MockEvent::RmrkMarket(crate::Event::TokenSold {
 			owner: ALICE,
@@ -281,7 +291,26 @@ fn send_to_nft_wont_work_after_list() {
 			RmrkMarket::buy(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, Some(10u128),),
 			Error::<Test>::CannotBuyOwnToken
 		);
-		// TODO: NFT Lock Tests ALICE sends NFT [0,0] to NFT [0,1] won't work
+		// NFT Lock Tests ALICE sends NFT [0,0] to NFT [0,1] won't work
+		assert_noop!(
+			RmrkCore::send(
+				Origin::signed(ALICE),
+				COLLECTION_ID_0,
+				NFT_ID_0,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(COLLECTION_ID_0, NFT_ID_1),
+			),
+			pallet_uniques::Error::<Test>::Locked
+		);
+		// NFT Lock test directly calling the Uniques:do_transfer should fail
+		assert_noop!(
+			Uniques::do_transfer(
+				COLLECTION_ID_0,
+				NFT_ID_0,
+				CHARLIE,
+				|_class_details, _details| Ok(()),
+			),
+			pallet_uniques::Error::<Test>::Locked
+		);
 		// BOB buys the NFT and the NFT is transferred from ALICE to BOB
 		assert_ok!(RmrkMarket::buy(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0, Some(10u128),));
 		// Bought NFT should trigger TokenSold event

@@ -3,7 +3,7 @@ use crate as pallet_rmrk_core;
 
 use frame_support::{
 	parameter_types,
-	traits::{ConstU32, Everything},
+	traits::{AsEnsureOriginWithArg, ConstU32, Everything, Locker},
 	weights::Weight,
 };
 use frame_system::EnsureRoot;
@@ -76,6 +76,8 @@ impl pallet_uniques::Config for Test {
 	type InstanceId = u32;
 	type Currency = Balances;
 	type ForceOrigin = EnsureRoot<AccountId>;
+	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<AccountId>>;
+	type Locker = pallet_rmrk_core::Pallet<Test>;
 	type ClassDeposit = ClassDeposit;
 	type InstanceDeposit = InstanceDeposit;
 	type MetadataDepositBase = UniquesMetadataDepositBase;
