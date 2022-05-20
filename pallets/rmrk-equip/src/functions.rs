@@ -250,18 +250,17 @@ where
 
 		// initialized so the compiler doesn't complain, though it will be overwritten if it
 		// resource exists
-		let mut to_equip_resource_id: BoundedResource<T> = b"".to_vec().try_into().unwrap();
+		let mut to_equip_resource_id: ResourceId = 0_u32.into();
 
 		let resources_matching_base_iter =
 			pallet_rmrk_core::Resources::<T>::iter_prefix_values((item_collection_id, item_nft_id));
 
 		for resource in resources_matching_base_iter {
 			match resource.resource {
-				ResourceTypes::Slot(res) => {
+				ResourceTypes::Slot(res) =>
 					if res.slot == slot_id && res.base == base_id {
 						found_base_slot_resource_on_nft = true;
 						to_equip_resource_id = resource.id;
-					}
 				},
 				_ => (),
 			}

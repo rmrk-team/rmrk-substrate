@@ -1,11 +1,11 @@
 #![allow(clippy::too_many_arguments)]
 
 use codec::{Decode, Encode};
+use frame_support::pallet_prelude::MaxEncodedLen;
 use scale_info::TypeInfo;
 use serde::{Deserialize, Serialize};
-use sp_runtime::{DispatchResult, RuntimeDebug};
-use sp_std::{cmp::Eq, vec::Vec};
-use frame_support::pallet_prelude::MaxEncodedLen;
+use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
+use sp_std::{cmp::Eq, result::Result, vec::Vec};
 
 use crate::primitives::*;
 
@@ -108,57 +108,49 @@ pub enum ResourceTypes<BoundedString, BoundedParts> {
 	Slot(SlotResource<BoundedString>),
 }
 
-
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize, Deserialize))]
-pub struct ResourceInfo<BoundedResource, BoundedString, BoundedParts> {
+pub struct ResourceInfo<BoundedString, BoundedParts> {
 	/// id is a 5-character string of reasonable uniqueness.
 	/// The combination of base ID and resource id should be unique across the entire RMRK
 	/// ecosystem which
-	pub id: BoundedResource,
-	
+	pub id: ResourceId,
+
 	/// Resource
 	pub resource: ResourceTypes<BoundedString, BoundedParts>,
 
 	/// If resource is sent to non-rootowned NFT, pending will be false and need to be accepted
 	pub pending: bool,
 
-	/// If resource removal request is sent by non-rootowned NFT, pending will be true and need to be accepted
+	/// If resource removal request is sent by non-rootowned NFT, pending will be true and need to
+	/// be accepted
 	pub pending_removal: bool,
 }
 
 /// Abstraction over a Resource system.
-pub trait Resource<BoundedString, AccountId, BoundedResource, BoundedPart> {
+pub trait Resource<BoundedString, AccountId, BoundedPart> {
 	fn resource_add(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: BoundedResource,
 		resource: ResourceTypes<BoundedString, BoundedPart>,
-		// base: Option<BaseId>,
-		// src: Option<BoundedString>,
-		// metadata: Option<BoundedString>,
-		// slot: Option<SlotId>,
-		// license: Option<BoundedString>,
-		// thumb: Option<BoundedString>,
-		// parts: Option<BoundedPart>,
-	) -> DispatchResult;
+	) -> Result<ResourceId, DispatchError>;
 	fn accept(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: BoundedResource,
+		resource_id: ResourceId,
 	) -> DispatchResult;
 	fn resource_remove(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: BoundedResource,
+		resource_id: ResourceId,
 	) -> DispatchResult;
 	fn accept_removal(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: BoundedResource,
+		resource_id: ResourceId,
 	) -> DispatchResult;
 }

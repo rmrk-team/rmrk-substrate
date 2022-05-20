@@ -94,7 +94,7 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, BaseId>,                // Base ID
 			NMapKey<Blake2_128Concat, SlotId>,                // Slot ID
 		),
-		BoundedResource<T>, // Equipped Resource
+		ResourceId, // Equipped Resource
 		OptionQuery,
 	>;
 

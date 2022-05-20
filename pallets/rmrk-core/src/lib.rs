@@ -11,9 +11,9 @@ use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
 use sp_std::convert::TryInto;
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
-	Priority, Property, Resource, ResourceInfo, RoyaltyInfo,
-	ResourceTypes, BasicResource, SlotResource, ComposableResource
+	primitives::*, AccountIdOrCollectionNftTuple, BasicResource, Collection, CollectionInfo,
+	ComposableResource, Nft, NftInfo, Priority, Property, Resource, ResourceInfo, ResourceTypes,
+	RoyaltyInfo, SlotResource,
 };
 use sp_std::result::Result;
 
@@ -29,8 +29,7 @@ pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
-pub type ResourceOf<T, R, P> = ResourceInfo<
-	BoundedVec<u8, R>,
+pub type ResourceOf<T, P> = ResourceInfo<
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 	BoundedVec<PartId, P>,
 >;
@@ -90,7 +89,15 @@ pub mod pallet {
 	/// Next available Resource ID.
 	#[pallet::storage]
 	#[pallet::getter(fn next_resource_id)]
-	pub type NextResourceId<T: Config> = StorageValue<_, ResourceId, ValueQuery>;
+	pub type NextResourceId<T: Config> = StorageDoubleMap<
+		_,
+		Twox64Concat,
+		CollectionId,
+		Twox64Concat,
+		NftId,
+		ResourceId,
+		ValueQuery,
+	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn collections)]
@@ -142,9 +149,9 @@ pub mod pallet {
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
 			NMapKey<Blake2_128Concat, NftId>,
-			NMapKey<Blake2_128Concat, BoundedResource<T::ResourceSymbolLimit>>,
+			NMapKey<Blake2_128Concat, ResourceId>,
 		),
-		ResourceOf<T, T::ResourceSymbolLimit, T::PartsLimit>,
+		ResourceOf<T, T::PartsLimit>,
 		OptionQuery,
 	>;
 
@@ -229,19 +236,19 @@ pub mod pallet {
 		},
 		ResourceAdded {
 			nft_id: NftId,
-			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+			resource_id: ResourceId,
 		},
 		ResourceAccepted {
 			nft_id: NftId,
-			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+			resource_id: ResourceId,
 		},
 		ResourceRemoval {
 			nft_id: NftId,
-			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+			resource_id: ResourceId,
 		},
 		ResourceRemovalAccepted {
 			nft_id: NftId,
-			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+			resource_id: ResourceId,
 		},
 		PrioritySet {
 			collection_id: CollectionId,
@@ -258,6 +265,7 @@ pub mod pallet {
 		StorageOverflow,
 		TooLong,
 		NoAvailableCollectionId,
+		NoAvailableResourceId,
 		MetadataNotSet,
 		RecipientNotSet,
 		NoAvailableNftId,
@@ -582,16 +590,14 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 			resource: BasicResource<StringLimitOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			Self::resource_add(
+			let resource_id = Self::resource_add(
 				sender,
 				collection_id,
 				nft_id,
-				resource_id.clone(),
 				ResourceTypes::Basic(resource),
 			)?;
 
@@ -611,11 +617,10 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			Self::resource_add(
+			let resource_id = Self::resource_add(
 				sender,
 				collection_id,
 				nft_id,
-				resource_id.clone(),
 				ResourceTypes::Composable(resource),
 			)?;
 
@@ -630,16 +635,14 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 			resource: SlotResource<StringLimitOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			Self::resource_add(
+			let resource_id = Self::resource_add(
 				sender,
 				collection_id,
 				nft_id,
-				resource_id.clone(),
 				ResourceTypes::Slot(resource),
 			)?;
 
@@ -654,11 +657,11 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+			resource_id: ResourceId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			ensure!(
-				Resources::<T>::get((collection_id, nft_id, resource_id.clone())).is_some(),
+				Resources::<T>::get((collection_id, nft_id, resource_id)).is_some(),
 				Error::<T>::ResourceDoesntExist
 			);
 
@@ -666,7 +669,7 @@ pub mod pallet {
 			ensure!(owner == sender, Error::<T>::NoPermission);
 
 			Resources::<T>::try_mutate_exists(
-				(collection_id, nft_id, resource_id.clone()),
+				(collection_id, nft_id, resource_id),
 				|resource| -> DispatchResult {
 					if let Some(res) = resource.into_mut() {
 						ensure!(res.pending, Error::<T>::ResourceNotPending);
@@ -687,11 +690,11 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+			resource_id: ResourceId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			Self::resource_remove(sender, collection_id, nft_id, resource_id.clone())?;
+			Self::resource_remove(sender, collection_id, nft_id, resource_id)?;
 
 			Self::deposit_event(Event::ResourceRemoval { nft_id, resource_id });
 			Ok(())
@@ -704,11 +707,11 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+			resource_id: ResourceId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			Self::accept_removal(sender, collection_id, nft_id, resource_id.clone())?;
+			Self::accept_removal(sender, collection_id, nft_id, resource_id)?;
 
 			Self::deposit_event(Event::ResourceRemovalAccepted { nft_id, resource_id });
 			Ok(())
