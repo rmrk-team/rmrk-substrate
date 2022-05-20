@@ -12,6 +12,7 @@ pub use pallet::*;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, EquippableList, PartType, Theme,
+	BasicResource, ComposableResource, SlotResource, ResourceTypes,
 };
 
 mod functions;

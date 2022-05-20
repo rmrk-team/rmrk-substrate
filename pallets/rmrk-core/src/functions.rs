@@ -80,13 +80,7 @@ where
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource_id: BoundedResource<T::ResourceSymbolLimit>,
-		base: Option<BaseId>,
-		src: Option<BoundedVec<u8, T::StringLimit>>,
-		metadata: Option<BoundedVec<u8, T::StringLimit>>,
-		slot: Option<SlotId>,
-		license: Option<BoundedVec<u8, T::StringLimit>>,
-		thumb: Option<BoundedVec<u8, T::StringLimit>>,
-		parts: Option<BoundedVec<PartId, T::PartsLimit>>,
+		resource: ResourceTypes<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>>,
 	) -> DispatchResult {
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
@@ -94,28 +88,15 @@ where
 		// Check NFT lock status
 		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 
-		let empty =
-			base.is_none() &&
-				src.is_none() && metadata.is_none() &&
-				slot.is_none() && license.is_none() &&
-				thumb.is_none();
-		ensure!(!empty, Error::<T>::EmptyResource);
-
 		let res = ResourceInfo::<
 			BoundedVec<u8, T::ResourceSymbolLimit>,
 			BoundedVec<u8, T::StringLimit>,
 			BoundedVec<PartId, T::PartsLimit>,
 		> {
 			id: resource_id.clone(),
-			base,
-			src,
-			metadata,
-			slot,
-			license,
-			thumb,
-			parts,
 			pending: root_owner != sender,
 			pending_removal: false,
+			resource
 		};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 

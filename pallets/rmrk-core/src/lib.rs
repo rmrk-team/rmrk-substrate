@@ -13,6 +13,7 @@ use sp_std::convert::TryInto;
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
 	Priority, Property, Resource, ResourceInfo, RoyaltyInfo,
+	ResourceTypes, BasicResource, SlotResource, ComposableResource
 };
 use sp_std::result::Result;
 
@@ -574,21 +575,15 @@ pub mod pallet {
 			Ok(())
 		}
 
-		/// Create resource
+		/// Create basic resource
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
-		pub fn add_resource(
+		pub fn add_basic_resource(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
 			resource_id: BoundedResource<T::ResourceSymbolLimit>,
-			base: Option<BaseId>,
-			src: Option<BoundedVec<u8, T::StringLimit>>,
-			metadata: Option<BoundedVec<u8, T::StringLimit>>,
-			slot: Option<SlotId>,
-			license: Option<BoundedVec<u8, T::StringLimit>>,
-			thumb: Option<BoundedVec<u8, T::StringLimit>>,
-			parts: Option<BoundedVec<PartId, T::PartsLimit>>,
+			resource: BasicResource<StringLimitOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
@@ -597,13 +592,55 @@ pub mod pallet {
 				collection_id,
 				nft_id,
 				resource_id.clone(),
-				base,
-				src,
-				metadata,
-				slot,
-				license,
-				thumb,
-				parts,
+				ResourceTypes::Basic(resource),
+			)?;
+
+			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
+			Ok(())
+		}
+
+		/// Create composable resource
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn add_composable_resource(
+			origin: OriginFor<T>,
+			collection_id: CollectionId,
+			nft_id: NftId,
+			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+			resource: ComposableResource<StringLimitOf<T>, BoundedVec<PartId, T::PartsLimit>>,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin.clone())?;
+
+			Self::resource_add(
+				sender,
+				collection_id,
+				nft_id,
+				resource_id.clone(),
+				ResourceTypes::Composable(resource),
+			)?;
+
+			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
+			Ok(())
+		}
+
+		/// Create slot resource
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn add_slot_resource(
+			origin: OriginFor<T>,
+			collection_id: CollectionId,
+			nft_id: NftId,
+			resource_id: BoundedResource<T::ResourceSymbolLimit>,
+			resource: SlotResource<StringLimitOf<T>>,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin.clone())?;
+
+			Self::resource_add(
+				sender,
+				collection_id,
+				nft_id,
+				resource_id.clone(),
+				ResourceTypes::Slot(resource),
 			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
