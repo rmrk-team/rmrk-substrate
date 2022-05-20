@@ -1,4 +1,5 @@
 use super::*;
+use frame_support::traits::tokens::Locker;
 
 impl<T: Config> Pallet<T> {
 	/// Helper function for getting next base ID
@@ -12,9 +13,7 @@ impl<T: Config> Pallet<T> {
 			Ok(current_id)
 		})
 	}
-}
 
-impl<T: Config> Pallet<T> {
 	/// Helper function for getting next part ID for a base
 	/// Like BaseId, PartId is auto-incremented from zero, which similarly may be worth changing
 	/// to BoundedVec to allow arbitrary/unique naming, making cross-chain functionality
@@ -94,8 +93,8 @@ where
 	}
 
 	/// Implementation of the do_equip function for the Base trait
-	/// Called by the equip extrinsic to equip a child NFT's resource to a parent's slot, if all are available.
-	/// Also can be called to unequip, which can be successful if
+	/// Called by the equip extrinsic to equip a child NFT's resource to a parent's slot, if all are
+	/// available. Also can be called to unequip, which can be successful if
 	/// - Item has beeen burned
 	/// - Item is equipped and extrinsic called by equipping item owner
 	/// - Item is equipped and extrinsic called by equipper NFT owner
@@ -119,6 +118,16 @@ where
 		let item_nft_id = item.1;
 		let equipper_collection_id = equipper.0;
 		let equipper_nft_id = equipper.1;
+		// Check item NFT lock status
+		ensure!(
+			!pallet_rmrk_core::Pallet::<T>::is_locked(item_collection_id, item_nft_id),
+			pallet_uniques::Error::<T>::Locked
+		);
+		// Check equipper NFT lock status
+		ensure!(
+			!pallet_rmrk_core::Pallet::<T>::is_locked(equipper_collection_id, equipper_nft_id),
+			pallet_uniques::Error::<T>::Locked
+		);
 
 		let item_is_equipped =
 			Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id))
@@ -348,7 +357,7 @@ where
 	/// Modeled after [themeadd interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/themeadd.md)
 	/// Themes are stored in the Themes storage
 	/// A "default" theme is required prior to adding other Themes.
-	/// 
+	///
 	/// Parameters:
 	/// - issuer: The caller of the function, must be issuer of the base
 	/// - base_id: The Base containing the Theme to be updated

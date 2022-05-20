@@ -194,7 +194,7 @@ pub mod pallet {
 		/// 	- `origin` - Account of the potential buyer
 		/// 	- `collection_id` - Collection id of the RMRK NFT
 		/// 	- `nft_id` - NFT id of the RMRK NFT
-		/// - `amount` - Optional price at which buyer purchased at
+		/// 	- `amount` - Optional price at which buyer purchased at
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn buy(
@@ -217,7 +217,8 @@ pub mod pallet {
 		/// 	- `origin` - Account of owner of the RMRK NFT to be listed
 		/// 	- `collection_id` - Collection id of the RMRK NFT
 		/// 	- `nft_id` - NFT id of the RMRK NFT
-		/// - `amount` - Price of the RMRK NFT
+		/// 	- `amount` - Price of the RMRK NFT
+		/// 	- `expires` - Optional BlockNumber for when the listing expires
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
 		#[transactional]
 		pub fn list(
@@ -238,8 +239,8 @@ pub mod pallet {
 			);
 			// Ensure sender is the owner
 			ensure!(sender == owner, Error::<T>::NoPermission);
-			// TODO: Lock NFT to prevent transfers or interactions with the NFT
-
+			// Lock NFT to prevent transfers or interactions with the NFT
+			pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), true);
 			// Check if a prior listing is in storage from previous owner and update if found
 			if Self::is_nft_listed(collection_id, nft_id) {
 				ListedNfts::<T>::remove(collection_id, nft_id);
@@ -277,7 +278,8 @@ pub mod pallet {
 				.ok_or(Error::<T>::TokenDoesNotExist)?;
 			// Ensure owner of NFT is performing call to unlist
 			ensure!(sender == owner, Error::<T>::NoPermission);
-			// TODO: Set the NFT lock to flase to allow interactions with the NFT
+			// Set the NFT lock to false to allow interactions with the NFT
+			pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), false);
 			// Remove from storage
 			ListedNfts::<T>::remove(collection_id, nft_id);
 			// Emit TokenUnlisted Event
@@ -481,11 +483,14 @@ where
 			}
 			list_info.amount
 		};
+
 		// Check if list_price is equal to amount to prevent front running a buy
 		if let Some(amount) = amount {
 			ensure!(list_price == amount, Error::<T>::PriceDiffersFromExpected);
 		}
-		// TODO: Set NFT Lock status to false to facilitate the purchase
+
+		// Set NFT Lock status to false to facilitate the purchase
+		pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), false);
 
 		// Transfer currency then transfer the NFT
 		<T as pallet::Config>::Currency::transfer(
