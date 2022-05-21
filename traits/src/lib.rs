@@ -22,7 +22,7 @@ pub use theme::{Theme, ThemeProperty};
 pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo, RoyaltyInfo};
 pub use priority::Priority;
-pub use property::Property;
+pub use property::{Property, PropertyInfo};
 pub use resource::{
 	BasicResource, ComposableResource, Resource, ResourceInfo, ResourceTypes, SlotResource,
 };
