@@ -82,7 +82,7 @@ where
 				},
 			}
 		}
-		let base = BaseInfo { issuer, base_type, symbol, parts };
+		let base = BaseInfo { issuer, base_type, symbol };
 		Bases::<T>::insert(base_id, base);
 		Ok(base_id)
 	}
