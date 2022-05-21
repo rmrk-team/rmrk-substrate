@@ -16,9 +16,10 @@ pub use pallet::*;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, BasicResource,
-	ComposableResource, EquippableList, PartType, ResourceTypes, SlotResource, Theme,
-	ThemeProperty,
+	ComposableResource, EquippableList, PartType, ResourceTypes, SlotResource, Theme, ThemeProperty,
 };
+
+use sp_std::vec::Vec;
 
 mod functions;
 
@@ -39,9 +40,9 @@ pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::String
 pub type BoundedResource<T> = BoundedVec<u8, <T as pallet_rmrk_core::Config>::ResourceSymbolLimit>;
 
 pub type BoundedThemeOf<T> = Theme<
-	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+	StringLimitOf<T>,
 	BoundedVec<
-		ThemeProperty<BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>,
+		ThemeProperty<StringLimitOf<T>>,
 		<T as Config>::MaxPropertiesPerTheme>
 	>;
 
