@@ -12,6 +12,8 @@ use sp_runtime::{
 	ArithmeticError,
 };
 
+use sp_std::collections::btree_set::BTreeSet;
+
 // Randomness to generate NFT virtual accounts
 pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
 
@@ -551,6 +553,46 @@ impl<T: Config> Pallet<T>
 where
 	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
+	pub fn iterate_nft_children(collection_id: CollectionId, nft_id: NftId) -> impl Iterator<Item=NftChild> {
+		Children::<T>::iter_key_prefix((collection_id, nft_id))
+				.into_iter()
+				.map(|(collection_id, nft_id)| NftChild {
+					collection_id,
+					nft_id
+				})
+	}
+
+	pub fn iterate_resources(collection_id: CollectionId, nft_id: NftId) -> impl Iterator<Item=ResourceInfoOf<T>> {
+		Resources::<T>::iter_prefix_values((collection_id, nft_id))
+	}
+
+	pub fn iterate_resource_priorities(collection_id: CollectionId, nft_id: NftId) -> impl Iterator<Item=ResourceId> {
+		let mut priorities = Priorities::<T>::iter_prefix((collection_id, nft_id))
+				.collect::<sp_std::vec::Vec<_>>();
+
+		priorities.sort_by_key(|(_, index)| *index);
+
+		priorities.into_iter().map(|(resource_id, _)| resource_id)
+	}
+
+	pub fn query_properties(
+		collection_id: CollectionId,
+		nft_id: Option<NftId>,
+		filter_keys: Option<BTreeSet<BoundedVec<u8, <T as pallet_uniques::Config>::KeyLimit>>>
+	) -> impl Iterator<Item=PropertyInfoOf<T>> {
+		Properties::<T>::iter_prefix((collection_id, nft_id))
+			.filter(move |(key, _)| match &filter_keys {
+				Some(filter_keys) => filter_keys.contains(key),
+				None => true
+			})
+			.map(|(key, value)| {
+				PropertyInfoOf::<T> {
+					key,
+					value
+				}
+			})
+	}
+
 	/// Encodes a RMRK NFT with randomness + `collection_id` + `nft_id` into a virtual account
 	/// then returning the `AccountId`. Note that we must be careful of the size of `AccountId`
 	/// as it must be wide enough to keep the size of the prefix as well as the `collection_id`

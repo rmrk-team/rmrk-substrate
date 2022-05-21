@@ -39,12 +39,27 @@ pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::String
 
 pub type BoundedResource<T> = BoundedVec<u8, <T as pallet_rmrk_core::Config>::ResourceSymbolLimit>;
 
-pub type BoundedThemeOf<T> = Theme<
+pub type BaseInfoOf<T> = BaseInfo<<T as frame_system::Config>::AccountId, StringLimitOf<T>>;
+
+pub type PartTypeOf<T> = PartType<
 	StringLimitOf<T>,
 	BoundedVec<
-		ThemeProperty<StringLimitOf<T>>,
-		<T as Config>::MaxPropertiesPerTheme>
-	>;
+		CollectionId,
+		<T as Config>::MaxCollectionsEquippablePerPart
+	>
+>;
+
+pub type ThemePropertyOf<T> = ThemeProperty<StringLimitOf<T>>;
+
+pub type BoundedThemePropertiesOf<T> = BoundedVec<
+	ThemePropertyOf<T>,
+	<T as Config>::MaxPropertiesPerTheme,
+>;
+
+pub type BoundedThemeOf<T> = Theme<
+	StringLimitOf<T>,
+	BoundedThemePropertiesOf<T>,
+>;
 
 #[frame_support::pallet]
 pub mod pallet {

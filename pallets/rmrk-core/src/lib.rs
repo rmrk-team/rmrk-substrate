@@ -29,13 +29,18 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+pub type CollectionInfoOf<T> = CollectionInfo<
+	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+	BoundedVec<u8, <T as Config>::CollectionSymbolLimit>,
+	<T as frame_system::Config>::AccountId
+>;
+
 pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	Permill,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
 pub type ResourceInfoOf<T> = ResourceInfo::<
-	BoundedVec<u8, <T as Config>::ResourceSymbolLimit>,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 	BoundedVec<PartId, <T as Config>::PartsLimit>
 >;
