@@ -34,8 +34,11 @@ pub type InstanceInfoOf<T> = NftInfo<
 	Permill,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
-pub type ResourceOf<T, P> =
-	ResourceInfo<BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>, BoundedVec<PartId, P>>;
+pub type ResourceInfoOf<T> = ResourceInfo::<
+	BoundedVec<u8, <T as Config>::ResourceSymbolLimit>,
+	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+	BoundedVec<PartId, <T as Config>::PartsLimit>
+>;
 
 pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
 
@@ -164,7 +167,7 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, NftId>,
 			NMapKey<Blake2_128Concat, ResourceId>,
 		),
-		ResourceOf<T, T::PartsLimit>,
+		ResourceInfoOf<T>,
 		OptionQuery,
 	>;
 
