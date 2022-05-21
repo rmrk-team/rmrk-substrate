@@ -283,17 +283,16 @@ where
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 		}
 
-		let mut royalty: Option<RoyaltyInfo<T::AccountId>> = None;
+		let mut royalty = None;
 
 		if let Some(amount) = royalty_amount {
 			match royalty_recipient {
 				Some(recipient) => {
-					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient, amount });
+					royalty = Some(RoyaltyInfo { recipient, amount });
 				},
 				None => {
-					royalty =
-						Some(RoyaltyInfo::<T::AccountId> { recipient: owner.clone(), amount });
-				},
+					royalty = Some(RoyaltyInfo { recipient: owner.clone(), amount });
+				}
 			}
 		};
 
