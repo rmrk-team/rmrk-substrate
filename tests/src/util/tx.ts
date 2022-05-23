@@ -218,10 +218,7 @@ export async function mintNft(
     const recipient = recipientUri ? privateKey(recipientUri).address : null;
     const royaltyOptional = royalty ? royalty.toString() : null;
 
-    const oldCollectionNftsCount = (await getCollection(api, collectionId))
-        .unwrap()
-        .nftsCount
-        .toNumber();
+    const collectionOpt = await getCollection(api, collectionId);
 
     const tx = api.tx.rmrkCore.mintNft(
         owner,
@@ -244,6 +241,10 @@ export async function mintNft(
         .unwrap()
         .nftsCount
         .toNumber();
+
+    const oldCollectionNftsCount = collectionOpt
+      .unwrap()
+      .nftsCount.toNumber();
 
     expect(newCollectionNftsCount, 'Error: NFTs count should increase')
         .to.be.equal(oldCollectionNftsCount + 1);
