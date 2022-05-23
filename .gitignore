@@ -7,6 +7,8 @@
 .DS_Store
 .vscode
 
+tests/node_modules
+
 # The cache for docker container dependency
 .cargo
 
