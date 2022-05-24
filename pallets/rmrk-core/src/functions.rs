@@ -313,6 +313,14 @@ where
 		max_recursions: u32,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
+
+		// Remove self from parent's Children storage
+		if let Some(nft) = Self::nfts(collection_id, nft_id) {
+			if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(parent_col, parent_nft) = nft.owner {
+				Children::<T>::remove((parent_col, parent_nft), (collection_id, nft_id));
+			}
+		}
+
 		Nfts::<T>::remove(collection_id, nft_id);
 
 		Resources::<T>::remove_prefix((collection_id, nft_id), None);
