@@ -84,6 +84,53 @@ describe("Integration test: burn nft", () => {
     expect(childrenAfter.length === 0, 'Error: children should be burned').to.be.true;
   });
 
+  it("Burn child nft", async () => {
+    const collectionId = await createCollection(
+      api,
+      Alice,
+      "test-metadata",
+      null,
+      "test-symbol"
+    );
+
+    const parentNftId = await mintNft(
+      api,
+      Alice,
+      Alice,
+      collectionId,
+      "nft-metadata"
+    );
+
+    const childNftId = await mintNft(
+      api,
+      Alice,
+      Alice,
+      collectionId,
+      "nft-metadata"
+    );
+
+    const newOwnerNFT: NftIdTuple = [collectionId, parentNftId];
+
+    await sendNft(api, "sent", Alice, collectionId, childNftId, newOwnerNFT);
+
+    const childrenBefore = await getChildren(api, collectionId, parentNftId);
+    expect(childrenBefore.length === 1, 'Error: parent NFT should have children')
+      .to.be.true;
+
+    let child = childrenBefore[0];
+    expect(child.collectionId.eq(collectionId), 'Error: invalid child collection Id')
+      .to.be.true;
+
+    expect(child.nftId.eq(childNftId), 'Error: invalid child NFT Id')
+      .to.be.true;
+
+    await burnNft(api, Alice, collectionId, childNftId);
+
+    const childrenAfter = await getChildren(api, collectionId, parentNftId);
+
+    expect(childrenAfter.length === 0, 'Error: children should be burned').to.be.true;
+  });
+
   it("[Negative] Burn non-existing NFT", async () => {
     await createCollection(
       api,
