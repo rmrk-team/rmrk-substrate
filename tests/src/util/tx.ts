@@ -935,9 +935,6 @@ export async function removeNftResource(
     resourceId: string
 ) {
     const issuer = privateKey(issuerUri);
-
-    let resource = await findResourceById(api, collectionId, nftId, resourceId);
-    expect(resource, 'Error: resource should exist').to.not.be.null;
     
     const tx = api.tx.rmrkCore.removeResource(collectionId, nftId, resourceId);
     const events = await executeTransaction(api, issuer, tx);
