@@ -88,10 +88,21 @@ where
 		// Check NFT lock status
 		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 
-		let res = ResourceInfo::<
-			BoundedVec<u8, T::StringLimit>,
-			BoundedVec<PartId, T::PartsLimit>,
-		> {
+		match resource.clone() {
+			ResourceTypes::Basic(_r) => (),
+			ResourceTypes::Composable(r) => {
+				ComposableResources::<T>::insert((collection_id, nft_id, r.base), ());
+			},
+			ResourceTypes::Slot(r) => {
+				SlotResources::<T>::insert(
+					(collection_id, nft_id, resource_id, r.base, r.slot),
+					(),
+				);
+			},
+		}
+
+		let res: ResourceInfo<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> =
+			ResourceInfo::<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> {
 			id: resource_id,
 			pending: root_owner != sender,
 			pending_removal: false,

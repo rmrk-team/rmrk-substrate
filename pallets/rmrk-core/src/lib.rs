@@ -156,6 +156,34 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn composable_resources)]
+	/// Stores resource info
+	pub type ComposableResources<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, CollectionId>,
+			NMapKey<Blake2_128Concat, NftId>,
+			NMapKey<Blake2_128Concat, BaseId>,
+		),
+		(),
+	>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn slot_resources)]
+	/// Stores resource info
+	pub type SlotResources<T: Config> = StorageNMap<
+		_,
+		(
+			NMapKey<Blake2_128Concat, CollectionId>,
+			NMapKey<Blake2_128Concat, NftId>,
+			NMapKey<Blake2_128Concat, ResourceId>,
+			NMapKey<Blake2_128Concat, BaseId>,
+			NMapKey<Blake2_128Concat, SlotId>,
+		),
+		(),
+	>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn properties)]
 	/// Metadata of an asset class.
 	pub(super) type Properties<T: Config> = StorageNMap<

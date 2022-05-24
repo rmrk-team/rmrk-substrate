@@ -213,6 +213,7 @@ fn equip_works() {
 				Origin::signed(ALICE), // Signer
 				(1, 0),                // item
 				(0, 0),                // equipper
+				0,                     // ResourceId (doesn't exist)
 				0,                     // BaseId
 				201,                   // SlotId
 			),
@@ -234,6 +235,7 @@ fn equip_works() {
 				Origin::signed(ALICE), // Signer
 				(1, 0),                // item
 				(0, 0),                // equipper
+				0,                     // ResourceId
 				0,                     // BaseId
 				201,                   // SlotId
 			),
@@ -277,6 +279,7 @@ fn equip_works() {
 				Origin::signed(ALICE), // Signer
 				(1, 0),                // item
 				(0, 0),                // equipper
+				0,                     // ResourceId
 				0,                     // BaseId
 				201,                   // SlotId
 			),
@@ -305,6 +308,7 @@ fn equip_works() {
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
 			(0, 0),                // equipper
+			0,                     // ResourceId,
 			0,                     // BaseId
 			201,                   // SlotId
 		));
@@ -347,6 +351,7 @@ fn equip_works() {
 				Origin::signed(ALICE), // Signer
 				(1, 0),                // item
 				(0, 0),                // equipper
+				0,                     // ResourceId
 				0,                     // BaseId
 				202,                   // SlotId
 			),
@@ -358,6 +363,7 @@ fn equip_works() {
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
 			(0, 0),                // equipper
+			0,                     // ResourceId
 			0,                     // BaseId
 			201,                   // SlotId
 		));
@@ -374,6 +380,7 @@ fn equip_works() {
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
 			(0, 0),                // equipper
+			0,                     // ResourceId
 			0,                     // BaseId
 			201,                   // SlotId
 		));
@@ -383,6 +390,7 @@ fn equip_works() {
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
 			(0, 0),                // equipper
+			0,                     // ResourceId
 			0,                     // BaseId
 			201,                   // SlotId
 		));
@@ -392,6 +400,7 @@ fn equip_works() {
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
 			(0, 0),                // equipper
+			1,                     // ResourceId
 			0,                     // BaseId
 			202,                   // SlotId
 		));
