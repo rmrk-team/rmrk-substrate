@@ -410,6 +410,47 @@ export async function acceptNft(
         .to.be.true;
 }
 
+export async function rejectNft(
+    api: ApiPromise,
+    issuerUri: string,
+    collectionId: number,
+    nftId: number,
+) {
+    const issuer = privateKey(issuerUri);
+    let nftBeforeOpt = await getNft(api, collectionId, nftId);
+
+    const tx = api.tx.rmrkCore.rejectNft(collectionId, nftId);
+    const events = await executeTransaction(api, issuer, tx);
+    const rejectResult = extractRmrkCoreTxResult(events, "NFTRejected", (data) => {
+        return {
+            collectionId: parseInt(data[1].toString(), 10),
+            nftId: parseInt(data[2].toString(), 10)
+        };
+    });
+
+    if (rejectResult.successData) {
+        const rejectData = rejectResult.successData;
+
+        expect(rejectData.collectionId)
+            .to.be.equal(collectionId, 'Error: Invalid collection ID (from event data)');
+
+        expect(rejectData.nftId)
+            .to.be.equal(nftId, 'Error: Invalid NFT ID (from event data)');
+    }
+
+    const nftBefore = nftBeforeOpt.unwrap();
+
+    const isPendingBeforeReject = nftBefore.pending.isTrue;
+
+    const nftAfter = await getNft(api, collectionId, nftId);
+
+    expect(isPendingBeforeReject, 'Error: NFT should be pending to be rejected')
+        .to.be.true;
+
+    expect(nftAfter.isNone, 'Error: NFT should be burned after reject')
+        .to.be.true;
+}
+
 export async function createBase(
     api: ApiPromise,
     issuerUri: string,
@@ -614,9 +655,9 @@ export async function setPropertyCollection(
 
 export async function burnNft(
   api: ApiPromise,
-  nftId: number,
+  issuerUri: string,
   collectionId: number,
-  issuerUri: string
+  nftId: number
 ) {
   const issuer = privateKey(issuerUri);
   const tx = api.tx.rmrkCore.burnNft(collectionId, nftId);
