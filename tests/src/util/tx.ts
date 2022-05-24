@@ -722,7 +722,32 @@ async function findResourceByInfo(
     return resource!;
 }
 
+<<<<<<< HEAD
 function checkResourceStatus(
+=======
+async function findResourceById(
+    api: ApiPromise,
+    collectionId: number,
+    nftId: number,
+    resourceId: string,
+) : Promise<ResourceInfo | null>{
+    const resources = await getResources(api, collectionId, nftId);
+
+    let resource = null;
+
+    for (let i = 0; i < resources.length; i++) {
+        const res = resources[i];
+
+        if (res.id.eq(resourceId)) {
+            resource = res;
+        }
+    }
+
+    return resource;
+}
+
+function check_resource_status(
+>>>>>>> Add removeNftPesource and acceptResourceRemoval funcs
     resource: ResourceInfo,
     expectedStatus: "pending" | "added"
 ) {
@@ -899,4 +924,48 @@ export async function unequipNft(
 
   expect(result.success).to.be.true;
   expect(isTxResultSuccess(events)).to.be.true;
+}
+
+export async function removeNftResource(
+    api: ApiPromise, 
+    expectedStatus: "pending" | "removed", 
+    issuerUri: string, 
+    collectionId: number, 
+    nftId: number, 
+    resourceId: string
+) {
+    const issuer = privateKey(issuerUri);
+
+    let resource = await findResourceById(api, collectionId, nftId, resourceId);
+    expect(resource, 'Error: resource should exist').to.not.be.null;
+    
+    const tx = api.tx.rmrkCore.removeResource(collectionId, nftId, resourceId);
+    const events = await executeTransaction(api, issuer, tx);
+    expect(isTxResultSuccess(events)).to.be.true;
+
+    let afterDeleting = await findResourceById(api, collectionId, nftId, resourceId);
+
+    if (expectedStatus === 'pending') {
+        expect(afterDeleting).to.not.be.null;
+        expect(afterDeleting?.pendingRemoval.toJSON()).to.be.equal(true);
+    } else {
+        expect(afterDeleting).to.be.null;
+    }
+}
+
+export async function acceptResourceRemoval(
+    api: ApiPromise,
+    issuerUri: string,
+    collectionId: number,
+    nftId: number,
+    resourceId: string
+) {
+    const issuer = privateKey(issuerUri);
+
+    const tx = api.tx.rmrkCore.acceptResourceRemoval(collectionId, nftId, resourceId);
+    const events = await executeTransaction(api, issuer, tx);
+    expect(isTxResultSuccess(events)).to.be.true;
+
+    let afterDeleting = await findResourceById(api, collectionId, nftId, resourceId);
+    expect(afterDeleting, 'Error: resource deleting failed').to.be.null;
 }
