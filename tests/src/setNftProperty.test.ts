@@ -16,7 +16,7 @@ describe("Integration test: set NFT property", () => {
             issuerUri,
             "setprop-nft-collection-metadata",
             null,
-            "setprop-nft-collection"
+            "setprop"
         );
     };
 
