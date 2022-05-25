@@ -8,11 +8,11 @@ describe("Integration test: create new Base", () => {
     const alice = '//Alice';
 
     it("create empty Base", async () => {
-        await createBase(api, alice, 'empty-base-type', 'empty-base-symbol', []);
+        await createBase(api, alice, 'empty-base-type', 'EBase', []);
     });
 
     it("create Base with fixed part", async () => {
-        await createBase(api, alice, 'fixedpart-base-type', 'fixedpart-base-symbol', [
+        await createBase(api, alice, 'fixedpart-base-type', 'FPBase', [
             {
                 "FixedPart": {
                     id: 42,
@@ -24,7 +24,7 @@ describe("Integration test: create new Base", () => {
     });
 
     it("create Base with slot part (no collection)", async () => {
-        await createBase(api, alice, 'slotpart-base-type', 'slotpart-base-symbol', [
+        await createBase(api, alice, 'slotpart-base-type', 'SPBase', [
             {
                 "SlotPart": {
                     id: 112,
@@ -37,7 +37,7 @@ describe("Integration test: create new Base", () => {
     });
 
     it("create Base with slot part (any collection)", async () => {
-        await createBase(api, alice, 'slotpartany-base-type', 'slotpartany-base-symbol', [
+        await createBase(api, alice, 'slotpartany-base-type', 'SPABase', [
             {
                 "SlotPart": {
                     id: 222,
@@ -66,7 +66,7 @@ describe("Integration test: create new Base", () => {
             "first-collection"
         );
 
-        await createBase(api, alice, "slotpartcustom-base-type", "slotpartcustom-base-symbol", [
+        await createBase(api, alice, "slotpartcustom-base-type", "SPCBase", [
             {
                 "SlotPart": {
                     id: 1024,

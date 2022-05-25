@@ -491,7 +491,7 @@ export async function createBase(
     expect(base.issuer.toString()).to.be.equal(issuer.address, "Error: Invalid Base issuer");
     expect(base.baseType.toUtf8()).to.be.equal(baseType, "Error: Invalid Base type");
     expect(base.symbol.toUtf8()).to.be.equal(symbol, "Error: Invalid Base symbol");
-    expect(partTypes.eq(baseParts)).to.be.true;
+    expect(partTypes.eq(baseParts), "Error: Received invalid base parts").to.be.true;
 
     return baseId;
 }
