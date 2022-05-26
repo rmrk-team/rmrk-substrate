@@ -160,7 +160,7 @@ describe('Integration test: remove nft resource', () => {
         );
 
         const tx = removeNftResource(api, 'removed', Alice, 0xFFFFFFFF, nftAlice, resourceId);
-        await expectTxFailure(/rmrkCore.CollectionUnknown/, tx);
+        await expectTxFailure(/rmrkCore.CollectionUnknown/, tx); // FIXME:
     });
 
     it('[Negative test]: only collection owner can delete a resource', async () => {
@@ -256,7 +256,7 @@ describe('Integration test: remove nft resource', () => {
         await expectTxFailure(/rmrkCore.ResourceNotPending/, tx);
     });
 
-    it('[Negative test]: cannot confirm the deletion of a non-existing resource', async () => {
+    it.only('[Negative test]: cannot confirm the deletion of a non-existing resource', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,
@@ -273,7 +273,7 @@ describe('Integration test: remove nft resource', () => {
             "nft-metadata"
         );
 
-        const tx = acceptResourceRemoval(api, Bob, collectionIdAlice, nftBob, 'non-existing-res');
+        const tx = acceptResourceRemoval(api, Bob, collectionIdAlice, nftBob, 'test');
         await expectTxFailure(/rmrkCore.ResourceDoesntExist/, tx);
     });
 
