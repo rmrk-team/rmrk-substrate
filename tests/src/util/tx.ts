@@ -61,7 +61,7 @@ export async function createCollection(
     );
     expect(collectionResult.success, 'Error: unable to create a collection').to.be.true;
 
-    collectionId = collectionResult.successData ?? 0;
+    collectionId = collectionResult.successData!;
 
     const newCollectionCount = await getCollectionsCount(api);
     const collectionOption = await getCollection(api, collectionId);
@@ -249,7 +249,7 @@ export async function mintNft(
     expect(newCollectionNftsCount, 'Error: NFTs count should increase')
         .to.be.equal(oldCollectionNftsCount + 1);
 
-    nftId = nftResult.successData ?? 0;
+    nftId = nftResult.successData!;
 
     const nftOption = await getNft(api, collectionId, nftId);
 
@@ -476,7 +476,7 @@ export async function createBase(
     expect(baseResult.success, 'Error: Unable to create Base')
         .to.be.true;
 
-    baseId = baseResult.successData ?? 0;
+    baseId = baseResult.successData!;
     const baseOptional = await getBase(api, baseId);
 
     expect(baseOptional.isSome, 'Error: Unable to fetch created Base')
@@ -668,7 +668,31 @@ export async function burnNft(
   expect(nftBurned.isSome).to.be.false;
 }
 
-async function find_resource(
+async function findResourceById(
+    api: ApiPromise,
+    collectionId: number,
+    nftId: number,
+    resourceId: string,
+): Promise<ResourceInfo> {
+    const resources = await getResources(api, collectionId, nftId);
+
+    let resource = null;
+
+    for (var i = 0; i < resources.length; i++) {
+        const res = resources[i];
+
+        if (res.id.eq(resourceId)) {
+            resource = res;
+            break;
+        }
+    }
+
+    expect(resource !== null, 'Error: resource was not added').to.be.true;
+
+    return resource!;
+}
+
+async function findResourceByInfo(
     api: ApiPromise,
     collectionId: number,
     nftId: number,
@@ -698,12 +722,34 @@ async function find_resource(
     return resource!;
 }
 
-function check_resource_status(
+function checkResourceStatus(
     resource: ResourceInfo,
     expectedStatus: "pending" | "added"
 ) {
     expect(resource.pending.isTrue, `Error: added resource should be ${expectedStatus}`)
           .to.be.equal(expectedStatus === "pending");
+}
+
+export async function acceptNftResource(
+    api: ApiPromise,
+    issuerUri: string,
+    collectionId: number,
+    nftId: number,
+    resourceId: string,
+) {
+    const issuer = privateKey(issuerUri);
+
+    const tx = api.tx.rmrkCore.acceptResource(
+        collectionId,
+        nftId,
+        resourceId,
+    );
+
+    const events = await executeTransaction(api, issuer, tx);
+    expect(isTxResultSuccess(events)).to.be.true;
+
+    const resource = await findResourceById(api, collectionId, nftId, resourceId);
+    checkResourceStatus(resource, "added");
 }
 
 export async function addNftBasicResource(
@@ -737,8 +783,8 @@ export async function addNftBasicResource(
     const events = await executeTransaction(api, issuer, tx);
     expect(isTxResultSuccess(events)).to.be.true;
 
-    const resource = await find_resource(api, collectionId, nftId, "Basic", basicResource);
-    check_resource_status(resource, expectedStatus);
+    const resource = await findResourceByInfo(api, collectionId, nftId, "Basic", basicResource);
+    checkResourceStatus(resource, expectedStatus);
 }
 
 export async function addNftComposableResource(
@@ -776,8 +822,8 @@ export async function addNftComposableResource(
     const events = await executeTransaction(api, issuer, tx);
     expect(isTxResultSuccess(events)).to.be.true;
 
-    const resource = await find_resource(api, collectionId, nftId, "Composable", composableResource);
-    check_resource_status(resource, expectedStatus);
+    const resource = await findResourceByInfo(api, collectionId, nftId, "Composable", composableResource);
+    checkResourceStatus(resource, expectedStatus);
 }
 
 export async function addNftSlotResource(
@@ -813,8 +859,8 @@ export async function addNftSlotResource(
   const events = await executeTransaction(api, issuer, tx);
   expect(isTxResultSuccess(events)).to.be.true;
 
-  const resource = await find_resource(api, collectionId, nftId, "Slot", slotResource);
-  check_resource_status(resource, expectedStatus);
+  const resource = await findResourceByInfo(api, collectionId, nftId, "Slot", slotResource);
+  checkResourceStatus(resource, expectedStatus);
 }
 
 export async function equipNft(

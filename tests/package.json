@@ -39,6 +39,7 @@
     "testSetNftProperty": "mocha --timeout 9999999 -r ts-node/register './src/setNftProperty.test.ts'",
     "testSetCollectionProperty": "mocha --timeout 9999999 -r ts-node/register './src/setCollectionProperty.test.ts'",
     "testAddNftResource": "mocha --timeout 9999999 -r ts-node/register './src/addNftResource.test.ts'",
+    "testAcceptNftResource": "mocha --timeout 9999999 -r ts-node/register './src/acceptNftResource.test.ts'",
     "testSetResourcePriorities": "mocha --timeout 9999999 -r ts-node/register './src/setResourcePriorities.test.ts'",
     "testSetEquippableList": "mocha --timeout 9999999 -r ts-node/register './src/setEquippableList.test.ts'",
     "testSendNft": "mocha --timeout 9999999 -r ts-node/register './src/sendNft.test.ts'",
