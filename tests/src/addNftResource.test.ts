@@ -59,170 +59,126 @@ describe("Integration test: Add top-level NFT resource (by the same user)", () =
     );
   });
 
-  // it("Negative: unable to accept a non-existing resource", async () => {
-  //   const collectionIdAlice = await createCollection(
-  //     api,
-  //     Alice,
-  //     "test-metadata",
-  //     null,
-  //     "test-symbol"
-  //   ).then(async (collectionId) => {
-  //     nftAliceId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
+  it('add a resource to the nested NFT', async () => {
+    const collectionIdAlice = await createCollection(
+      api,
+      Alice,
+      "test-metadata",
+      null,
+      "test-symbol"
+    );
 
-  //     return collectionId;
-  //   });
+    const parentNftId = await mintNft(api, Alice, Alice, collectionIdAlice, "parent-nft-metadata");
+    const childNftId = await mintNft(api, Alice, Alice, collectionIdAlice, "child-nft-metadata");
 
-  //   await createCollection(api, Bob, "test-metadata", null, "test-symbol").then(
-  //     async (collectionIdBob) => {
-  //       const nftBob = await mintNft(
-  //         api,
-  //         Bob,
-  //         Bob,
-  //         collectionIdBob,
-  //         "nft-metadata"
-  //       );
-  //       const newOwnerNFT: NftIdTuple = [collectionIdAlice, nftAliceId];
+    const newOwnerNFT: NftIdTuple = [collectionIdAlice, parentNftId];
 
-  //       await sendNft(
-  //         api,
-  //         "pending",
-  //         Bob,
-  //         collectionIdBob,
-  //         nftBob,
-  //         newOwnerNFT
-  //       );
-  //       await acceptNft(api, Alice, collectionIdBob, nftBob, newOwnerNFT);
+    await sendNft(api, "sent", Alice, collectionIdAlice, childNftId, newOwnerNFT);
 
-  //       baseId = await createBase(api, Alice, "test-base", "DTBase", [
-  //         {
-  //           SlotPart: {
-  //             id: slotId,
-  //             equippable: "All",
-  //             z: 1,
-  //             src: slotSrc,
-  //           },
-  //         },
-  //       ]);
+    await addNftBasicResource(
+      api,
+      Alice,
+      "added",
+      collectionIdAlice,
+      childNftId,
+      resourceId,
+      src,
+      metadata,
+      license,
+      thumb
+    );
+  });
 
-  //       const tx = addNftResource(
-  //         api,
-  //         nonexistentId,
-  //         resourceId,
-  //         collectionIdAlice,
-  //         baseId.toString(),
-  //         Alice,
-  //         slotId
-  //       );
+  it('[Negative test]: unable to add a resource to the non-existing NFT', async () => {
+    const collectionIdAlice = await createCollection(
+      api,
+      Alice,
+      "test-metadata",
+      null,
+      "test-symbol"
+    );
 
-  //       await expectTxFailure(/rmrkCore.NoAvailableNftId/, tx);
-  //     }
-  //   );
-  // });
+    const tx = addNftBasicResource(
+      api,
+      Alice,
+      "added",
+      collectionIdAlice,
+      nonexistentId,
+      resourceId,
+      src,
+      metadata,
+      license,
+      thumb
+    );
+  
+    await expectTxFailure(/rmrkCore.NoAvailableNftId/, tx);
+  });
 
-  // it("Negative: unable to accept a resource by a not-an-NFT-owner user", async () => {
-  //   const collectionIdAlice = await createCollection(
-  //     api,
-  //     Alice,
-  //     "test-metadata",
-  //     null,
-  //     "test-symbol"
-  //   ).then(async (collectionId) => {
-  //     nftAliceId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
+  it('[Negative test]: unable to add a resource by a not-an-owner user', async () => {
+    const collectionIdAlice = await createCollection(
+      api,
+      Alice,
+      "test-metadata",
+      null,
+      "test-symbol"
+    );
 
-  //     return collectionId;
-  //   });
+    const nftAlice = await mintNft(
+      api,
+      Alice,
+      Alice,
+      collectionIdAlice,
+      "nft-metadata"
+    );
 
-  //   await createCollection(api, Bob, "test-metadata", null, "test-symbol").then(
-  //     async (collectionIdBob) => {
-  //       const nftBob = await mintNft(
-  //         api,
-  //         Bob,
-  //         Bob,
-  //         collectionIdBob,
-  //         "nft-metadata"
-  //       );
-  //       const newOwnerNFT: NftIdTuple = [collectionIdAlice, nftAliceId];
+    const tx = addNftBasicResource(
+      api,
+      Bob,
+      "added",
+      collectionIdAlice,
+      nftAlice,
+      resourceId,
+      src,
+      metadata,
+      license,
+      thumb
+    );
+  
+    await expectTxFailure(/rmrkCore.NoPermission/, tx);
+  });
 
-  //       await sendNft(
-  //         api,
-  //         "pending",
-  //         Bob,
-  //         collectionIdBob,
-  //         nftBob,
-  //         newOwnerNFT
-  //       );
-  //       const tx = acceptNft(api, Bob, collectionIdBob, nftBob, newOwnerNFT);
+  it('[Negative test]: unable to add a resource to the nested NFT if it isnt root owned by the caller', async () => {
+    const collectionIdAlice = await createCollection(
+      api,
+      Alice,
+      "test-metadata",
+      null,
+      "test-symbol"
+    );
 
-  //       await expectTxFailure(/rmrkCore.NoPermission/, tx);
-  //     }
-  //   );
-  // });
+    const parentNftId = await mintNft(api, Alice, Alice, collectionIdAlice, "parent-nft-metadata");
+    const childNftId = await mintNft(api, Alice, Alice, collectionIdAlice, "child-nft-metadata");
 
-  // it("Negative: unable to accept a resource to not-a-target NFT", async () => {
-  //   const collectionIdAlice = await createCollection(
-  //     api,
-  //     Alice,
-  //     "test-metadata",
-  //     null,
-  //     "test-symbol"
-  //   ).then(async (collectionId) => {
-  //     nftAliceId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
+    const newOwnerNFT: NftIdTuple = [collectionIdAlice, parentNftId];
 
-  //     return collectionId;
-  //   });
+    await sendNft(api, "sent", Alice, collectionIdAlice, childNftId, newOwnerNFT);
 
-  //   await createCollection(api, Bob, "test-metadata", null, "test-symbol").then(
-  //     async (collectionIdBob) => {
-  //       const nftBob = await mintNft(
-  //         api,
-  //         Bob,
-  //         Bob,
-  //         collectionIdBob,
-  //         "nft-metadata"
-  //       );
-  //       const newOwnerNFT: NftIdTuple = [collectionIdAlice, nftAliceId];
+    const tx = addNftBasicResource(
+      api,
+      Bob,
+      "added",
+      collectionIdAlice,
+      childNftId,
+      resourceId,
+      src,
+      metadata,
+      license,
+      thumb
+    );
+    
+    await expectTxFailure(/rmrkCore.NoPermission/, tx);
+  });
 
-  //       await sendNft(
-  //         api,
-  //         "pending",
-  //         Bob,
-  //         collectionIdBob,
-  //         nftBob,
-  //         newOwnerNFT
-  //       );
-
-  //       const newOwnerNFTerror: NftIdTuple = [collectionIdAlice, nonexistentId];
-
-  //       const tx = acceptNft(
-  //         api,
-  //         Alice,
-  //         collectionIdBob,
-  //         nftBob,
-  //         newOwnerNFTerror
-  //       );
-
-  //       await expectTxFailure(/rmrkCore.NoAvailableNftId/, tx);
-  //     }
-  //   );
-  // });
 
   after(() => {
     api.disconnect();
