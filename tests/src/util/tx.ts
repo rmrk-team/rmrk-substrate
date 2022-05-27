@@ -692,6 +692,28 @@ async function findResourceById(
     return resource!;
 }
 
+async function searchForResourceById(
+    api: ApiPromise,
+    collectionId: number,
+    nftId: number,
+    resourceId: string,
+): Promise<ResourceInfo | null> {
+    const resources = await getResources(api, collectionId, nftId);
+
+    let resource = null;
+
+    for (let i = 0; i < resources.length; i++) {
+        const res = resources[i];
+
+        if (res.id.eq(resourceId)) {
+            resource = res;
+            break;
+        }
+    }
+
+    return resource;
+}
+
 async function findResourceByInfo(
     api: ApiPromise,
     collectionId: number,
@@ -722,32 +744,7 @@ async function findResourceByInfo(
     return resource!;
 }
 
-<<<<<<< HEAD
 function checkResourceStatus(
-=======
-async function findResourceById(
-    api: ApiPromise,
-    collectionId: number,
-    nftId: number,
-    resourceId: string,
-) : Promise<ResourceInfo | null>{
-    const resources = await getResources(api, collectionId, nftId);
-
-    let resource = null;
-
-    for (let i = 0; i < resources.length; i++) {
-        const res = resources[i];
-
-        if (res.id.eq(resourceId)) {
-            resource = res;
-        }
-    }
-
-    return resource;
-}
-
-function check_resource_status(
->>>>>>> Add removeNftPesource and acceptResourceRemoval funcs
     resource: ResourceInfo,
     expectedStatus: "pending" | "added"
 ) {
@@ -940,10 +937,10 @@ export async function removeNftResource(
     const events = await executeTransaction(api, issuer, tx);
     expect(isTxResultSuccess(events)).to.be.true;
 
-    let afterDeleting = await findResourceById(api, collectionId, nftId, resourceId);
+    let afterDeleting = await searchForResourceById(api, collectionId, nftId, resourceId);
 
     if (expectedStatus === 'pending') {
-        expect(afterDeleting).to.not.be.null;
+        expect(afterDeleting).not.to.be.null;
         expect(afterDeleting?.pendingRemoval.toJSON()).to.be.equal(true);
     } else {
         expect(afterDeleting).to.be.null;
@@ -963,6 +960,6 @@ export async function acceptResourceRemoval(
     const events = await executeTransaction(api, issuer, tx);
     expect(isTxResultSuccess(events)).to.be.true;
 
-    let afterDeleting = await findResourceById(api, collectionId, nftId, resourceId);
+    let afterDeleting = await searchForResourceById(api, collectionId, nftId, resourceId);
     expect(afterDeleting, 'Error: resource deleting failed').to.be.null;
 }

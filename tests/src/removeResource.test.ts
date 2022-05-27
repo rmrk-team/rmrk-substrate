@@ -256,7 +256,7 @@ describe('Integration test: remove nft resource', () => {
         await expectTxFailure(/rmrkCore.ResourceNotPending/, tx);
     });
 
-    it.only('[Negative test]: cannot confirm the deletion of a non-existing resource', async () => {
+    it('[Negative test]: cannot confirm the deletion of a non-existing resource', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,
