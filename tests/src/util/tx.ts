@@ -668,7 +668,7 @@ export async function burnNft(
   expect(nftBurned.isSome).to.be.false;
 }
 
-async function findResourceById(
+async function getResourceById(
     api: ApiPromise,
     collectionId: number,
     nftId: number,
@@ -692,7 +692,7 @@ async function findResourceById(
     return resource!;
 }
 
-async function searchForResourceById(
+async function findResourceById(
     api: ApiPromise,
     collectionId: number,
     nftId: number,
@@ -770,7 +770,7 @@ export async function acceptNftResource(
     const events = await executeTransaction(api, issuer, tx);
     expect(isTxResultSuccess(events)).to.be.true;
 
-    const resource = await findResourceById(api, collectionId, nftId, resourceId);
+    const resource = await getResourceById(api, collectionId, nftId, resourceId);
     checkResourceStatus(resource, "added");
 }
 
@@ -937,11 +937,11 @@ export async function removeNftResource(
     const events = await executeTransaction(api, issuer, tx);
     expect(isTxResultSuccess(events)).to.be.true;
 
-    let afterDeleting = await searchForResourceById(api, collectionId, nftId, resourceId);
+    let afterDeleting = await findResourceById(api, collectionId, nftId, resourceId);
 
     if (expectedStatus === 'pending') {
         expect(afterDeleting).not.to.be.null;
-        expect(afterDeleting?.pendingRemoval.toJSON()).to.be.equal(true);
+        expect(afterDeleting?.pendingRemoval.isTrue).to.be.equal(true);
     } else {
         expect(afterDeleting).to.be.null;
     }
@@ -960,6 +960,6 @@ export async function acceptResourceRemoval(
     const events = await executeTransaction(api, issuer, tx);
     expect(isTxResultSuccess(events)).to.be.true;
 
-    let afterDeleting = await searchForResourceById(api, collectionId, nftId, resourceId);
+    let afterDeleting = await findResourceById(api, collectionId, nftId, resourceId);
     expect(afterDeleting, 'Error: resource deleting failed').to.be.null;
 }
