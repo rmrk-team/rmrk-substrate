@@ -806,6 +806,37 @@ fn burn_nft_beyond_max_recursions_fails_gracefully() {
 	});
 }
 
+/// NFT: Burn child removes NFT from owner-NFT's Children list
+#[test]
+fn burn_child_nft_removes_parents_children() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint NFTs (0, 0), (0, 1), (0, 2), (0, 3)
+		for _ in 0..2 {
+			assert_ok!(basic_mint());
+		}
+		// ALICE sends NFT (0, 1) to NFT (0, 0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(ALICE),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+		// All NFTs exist
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 0).is_some(), true);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 1).is_some(), true);
+		// NFT (0, 0) should have 1 Children storage member
+		assert_eq!(Children::<Test>::iter_prefix((0, 0)).count(), 1);
+		// Burn NFT (0, 1)
+		assert_ok!(
+			RMRKCore::burn_nft(Origin::signed(ALICE), 0, 1),
+		);
+		// NFT (0, 0) should have 0 Children storage members
+		assert_eq!(Children::<Test>::iter_prefix((0, 0)).count(), 0);
+	});
+}
+
 /// Resource: Basic resource addition (RMRK2.0 spec: RESADD)
 #[test]
 fn create_resource_works() {
