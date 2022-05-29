@@ -167,7 +167,7 @@ parameter_types! {
 }
 
 pub struct BaseFilter;
-impl x<Call> for BaseFilter {
+impl Contains<Call> for BaseFilter {
 	fn contains(call: &Call) -> bool {
 		// Disable direct calls to pallet_uniques
 		!matches!(
