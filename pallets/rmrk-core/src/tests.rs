@@ -658,17 +658,10 @@ fn burn_nft_works() {
 			Origin::signed(ALICE),
 			0,
 			0,
-			stbr("res-1"),
 			basic_resource.clone(),
 		));
 
-		assert_ok!(RMRKCore::add_basic_resource(
-			Origin::signed(ALICE),
-			0,
-			0,
-			stbr("res-2"),
-			basic_resource,
-		));
+		assert_ok!(RMRKCore::add_basic_resource(Origin::signed(ALICE), 0, 0, basic_resource,));
 
 		// Ensure resources are there
 		assert_eq!(Resources::<Test>::iter_prefix((COLLECTION_ID_0, NFT_ID_0)).count(), 2);
@@ -718,7 +711,6 @@ fn burn_nft_with_great_grandchildren_works() {
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			3,
-			stbr("res-1"),
 			basic_resource.clone(),
 		));
 
@@ -726,7 +718,6 @@ fn burn_nft_with_great_grandchildren_works() {
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			3,
-			stbr("res-2"),
 			basic_resource,
 		));
 
@@ -863,9 +854,8 @@ fn create_resource_works() {
 		assert_noop!(
 			RMRKCore::add_basic_resource(
 				Origin::signed(ALICE),
-				0,             // collection_id
-				0,             // nft_id
-				stbr("res-1"), // resource_id
+				0, // collection_id
+				0, // nft_id
 				basic_resource,
 			),
 			Error::<Test>::CollectionUnknown
@@ -883,16 +873,15 @@ fn create_resource_works() {
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			stbr("res-3"), // resource_id
 			basic_resource,
 		));
 		// Successful resource addition should trigger ResourceAdded event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAdded {
 			nft_id: 0,
-			resource_id: stbr("res-3"), // resource_id
+			resource_id: 0, // resource_id
 		}));
 		// Since ALICE rootowns NFT, pending status of resource should be false
-		assert_eq!(RMRKCore::resources((0, 0, stbr("res-3"))).unwrap().pending, false);
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 
 		// Create Composable resource
 		let composable_resource = ComposableResource {
@@ -928,7 +917,6 @@ fn create_resource_works() {
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			stbr("res-3"), // resource_id
 			slot_resource,
 		));
 	});
@@ -964,7 +952,6 @@ fn add_resource_pending_works() {
 				Origin::signed(BOB),
 				COLLECTION_ID_0,
 				NFT_ID_0,
-				stbr("res-4"), // resource_id
 				basic_resource.clone(),
 			),
 			Error::<Test>::NoPermission
@@ -975,28 +962,27 @@ fn add_resource_pending_works() {
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			stbr("res-4"), // resource_id
 			basic_resource
 		));
 
-		assert_eq!(RMRKCore::resources((0, 0, stbr("res-4"))).unwrap().pending, true);
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, true);
 		// ALICE doesn't own BOB's NFT, so accept should fail
 		assert_noop!(
-			RMRKCore::accept_resource(Origin::signed(ALICE), 0, 0, stbr("res-4")),
+			RMRKCore::accept_resource(Origin::signed(ALICE), 0, 0, 0),
 			Error::<Test>::NoPermission
 		);
 		// BOB can accept his own NFT's pending resource
-		assert_ok!(RMRKCore::accept_resource(Origin::signed(BOB), 0, 0, stbr("res-4")));
+		assert_ok!(RMRKCore::accept_resource(Origin::signed(BOB), 0, 0, 0));
 		// Valid resource acceptance should trigger a ResourceAccepted event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAccepted {
 			nft_id: 0,
-			resource_id: stbr("res-4"), // resource_id
+			resource_id: 0, // resource_id
 		}));
 		// Resource should now have false pending status
-		assert_eq!(RMRKCore::resources((0, 0, stbr("res-4"))).unwrap().pending, false);
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
 		// Accepting resource again should fail with ResourceNotPending
 		assert_noop!(
-			RMRKCore::accept_resource(Origin::signed(BOB), 0, 0, stbr("res-4")),
+			RMRKCore::accept_resource(Origin::signed(BOB), 0, 0, 0),
 			Error::<Test>::ResourceNotPending
 		);
 	});
@@ -1019,7 +1005,6 @@ fn resource_removal_works() {
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			stbr("res-0"), // resource_id
 			basic_resource,
 		));
 		// Resource res-1 doesn't exist
@@ -1028,7 +1013,7 @@ fn resource_removal_works() {
 				Origin::signed(ALICE),
 				COLLECTION_ID_0,
 				NFT_ID_0,
-				stbr("res-1"), // resource_id
+				1, // resource_id
 			),
 			Error::<Test>::ResourceDoesntExist
 		);
@@ -1038,7 +1023,7 @@ fn resource_removal_works() {
 				Origin::signed(BOB),
 				COLLECTION_ID_0,
 				NFT_ID_0,
-				stbr("res-0"), // resource_id
+				0, // resource_id
 			),
 			Error::<Test>::NoPermission
 		);
@@ -1047,15 +1032,15 @@ fn resource_removal_works() {
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			stbr("res-0"), // resource_id
+			0, // resource_id
 		));
 		// Successful resource removal should trigger ResourceRemoval event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceRemoval {
 			nft_id: 0,
-			resource_id: stbr("res-0"), // resource_id
+			resource_id: 0, // resource_id
 		}));
 		// Since ALICE rootowns NFT, resource should be removed
-		assert_eq!(RMRKCore::resources((0, 0, stbr("res-0"))), None);
+		assert_eq!(RMRKCore::resources((0, 0, 0)), None);
 	});
 }
 
@@ -1084,19 +1069,13 @@ fn resource_removal_pending_works() {
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			stbr("res-0"), // resource_id
 			basic_resource,
 		));
 
-		assert_ok!(RMRKCore::accept_resource(
-			Origin::signed(BOB),
-			COLLECTION_ID_0,
-			NFT_ID_0,
-			stbr("res-0"),
-		));
+		assert_ok!(RMRKCore::accept_resource(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0, 0,));
 		// Accepting a resource removal that is not pending should fail
 		assert_noop!(
-			RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, stbr("res-0")),
+			RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, 0),
 			Error::<Test>::ResourceNotPending
 		);
 		// Only collection's issuer can request resource removal
@@ -1105,7 +1084,7 @@ fn resource_removal_pending_works() {
 				Origin::signed(BOB),
 				COLLECTION_ID_0,
 				NFT_ID_0,
-				stbr("res-0"), // resource_id
+				0, // resource_id
 			),
 			Error::<Test>::NoPermission
 		);
@@ -1114,29 +1093,29 @@ fn resource_removal_pending_works() {
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			stbr("res-0"), // resource_id
+			0, // resource_id
 		));
 		// Since ALICE doesn't root-own NFT, resource's removal is waiting for acceptance
-		assert_eq!(RMRKCore::resources((0, 0, stbr("res-0"))).unwrap().pending_removal, true);
+		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending_removal, true);
 		// ALICE doesn't own BOB's NFT, so accept should fail
 		assert_noop!(
-			RMRKCore::accept_resource_removal(Origin::signed(ALICE), 0, 0, stbr("res-0")),
+			RMRKCore::accept_resource_removal(Origin::signed(ALICE), 0, 0, 0),
 			Error::<Test>::NoPermission
 		);
 		// Resource res-1 doesn't exist
 		assert_noop!(
-			RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, stbr("res-1")),
+			RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, 1),
 			Error::<Test>::ResourceDoesntExist
 		);
 		// BOB can accept his own NFT's pending resource removal
-		assert_ok!(RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, stbr("res-0")));
+		assert_ok!(RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, 0));
 		// Successful resource removal acceptance should trigger ResourceRemovalAccepted event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceRemovalAccepted {
 			nft_id: 0,
-			resource_id: stbr("res-0"), // resource_id
+			resource_id: 0, // resource_id
 		}));
 		// Resource removed
-		assert_eq!(RMRKCore::resources((0, 0, stbr("res-0"))), None);
+		assert_eq!(RMRKCore::resources((0, 0, 0)), None);
 	});
 }
 

@@ -2,7 +2,7 @@ use super::{
 	part::{EquippableList, PartType},
 	theme::Theme,
 };
-use crate::primitives::{BaseId, SlotId};
+use crate::primitives::{BaseId, SlotId, ResourceId};
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, RuntimeDebug};
@@ -39,6 +39,7 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts, Boun
 		issuer: AccountId, // Maybe don't need?
 		item: (CollectionId, NftId),
 		equipper: (CollectionId, NftId),
+		resource_id: ResourceId,
 		base_id: BaseId, // Maybe BaseId ?
 		slot: SlotId,    // Maybe SlotId ?
 	) -> Result<(CollectionId, NftId, BaseId, SlotId, bool), DispatchError>;

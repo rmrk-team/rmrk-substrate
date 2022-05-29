@@ -94,7 +94,7 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, BaseId>,                // Base ID
 			NMapKey<Blake2_128Concat, SlotId>,                // Slot ID
 		),
-		BoundedResource<T>, // Equipped Resource
+		ResourceId, // Equipped Resource
 		OptionQuery,
 	>;
 
@@ -253,13 +253,14 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			item: (CollectionId, NftId),
 			equipper: (CollectionId, NftId),
+			resource_id: ResourceId,
 			base: BaseId,
 			slot: SlotId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
 			let (collection_id, nft_id, base_id, slot_id, equipped) =
-				Self::do_equip(sender, item, equipper, base, slot)?;
+				Self::do_equip(sender, item, equipper, resource_id, base, slot)?;
 
 			if equipped {
 				// Send Equip event
