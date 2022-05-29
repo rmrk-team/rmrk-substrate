@@ -373,6 +373,10 @@ where
 
 		// TODO: Check NFT lock status
 
+		// Check NFT is transferable
+		let is_transferable = sending_nft.transferable;
+		ensure!(is_transferable, Error::<T>::NonTransferable);
+
 		// Needs to be pending if the sending to an account or to a non-owned NFT
 		let mut approval_required = true;
 

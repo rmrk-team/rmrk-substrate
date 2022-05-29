@@ -312,6 +312,7 @@ pub mod pallet {
 		ResourceDoesntExist,
 		/// Accepting a resource that is not pending should fail
 		ResourceNotPending,
+		NonTransferable,
 	}
 
 	#[pallet::call]
