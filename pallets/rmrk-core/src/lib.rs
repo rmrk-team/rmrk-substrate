@@ -11,9 +11,9 @@ use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
 use sp_std::convert::TryInto;
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, Collection, CollectionInfo, Nft, NftInfo,
-	Priority, Property, Resource, ResourceInfo, RoyaltyInfo,
-	ResourceTypes, BasicResource, SlotResource, ComposableResource
+	primitives::*, AccountIdOrCollectionNftTuple, BasicResource, Collection, CollectionInfo,
+	ComposableResource, Nft, NftInfo, Priority, Property, Resource, ResourceInfo, ResourceTypes,
+	RoyaltyInfo, SlotResource,
 };
 use sp_std::result::Result;
 
@@ -303,6 +303,7 @@ pub mod pallet {
 			recipient: Option<T::AccountId>,
 			royalty: Option<Permill>,
 			metadata: BoundedVec<u8, T::StringLimit>,
+			transferable: Option<bool>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			if let Some(collection_issuer) = pallet_uniques::Pallet::<T>::class_owner(collection_id)
@@ -319,6 +320,7 @@ pub mod pallet {
 				recipient,
 				royalty,
 				metadata,
+				transferable,
 			)?;
 
 			pallet_uniques::Pallet::<T>::do_mint(

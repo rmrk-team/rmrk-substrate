@@ -96,7 +96,7 @@ where
 			id: resource_id.clone(),
 			pending: root_owner != sender,
 			pending_removal: false,
-			resource
+			resource,
 		};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
@@ -262,6 +262,7 @@ where
 		royalty_recipient: Option<T::AccountId>,
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
+		transferable: Option<bool>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
@@ -271,7 +272,7 @@ where
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 		}
 
-		let mut royalty: Option<RoyaltyInfo::<T::AccountId>> = None;
+		let mut royalty: Option<RoyaltyInfo<T::AccountId>> = None;
 
 		if let Some(amount) = royalty_amount {
 			match royalty_recipient {
@@ -279,8 +280,9 @@ where
 					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient, amount });
 				},
 				None => {
-					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient: owner.clone(), amount });
-				}
+					royalty =
+						Some(RoyaltyInfo::<T::AccountId> { recipient: owner.clone(), amount });
+				},
 			}
 		};
 
@@ -292,6 +294,7 @@ where
 			metadata,
 			equipped: false,
 			pending: false,
+			transferable: transferable.unwrap_or(true),
 		};
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
@@ -316,7 +319,9 @@ where
 
 		// Remove self from parent's Children storage
 		if let Some(nft) = Self::nfts(collection_id, nft_id) {
-			if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(parent_col, parent_nft) = nft.owner {
+			if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(parent_col, parent_nft) =
+				nft.owner
+			{
 				Children::<T>::remove((parent_col, parent_nft), (collection_id, nft_id));
 			}
 		}
@@ -325,7 +330,9 @@ where
 
 		Resources::<T>::remove_prefix((collection_id, nft_id), None);
 
-		for ((child_collection_id, child_nft_id), _) in Children::<T>::drain_prefix((collection_id, nft_id,)) {
+		for ((child_collection_id, child_nft_id), _) in
+			Children::<T>::drain_prefix((collection_id, nft_id))
+		{
 			Self::nft_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 		}
 
@@ -395,7 +402,6 @@ where
 		// Nfts::<T>::insert(collection_id, nft_id, sending_nft);
 
 		if approval_required {
-
 			Nfts::<T>::try_mutate_exists(collection_id, nft_id, |nft| -> DispatchResult {
 				if let Some(nft) = nft {
 					nft.pending = true;
@@ -467,7 +473,6 @@ where
 				Pallet::<T>::nft_to_account_id::<T::AccountId>(cid, nid)
 			},
 		};
-
 
 		Nfts::<T>::try_mutate(collection_id, nft_id, |nft| -> DispatchResult {
 			if let Some(nft) = nft {

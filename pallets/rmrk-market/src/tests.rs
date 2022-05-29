@@ -41,6 +41,7 @@ fn basic_mint() -> DispatchResult {
 		Some(ALICE),
 		Some(Permill::from_float(1.525)),
 		bvec![0u8; 20],
+		Some(true),
 	)
 }
 
