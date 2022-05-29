@@ -166,11 +166,37 @@ parameter_types! {
 	pub const SS58Prefix: u8 = 42;
 }
 
+pub struct BaseFilter;
+impl x<Call> for BaseFilter {
+	fn contains(call: &Call) -> bool {
+		// Disable direct calls to pallet_uniques
+		!matches!(
+			call,
+			Call::Uniques(pallet_uniques::Call::approve_transfer { .. }) |
+				Call::Uniques(pallet_uniques::Call::burn { .. }) |
+				Call::Uniques(pallet_uniques::Call::cancel_approval { .. }) |
+				Call::Uniques(pallet_uniques::Call::clear_class_metadata { .. }) |
+				Call::Uniques(pallet_uniques::Call::clear_metadata { .. }) |
+				Call::Uniques(pallet_uniques::Call::create { .. }) |
+				Call::Uniques(pallet_uniques::Call::destroy { .. }) |
+				Call::Uniques(pallet_uniques::Call::force_asset_status { .. }) |
+				Call::Uniques(pallet_uniques::Call::force_create { .. }) |
+				Call::Uniques(pallet_uniques::Call::freeze_class { .. }) |
+				Call::Uniques(pallet_uniques::Call::mint { .. }) |
+				Call::Uniques(pallet_uniques::Call::redeposit { .. }) |
+				Call::Uniques(pallet_uniques::Call::set_class_metadata { .. }) |
+				Call::Uniques(pallet_uniques::Call::thaw_class { .. }) |
+				Call::Uniques(pallet_uniques::Call::transfer { .. }) |
+				Call::Uniques(pallet_uniques::Call::transfer_ownership { .. })
+		)
+	}
+}
+
 // Configure FRAME pallets to include in runtime.
 
 impl frame_system::Config for Runtime {
 	/// The basic call filter to use in dispatchable.
-	type BaseCallFilter = frame_support::traits::Everything;
+	type BaseCallFilter = BaseFilter;
 	/// Block & extrinsics weights: base values and limits.
 	type BlockWeights = BlockWeights;
 	/// The maximum length of a block (in bytes).
@@ -404,32 +430,6 @@ construct_runtime!(
 		Utility: pallet_utility::{Pallet, Call, Storage, Event},
 	}
 );
-
-pub struct BaseCallFilter;
-impl Contains<Call> for BaseCallFilter {
-	fn contains(call: &Call) -> bool {
-		// Disable direct calls to pallet_uniques
-		!matches!(
-			call,
-			Call::Uniques(pallet_uniques::Call::approve_transfer { .. }) |
-				Call::Uniques(pallet_uniques::Call::burn { .. }) |
-				Call::Uniques(pallet_uniques::Call::cancel_approval { .. }) |
-				Call::Uniques(pallet_uniques::Call::clear_class_metadata { .. }) |
-				Call::Uniques(pallet_uniques::Call::clear_metadata { .. }) |
-				Call::Uniques(pallet_uniques::Call::create { .. }) |
-				Call::Uniques(pallet_uniques::Call::destroy { .. }) |
-				Call::Uniques(pallet_uniques::Call::force_asset_status { .. }) |
-				Call::Uniques(pallet_uniques::Call::force_create { .. }) |
-				Call::Uniques(pallet_uniques::Call::freeze_class { .. }) |
-				Call::Uniques(pallet_uniques::Call::mint { .. }) |
-				Call::Uniques(pallet_uniques::Call::redeposit { .. }) |
-				Call::Uniques(pallet_uniques::Call::set_class_metadata { .. }) |
-				Call::Uniques(pallet_uniques::Call::thaw_class { .. }) |
-				Call::Uniques(pallet_uniques::Call::transfer { .. }) |
-				Call::Uniques(pallet_uniques::Call::transfer_ownership { .. })
-		)
-	}
-}
 
 /// The address format for describing accounts.
 pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
