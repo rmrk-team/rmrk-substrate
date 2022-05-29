@@ -29,10 +29,8 @@ pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
-pub type ResourceOf<T, P> = ResourceInfo<
-	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
-	BoundedVec<PartId, P>,
->;
+pub type ResourceOf<T, P> =
+	ResourceInfo<BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>, BoundedVec<PartId, P>>;
 
 pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
 
@@ -339,7 +337,7 @@ pub mod pallet {
 			recipient: Option<T::AccountId>,
 			royalty: Option<Permill>,
 			metadata: BoundedVec<u8, T::StringLimit>,
-			transferable: Option<bool>,
+			transferable: bool,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			if let Some(collection_issuer) = pallet_uniques::Pallet::<T>::class_owner(collection_id)
@@ -624,12 +622,8 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let resource_id = Self::resource_add(
-				sender,
-				collection_id,
-				nft_id,
-				ResourceTypes::Basic(resource),
-			)?;
+			let resource_id =
+				Self::resource_add(sender, collection_id, nft_id, ResourceTypes::Basic(resource))?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
 			Ok(())
@@ -669,12 +663,8 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let resource_id = Self::resource_add(
-				sender,
-				collection_id,
-				nft_id,
-				ResourceTypes::Slot(resource),
-			)?;
+			let resource_id =
+				Self::resource_add(sender, collection_id, nft_id, ResourceTypes::Slot(resource))?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
 			Ok(())

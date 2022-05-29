@@ -55,7 +55,7 @@ fn basic_mint() -> DispatchResult {
 		Some(ALICE),
 		Some(Permill::from_float(1.525)),
 		bvec![0u8; 20],
-		Some(true),
+		true,
 	)
 }
 
@@ -235,7 +235,7 @@ fn mint_nft_works() {
 			Some(ALICE),
 			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20],
-			Some(true)
+			true
 		));
 		// BOB shouldn't be able to mint in ALICE's collection
 		assert_noop!(
@@ -246,7 +246,7 @@ fn mint_nft_works() {
 				Some(CHARLIE),
 				Some(Permill::from_float(20.525)),
 				bvec![0u8; 20],
-				Some(true),
+				true,
 			),
 			Error::<Test>::NoPermission
 		);
@@ -259,7 +259,7 @@ fn mint_nft_works() {
 				Some(CHARLIE),
 				Some(Permill::from_float(20.525)),
 				bvec![0u8; 20],
-				Some(true),
+				true,
 			),
 			Error::<Test>::CollectionUnknown
 		);
@@ -299,7 +299,7 @@ fn royalty_recipient_default_works() {
 			None, // No royalty recipient
 			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20],
-			Some(true),
+			true,
 		));
 		// Royalty recipient should default to issuer (ALICE)
 		assert_eq!(RmrkCore::nfts(0, 0).unwrap().royalty.unwrap().recipient, ALICE);
@@ -311,7 +311,7 @@ fn royalty_recipient_default_works() {
 			Some(BOB), // Royalty recipient is BOB
 			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20],
-			Some(true),
+			true,
 		));
 		// Royalty recipient should be BOB
 		assert_eq!(RmrkCore::nfts(0, 1).unwrap().royalty.unwrap().recipient, BOB);
@@ -323,7 +323,7 @@ fn royalty_recipient_default_works() {
 			None, // No royalty recipient is BOB
 			None, // No royalty amount
 			bvec![0u8; 20],
-			Some(true),
+			true,
 		));
 		// Royalty should not exist
 		assert!(RmrkCore::nfts(0, 2).unwrap().royalty.is_none());
@@ -335,7 +335,7 @@ fn royalty_recipient_default_works() {
 			Some(ALICE), // Royalty recipient is ALICE
 			None,        // No royalty amount
 			bvec![0u8; 20],
-			Some(true),
+			true,
 		));
 		// Royalty should not exist
 		assert!(RmrkCore::nfts(0, 3).unwrap().royalty.is_none());
@@ -936,7 +936,7 @@ fn add_resource_pending_works() {
 			Some(BOB),
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
-			Some(true),
+			true,
 		));
 
 		let basic_resource = BasicResource {
@@ -1058,7 +1058,7 @@ fn resource_removal_pending_works() {
 			Some(BOB),
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
-			Some(true)
+			true
 		));
 
 		let basic_resource =

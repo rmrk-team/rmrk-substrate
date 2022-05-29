@@ -59,7 +59,7 @@ pub trait Nft<AccountId, BoundedString> {
 		royalty_recipient: Option<AccountId>,
 		royalty_amount: Option<Permill>,
 		metadata: BoundedString,
-		transferable: Option<bool>,
+		transferable: bool,
 	) -> Result<(CollectionId, NftId), DispatchError>;
 	fn nft_burn(
 		collection_id: CollectionId,

@@ -66,11 +66,8 @@ where
 }
 
 impl<T: Config>
-	Resource<
-		BoundedVec<u8, T::StringLimit>,
-		T::AccountId,
-		BoundedVec<PartId, T::PartsLimit>,
-	> for Pallet<T>
+	Resource<BoundedVec<u8, T::StringLimit>, T::AccountId, BoundedVec<PartId, T::PartsLimit>>
+	for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -103,11 +100,11 @@ where
 
 		let res: ResourceInfo<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> =
 			ResourceInfo::<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> {
-			id: resource_id,
-			pending: root_owner != sender,
-			pending_removal: false,
-			resource,
-		};
+				id: resource_id,
+				pending: root_owner != sender,
+				pending_removal: false,
+				resource,
+			};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
 		Ok(resource_id)
@@ -272,7 +269,7 @@ where
 		royalty_recipient: Option<T::AccountId>,
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
-		transferable: Option<bool>,
+		transferable: bool,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
@@ -304,7 +301,7 @@ where
 			metadata,
 			equipped: false,
 			pending: false,
-			transferable: transferable.unwrap_or(true),
+			transferable,
 		};
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
