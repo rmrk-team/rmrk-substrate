@@ -116,6 +116,29 @@ fn list_works() {
 }
 
 #[test]
+fn list_non_transferable_fails() {
+	new_test_ext().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint non-transferable NFT
+		assert_ok!(RmrkCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			false, // non-transferable
+		));
+		// Sending non-transferable NFT should fail
+		assert_noop!(
+			RmrkMarket::list(Origin::signed(ALICE), COLLECTION_ID_0, 0, 10u128, None,),
+			Error::<Test>::NonTransferable
+		);
+	});
+}
+
+#[test]
 fn buy_works() {
 	new_test_ext().execute_with(|| {
 		// Create a basic collection
