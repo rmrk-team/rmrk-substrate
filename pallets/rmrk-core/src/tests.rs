@@ -235,7 +235,7 @@ fn mint_nft_works() {
 			Some(ALICE),
 			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20],
-			true
+			true,
 		));
 		// BOB shouldn't be able to mint in ALICE's collection
 		assert_noop!(
@@ -506,7 +506,7 @@ fn send_non_transferable_fails() {
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
-			false,
+			false, // non-transferable
 		));
 		// Sending non-transferable NFT should fail
 		assert_noop!(
@@ -1086,7 +1086,7 @@ fn resource_removal_pending_works() {
 			Some(BOB),
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
-			true
+			true,
 		));
 
 		let basic_resource =
