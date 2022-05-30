@@ -493,6 +493,34 @@ fn send_nft_to_minted_nft_works() {
 	});
 }
 
+#[test]
+fn send_non_transferable_fails() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint non-transferable NFT
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			false,
+		));
+		// Sending non-transferable NFT should fail
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(ALICE),
+				0,
+				0,
+				AccountIdOrCollectionNftTuple::AccountId(BOB)
+			),
+			Error::<Test>::NonTransferable
+		);
+	});
+}
+
 /// NFT: Reject tests (RMRK2.0 spec: new)
 #[test]
 fn reject_nft_works() {
