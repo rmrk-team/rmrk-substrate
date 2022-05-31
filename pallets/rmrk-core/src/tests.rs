@@ -508,7 +508,6 @@ fn send_non_transferable_fails() {
 			bvec![0u8; 20],
 			false, // non-transferable
 		));
-		// Sending non-transferable NFT should fail
 		assert_noop!(
 			RMRKCore::send(
 				Origin::signed(ALICE),
