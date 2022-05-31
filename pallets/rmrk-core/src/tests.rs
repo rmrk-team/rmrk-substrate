@@ -829,9 +829,7 @@ fn burn_child_nft_removes_parents_children() {
 		// NFT (0, 0) should have 1 Children storage member
 		assert_eq!(Children::<Test>::iter_prefix((0, 0)).count(), 1);
 		// Burn NFT (0, 1)
-		assert_ok!(
-			RMRKCore::burn_nft(Origin::signed(ALICE), 0, 1),
-		);
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), 0, 1),);
 		// NFT (0, 0) should have 0 Children storage members
 		assert_eq!(Children::<Test>::iter_prefix((0, 0)).count(), 0);
 	});
@@ -1119,6 +1117,11 @@ fn set_property_works() {
 		let key = stbk("test-key");
 		// Define property value
 		let value = stb("test-value");
+		// set_property fails without a collection (CollectionUnknown)
+		assert_noop!(
+			RMRKCore::set_property(Origin::signed(ALICE), 0, Some(0), key.clone(), value.clone()),
+			Error::<Test>::CollectionUnknown
+		);
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// Mint NFT
