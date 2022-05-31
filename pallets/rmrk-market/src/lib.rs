@@ -242,11 +242,12 @@ pub mod pallet {
 			// Ensure sender is the owner
 			ensure!(sender == owner, Error::<T>::NoPermission);
 
-			// Check NFT is transferable
-			let is_transferable = pallet_rmrk_core::Pallet::<T>::nfts(collection_id, nft_id)
+			let transferable = pallet_rmrk_core::Pallet::<T>::nfts(collection_id, nft_id)
 				.ok_or(Error::<T>::TokenDoesNotExist)?
 				.transferable;
-			ensure!(is_transferable, Error::<T>::NonTransferable);
+
+			// Check NFT is transferable
+			pallet_rmrk_core::Pallet::<T>::check_is_transferable(transferable)?;
 
 			// Lock NFT to prevent transfers or interactions with the NFT
 			pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), true);

@@ -132,7 +132,7 @@ fn list_non_transferable_fail() {
 		));
 		assert_noop!(
 			RmrkMarket::list(Origin::signed(ALICE), COLLECTION_ID_0, 0, 10u128, None,),
-			Error::<Test>::NonTransferable
+			pallet_rmrk_core::Error::<Test>::NonTransferable
 		);
 	});
 }

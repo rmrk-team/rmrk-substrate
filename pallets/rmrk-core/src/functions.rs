@@ -374,8 +374,7 @@ where
 		// TODO: Check NFT lock status
 
 		// Check NFT is transferable
-		let is_transferable = sending_nft.transferable;
-		ensure!(is_transferable, Error::<T>::NonTransferable);
+		Self::check_is_transferable(sending_nft.transferable)?;
 
 		// Needs to be pending if the sending to an account or to a non-owned NFT
 		let mut approval_required = true;
@@ -693,5 +692,11 @@ where
 			*lock
 		});
 		lock_status
+	}
+
+	// Check NFT is transferable
+	pub fn check_is_transferable(is_transferable: bool) -> DispatchResult {
+		ensure!(is_transferable, Error::<T>::NonTransferable);
+		Ok(())
 	}
 }
