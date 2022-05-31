@@ -180,6 +180,8 @@ pub mod pallet {
 		ListingHasExpired,
 		/// Price differs from when `buy` was executed
 		PriceDiffersFromExpected,
+		/// Not possible to list non-transferable NFT
+		NonTransferable,
 	}
 
 	#[pallet::call]
@@ -239,6 +241,13 @@ pub mod pallet {
 			);
 			// Ensure sender is the owner
 			ensure!(sender == owner, Error::<T>::NoPermission);
+
+			let nft = pallet_rmrk_core::Pallet::<T>::nfts(collection_id, nft_id)
+				.ok_or(Error::<T>::TokenDoesNotExist)?;
+
+			// Check NFT is transferable
+			pallet_rmrk_core::Pallet::<T>::check_is_transferable(&nft)?;
+
 			// Lock NFT to prevent transfers or interactions with the NFT
 			pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), true);
 			// Check if a prior listing is in storage from previous owner and update if found

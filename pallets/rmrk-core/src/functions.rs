@@ -66,11 +66,8 @@ where
 }
 
 impl<T: Config>
-	Resource<
-		BoundedVec<u8, T::StringLimit>,
-		T::AccountId,
-		BoundedVec<PartId, T::PartsLimit>,
-	> for Pallet<T>
+	Resource<BoundedVec<u8, T::StringLimit>, T::AccountId, BoundedVec<PartId, T::PartsLimit>>
+	for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -103,11 +100,11 @@ where
 
 		let res: ResourceInfo<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> =
 			ResourceInfo::<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> {
-			id: resource_id,
-			pending: root_owner != sender,
-			pending_removal: false,
-			resource,
-		};
+				id: resource_id,
+				pending: root_owner != sender,
+				pending_removal: false,
+				resource,
+			};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
 		Ok(resource_id)
@@ -272,6 +269,7 @@ where
 		royalty_recipient: Option<T::AccountId>,
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
+		transferable: bool,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
@@ -281,7 +279,7 @@ where
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 		}
 
-		let mut royalty: Option<RoyaltyInfo::<T::AccountId>> = None;
+		let mut royalty: Option<RoyaltyInfo<T::AccountId>> = None;
 
 		if let Some(amount) = royalty_amount {
 			match royalty_recipient {
@@ -289,8 +287,9 @@ where
 					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient, amount });
 				},
 				None => {
-					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient: owner.clone(), amount });
-				}
+					royalty =
+						Some(RoyaltyInfo::<T::AccountId> { recipient: owner.clone(), amount });
+				},
 			}
 		};
 
@@ -302,6 +301,7 @@ where
 			metadata,
 			equipped: false,
 			pending: false,
+			transferable,
 		};
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
@@ -326,7 +326,9 @@ where
 
 		// Remove self from parent's Children storage
 		if let Some(nft) = Self::nfts(collection_id, nft_id) {
-			if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(parent_col, parent_nft) = nft.owner {
+			if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(parent_col, parent_nft) =
+				nft.owner
+			{
 				Children::<T>::remove((parent_col, parent_nft), (collection_id, nft_id));
 			}
 		}
@@ -335,7 +337,9 @@ where
 
 		Resources::<T>::remove_prefix((collection_id, nft_id), None);
 
-		for ((child_collection_id, child_nft_id), _) in Children::<T>::drain_prefix((collection_id, nft_id,)) {
+		for ((child_collection_id, child_nft_id), _) in
+			Children::<T>::drain_prefix((collection_id, nft_id))
+		{
 			Self::nft_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 		}
 
@@ -368,6 +372,9 @@ where
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
 		// TODO: Check NFT lock status
+
+		// Check NFT is transferable
+		Self::check_is_transferable(&sending_nft)?;
 
 		// Needs to be pending if the sending to an account or to a non-owned NFT
 		let mut approval_required = true;
@@ -405,7 +412,6 @@ where
 		// Nfts::<T>::insert(collection_id, nft_id, sending_nft);
 
 		if approval_required {
-
 			Nfts::<T>::try_mutate_exists(collection_id, nft_id, |nft| -> DispatchResult {
 				if let Some(nft) = nft {
 					nft.pending = true;
@@ -477,7 +483,6 @@ where
 				Pallet::<T>::nft_to_account_id::<T::AccountId>(cid, nid)
 			},
 		};
-
 
 		Nfts::<T>::try_mutate(collection_id, nft_id, |nft| -> DispatchResult {
 			if let Some(nft) = nft {
@@ -687,5 +692,11 @@ where
 			*lock
 		});
 		lock_status
+	}
+
+	// Check NFT is transferable
+	pub fn check_is_transferable(nft: &InstanceInfoOf<T>) -> DispatchResult {
+		ensure!(nft.transferable, Error::<T>::NonTransferable);
+		Ok(())
 	}
 }

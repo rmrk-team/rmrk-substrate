@@ -55,6 +55,7 @@ fn basic_mint() -> DispatchResult {
 		Some(ALICE),
 		Some(Permill::from_float(1.525)),
 		bvec![0u8; 20],
+		true,
 	)
 }
 
@@ -233,7 +234,8 @@ fn mint_nft_works() {
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(20.525)),
-			bvec![0u8; 20]
+			bvec![0u8; 20],
+			true,
 		));
 		// BOB shouldn't be able to mint in ALICE's collection
 		assert_noop!(
@@ -243,7 +245,8 @@ fn mint_nft_works() {
 				COLLECTION_ID_0,
 				Some(CHARLIE),
 				Some(Permill::from_float(20.525)),
-				bvec![0u8; 20]
+				bvec![0u8; 20],
+				true,
 			),
 			Error::<Test>::NoPermission
 		);
@@ -255,7 +258,8 @@ fn mint_nft_works() {
 				NOT_EXISTING_CLASS_ID,
 				Some(CHARLIE),
 				Some(Permill::from_float(20.525)),
-				bvec![0u8; 20]
+				bvec![0u8; 20],
+				true,
 			),
 			Error::<Test>::CollectionUnknown
 		);
@@ -294,7 +298,8 @@ fn royalty_recipient_default_works() {
 			COLLECTION_ID_0,
 			None, // No royalty recipient
 			Some(Permill::from_float(20.525)),
-			bvec![0u8; 20]
+			bvec![0u8; 20],
+			true,
 		));
 		// Royalty recipient should default to issuer (ALICE)
 		assert_eq!(RmrkCore::nfts(0, 0).unwrap().royalty.unwrap().recipient, ALICE);
@@ -305,7 +310,8 @@ fn royalty_recipient_default_works() {
 			COLLECTION_ID_0,
 			Some(BOB), // Royalty recipient is BOB
 			Some(Permill::from_float(20.525)),
-			bvec![0u8; 20]
+			bvec![0u8; 20],
+			true,
 		));
 		// Royalty recipient should be BOB
 		assert_eq!(RmrkCore::nfts(0, 1).unwrap().royalty.unwrap().recipient, BOB);
@@ -316,7 +322,8 @@ fn royalty_recipient_default_works() {
 			COLLECTION_ID_0,
 			None, // No royalty recipient is BOB
 			None, // No royalty amount
-			bvec![0u8; 20]
+			bvec![0u8; 20],
+			true,
 		));
 		// Royalty should not exist
 		assert!(RmrkCore::nfts(0, 2).unwrap().royalty.is_none());
@@ -327,7 +334,8 @@ fn royalty_recipient_default_works() {
 			COLLECTION_ID_0,
 			Some(ALICE), // Royalty recipient is ALICE
 			None,        // No royalty amount
-			bvec![0u8; 20]
+			bvec![0u8; 20],
+			true,
 		));
 		// Royalty should not exist
 		assert!(RmrkCore::nfts(0, 3).unwrap().royalty.is_none());
@@ -481,6 +489,33 @@ fn send_nft_to_minted_nft_works() {
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(666, 666)
 			),
 			Error::<Test>::NoAvailableNftId
+		);
+	});
+}
+
+#[test]
+fn send_non_transferable_fail() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint non-transferable NFT
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			false, // non-transferable
+		));
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(ALICE),
+				0,
+				0,
+				AccountIdOrCollectionNftTuple::AccountId(BOB)
+			),
+			Error::<Test>::NonTransferable
 		);
 	});
 }
@@ -829,9 +864,7 @@ fn burn_child_nft_removes_parents_children() {
 		// NFT (0, 0) should have 1 Children storage member
 		assert_eq!(Children::<Test>::iter_prefix((0, 0)).count(), 1);
 		// Burn NFT (0, 1)
-		assert_ok!(
-			RMRKCore::burn_nft(Origin::signed(ALICE), 0, 1),
-		);
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), 0, 1),);
 		// NFT (0, 0) should have 0 Children storage members
 		assert_eq!(Children::<Test>::iter_prefix((0, 0)).count(), 0);
 	});
@@ -930,6 +963,7 @@ fn add_resource_pending_works() {
 			Some(BOB),
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
+			true,
 		));
 
 		let basic_resource = BasicResource {
@@ -1051,6 +1085,7 @@ fn resource_removal_pending_works() {
 			Some(BOB),
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
+			true,
 		));
 
 		let basic_resource =

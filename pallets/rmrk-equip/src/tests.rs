@@ -175,6 +175,7 @@ fn equip_works() {
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
 			stb("ipfs://character-0-metadata"), // metadata
+			true,
 		));
 
 		// Mint NFT 1 from collection 0 (character-1)
@@ -185,6 +186,7 @@ fn equip_works() {
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
 			stb("ipfs://character-1-metadata"), // metadata
+			true,
 		));
 
 		// Mint NFT 0 from collection 1 (sword)
@@ -195,6 +197,7 @@ fn equip_works() {
 			Some(ALICE),                      // recipient
 			Some(Permill::from_float(1.525)), // royalties
 			stb("ipfs://sword-metadata"),     // metadata
+			true,
 		));
 
 		// Mint NFT 1 from collection 1 (flashlight)
@@ -205,6 +208,7 @@ fn equip_works() {
 			Some(ALICE),                       // recipient
 			Some(Permill::from_float(1.525)),  // royalties
 			stb("ipfs://flashlight-metadata"), // metadata
+			true,
 		));
 
 		// Attempt to equip sword should fail as character-0 doesn't own sword

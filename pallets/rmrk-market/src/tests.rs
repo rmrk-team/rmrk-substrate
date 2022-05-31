@@ -41,6 +41,7 @@ fn basic_mint() -> DispatchResult {
 		Some(ALICE),
 		Some(Permill::from_float(1.525)),
 		bvec![0u8; 20],
+		true,
 	)
 }
 
@@ -111,6 +112,28 @@ fn list_works() {
 			nft_id: 0,
 			price: 10u128,
 		}));
+	});
+}
+
+#[test]
+fn list_non_transferable_fail() {
+	new_test_ext().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint non-transferable NFT
+		assert_ok!(RmrkCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			false, // non-transferable
+		));
+		assert_noop!(
+			RmrkMarket::list(Origin::signed(ALICE), COLLECTION_ID_0, 0, 10u128, None,),
+			pallet_rmrk_core::Error::<Test>::NonTransferable
+		);
 	});
 }
 
