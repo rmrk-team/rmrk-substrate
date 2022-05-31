@@ -494,7 +494,7 @@ fn send_nft_to_minted_nft_works() {
 }
 
 #[test]
-fn send_non_transferable_fails() {
+fn send_non_transferable_fail() {
 	ExtBuilder::default().build().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
