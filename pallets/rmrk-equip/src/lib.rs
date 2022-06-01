@@ -16,7 +16,7 @@ pub use pallet::*;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, BasicResource,
-	ComposableResource, EquippableList, PartType, ResourceTypes, SlotResource, Theme,
+	ComposableResource, EquippableList, PartType, ResourceTypes, SlotResource, Theme, ThemeProperty
 };
 
 mod functions;
@@ -337,7 +337,7 @@ pub mod pallet {
 		pub fn theme_add(
 			origin: OriginFor<T>,
 			base_id: BaseId,
-			theme: Theme<BoundedVec<u8, T::StringLimit>>,
+			theme: Theme<BoundedVec<u8, T::StringLimit>, BoundedVec<ThemeProperty<BoundedVec<u8, T::StringLimit>>, T::MaxPropertiesPerTheme>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 

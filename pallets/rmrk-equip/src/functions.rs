@@ -45,6 +45,7 @@ impl<T: Config>
 			T::PartsLimit,
 		>,
 		BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+		BoundedVec<ThemeProperty<BoundedVec<u8, T::StringLimit>>, T::MaxPropertiesPerTheme>
 	> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
@@ -365,7 +366,7 @@ where
 	fn add_theme(
 		issuer: T::AccountId,
 		base_id: BaseId,
-		theme: Theme<BoundedVec<u8, T::StringLimit>>,
+		theme: Theme<BoundedVec<u8, T::StringLimit>, BoundedVec<ThemeProperty<BoundedVec<u8, T::StringLimit>>, T::MaxPropertiesPerTheme>>
 	) -> Result<(), DispatchError> {
 		// Base must exist
 		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);

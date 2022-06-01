@@ -27,7 +27,7 @@ pub struct BaseInfo<AccountId, BoundedString, BoundedParts> {
 }
 
 // Abstraction over a Base system.
-pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts, BoundedCollectionList> {
+pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts, BoundedCollectionList, BoundedThemeProperties> {
 	fn base_create(
 		issuer: AccountId,
 		base_type: BoundedString,
@@ -55,6 +55,6 @@ pub trait Base<AccountId, CollectionId, NftId, BoundedString, BoundedParts, Boun
 	fn add_theme(
 		issuer: AccountId,
 		base_id: BaseId,
-		theme: Theme<BoundedString>,
+		theme: Theme<BoundedString, BoundedThemeProperties>,
 	) -> Result<(), DispatchError>;
 }

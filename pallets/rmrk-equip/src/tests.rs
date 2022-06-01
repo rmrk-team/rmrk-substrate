@@ -552,7 +552,7 @@ fn theme_add_works() {
 		// Define a non-default theme
 		let non_default_theme = Theme {
 			name: stb("doglover"),
-			properties: vec![
+			properties: bvec![
 				ThemeProperty { key: stb("sound"), value: stb("woof") },
 				ThemeProperty { key: stb("secondary_color"), value: stb("blue") },
 			],
@@ -590,7 +590,7 @@ fn theme_add_works() {
 		// Define a default theme
 		let default_theme = Theme {
 			name: stb("default"),
-			properties: vec![
+			properties: bvec![
 				ThemeProperty { key: stb("primary_color"), value: stb("red") },
 				ThemeProperty { key: stb("secondary_color"), value: stb("blue") },
 			],
@@ -644,6 +644,7 @@ fn theme_add_works() {
 }
 
 /// Theme add fails when too many properties
+#[should_panic]
 #[test]
 fn theme_add_too_many_properties_fails() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -656,9 +657,10 @@ fn theme_add_too_many_properties_fails() {
 		));
 
 		// Define a default theme with too many properties (10)
+		// Should panic as properties exceeds mock's max (5)
 		let default_theme = Theme {
 			name: stb("default"),
-			properties: vec![
+			properties: bvec![
 				ThemeProperty { key: stb("1"), value: stb("red") },
 				ThemeProperty { key: stb("2"), value: stb("blue") },
 				ThemeProperty { key: stb("3"), value: stb("red") },
@@ -672,15 +674,5 @@ fn theme_add_too_many_properties_fails() {
 			],
 			inherit: false,
 		};
-
-		// Add default theme to base should fail (too many properties)
-		assert_noop!(
-			RmrkEquip::theme_add(
-				Origin::signed(ALICE),
-				0, // BaseID
-				default_theme
-			),
-			Error::<Test>::TooManyProperties
-		);
 	});
 }
