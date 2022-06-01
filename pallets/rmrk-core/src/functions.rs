@@ -1,3 +1,7 @@
+// Copyright (C) 2021-2022 RMRK
+// This file is part of rmrk-core.
+// License: Apache 2.0 modified by RMRK, see LICENSE.md
+
 #![allow(clippy::too_many_arguments)]
 
 use super::*;
@@ -49,7 +53,7 @@ where
 		value: ValueLimitOf<T>,
 	) -> DispatchResult {
 		let collection =
-			Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
+			Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		if let Some(nft_id) = &maybe_nft_id {
 			// Check NFT lock status
@@ -66,12 +70,8 @@ where
 }
 
 impl<T: Config>
-	Resource<
-		BoundedVec<u8, T::StringLimit>,
-		T::AccountId,
-		BoundedResource<T::ResourceSymbolLimit>,
-		BoundedVec<PartId, T::PartsLimit>,
-	> for Pallet<T>
+	Resource<BoundedVec<u8, T::StringLimit>, T::AccountId, BoundedVec<PartId, T::PartsLimit>>
+	for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
 {
@@ -79,42 +79,53 @@ where
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: BoundedResource<T::ResourceSymbolLimit>,
 		resource: ResourceTypes<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>>,
-	) -> DispatchResult {
+	) -> Result<ResourceId, DispatchError> {
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+		let resource_id = Self::get_next_resource_id(collection_id, nft_id)?;
+
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		// Check NFT lock status
 		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 
-		let res = ResourceInfo::<
-			BoundedVec<u8, T::ResourceSymbolLimit>,
-			BoundedVec<u8, T::StringLimit>,
-			BoundedVec<PartId, T::PartsLimit>,
-		> {
-			id: resource_id.clone(),
-			pending: root_owner != sender,
-			pending_removal: false,
-			resource
-		};
+		match resource.clone() {
+			ResourceTypes::Basic(_r) => (),
+			ResourceTypes::Composable(r) => {
+				ComposableResources::<T>::insert((collection_id, nft_id, r.base), ());
+			},
+			ResourceTypes::Slot(r) => {
+				SlotResources::<T>::insert(
+					(collection_id, nft_id, resource_id, r.base, r.slot),
+					(),
+				);
+			},
+		}
+
+		let res: ResourceInfo<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> =
+			ResourceInfo::<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> {
+				id: resource_id,
+				pending: root_owner != sender,
+				pending_removal: false,
+				resource,
+			};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
-		Ok(())
+		Ok(resource_id)
 	}
 
 	fn accept(
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: BoundedResource<T::ResourceSymbolLimit>,
+		resource_id: ResourceId,
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
 		// Check NFT lock status
 		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 		Resources::<T>::try_mutate_exists(
-			(collection_id, nft_id, resource_id.clone()),
+			(collection_id, nft_id, resource_id),
 			|resource| -> DispatchResult {
 				if let Some(res) = resource {
 					res.pending = false;
@@ -131,13 +142,13 @@ where
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: BoundedResource<T::ResourceSymbolLimit>,
+		resource_id: ResourceId,
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		ensure!(
-			Resources::<T>::contains_key((collection_id, nft_id, &resource_id)),
+			Resources::<T>::contains_key((collection_id, nft_id, resource_id)),
 			Error::<T>::ResourceDoesntExist
 		);
 
@@ -162,7 +173,7 @@ where
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		resource_id: BoundedResource<T::ResourceSymbolLimit>,
+		resource_id: ResourceId,
 	) -> DispatchResult {
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(root_owner == sender, Error::<T>::NoPermission);
@@ -262,6 +273,7 @@ where
 		royalty_recipient: Option<T::AccountId>,
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
+		transferable: bool,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
@@ -271,7 +283,7 @@ where
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 		}
 
-		let mut royalty: Option<RoyaltyInfo::<T::AccountId>> = None;
+		let mut royalty: Option<RoyaltyInfo<T::AccountId>> = None;
 
 		if let Some(amount) = royalty_amount {
 			match royalty_recipient {
@@ -279,8 +291,9 @@ where
 					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient, amount });
 				},
 				None => {
-					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient: owner.clone(), amount });
-				}
+					royalty =
+						Some(RoyaltyInfo::<T::AccountId> { recipient: owner.clone(), amount });
+				},
 			}
 		};
 
@@ -292,6 +305,7 @@ where
 			metadata,
 			equipped: false,
 			pending: false,
+			transferable,
 		};
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
@@ -316,7 +330,9 @@ where
 
 		// Remove self from parent's Children storage
 		if let Some(nft) = Self::nfts(collection_id, nft_id) {
-			if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(parent_col, parent_nft) = nft.owner {
+			if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(parent_col, parent_nft) =
+				nft.owner
+			{
 				Children::<T>::remove((parent_col, parent_nft), (collection_id, nft_id));
 			}
 		}
@@ -325,7 +341,9 @@ where
 
 		Resources::<T>::remove_prefix((collection_id, nft_id), None);
 
-		for ((child_collection_id, child_nft_id), _) in Children::<T>::drain_prefix((collection_id, nft_id,)) {
+		for ((child_collection_id, child_nft_id), _) in
+			Children::<T>::drain_prefix((collection_id, nft_id))
+		{
 			Self::nft_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
 		}
 
@@ -358,6 +376,9 @@ where
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
 		// TODO: Check NFT lock status
+
+		// Check NFT is transferable
+		Self::check_is_transferable(&sending_nft)?;
 
 		// Needs to be pending if the sending to an account or to a non-owned NFT
 		let mut approval_required = true;
@@ -395,7 +416,6 @@ where
 		// Nfts::<T>::insert(collection_id, nft_id, sending_nft);
 
 		if approval_required {
-
 			Nfts::<T>::try_mutate_exists(collection_id, nft_id, |nft| -> DispatchResult {
 				if let Some(nft) = nft {
 					nft.pending = true;
@@ -467,7 +487,6 @@ where
 				Pallet::<T>::nft_to_account_id::<T::AccountId>(cid, nid)
 			},
 		};
-
 
 		Nfts::<T>::try_mutate(collection_id, nft_id, |nft| -> DispatchResult {
 			if let Some(nft) = nft {
@@ -672,10 +691,13 @@ where
 		})
 	}
 
-	pub fn get_next_resource_id() -> Result<ResourceId, Error<T>> {
-		NextResourceId::<T>::try_mutate(|id| {
+	pub fn get_next_resource_id(
+		collection_id: CollectionId,
+		nft_id: NftId,
+	) -> Result<ResourceId, Error<T>> {
+		NextResourceId::<T>::try_mutate(collection_id, nft_id, |id| {
 			let current_id = *id;
-			*id = id.checked_add(1).ok_or(Error::<T>::NoAvailableCollectionId)?;
+			*id = id.checked_add(1).ok_or(Error::<T>::NoAvailableResourceId)?;
 			Ok(current_id)
 		})
 	}
@@ -686,5 +708,11 @@ where
 			*lock
 		});
 		lock_status
+	}
+
+	// Check NFT is transferable
+	pub fn check_is_transferable(nft: &InstanceInfoOf<T>) -> DispatchResult {
+		ensure!(nft.transferable, Error::<T>::NonTransferable);
+		Ok(())
 	}
 }

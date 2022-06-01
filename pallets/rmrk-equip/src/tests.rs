@@ -1,3 +1,7 @@
+// Copyright (C) 2021-2022 RMRK
+// This file is part of rmrk-equip.
+// License: Apache 2.0 modified by RMRK, see LICENSE.md
+
 use super::*;
 
 use rmrk_traits::{FixedPart, SlotPart, ThemeProperty};
@@ -175,6 +179,7 @@ fn equip_works() {
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
 			stb("ipfs://character-0-metadata"), // metadata
+			true,
 		));
 
 		// Mint NFT 1 from collection 0 (character-1)
@@ -185,6 +190,7 @@ fn equip_works() {
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
 			stb("ipfs://character-1-metadata"), // metadata
+			true,
 		));
 
 		// Mint NFT 0 from collection 1 (sword)
@@ -195,6 +201,7 @@ fn equip_works() {
 			Some(ALICE),                      // recipient
 			Some(Permill::from_float(1.525)), // royalties
 			stb("ipfs://sword-metadata"),     // metadata
+			true,
 		));
 
 		// Mint NFT 1 from collection 1 (flashlight)
@@ -205,6 +212,7 @@ fn equip_works() {
 			Some(ALICE),                       // recipient
 			Some(Permill::from_float(1.525)),  // royalties
 			stb("ipfs://flashlight-metadata"), // metadata
+			true,
 		));
 
 		// Attempt to equip sword should fail as character-0 doesn't own sword
@@ -213,6 +221,7 @@ fn equip_works() {
 				Origin::signed(ALICE), // Signer
 				(1, 0),                // item
 				(0, 0),                // equipper
+				0,                     // ResourceId (doesn't exist)
 				0,                     // BaseId
 				201,                   // SlotId
 			),
@@ -234,6 +243,7 @@ fn equip_works() {
 				Origin::signed(ALICE), // Signer
 				(1, 0),                // item
 				(0, 0),                // equipper
+				0,                     // ResourceId
 				0,                     // BaseId
 				201,                   // SlotId
 			),
@@ -253,9 +263,9 @@ fn equip_works() {
 		// Add a Base 0 resource (body-1 and left-hand slot) to our character-0 nft
 		assert_ok!(RmrkCore::add_composable_resource(
 			Origin::signed(ALICE),
-			0,                              // collection_id
-			0,                              // nft id
-			stbr("res-1"),                  // resource_id
+			0,             // collection_id
+			0,             // nft id
+			stbr("res-1"), // resource_id
 			composable_resource,
 			// Some(0),                        // pub base: BaseId,
 			// Some(stb("ipfs://backup-src")), // pub src: BoundedString,
@@ -277,6 +287,7 @@ fn equip_works() {
 				Origin::signed(ALICE), // Signer
 				(1, 0),                // item
 				(0, 0),                // equipper
+				0,                     // ResourceId
 				0,                     // BaseId
 				201,                   // SlotId
 			),
@@ -295,9 +306,8 @@ fn equip_works() {
 		// Add our sword left-hand resource to our sword NFT
 		assert_ok!(RmrkCore::add_slot_resource(
 			Origin::signed(ALICE),
-			1,                                       // collection id
-			0,                                       // nft id
-			stbr("res-777"),                         // resource_id
+			1, // collection id
+			0, // nft id
 			sword_slot_resource_left
 		));
 
@@ -306,6 +316,7 @@ fn equip_works() {
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
 			(0, 0),                // equipper
+			0,                     // ResourceId,
 			0,                     // BaseId
 			201,                   // SlotId
 		));
@@ -317,10 +328,10 @@ fn equip_works() {
 			slot_id: 201,
 		}));
 
-		// Equipped resource ID Some(777) should now be associated with equippings for character-0
+		// Equipped resource ID 0 should now be associated with equippings for character-0
 		// on base 0, slot 201
 		let equipped = RmrkEquip::equippings(((0, 0), 0, 201));
-		assert_eq!(equipped.clone().unwrap(), stbr("res-777"),);
+		assert_eq!(equipped.clone().unwrap(), 0,);
 
 		// Resource for equipped item should exist
 		assert!(RmrkCore::resources((1, 0, equipped.unwrap())).is_some());
@@ -337,9 +348,8 @@ fn equip_works() {
 		// Add our sword right-hand resource to our sword NFT
 		assert_ok!(RmrkCore::add_slot_resource(
 			Origin::signed(ALICE),
-			1,                                        // collection id
-			0,                                        // nft id
-			stbr("res-130"),                          // resource_id
+			1, // collection id
+			0, // nft id
 			sword_slot_resource_right,
 		));
 
@@ -349,6 +359,7 @@ fn equip_works() {
 				Origin::signed(ALICE), // Signer
 				(1, 0),                // item
 				(0, 0),                // equipper
+				0,                     // ResourceId
 				0,                     // BaseId
 				202,                   // SlotId
 			),
@@ -360,6 +371,7 @@ fn equip_works() {
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
 			(0, 0),                // equipper
+			0,                     // ResourceId
 			0,                     // BaseId
 			201,                   // SlotId
 		));
@@ -376,6 +388,7 @@ fn equip_works() {
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
 			(0, 0),                // equipper
+			0,                     // ResourceId
 			0,                     // BaseId
 			201,                   // SlotId
 		));
@@ -385,6 +398,7 @@ fn equip_works() {
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
 			(0, 0),                // equipper
+			0,                     // ResourceId
 			0,                     // BaseId
 			201,                   // SlotId
 		));
@@ -394,6 +408,7 @@ fn equip_works() {
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
 			(0, 0),                // equipper
+			1,                     // ResourceId
 			0,                     // BaseId
 			202,                   // SlotId
 		));

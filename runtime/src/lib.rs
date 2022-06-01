@@ -22,7 +22,7 @@ use sp_version::RuntimeVersion;
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{AsEnsureOriginWithArg, KeyOwnerProofSystem, Randomness, StorageInfo},
+	traits::{AsEnsureOriginWithArg, Contains, KeyOwnerProofSystem, Randomness, StorageInfo},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
@@ -166,11 +166,37 @@ parameter_types! {
 	pub const SS58Prefix: u8 = 42;
 }
 
+pub struct BaseFilter;
+impl Contains<Call> for BaseFilter {
+	fn contains(call: &Call) -> bool {
+		// Disable direct calls to pallet_uniques
+		!matches!(
+			call,
+			Call::Uniques(pallet_uniques::Call::approve_transfer { .. }) |
+				Call::Uniques(pallet_uniques::Call::burn { .. }) |
+				Call::Uniques(pallet_uniques::Call::cancel_approval { .. }) |
+				Call::Uniques(pallet_uniques::Call::clear_class_metadata { .. }) |
+				Call::Uniques(pallet_uniques::Call::clear_metadata { .. }) |
+				Call::Uniques(pallet_uniques::Call::create { .. }) |
+				Call::Uniques(pallet_uniques::Call::destroy { .. }) |
+				Call::Uniques(pallet_uniques::Call::force_asset_status { .. }) |
+				Call::Uniques(pallet_uniques::Call::force_create { .. }) |
+				Call::Uniques(pallet_uniques::Call::freeze_class { .. }) |
+				Call::Uniques(pallet_uniques::Call::mint { .. }) |
+				Call::Uniques(pallet_uniques::Call::redeposit { .. }) |
+				Call::Uniques(pallet_uniques::Call::set_class_metadata { .. }) |
+				Call::Uniques(pallet_uniques::Call::thaw_class { .. }) |
+				Call::Uniques(pallet_uniques::Call::transfer { .. }) |
+				Call::Uniques(pallet_uniques::Call::transfer_ownership { .. })
+		)
+	}
+}
+
 // Configure FRAME pallets to include in runtime.
 
 impl frame_system::Config for Runtime {
 	/// The basic call filter to use in dispatchable.
-	type BaseCallFilter = frame_support::traits::Everything;
+	type BaseCallFilter = BaseFilter;
 	/// Block & extrinsics weights: base values and limits.
 	type BlockWeights = BlockWeights;
 	/// The maximum length of a block (in bytes).
@@ -336,13 +362,13 @@ impl pallet_rmrk_market::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ClassDeposit: Balance = 100 * DOLLARS;
+	pub const ClassDeposit: Balance = 10 * CENTS;
 	pub const InstanceDeposit: Balance = DOLLARS;
 	pub const KeyLimit: u32 = 32;
 	pub const ValueLimit: u32 = 256;
-	pub const UniquesMetadataDepositBase: Balance = 100 * DOLLARS;
-	pub const AttributeDepositBase: Balance = 10 * DOLLARS;
-	pub const DepositPerByte: Balance = DOLLARS;
+	pub const UniquesMetadataDepositBase: Balance = 10 * CENTS;
+	pub const AttributeDepositBase: Balance = 10 * CENTS;
+	pub const DepositPerByte: Balance = CENTS;
 	pub const UniquesStringLimit: u32 = 128;
 	pub const MaxPropertiesPerTheme: u32 = 100;
 	pub const MaxCollectionsEquippablePerPart: u32 = 100;

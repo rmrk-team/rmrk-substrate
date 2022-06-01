@@ -1,3 +1,7 @@
+// Copyright (C) 2021-2022 RMRK
+// This file is part of rmrk-substrate.
+// License: Apache 2.0 modified by RMRK, see LICENSE.md
+
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, RuntimeDebug};
@@ -24,9 +28,9 @@ pub enum AccountIdOrCollectionNftTuple<AccountId> {
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub struct RoyaltyInfo<AccountId> {
 	/// Recipient (AccountId) of the royalty
-    pub recipient: AccountId,
+	pub recipient: AccountId,
 	/// Amount (Permill) of the royalty
-    pub amount: Permill,
+	pub amount: Permill,
 }
 
 /// Nft info.
@@ -43,8 +47,9 @@ pub struct NftInfo<AccountId, BoundedString> {
 	pub equipped: bool,
 	/// Pending state (if sent to NFT)
 	pub pending: bool,
+	/// transferability ( non-transferable is "souldbound" )
+	pub transferable: bool,
 }
-
 /// Abstraction over a Nft system.
 #[allow(clippy::upper_case_acronyms)]
 pub trait Nft<AccountId, BoundedString> {
@@ -57,6 +62,7 @@ pub trait Nft<AccountId, BoundedString> {
 		royalty_recipient: Option<AccountId>,
 		royalty_amount: Option<Permill>,
 		metadata: BoundedString,
+		transferable: bool,
 	) -> Result<(CollectionId, NftId), DispatchError>;
 	fn nft_burn(
 		collection_id: CollectionId,

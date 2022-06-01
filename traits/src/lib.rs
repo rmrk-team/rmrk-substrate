@@ -1,3 +1,7 @@
+// Copyright (C) 2021-2022 RMRK
+// This file is part of rmrk-substrate.
+// License: Apache 2.0 modified by RMRK, see LICENSE.md
+
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub mod base;
@@ -17,7 +21,9 @@ pub use collection::{Collection, CollectionInfo};
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo, RoyaltyInfo};
 pub use priority::Priority;
 pub use property::Property;
-pub use resource::{Resource, ResourceInfo, ResourceTypes, BasicResource, SlotResource, ComposableResource};
+pub use resource::{
+	BasicResource, ComposableResource, Resource, ResourceInfo, ResourceTypes, SlotResource,
+};
 pub mod primitives {
 	pub type CollectionId = u32;
 	pub type ResourceId = u32;

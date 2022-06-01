@@ -1,3 +1,7 @@
+// Copyright (C) 2021-2022 RMRK
+// This file is part of rmrk-equip.
+// License: Apache 2.0 modified by RMRK, see LICENSE.md
+
 use super::*;
 use frame_support::traits::tokens::Locker;
 
@@ -27,14 +31,20 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> Base<
-	T::AccountId,
-	CollectionId,
-	NftId,
-	StringLimitOf<T>,
-	BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
-	T::PartsLimit>,
-	BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>
+impl<T: Config>
+	Base<
+		T::AccountId,
+		CollectionId,
+		NftId,
+		StringLimitOf<T>,
+		BoundedVec<
+			PartType<
+				StringLimitOf<T>,
+				BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+			>,
+			T::PartsLimit,
+		>,
+		BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
 	> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
@@ -52,7 +62,13 @@ where
 		issuer: T::AccountId,
 		base_type: StringLimitOf<T>,
 		symbol: StringLimitOf<T>,
-		parts: BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>, T::PartsLimit>,
+		parts: BoundedVec<
+			PartType<
+				StringLimitOf<T>,
+				BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+			>,
+			T::PartsLimit,
+		>,
 	) -> Result<BaseId, DispatchError> {
 		let base_id = Self::get_next_base_id()?;
 		for part in parts.clone() {
@@ -111,6 +127,7 @@ where
 		issuer: T::AccountId,
 		item: (CollectionId, NftId),
 		equipper: (CollectionId, NftId),
+		resource_id: ResourceId,
 		base_id: BaseId,
 		slot_id: SlotId,
 	) -> Result<(CollectionId, NftId, BaseId, SlotId, bool), DispatchError> {
@@ -223,50 +240,29 @@ where
 
 		// Equipper must have a resource that is associated with the provided base ID
 		// First we iterate through the resources added to this NFT in search of the base ID
-		let mut found_base_resource_on_nft = false;
-		let resources_matching_base_iter = pallet_rmrk_core::Resources::<T>::iter_prefix_values((
-			equipper_collection_id,
-			equipper_nft_id,
-		));
-
-		for resource in resources_matching_base_iter {
-			match resource.resource {
-				ResourceTypes::Composable(res) => {
-					if res.base == base_id {
-						found_base_resource_on_nft = true;
-					}
-				},
-				_ => (),
-			}
-			
-		}
-
-		// If we don't find a matching base resource, we raise a NoResourceForThisBaseFoundOnNft
-		// error
-		ensure!(found_base_resource_on_nft, Error::<T>::NoResourceForThisBaseFoundOnNft);
+		ensure!(
+			pallet_rmrk_core::Pallet::<T>::composable_resources((
+				equipper_collection_id,
+				equipper_nft_id,
+				// resource_id,
+				base_id
+			))
+			.is_some(),
+			Error::<T>::NoResourceForThisBaseFoundOnNft
+		);
 
 		// The item being equipped must be have a resource that is equippable into that base.slot
-		let mut found_base_slot_resource_on_nft = false;
-
-		// initialized so the compiler doesn't complain, though it will be overwritten if it
-		// resource exists
-		let mut to_equip_resource_id: BoundedResource<T> = b"".to_vec().try_into().unwrap();
-
-		let resources_matching_base_iter =
-			pallet_rmrk_core::Resources::<T>::iter_prefix_values((item_collection_id, item_nft_id));
-
-		for resource in resources_matching_base_iter {
-			match resource.resource {
-				ResourceTypes::Slot(res) => {
-					if res.slot == slot_id && res.base == base_id {
-						found_base_slot_resource_on_nft = true;
-						to_equip_resource_id = resource.id;
-					}
-				},
-				_ => (),
-			}
-		}
-		ensure!(found_base_slot_resource_on_nft, Error::<T>::ItemHasNoResourceToEquipThere);
+		ensure!(
+			pallet_rmrk_core::Pallet::<T>::slot_resources((
+				item_collection_id,
+				item_nft_id,
+				resource_id,
+				base_id,
+				slot_id
+			))
+			.is_some(),
+			Error::<T>::ItemHasNoResourceToEquipThere
+		);
 
 		// Part must exist
 		ensure!(Self::parts(base_id, slot_id).is_some(), Error::<T>::PartDoesntExist);
@@ -291,7 +287,7 @@ where
 				// Equip item (add to Equippings)
 				Equippings::<T>::insert(
 					((equipper_collection_id, equipper_nft_id), base_id, slot_id),
-					to_equip_resource_id,
+					resource_id,
 				);
 
 				// Update item's equipped property
