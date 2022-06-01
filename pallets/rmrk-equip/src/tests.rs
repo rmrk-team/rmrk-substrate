@@ -674,5 +674,13 @@ fn theme_add_too_many_properties_fails() {
 			],
 			inherit: false,
 		};
+
+		// We only run this to avoid having to define default_theme's type above
+		// Otherwise it will fail to compile
+		RmrkEquip::theme_add(
+			Origin::signed(ALICE),
+			0, // BaseID
+			default_theme,
+		);
 	});
 }
