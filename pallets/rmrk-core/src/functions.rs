@@ -53,7 +53,7 @@ where
 		value: ValueLimitOf<T>,
 	) -> DispatchResult {
 		let collection =
-			Collections::<T>::get(&collection_id).ok_or(Error::<T>::NoAvailableCollectionId)?;
+			Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		if let Some(nft_id) = &maybe_nft_id {
 			// Check NFT lock status

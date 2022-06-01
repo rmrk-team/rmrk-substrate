@@ -1158,6 +1158,11 @@ fn set_property_works() {
 		let key = stbk("test-key");
 		// Define property value
 		let value = stb("test-value");
+		// set_property fails without a collection (CollectionUnknown)
+		assert_noop!(
+			RMRKCore::set_property(Origin::signed(ALICE), 0, Some(0), key.clone(), value.clone()),
+			Error::<Test>::CollectionUnknown
+		);
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// Mint NFT
