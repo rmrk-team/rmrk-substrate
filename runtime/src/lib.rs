@@ -362,13 +362,13 @@ impl pallet_rmrk_market::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ClassDeposit: Balance = 100 * DOLLARS;
+	pub const ClassDeposit: Balance = 10 * CENTS;
 	pub const InstanceDeposit: Balance = DOLLARS;
 	pub const KeyLimit: u32 = 32;
 	pub const ValueLimit: u32 = 256;
-	pub const UniquesMetadataDepositBase: Balance = 100 * DOLLARS;
-	pub const AttributeDepositBase: Balance = 10 * DOLLARS;
-	pub const DepositPerByte: Balance = DOLLARS;
+	pub const UniquesMetadataDepositBase: Balance = 10 * CENTS;
+	pub const AttributeDepositBase: Balance = 10 * CENTS;
+	pub const DepositPerByte: Balance = CENTS;
 	pub const UniquesStringLimit: u32 = 128;
 	pub const MaxPropertiesPerTheme: u32 = 100;
 	pub const MaxCollectionsEquippablePerPart: u32 = 100;

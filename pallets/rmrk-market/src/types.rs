@@ -1,3 +1,7 @@
+// Copyright (C) 2021-2022 RMRK
+// This file is part of rmrk-market.
+// License: Apache 2.0 modified by RMRK, see LICENSE.md
+
 use frame_support::pallet_prelude::*;
 
 #[cfg(feature = "std")]

@@ -1,3 +1,7 @@
+// Copyright (C) 2021-2022 RMRK
+// This file is part of rmrk-equip.
+// License: Apache 2.0 modified by RMRK, see LICENSE.md
+
 use super::*;
 use frame_support::traits::tokens::Locker;
 
@@ -27,14 +31,20 @@ impl<T: Config> Pallet<T> {
 	}
 }
 
-impl<T: Config> Base<
-	T::AccountId,
-	CollectionId,
-	NftId,
-	StringLimitOf<T>,
-	BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
-	T::PartsLimit>,
-	BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>
+impl<T: Config>
+	Base<
+		T::AccountId,
+		CollectionId,
+		NftId,
+		StringLimitOf<T>,
+		BoundedVec<
+			PartType<
+				StringLimitOf<T>,
+				BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+			>,
+			T::PartsLimit,
+		>,
+		BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
 	> for Pallet<T>
 where
 	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
@@ -52,7 +62,13 @@ where
 		issuer: T::AccountId,
 		base_type: StringLimitOf<T>,
 		symbol: StringLimitOf<T>,
-		parts: BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>, T::PartsLimit>,
+		parts: BoundedVec<
+			PartType<
+				StringLimitOf<T>,
+				BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+			>,
+			T::PartsLimit,
+		>,
 	) -> Result<BaseId, DispatchError> {
 		let base_id = Self::get_next_base_id()?;
 		for part in parts.clone() {
@@ -226,8 +242,8 @@ where
 		// First we iterate through the resources added to this NFT in search of the base ID
 		ensure!(
 			pallet_rmrk_core::Pallet::<T>::composable_resources((
-			equipper_collection_id,
-			equipper_nft_id,
+				equipper_collection_id,
+				equipper_nft_id,
 				// resource_id,
 				base_id
 			))

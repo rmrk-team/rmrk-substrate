@@ -1,3 +1,7 @@
+// Copyright (C) 2021-2022 RMRK
+// This file is part of rmrk-market.
+// License: Apache 2.0 modified by RMRK, see LICENSE.md
+
 use super::*;
 use crate::mock::*;
 use frame_support::{assert_noop, assert_ok};

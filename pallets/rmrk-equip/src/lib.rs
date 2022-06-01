@@ -1,3 +1,7 @@
+// Copyright (C) 2021-2022 RMRK
+// This file is part of rmrk-equip.
+// License: Apache 2.0 modified by RMRK, see LICENSE.md
+
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(dead_code)]
 
@@ -6,13 +10,13 @@ use frame_support::{
 	ensure, BoundedVec,
 };
 
-use sp_runtime::{traits::StaticLookup};
+use sp_runtime::traits::StaticLookup;
 
 pub use pallet::*;
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, EquippableList, PartType, Theme,
-	BasicResource, ComposableResource, SlotResource, ResourceTypes,
+	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, BasicResource,
+	ComposableResource, EquippableList, PartType, ResourceTypes, SlotResource, Theme,
 };
 
 mod functions;
@@ -49,7 +53,7 @@ pub mod pallet {
 
 		/// Maximum number of Properties allowed for any Theme
 		#[pallet::constant]
-		type MaxCollectionsEquippablePerPart: Get<u32>;		
+		type MaxCollectionsEquippablePerPart: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -57,22 +61,36 @@ pub mod pallet {
 	/// Stores Bases info (issuer, base_type, symbol, parts)
 	/// TODO https://github.com/rmrk-team/rmrk-substrate/issues/98
 	/// Delete Parts from Bases info, as it's kept in Parts storage
-	pub type Bases<T: Config> =
-		StorageMap<
-		_, 
-		Twox64Concat, BaseId, 
+	pub type Bases<T: Config> = StorageMap<
+		_,
+		Twox64Concat,
+		BaseId,
 		BaseInfo<
-			T::AccountId, StringLimitOf<T>, BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
-			T::PartsLimit>>
-		>;
+			T::AccountId,
+			StringLimitOf<T>,
+			BoundedVec<
+				PartType<
+					StringLimitOf<T>,
+					BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+				>,
+				T::PartsLimit,
+			>,
+		>,
+	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn parts)]
 	/// Stores Parts (either FixedPart or SlotPart)
 	/// - SlotPart: id, equippable (list), src, z
 	/// - FixedPart: id, src, z
-	pub type Parts<T: Config> =
-		StorageDoubleMap<_, Twox64Concat, BaseId, Twox64Concat, PartId, PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>>;
+	pub type Parts<T: Config> = StorageDoubleMap<
+		_,
+		Twox64Concat,
+		BaseId,
+		Twox64Concat,
+		PartId,
+		PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
+	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn next_base_id)]
@@ -214,18 +232,13 @@ pub mod pallet {
 			new_issuer: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			let base =
-				Self::bases(base_id).ok_or(Error::<T>::BaseDoesntExist)?;
+			let base = Self::bases(base_id).ok_or(Error::<T>::BaseDoesntExist)?;
 			ensure!(base.issuer == sender, Error::<T>::PermissionError);
 			let new_owner = T::Lookup::lookup(new_issuer.clone())?;
 
-			ensure!(
-				Bases::<T>::contains_key(base_id),
-				Error::<T>::NoAvailableBaseId
-			);
+			ensure!(Bases::<T>::contains_key(base_id), Error::<T>::NoAvailableBaseId);
 
-			let (new_owner, base_id) =
-				Self::base_change_issuer(base_id, new_owner)?;
+			let (new_owner, base_id) = Self::base_change_issuer(base_id, new_owner)?;
 
 			Self::deposit_event(Event::BaseIssuerChanged {
 				old_issuer: sender,
@@ -295,7 +308,9 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_id: BaseId,
 			slot_id: SlotId,
-			equippables: EquippableList<BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
+			equippables: EquippableList<
+				BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+			>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -352,7 +367,13 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,
 			symbol: BoundedVec<u8, T::StringLimit>,
-			parts: BoundedVec<PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>, T::PartsLimit>,
+			parts: BoundedVec<
+				PartType<
+					StringLimitOf<T>,
+					BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+				>,
+				T::PartsLimit,
+			>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 

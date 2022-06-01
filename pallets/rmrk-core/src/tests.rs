@@ -1,3 +1,7 @@
+// Copyright (C) 2021-2022 RMRK
+// This file is part of rmrk-core.
+// License: Apache 2.0 modified by RMRK, see LICENSE.md
+
 use frame_support::{assert_noop, assert_ok};
 // use sp_runtime::AccountId32;
 use sp_runtime::Permill;

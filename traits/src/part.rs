@@ -1,9 +1,13 @@
+// Copyright (C) 2021-2022 RMRK
+// This file is part of rmrk-substrate.
+// License: Apache 2.0 modified by RMRK, see LICENSE.md
+
 use crate::primitives::*;
 use codec::{Decode, Encode};
+use frame_support::pallet_prelude::MaxEncodedLen;
 use scale_info::TypeInfo;
 use sp_runtime::RuntimeDebug;
 use sp_std::vec::Vec;
-use frame_support::pallet_prelude::MaxEncodedLen;
 
 // #[cfg_attr(feature = "std", derive(PartialEq, Eq))]
 #[derive(Encode, Decode, RuntimeDebug, TypeInfo, Clone, PartialEq, Eq, MaxEncodedLen)]
