@@ -217,7 +217,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T>
 	where
-		T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+		T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 	{
 		/// Change the issuer of a Base
 		///
