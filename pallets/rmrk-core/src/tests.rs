@@ -60,6 +60,7 @@ fn basic_mint() -> DispatchResult {
 		Some(Permill::from_float(1.525)),
 		bvec![0u8; 20],
 		true,
+		None,
 	)
 }
 
@@ -240,6 +241,7 @@ fn mint_nft_works() {
 			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20],
 			true,
+			None,
 		));
 		// BOB shouldn't be able to mint in ALICE's collection
 		assert_noop!(
@@ -251,6 +253,7 @@ fn mint_nft_works() {
 				Some(Permill::from_float(20.525)),
 				bvec![0u8; 20],
 				true,
+				None,
 			),
 			Error::<Test>::NoPermission
 		);
@@ -264,6 +267,7 @@ fn mint_nft_works() {
 				Some(Permill::from_float(20.525)),
 				bvec![0u8; 20],
 				true,
+				None,
 			),
 			Error::<Test>::CollectionUnknown
 		);
@@ -304,6 +308,7 @@ fn royalty_recipient_default_works() {
 			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20],
 			true,
+			None,
 		));
 		// Royalty recipient should default to issuer (ALICE)
 		assert_eq!(RmrkCore::nfts(0, 0).unwrap().royalty.unwrap().recipient, ALICE);
@@ -316,6 +321,7 @@ fn royalty_recipient_default_works() {
 			Some(Permill::from_float(20.525)),
 			bvec![0u8; 20],
 			true,
+			None,
 		));
 		// Royalty recipient should be BOB
 		assert_eq!(RmrkCore::nfts(0, 1).unwrap().royalty.unwrap().recipient, BOB);
@@ -328,6 +334,7 @@ fn royalty_recipient_default_works() {
 			None, // No royalty amount
 			bvec![0u8; 20],
 			true,
+			None,
 		));
 		// Royalty should not exist
 		assert!(RmrkCore::nfts(0, 2).unwrap().royalty.is_none());
@@ -340,6 +347,7 @@ fn royalty_recipient_default_works() {
 			None,        // No royalty amount
 			bvec![0u8; 20],
 			true,
+			None,
 		));
 		// Royalty should not exist
 		assert!(RmrkCore::nfts(0, 3).unwrap().royalty.is_none());
@@ -511,6 +519,7 @@ fn send_non_transferable_fail() {
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
 			false, // non-transferable
+			None,
 		));
 		assert_noop!(
 			RMRKCore::send(
@@ -953,6 +962,79 @@ fn create_resource_works() {
 	});
 }
 
+/// Minting with resources works
+#[test]
+fn add_resource_on_mint_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		let basic_resource: BasicResource<BoundedVec<u8, UniquesStringLimit>> =
+			BasicResource { src: None, metadata: None, license: None, thumb: None };
+
+		// Create a basic collection
+		assert_ok!(basic_collection());
+
+		let basic_resource =
+			BasicResource { src: None, metadata: None, license: None, thumb: None };
+
+		// Resources to add
+		let resources_to_add = bvec![
+			ResourceTypes::Basic(basic_resource.clone()),
+			ResourceTypes::Basic(basic_resource),
+		];
+
+		// Mint NFT
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			true,
+			Some(resources_to_add),
+		));
+
+		assert_eq!(RMRKCore::resources((0, 0, 0)).is_some(), true);
+		assert_eq!(RMRKCore::resources((0, 0, 1)).is_some(), true);
+	});
+}
+
+/// Minting with more than max resources (set to 3 in mock) should panic
+#[should_panic]
+#[test]
+fn add_resource_on_mint_beyond_max_fails() {
+	ExtBuilder::default().build().execute_with(|| {
+		let basic_resource: BasicResource<BoundedVec<u8, UniquesStringLimit>> =
+			BasicResource { src: None, metadata: None, license: None, thumb: None };
+
+		// Create a basic collection
+		assert_ok!(basic_collection());
+
+		let basic_resource =
+			BasicResource { src: None, metadata: None, license: None, thumb: None };
+
+		// Resources to add
+		let resources_to_add = bvec![
+			ResourceTypes::Basic(basic_resource.clone()),
+			ResourceTypes::Basic(basic_resource.clone()),
+			ResourceTypes::Basic(basic_resource.clone()),
+			ResourceTypes::Basic(basic_resource),
+		];
+
+		// Mint NFT
+		RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			ALICE,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			true,
+			Some(resources_to_add),
+		)
+
+	});
+}
+
 /// Resource: Resource addition with pending and accept (RMRK2.0 spec: ACCEPT)
 #[test]
 fn add_resource_pending_works() {
@@ -968,6 +1050,7 @@ fn add_resource_pending_works() {
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
 			true,
+			None
 		));
 
 		let basic_resource = BasicResource {
@@ -1090,6 +1173,7 @@ fn resource_removal_pending_works() {
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
 			true,
+			None
 		));
 
 		let basic_resource =
