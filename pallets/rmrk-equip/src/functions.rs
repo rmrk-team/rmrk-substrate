@@ -47,7 +47,7 @@ impl<T: Config>
 		BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
 	> for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	/// Implementation of the base_create function for the Base trait
 	/// Called by the create_base extrinsic to create a new Base.
