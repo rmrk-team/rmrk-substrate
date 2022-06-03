@@ -56,7 +56,7 @@ describe("Integration test: set slot's Equippable List", () => {
     it("[negative] unable to set equippable list by a not-an-owner", async () => {
         const slotId = 42;
 
-        const baseId = await createBase(api, alice, 'slotpartany-base-type', 'slotpartany-base-symbol', [
+        const baseId = await createBase(api, alice, 'slotpartany-base-type', 'slotpartany', [
             {
                 "SlotPart": {
                     id: slotId,
@@ -74,7 +74,7 @@ describe("Integration test: set slot's Equippable List", () => {
     it("[negative] unable to set equippable list to a fixed part", async () => {
         const fixedPartId = 42;
 
-        const baseId = await createBase(api, alice, 'fixedpart-base-type', 'fixedpart-base-symbol', [
+        const baseId = await createBase(api, alice, 'fixedpart-base-type', 'fixedpart', [
             {
                 "FixedPart": {
                     id: fixedPartId,
@@ -92,7 +92,7 @@ describe("Integration test: set slot's Equippable List", () => {
         const slotId = 777
         const maxSlotId = 0xFFFFFFFF;
 
-        const baseId = await createBase(api, alice, 'slotpartany-base-type', 'slotpartany-base-symbol', [
+        const baseId = await createBase(api, alice, 'slotpartany-base-type', 'slotpartany', [
             {
                 "SlotPart": {
                     id: slotId,
