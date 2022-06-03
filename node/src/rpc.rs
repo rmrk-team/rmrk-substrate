@@ -24,7 +24,7 @@ use rmrk_rpc::{RmrkApi as RmrkRuntimeApi, PropertyKey, ThemeName};
 use rmrk_traits::{primitives::*, NftChild};
 
 use pallet_rmrk_core::{CollectionInfoOf, InstanceInfoOf, ResourceInfoOf, PropertyInfoOf};
-use pallet_rmrk_equip::{ThemeOf, BaseInfoOf, PartTypeOf};
+use pallet_rmrk_equip::{BoundedThemeOf, BaseInfoOf, PartTypeOf};
 
 macro_rules! pass_method {
 	(
@@ -314,7 +314,7 @@ where
 		PropertyInfoOf<RmrkRuntime>,
 		BaseInfoOf<RmrkRuntime>,
 		PartTypeOf<RmrkRuntime>,
-		ThemeOf<RmrkRuntime>,
+		BoundedThemeOf<RmrkRuntime>,
 	>,
 	P: TransactionPool + 'static,
 {
@@ -324,8 +324,8 @@ where
 	let mut module = RpcModule::new(());
 	let FullDeps { client, pool, deny_unsafe } = deps;
 
-	module.merge(SystemRpc::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
-	module.merge(TransactionPaymentRpc::new(client.clone()).into_rpc())?;
+	module.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
+	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
 	module.merge(RmrkApi::new(client).into_rpc())?;
 
 	Ok(module)
