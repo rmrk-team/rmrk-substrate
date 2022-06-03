@@ -2,9 +2,10 @@
 /* eslint-disable */
 
 import type { ApiTypes } from '@polkadot/api-base/types';
-import type { Vec, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { Option, Vec, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { Codec } from '@polkadot/types-codec/types';
-import type { FrameSupportWeightsRuntimeDbWeight, FrameSupportWeightsWeightToFeeCoefficient, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
+import type { Permill } from '@polkadot/types/interfaces/runtime';
+import type { FrameSupportPalletId, FrameSupportWeightsRuntimeDbWeight, FrameSupportWeightsWeightToFeeCoefficient, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
 
 declare module '@polkadot/api-base/types/consts' {
   export interface AugmentedConsts<ApiType extends ApiTypes> {
@@ -27,53 +28,19 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       [key: string]: Codec;
     };
-    grandpa: {
-      /**
-       * Max Authorities in use
-       **/
-      maxAuthorities: u32 & AugmentedConst<ApiType>;
+    common: {
+      collectionAdminsLimit: u32 & AugmentedConst<ApiType>;
+      collectionCreationPrice: u128 & AugmentedConst<ApiType>;
       /**
        * Generic const
        **/
       [key: string]: Codec;
     };
-    rmrkCore: {
+    inflation: {
       /**
-       * The maximum number of resources that can be included in a setpriority extrinsic
+       * Number of blocks that pass between treasury balance updates due to inflation
        **/
-      maxPriorities: u32 & AugmentedConst<ApiType>;
-      /**
-       * The maximum number of parts each resource may have
-       **/
-      partsLimit: u32 & AugmentedConst<ApiType>;
-      /**
-       * The maximum resource symbol length
-       **/
-      resourceSymbolLimit: u32 & AugmentedConst<ApiType>;
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec;
-    };
-    rmrkEquip: {
-      /**
-       * Maximum number of Properties allowed for any Theme
-       **/
-      maxCollectionsEquippablePerPart: u32 & AugmentedConst<ApiType>;
-      /**
-       * Maximum allowed Parts (either Fixed or Slot) per Base
-       **/
-      maxPropertiesPerTheme: u32 & AugmentedConst<ApiType>;
-      /**
-       * Generic const
-       **/
-      [key: string]: Codec;
-    };
-    rmrkMarket: {
-      /**
-       * Minimum offer amount as a valid offer
-       **/
-      minimumOfferAmount: u128 & AugmentedConst<ApiType>;
+      inflationBlockInterval: u32 & AugmentedConst<ApiType>;
       /**
        * Generic const
        **/
@@ -164,50 +131,48 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       [key: string]: Codec;
     };
-    uniques: {
+    treasury: {
       /**
-       * The basic amount of funds that must be reserved when adding an attribute to an asset.
+       * Percentage of spare funds (if any) that are burnt per spend period.
        **/
-      attributeDepositBase: u128 & AugmentedConst<ApiType>;
+      burn: Permill & AugmentedConst<ApiType>;
       /**
-       * The basic amount of funds that must be reserved for an asset class.
+       * The maximum number of approvals that can wait in the spending queue.
+       * 
+       * NOTE: This parameter is also used within the Bounties Pallet extension if enabled.
        **/
-      classDeposit: u128 & AugmentedConst<ApiType>;
+      maxApprovals: u32 & AugmentedConst<ApiType>;
       /**
-       * The additional funds that must be reserved for the number of bytes store in metadata,
-       * either "normal" metadata or attribute metadata.
+       * The treasury's pallet id, used for deriving its sovereign account ID.
        **/
-      depositPerByte: u128 & AugmentedConst<ApiType>;
+      palletId: FrameSupportPalletId & AugmentedConst<ApiType>;
       /**
-       * The basic amount of funds that must be reserved for an asset instance.
+       * Fraction of a proposal's value that should be bonded in order to place the proposal.
+       * An accepted proposal gets these back. A rejected proposal does not.
        **/
-      instanceDeposit: u128 & AugmentedConst<ApiType>;
+      proposalBond: Permill & AugmentedConst<ApiType>;
       /**
-       * The maximum length of an attribute key.
+       * Maximum amount of funds that should be placed in a deposit for making a proposal.
        **/
-      keyLimit: u32 & AugmentedConst<ApiType>;
+      proposalBondMaximum: Option<u128> & AugmentedConst<ApiType>;
       /**
-       * The basic amount of funds that must be reserved when adding metadata to your asset.
+       * Minimum amount of funds that should be placed in a deposit for making a proposal.
        **/
-      metadataDepositBase: u128 & AugmentedConst<ApiType>;
+      proposalBondMinimum: u128 & AugmentedConst<ApiType>;
       /**
-       * The maximum length of data stored on-chain.
+       * Period between successive spends.
        **/
-      stringLimit: u32 & AugmentedConst<ApiType>;
-      /**
-       * The maximum length of an attribute value.
-       **/
-      valueLimit: u32 & AugmentedConst<ApiType>;
+      spendPeriod: u32 & AugmentedConst<ApiType>;
       /**
        * Generic const
        **/
       [key: string]: Codec;
     };
-    utility: {
+    vesting: {
       /**
-       * The limit on the number of batched calls.
+       * The minimum amount transferred to call `vested_transfer`.
        **/
-      batchedCallsLimit: u32 & AugmentedConst<ApiType>;
+      minVestedTransfer: u128 & AugmentedConst<ApiType>;
       /**
        * Generic const
        **/

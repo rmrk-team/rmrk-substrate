@@ -43,167 +43,441 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       [key: string]: AugmentedError<ApiType>;
     };
-    grandpa: {
+    common: {
       /**
-       * Attempt to signal GRANDPA change with one already pending.
+       * Account token limit exceeded per collection
        **/
-      ChangePending: AugmentedError<ApiType>;
+      AccountTokenLimitExceeded: AugmentedError<ApiType>;
       /**
-       * A given equivocation report is valid but already previously reported.
+       * Can't transfer tokens to ethereum zero address
        **/
-      DuplicateOffenceReport: AugmentedError<ApiType>;
+      AddressIsZero: AugmentedError<ApiType>;
       /**
-       * An equivocation proof provided as part of an equivocation report is invalid.
+       * Address is not in allow list.
        **/
-      InvalidEquivocationProof: AugmentedError<ApiType>;
+      AddressNotInAllowlist: AugmentedError<ApiType>;
       /**
-       * A key ownership proof provided as part of an equivocation report is invalid.
+       * Requested value more than approved.
        **/
-      InvalidKeyOwnershipProof: AugmentedError<ApiType>;
+      ApprovedValueTooLow: AugmentedError<ApiType>;
       /**
-       * Attempt to signal GRANDPA pause when the authority set isn't live
-       * (either paused or already pending pause).
+       * Tried to approve more than owned
        **/
-      PauseFailed: AugmentedError<ApiType>;
+      CantApproveMoreThanOwned: AugmentedError<ApiType>;
       /**
-       * Attempt to signal GRANDPA resume when the authority set isn't paused
-       * (either live or already pending resume).
+       * Destroying only empty collections is allowed
        **/
-      ResumeFailed: AugmentedError<ApiType>;
+      CantDestroyNotEmptyCollection: AugmentedError<ApiType>;
       /**
-       * Cannot signal forced change so soon after last.
+       * Exceeded max admin count
        **/
-      TooSoon: AugmentedError<ApiType>;
+      CollectionAdminCountExceeded: AugmentedError<ApiType>;
+      /**
+       * Collection description can not be longer than 255 char.
+       **/
+      CollectionDescriptionLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * Tried to store more data than allowed in collection field
+       **/
+      CollectionFieldSizeExceeded: AugmentedError<ApiType>;
+      /**
+       * Collection limit bounds per collection exceeded
+       **/
+      CollectionLimitBoundsExceeded: AugmentedError<ApiType>;
+      /**
+       * Collection name can not be longer than 63 char.
+       **/
+      CollectionNameLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * This collection does not exist.
+       **/
+      CollectionNotFound: AugmentedError<ApiType>;
+      /**
+       * Collection token limit exceeded
+       **/
+      CollectionTokenLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * Token prefix can not be longer than 15 char.
+       **/
+      CollectionTokenPrefixLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * Empty property keys are forbidden
+       **/
+      EmptyPropertyKey: AugmentedError<ApiType>;
+      /**
+       * Only ASCII letters, digits, and '_', '-' are allowed
+       **/
+      InvalidCharacterInPropertyKey: AugmentedError<ApiType>;
+      /**
+       * Metadata flag frozen
+       **/
+      MetadataFlagFrozen: AugmentedError<ApiType>;
+      /**
+       * Sender parameter and item owner must be equal.
+       **/
+      MustBeTokenOwner: AugmentedError<ApiType>;
+      /**
+       * Collection has nesting disabled
+       **/
+      NestingIsDisabled: AugmentedError<ApiType>;
+      /**
+       * No permission to perform action
+       **/
+      NoPermission: AugmentedError<ApiType>;
+      /**
+       * Tried to store more property data than allowed
+       **/
+      NoSpaceForProperty: AugmentedError<ApiType>;
+      /**
+       * Not sufficient founds to perform action
+       **/
+      NotSufficientFounds: AugmentedError<ApiType>;
+      /**
+       * Only owner may nest tokens under this collection
+       **/
+      OnlyOwnerAllowedToNest: AugmentedError<ApiType>;
+      /**
+       * Tried to enable permissions which are only permitted to be disabled
+       **/
+      OwnerPermissionsCantBeReverted: AugmentedError<ApiType>;
+      /**
+       * Property key is too long
+       **/
+      PropertyKeyIsTooLong: AugmentedError<ApiType>;
+      /**
+       * Tried to store more property keys than allowed
+       **/
+      PropertyLimitReached: AugmentedError<ApiType>;
+      /**
+       * Collection is not in mint mode.
+       **/
+      PublicMintingNotAllowed: AugmentedError<ApiType>;
+      /**
+       * Only tokens from specific collections may nest tokens under this
+       **/
+      SourceCollectionIsNotAllowedToNest: AugmentedError<ApiType>;
+      /**
+       * Item not exists.
+       **/
+      TokenNotFound: AugmentedError<ApiType>;
+      /**
+       * Item balance not enough.
+       **/
+      TokenValueTooLow: AugmentedError<ApiType>;
+      /**
+       * Total collections bound exceeded.
+       **/
+      TotalCollectionsLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * Collection settings not allowing items transferring
+       **/
+      TransferNotAllowed: AugmentedError<ApiType>;
+      /**
+       * Target collection doesn't supports this operation
+       **/
+      UnsupportedOperation: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    cumulusXcm: {
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    dmpQueue: {
+      /**
+       * The amount of weight given is possibly not enough for executing the message.
+       **/
+      OverLimit: AugmentedError<ApiType>;
+      /**
+       * The message index given is unknown.
+       **/
+      Unknown: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    ethereum: {
+      /**
+       * Signature is invalid.
+       **/
+      InvalidSignature: AugmentedError<ApiType>;
+      /**
+       * Pre-log is present, therefore transact is not allowed.
+       **/
+      PreLogExists: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    evm: {
+      /**
+       * Not enough balance to perform action
+       **/
+      BalanceLow: AugmentedError<ApiType>;
+      /**
+       * Calculating total fee overflowed
+       **/
+      FeeOverflow: AugmentedError<ApiType>;
+      /**
+       * Gas price is too low.
+       **/
+      GasPriceTooLow: AugmentedError<ApiType>;
+      /**
+       * Nonce is invalid
+       **/
+      InvalidNonce: AugmentedError<ApiType>;
+      /**
+       * Calculating total payment overflowed
+       **/
+      PaymentOverflow: AugmentedError<ApiType>;
+      /**
+       * Withdraw fee failed
+       **/
+      WithdrawFailed: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    evmCoderSubstrate: {
+      OutOfFund: AugmentedError<ApiType>;
+      OutOfGas: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    evmContractHelpers: {
+      /**
+       * This method is only executable by owner
+       **/
+      NoPermission: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    evmMigration: {
+      AccountIsNotMigrating: AugmentedError<ApiType>;
+      AccountNotEmpty: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    fungible: {
+      /**
+       * Fungible token does not support nested
+       **/
+      FungibleDisallowsNesting: AugmentedError<ApiType>;
+      /**
+       * Tried to set data for fungible item
+       **/
+      FungibleItemsDontHaveData: AugmentedError<ApiType>;
+      /**
+       * Not default id passed as TokenId argument
+       **/
+      FungibleItemsHaveNoId: AugmentedError<ApiType>;
+      /**
+       * Not Fungible item data used to mint in Fungible collection.
+       **/
+      NotFungibleDataUsedToMintFungibleCollectionToken: AugmentedError<ApiType>;
+      /**
+       * Setting item properties is not allowed
+       **/
+      SettingPropertiesNotAllowed: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    nonfungible: {
+      /**
+       * Unable to burn NFT with children
+       **/
+      CantBurnNftWithChildren: AugmentedError<ApiType>;
+      /**
+       * Used amount > 1 with NFT
+       **/
+      NonfungibleItemsHaveNoAmount: AugmentedError<ApiType>;
+      /**
+       * Not Nonfungible item data used to mint in Nonfungible collection.
+       **/
+      NotNonfungibleDataUsedToMintFungibleCollectionToken: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    parachainSystem: {
+      /**
+       * The inherent which supplies the host configuration did not run this block
+       **/
+      HostConfigurationNotAvailable: AugmentedError<ApiType>;
+      /**
+       * No code upgrade has been authorized.
+       **/
+      NothingAuthorized: AugmentedError<ApiType>;
+      /**
+       * No validation function upgrade is currently scheduled.
+       **/
+      NotScheduled: AugmentedError<ApiType>;
+      /**
+       * Attempt to upgrade validation function while existing upgrade pending
+       **/
+      OverlappingUpgrades: AugmentedError<ApiType>;
+      /**
+       * Polkadot currently prohibits this parachain from upgrading its validation function
+       **/
+      ProhibitedByPolkadot: AugmentedError<ApiType>;
+      /**
+       * The supplied validation function has compiled into a blob larger than Polkadot is
+       * willing to run
+       **/
+      TooBig: AugmentedError<ApiType>;
+      /**
+       * The given code upgrade has not been authorized.
+       **/
+      Unauthorized: AugmentedError<ApiType>;
+      /**
+       * The inherent which supplies the validation data did not run this block
+       **/
+      ValidationDataNotAvailable: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    polkadotXcm: {
+      /**
+       * The location is invalid since it already has a subscription from us.
+       **/
+      AlreadySubscribed: AugmentedError<ApiType>;
+      /**
+       * The given location could not be used (e.g. because it cannot be expressed in the
+       * desired version of XCM).
+       **/
+      BadLocation: AugmentedError<ApiType>;
+      /**
+       * The version of the `Versioned` value used is not able to be interpreted.
+       **/
+      BadVersion: AugmentedError<ApiType>;
+      /**
+       * Could not re-anchor the assets to declare the fees for the destination chain.
+       **/
+      CannotReanchor: AugmentedError<ApiType>;
+      /**
+       * The destination `MultiLocation` provided cannot be inverted.
+       **/
+      DestinationNotInvertible: AugmentedError<ApiType>;
+      /**
+       * The assets to be sent are empty.
+       **/
+      Empty: AugmentedError<ApiType>;
+      /**
+       * The message execution fails the filter.
+       **/
+      Filtered: AugmentedError<ApiType>;
+      /**
+       * Origin is invalid for sending.
+       **/
+      InvalidOrigin: AugmentedError<ApiType>;
+      /**
+       * The referenced subscription could not be found.
+       **/
+      NoSubscription: AugmentedError<ApiType>;
+      /**
+       * There was some other issue (i.e. not to do with routing) in sending the message. Perhaps
+       * a lack of space for buffering the message.
+       **/
+      SendFailure: AugmentedError<ApiType>;
+      /**
+       * Too many assets have been attempted for transfer.
+       **/
+      TooManyAssets: AugmentedError<ApiType>;
+      /**
+       * The desired destination was unreachable, generally because there is a no way of routing
+       * to it.
+       **/
+      Unreachable: AugmentedError<ApiType>;
+      /**
+       * The message's weight could not be determined.
+       **/
+      UnweighableMessage: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    refungible: {
+      /**
+       * Not Refungible item data used to mint in Refungible collection.
+       **/
+      NotRefungibleDataUsedToMintFungibleCollectionToken: AugmentedError<ApiType>;
+      /**
+       * Refungible token can't nest other tokens
+       **/
+      RefungibleDisallowsNesting: AugmentedError<ApiType>;
+      /**
+       * Setting item properties is not allowed
+       **/
+      SettingPropertiesNotAllowed: AugmentedError<ApiType>;
+      /**
+       * Maximum refungibility exceeded
+       **/
+      WrongRefungiblePieces: AugmentedError<ApiType>;
       /**
        * Generic error
        **/
       [key: string]: AugmentedError<ApiType>;
     };
     rmrkCore: {
-      CannotAcceptNonOwnedNft: AugmentedError<ApiType>;
-      CannotRejectNonOwnedNft: AugmentedError<ApiType>;
-      CannotSendToDescendentOrSelf: AugmentedError<ApiType>;
       CollectionFullOrLocked: AugmentedError<ApiType>;
       CollectionNotEmpty: AugmentedError<ApiType>;
       CollectionUnknown: AugmentedError<ApiType>;
-      EmptyResource: AugmentedError<ApiType>;
-      MetadataNotSet: AugmentedError<ApiType>;
-      NftIsLocked: AugmentedError<ApiType>;
+      CorruptedCollectionType: AugmentedError<ApiType>;
+      NftTypeEncodeError: AugmentedError<ApiType>;
       NoAvailableCollectionId: AugmentedError<ApiType>;
       NoAvailableNftId: AugmentedError<ApiType>;
-      NoAvailableResourceId: AugmentedError<ApiType>;
-      /**
-       * Error names should be descriptive.
-       **/
-      NoneValue: AugmentedError<ApiType>;
-      NonTransferable: AugmentedError<ApiType>;
       NoPermission: AugmentedError<ApiType>;
-      NotInRange: AugmentedError<ApiType>;
-      NoWitness: AugmentedError<ApiType>;
-      RecipientNotSet: AugmentedError<ApiType>;
-      ResourceAlreadyExists: AugmentedError<ApiType>;
       ResourceDoesntExist: AugmentedError<ApiType>;
-      /**
-       * Accepting a resource that is not pending should fail
-       **/
-      ResourceNotPending: AugmentedError<ApiType>;
-      RoyaltyNotSet: AugmentedError<ApiType>;
-      /**
-       * Errors should have helpful documentation associated with them.
-       **/
-      StorageOverflow: AugmentedError<ApiType>;
-      TooLong: AugmentedError<ApiType>;
-      TooManyRecursions: AugmentedError<ApiType>;
+      RmrkPropertyKeyIsTooLong: AugmentedError<ApiType>;
+      RmrkPropertyValueIsTooLong: AugmentedError<ApiType>;
       /**
        * Generic error
        **/
       [key: string]: AugmentedError<ApiType>;
     };
     rmrkEquip: {
-      AlreadyEquipped: AugmentedError<ApiType>;
       BaseDoesntExist: AugmentedError<ApiType>;
-      CantEquipFixedPart: AugmentedError<ApiType>;
-      CollectionNotEquippable: AugmentedError<ApiType>;
-      EquipperDoesntExist: AugmentedError<ApiType>;
-      ExceedsMaxPartsPerBase: AugmentedError<ApiType>;
-      ItemDoesntExist: AugmentedError<ApiType>;
-      ItemHasNoResourceToEquipThere: AugmentedError<ApiType>;
-      MustBeDirectParent: AugmentedError<ApiType>;
       NeedsDefaultThemeFirst: AugmentedError<ApiType>;
       NoAvailableBaseId: AugmentedError<ApiType>;
       NoAvailablePartId: AugmentedError<ApiType>;
-      NoEquippableOnFixedPart: AugmentedError<ApiType>;
-      NoResourceForThisBaseFoundOnNft: AugmentedError<ApiType>;
-      PartDoesntExist: AugmentedError<ApiType>;
       PermissionError: AugmentedError<ApiType>;
-      TooManyProperties: AugmentedError<ApiType>;
-      UnknownError: AugmentedError<ApiType>;
       /**
        * Generic error
        **/
       [key: string]: AugmentedError<ApiType>;
     };
-    rmrkMarket: {
+    structure: {
       /**
-       * Account cannot offer on a NFT again with an active offer
+       * While searched for owner, encountered depth limit
        **/
-      AlreadyOffered: AugmentedError<ApiType>;
+      DepthLimit: AugmentedError<ApiType>;
       /**
-       * Cannot buy NFT that is already owned
+       * While searched for owner, got already checked account
        **/
-      CannotBuyOwnToken: AugmentedError<ApiType>;
+      OuroborosDetected: AugmentedError<ApiType>;
       /**
-       * Cannot list NFT owned by a NFT
+       * While searched for owner, found token owner by not-yet-existing token
        **/
-      CannotListNftOwnedByNft: AugmentedError<ApiType>;
-      /**
-       * Cannot make offer on NFT on own NFT
-       **/
-      CannotOfferOnOwnToken: AugmentedError<ApiType>;
-      /**
-       * Cannot unlist NFT as it has already been unlisted or sold
-       **/
-      CannotUnlistToken: AugmentedError<ApiType>;
-      /**
-       * Offer already accepted and cannot withdraw
-       **/
-      CannotWithdrawOffer: AugmentedError<ApiType>;
-      /**
-       * Listing has expired and cannot be bought
-       **/
-      ListingHasExpired: AugmentedError<ApiType>;
-      /**
-       * Not possible to list non-transferable NFT
-       **/
-      NonTransferable: AugmentedError<ApiType>;
-      /**
-       * No permissions for account to interact with NFT
-       **/
-      NoPermission: AugmentedError<ApiType>;
-      /**
-       * Accepted offer has expired and cannot be accepted
-       **/
-      OfferHasExpired: AugmentedError<ApiType>;
-      /**
-       * Offer is below the OfferMinimumAmount threshold
-       **/
-      OfferTooLow: AugmentedError<ApiType>;
-      /**
-       * Price differs from when `buy` was executed
-       **/
-      PriceDiffersFromExpected: AugmentedError<ApiType>;
-      /**
-       * Cannot list a non-existing NFT
-       **/
-      TokenDoesNotExist: AugmentedError<ApiType>;
-      /**
-       * Token cannot be bought
-       **/
-      TokenNotForSale: AugmentedError<ApiType>;
-      /**
-       * Offer is unknown
-       **/
-      UnknownOffer: AugmentedError<ApiType>;
+      TokenNotFound: AugmentedError<ApiType>;
       /**
        * Generic error
        **/
@@ -253,79 +527,93 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       [key: string]: AugmentedError<ApiType>;
     };
-    templateModule: {
+    treasury: {
       /**
-       * Error names should be descriptive.
+       * Proposer's balance is too low.
        **/
-      NoneValue: AugmentedError<ApiType>;
+      InsufficientProposersBalance: AugmentedError<ApiType>;
       /**
-       * Errors should have helpful documentation associated with them.
+       * No proposal or bounty at that index.
        **/
-      StorageOverflow: AugmentedError<ApiType>;
+      InvalidIndex: AugmentedError<ApiType>;
       /**
-       * Generic error
+       * Too many approvals in the queue.
        **/
-      [key: string]: AugmentedError<ApiType>;
-    };
-    uniques: {
-      /**
-       * The asset instance ID has already been used for an asset.
-       **/
-      AlreadyExists: AugmentedError<ApiType>;
-      /**
-       * Invalid witness data given.
-       **/
-      BadWitness: AugmentedError<ApiType>;
-      /**
-       * The asset instance or class is frozen.
-       **/
-      Frozen: AugmentedError<ApiType>;
-      /**
-       * The asset ID is already taken.
-       **/
-      InUse: AugmentedError<ApiType>;
-      /**
-       * The asset instance is locked.
-       **/
-      Locked: AugmentedError<ApiType>;
-      /**
-       * There is no delegate approved.
-       **/
-      NoDelegate: AugmentedError<ApiType>;
-      /**
-       * The signing account has no permission to do the operation.
-       **/
-      NoPermission: AugmentedError<ApiType>;
-      /**
-       * The named owner has not signed ownership of the class is acceptable.
-       **/
-      Unaccepted: AugmentedError<ApiType>;
-      /**
-       * No approval exists that would allow the transfer.
-       **/
-      Unapproved: AugmentedError<ApiType>;
-      /**
-       * The given asset ID is unknown.
-       **/
-      UnknownClass: AugmentedError<ApiType>;
-      /**
-       * The delegate turned out to be different to what was expected.
-       **/
-      WrongDelegate: AugmentedError<ApiType>;
-      /**
-       * The owner turned out to be different to what was expected.
-       **/
-      WrongOwner: AugmentedError<ApiType>;
+      TooManyApprovals: AugmentedError<ApiType>;
       /**
        * Generic error
        **/
       [key: string]: AugmentedError<ApiType>;
     };
-    utility: {
+    unique: {
       /**
-       * Too many calls batched.
+       * Decimal_points parameter must be lower than MAX_DECIMAL_POINTS constant, currently it is 30.
        **/
-      TooManyCalls: AugmentedError<ApiType>;
+      CollectionDecimalPointLimitExceeded: AugmentedError<ApiType>;
+      /**
+       * This address is not set as sponsor, use setCollectionSponsor first.
+       **/
+      ConfirmUnsetSponsorFail: AugmentedError<ApiType>;
+      /**
+       * Length of items properties must be greater than 0.
+       **/
+      EmptyArgument: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    vesting: {
+      /**
+       * The vested transfer amount is too low
+       **/
+      AmountLow: AugmentedError<ApiType>;
+      /**
+       * Insufficient amount of balance to lock
+       **/
+      InsufficientBalanceToLock: AugmentedError<ApiType>;
+      /**
+       * Failed because the maximum vesting schedules was exceeded
+       **/
+      MaxVestingSchedulesExceeded: AugmentedError<ApiType>;
+      /**
+       * This account have too many vesting schedules
+       **/
+      TooManyVestingSchedules: AugmentedError<ApiType>;
+      /**
+       * Vesting period is zero
+       **/
+      ZeroVestingPeriod: AugmentedError<ApiType>;
+      /**
+       * Number of vests is zero
+       **/
+      ZeroVestingPeriodCount: AugmentedError<ApiType>;
+      /**
+       * Generic error
+       **/
+      [key: string]: AugmentedError<ApiType>;
+    };
+    xcmpQueue: {
+      /**
+       * Bad overweight index.
+       **/
+      BadOverweightIndex: AugmentedError<ApiType>;
+      /**
+       * Bad XCM data.
+       **/
+      BadXcm: AugmentedError<ApiType>;
+      /**
+       * Bad XCM origin.
+       **/
+      BadXcmOrigin: AugmentedError<ApiType>;
+      /**
+       * Failed to send XCM message.
+       **/
+      FailedToSend: AugmentedError<ApiType>;
+      /**
+       * Provided weight is possibly not enough to execute the message.
+       **/
+      WeightOverLimit: AugmentedError<ApiType>;
       /**
        * Generic error
        **/
