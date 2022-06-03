@@ -134,6 +134,10 @@ declare module '@polkadot/api-base/types/storage' {
        * Stores collections info
        **/
       collections: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Option<RmrkTraitsCollectionCollectionInfo>>, [u32]> & QueryableStorageEntry<ApiType, [u32]>;
+      /**
+       * Stores resource info
+       **/
+      composableResources: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: u32 | AnyNumber | Uint8Array, arg3: u32 | AnyNumber | Uint8Array) => Observable<Option<Null>>, [u32, u32, u32]> & QueryableStorageEntry<ApiType, [u32, u32, u32]>;
       dummyStorage: AugmentedQuery<ApiType, () => Observable<Option<ITuple<[RmrkTraitsNftNftChild, PhantomTypeUpDataStructs]>>>, []> & QueryableStorageEntry<ApiType, []>;
       /**
        * Lock for NFTs
@@ -143,7 +147,7 @@ declare module '@polkadot/api-base/types/storage' {
       /**
        * Next available Resource ID.
        **/
-      nextResourceId: AugmentedQuery<ApiType, () => Observable<u32>, []> & QueryableStorageEntry<ApiType, []>;
+      nextResourceId: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: u32 | AnyNumber | Uint8Array) => Observable<u32>, [u32, u32]> & QueryableStorageEntry<ApiType, [u32, u32]>;
       /**
        * Stores nft info
        **/
@@ -159,7 +163,11 @@ declare module '@polkadot/api-base/types/storage' {
       /**
        * Stores resource info
        **/
-      resources: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: u32 | AnyNumber | Uint8Array, arg3: Bytes | string | Uint8Array) => Observable<Option<RmrkTraitsResourceResourceInfo>>, [u32, u32, Bytes]> & QueryableStorageEntry<ApiType, [u32, u32, Bytes]>;
+      resources: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: u32 | AnyNumber | Uint8Array, arg3: u32 | AnyNumber | Uint8Array) => Observable<Option<RmrkTraitsResourceResourceInfo>>, [u32, u32, u32]> & QueryableStorageEntry<ApiType, [u32, u32, u32]>;
+      /**
+       * Stores resource info
+       **/
+      slotResources: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: u32 | AnyNumber | Uint8Array, arg3: u32 | AnyNumber | Uint8Array, arg4: u32 | AnyNumber | Uint8Array, arg5: u32 | AnyNumber | Uint8Array) => Observable<Option<Null>>, [u32, u32, u32, u32, u32]> & QueryableStorageEntry<ApiType, [u32, u32, u32, u32, u32]>;
       /**
        * Generic query
        **/
@@ -175,7 +183,7 @@ declare module '@polkadot/api-base/types/storage' {
       /**
        * Stores Equippings info ((equipper, base, slot), equipped_resource)
        **/
-      equippings: AugmentedQuery<ApiType, (arg1: ITuple<[u32, u32]> | [u32 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array], arg2: u32 | AnyNumber | Uint8Array, arg3: u32 | AnyNumber | Uint8Array) => Observable<Option<Bytes>>, [ITuple<[u32, u32]>, u32, u32]> & QueryableStorageEntry<ApiType, [ITuple<[u32, u32]>, u32, u32]>;
+      equippings: AugmentedQuery<ApiType, (arg1: ITuple<[u32, u32]> | [u32 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array], arg2: u32 | AnyNumber | Uint8Array, arg3: u32 | AnyNumber | Uint8Array) => Observable<Option<u32>>, [ITuple<[u32, u32]>, u32, u32]> & QueryableStorageEntry<ApiType, [ITuple<[u32, u32]>, u32, u32]>;
       /**
        * Stores the incrementing NextBaseId
        **/

@@ -476,6 +476,7 @@ export interface PalletRmrkCoreCall extends Enum {
     readonly recipient: Option<AccountId32>;
     readonly royalty: Option<Permill>;
     readonly metadata: Bytes;
+    readonly transferable: bool;
   } & Struct;
   readonly isCreateCollection: boolean;
   readonly asCreateCollection: {
@@ -529,7 +530,6 @@ export interface PalletRmrkCoreCall extends Enum {
   readonly asAddBasicResource: {
     readonly collectionId: u32;
     readonly nftId: u32;
-    readonly resourceId: Bytes;
     readonly resource: RmrkTraitsResourceBasicResource;
   } & Struct;
   readonly isAddComposableResource: boolean;
@@ -543,26 +543,25 @@ export interface PalletRmrkCoreCall extends Enum {
   readonly asAddSlotResource: {
     readonly collectionId: u32;
     readonly nftId: u32;
-    readonly resourceId: Bytes;
     readonly resource: RmrkTraitsResourceSlotResource;
   } & Struct;
   readonly isAcceptResource: boolean;
   readonly asAcceptResource: {
     readonly collectionId: u32;
     readonly nftId: u32;
-    readonly resourceId: Bytes;
+    readonly resourceId: u32;
   } & Struct;
   readonly isRemoveResource: boolean;
   readonly asRemoveResource: {
     readonly collectionId: u32;
     readonly nftId: u32;
-    readonly resourceId: Bytes;
+    readonly resourceId: u32;
   } & Struct;
   readonly isAcceptResourceRemoval: boolean;
   readonly asAcceptResourceRemoval: {
     readonly collectionId: u32;
     readonly nftId: u32;
-    readonly resourceId: Bytes;
+    readonly resourceId: u32;
   } & Struct;
   readonly isSetPriority: boolean;
   readonly asSetPriority: {
@@ -579,6 +578,7 @@ export interface PalletRmrkCoreError extends Enum {
   readonly isStorageOverflow: boolean;
   readonly isTooLong: boolean;
   readonly isNoAvailableCollectionId: boolean;
+  readonly isNoAvailableResourceId: boolean;
   readonly isMetadataNotSet: boolean;
   readonly isRecipientNotSet: boolean;
   readonly isNoAvailableNftId: boolean;
@@ -598,7 +598,8 @@ export interface PalletRmrkCoreError extends Enum {
   readonly isCannotRejectNonOwnedNft: boolean;
   readonly isResourceDoesntExist: boolean;
   readonly isResourceNotPending: boolean;
-  readonly type: 'NoneValue' | 'StorageOverflow' | 'TooLong' | 'NoAvailableCollectionId' | 'MetadataNotSet' | 'RecipientNotSet' | 'NoAvailableNftId' | 'NotInRange' | 'RoyaltyNotSet' | 'CollectionUnknown' | 'NoPermission' | 'NoWitness' | 'CollectionNotEmpty' | 'CollectionFullOrLocked' | 'CannotSendToDescendentOrSelf' | 'ResourceAlreadyExists' | 'EmptyResource' | 'TooManyRecursions' | 'NftIsLocked' | 'CannotAcceptNonOwnedNft' | 'CannotRejectNonOwnedNft' | 'ResourceDoesntExist' | 'ResourceNotPending';
+  readonly isNonTransferable: boolean;
+  readonly type: 'NoneValue' | 'StorageOverflow' | 'TooLong' | 'NoAvailableCollectionId' | 'NoAvailableResourceId' | 'MetadataNotSet' | 'RecipientNotSet' | 'NoAvailableNftId' | 'NotInRange' | 'RoyaltyNotSet' | 'CollectionUnknown' | 'NoPermission' | 'NoWitness' | 'CollectionNotEmpty' | 'CollectionFullOrLocked' | 'CannotSendToDescendentOrSelf' | 'ResourceAlreadyExists' | 'EmptyResource' | 'TooManyRecursions' | 'NftIsLocked' | 'CannotAcceptNonOwnedNft' | 'CannotRejectNonOwnedNft' | 'ResourceDoesntExist' | 'ResourceNotPending' | 'NonTransferable';
 }
 
 /** @name PalletRmrkCoreEvent */
@@ -666,22 +667,22 @@ export interface PalletRmrkCoreEvent extends Enum {
   readonly isResourceAdded: boolean;
   readonly asResourceAdded: {
     readonly nftId: u32;
-    readonly resourceId: Bytes;
+    readonly resourceId: u32;
   } & Struct;
   readonly isResourceAccepted: boolean;
   readonly asResourceAccepted: {
     readonly nftId: u32;
-    readonly resourceId: Bytes;
+    readonly resourceId: u32;
   } & Struct;
   readonly isResourceRemoval: boolean;
   readonly asResourceRemoval: {
     readonly nftId: u32;
-    readonly resourceId: Bytes;
+    readonly resourceId: u32;
   } & Struct;
   readonly isResourceRemovalAccepted: boolean;
   readonly asResourceRemovalAccepted: {
     readonly nftId: u32;
-    readonly resourceId: Bytes;
+    readonly resourceId: u32;
   } & Struct;
   readonly isPrioritySet: boolean;
   readonly asPrioritySet: {
@@ -702,6 +703,7 @@ export interface PalletRmrkEquipCall extends Enum {
   readonly asEquip: {
     readonly item: ITuple<[u32, u32]>;
     readonly equipper: ITuple<[u32, u32]>;
+    readonly resourceId: u32;
     readonly base: u32;
     readonly slot: u32;
   } & Struct;
@@ -840,7 +842,8 @@ export interface PalletRmrkMarketError extends Enum {
   readonly isOfferHasExpired: boolean;
   readonly isListingHasExpired: boolean;
   readonly isPriceDiffersFromExpected: boolean;
-  readonly type: 'NoPermission' | 'TokenNotForSale' | 'CannotWithdrawOffer' | 'CannotUnlistToken' | 'CannotOfferOnOwnToken' | 'CannotBuyOwnToken' | 'UnknownOffer' | 'CannotListNftOwnedByNft' | 'TokenDoesNotExist' | 'OfferTooLow' | 'AlreadyOffered' | 'OfferHasExpired' | 'ListingHasExpired' | 'PriceDiffersFromExpected';
+  readonly isNonTransferable: boolean;
+  readonly type: 'NoPermission' | 'TokenNotForSale' | 'CannotWithdrawOffer' | 'CannotUnlistToken' | 'CannotOfferOnOwnToken' | 'CannotBuyOwnToken' | 'UnknownOffer' | 'CannotListNftOwnedByNft' | 'TokenDoesNotExist' | 'OfferTooLow' | 'AlreadyOffered' | 'OfferHasExpired' | 'ListingHasExpired' | 'PriceDiffersFromExpected' | 'NonTransferable';
 }
 
 /** @name PalletRmrkMarketEvent */
@@ -1433,6 +1436,7 @@ export interface RmrkTraitsNftNftInfo extends Struct {
   readonly metadata: Bytes;
   readonly equipped: bool;
   readonly pending: bool;
+  readonly transferable: bool;
 }
 
 /** @name RmrkTraitsNftRoyaltyInfo */
@@ -1500,7 +1504,7 @@ export interface RmrkTraitsResourceComposableResource extends Struct {
 
 /** @name RmrkTraitsResourceResourceInfo */
 export interface RmrkTraitsResourceResourceInfo extends Struct {
-  readonly id: Bytes;
+  readonly id: u32;
   readonly resource: RmrkTraitsResourceResourceTypes;
   readonly pending: bool;
   readonly pendingRemoval: bool;

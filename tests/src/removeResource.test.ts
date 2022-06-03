@@ -24,7 +24,6 @@ describe('Integration test: remove nft resource', () => {
 
     const Alice = "//Alice";
     const Bob = "//Bob";
-    const resourceId = "resid0";
     const src = "test-basic-src";
     const metadata = "test-basic-metadata";
     const license = "test-basic-license";
@@ -47,13 +46,12 @@ describe('Integration test: remove nft resource', () => {
             "nft-metadata"
         );
       
-        await addNftBasicResource(
+        const resourceId = await addNftBasicResource(
             api,
             Alice,
             "added",
             collectionIdAlice,
             nftAlice,
-            resourceId,
             src,
             metadata,
             license,
@@ -75,13 +73,12 @@ describe('Integration test: remove nft resource', () => {
         const parentNftId = await mintNft(api, Alice, Alice, collectionIdAlice, "parent-nft-metadata");
         const childNftId = await mintNft(api, Alice, Alice, collectionIdAlice, "child-nft-metadata");
 
-        await addNftBasicResource(
+        const resourceId = await addNftBasicResource(
             api,
             Alice,
             "added",
             collectionIdAlice,
             childNftId,
-            resourceId,
             src,
             metadata,
             license,
@@ -112,13 +109,12 @@ describe('Integration test: remove nft resource', () => {
             "nft-metadata"
         );
       
-        await addNftBasicResource(
+        const resourceId = await addNftBasicResource(
             api,
             Alice,
             "pending",
             collectionIdAlice,
             nftBob,
-            resourceId,
             src,
             metadata,
             license,
@@ -129,7 +125,7 @@ describe('Integration test: remove nft resource', () => {
         await acceptResourceRemoval(api, Bob, collectionIdAlice, nftBob, resourceId);
     });
 
-    it('[Negative test]: cant delete a resource in a non-existing collection', async () => {
+    it('[Negative test]: can\'t delete a resource in a non-existing collection', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,
@@ -146,13 +142,12 @@ describe('Integration test: remove nft resource', () => {
             "nft-metadata"
         );
       
-        await addNftBasicResource(
+        const resourceId = await addNftBasicResource(
             api,
             Alice,
             "added",
             collectionIdAlice,
             nftAlice,
-            resourceId,
             src,
             metadata,
             license,
@@ -160,7 +155,7 @@ describe('Integration test: remove nft resource', () => {
         );
 
         const tx = removeNftResource(api, 'removed', Alice, 0xFFFFFFFF, nftAlice, resourceId);
-        await expectTxFailure(/rmrkCore.CollectionUnknown/, tx); // FIXME:
+        await expectTxFailure(/rmrkCore.CollectionUnknown/, tx); // FIXME: inappropriate error message (NoAvailableNftId)
     });
 
     it('[Negative test]: only collection owner can delete a resource', async () => {
@@ -180,13 +175,12 @@ describe('Integration test: remove nft resource', () => {
             "nft-metadata"
         );
       
-        await addNftBasicResource(
+        const resourceId = await addNftBasicResource(
             api,
             Alice,
             "added",
             collectionIdAlice,
             nftAlice,
-            resourceId,
             src,
             metadata,
             license,
@@ -218,7 +212,7 @@ describe('Integration test: remove nft resource', () => {
 
         const issuer = privateKey(Alice);
 
-        const tx = removeNftResource(api, 'removed', Alice, collectionIdAlice, nftAlice, resourceId);
+        const tx = removeNftResource(api, 'removed', Alice, collectionIdAlice, nftAlice, 127);
         await expectTxFailure(/rmrkCore.ResourceDoesntExist/, tx);
     });
 
@@ -239,13 +233,12 @@ describe('Integration test: remove nft resource', () => {
             "nft-metadata"
         );
       
-        await addNftBasicResource(
+        const resourceId = await addNftBasicResource(
             api,
             Alice,
             "pending",
             collectionIdAlice,
             nftBob,
-            resourceId,
             src,
             metadata,
             license,
@@ -273,7 +266,7 @@ describe('Integration test: remove nft resource', () => {
             "nft-metadata"
         );
 
-        const tx = acceptResourceRemoval(api, Bob, collectionIdAlice, nftBob, 'test');
+        const tx = acceptResourceRemoval(api, Bob, collectionIdAlice, nftBob, 127);
         await expectTxFailure(/rmrkCore.ResourceDoesntExist/, tx);
     });
 
@@ -294,13 +287,12 @@ describe('Integration test: remove nft resource', () => {
             "nft-metadata"
         );
       
-        await addNftBasicResource(
+        const resourceId = await addNftBasicResource(
             api,
             Alice,
             "added",
             collectionIdAlice,
             nftAlice,
-            resourceId,
             src,
             metadata,
             license,

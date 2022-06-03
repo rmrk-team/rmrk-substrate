@@ -87,10 +87,10 @@ declare module '@polkadot/api-base/types/events' {
       NFTSent: AugmentedEvent<ApiType, [AccountId32, RmrkTraitsNftAccountIdOrCollectionNftTuple, u32, u32, bool]>;
       PrioritySet: AugmentedEvent<ApiType, [u32, u32]>;
       PropertySet: AugmentedEvent<ApiType, [u32, Option<u32>, Bytes, Bytes]>;
-      ResourceAccepted: AugmentedEvent<ApiType, [u32, Bytes]>;
-      ResourceAdded: AugmentedEvent<ApiType, [u32, Bytes]>;
-      ResourceRemoval: AugmentedEvent<ApiType, [u32, Bytes]>;
-      ResourceRemovalAccepted: AugmentedEvent<ApiType, [u32, Bytes]>;
+      ResourceAccepted: AugmentedEvent<ApiType, [u32, u32]>;
+      ResourceAdded: AugmentedEvent<ApiType, [u32, u32]>;
+      ResourceRemoval: AugmentedEvent<ApiType, [u32, u32]>;
+      ResourceRemovalAccepted: AugmentedEvent<ApiType, [u32, u32]>;
       /**
        * Generic event
        **/

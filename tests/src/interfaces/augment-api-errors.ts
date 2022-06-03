@@ -91,10 +91,12 @@ declare module '@polkadot/api-base/types/errors' {
       NftIsLocked: AugmentedError<ApiType>;
       NoAvailableCollectionId: AugmentedError<ApiType>;
       NoAvailableNftId: AugmentedError<ApiType>;
+      NoAvailableResourceId: AugmentedError<ApiType>;
       /**
        * Error names should be descriptive.
        **/
       NoneValue: AugmentedError<ApiType>;
+      NonTransferable: AugmentedError<ApiType>;
       NoPermission: AugmentedError<ApiType>;
       NotInRange: AugmentedError<ApiType>;
       NoWitness: AugmentedError<ApiType>;
@@ -170,6 +172,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Listing has expired and cannot be bought
        **/
       ListingHasExpired: AugmentedError<ApiType>;
+      /**
+       * Not possible to list non-transferable NFT
+       **/
+      NonTransferable: AugmentedError<ApiType>;
       /**
        * No permissions for account to interact with NFT
        **/

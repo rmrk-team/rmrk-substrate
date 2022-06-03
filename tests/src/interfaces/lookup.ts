@@ -341,19 +341,19 @@ export default {
       },
       ResourceAdded: {
         nftId: 'u32',
-        resourceId: 'Bytes',
+        resourceId: 'u32',
       },
       ResourceAccepted: {
         nftId: 'u32',
-        resourceId: 'Bytes',
+        resourceId: 'u32',
       },
       ResourceRemoval: {
         nftId: 'u32',
-        resourceId: 'Bytes',
+        resourceId: 'u32',
       },
       ResourceRemovalAccepted: {
         nftId: 'u32',
-        resourceId: 'Bytes',
+        resourceId: 'u32',
       },
       PrioritySet: {
         collectionId: 'u32',
@@ -371,7 +371,7 @@ export default {
     }
   },
   /**
-   * Lookup47: pallet_rmrk_market::pallet::Event<T>
+   * Lookup46: pallet_rmrk_market::pallet::Event<T>
    **/
   PalletRmrkMarketEvent: {
     _enum: {
@@ -419,7 +419,7 @@ export default {
     }
   },
   /**
-   * Lookup49: pallet_uniques::pallet::Event<T, I>
+   * Lookup48: pallet_uniques::pallet::Event<T, I>
    **/
   PalletUniquesEvent: {
     _enum: {
@@ -530,7 +530,7 @@ export default {
     }
   },
   /**
-   * Lookup52: pallet_utility::pallet::Event
+   * Lookup51: pallet_utility::pallet::Event
    **/
   PalletUtilityEvent: {
     _enum: {
@@ -550,7 +550,7 @@ export default {
     }
   },
   /**
-   * Lookup53: frame_system::Phase
+   * Lookup52: frame_system::Phase
    **/
   FrameSystemPhase: {
     _enum: {
@@ -560,14 +560,14 @@ export default {
     }
   },
   /**
-   * Lookup57: frame_system::LastRuntimeUpgradeInfo
+   * Lookup56: frame_system::LastRuntimeUpgradeInfo
    **/
   FrameSystemLastRuntimeUpgradeInfo: {
     specVersion: 'Compact<u32>',
     specName: 'Text'
   },
   /**
-   * Lookup60: frame_system::pallet::Call<T>
+   * Lookup59: frame_system::pallet::Call<T>
    **/
   FrameSystemCall: {
     _enum: {
@@ -605,7 +605,7 @@ export default {
     }
   },
   /**
-   * Lookup65: frame_system::limits::BlockWeights
+   * Lookup64: frame_system::limits::BlockWeights
    **/
   FrameSystemLimitsBlockWeights: {
     baseBlock: 'u64',
@@ -613,7 +613,7 @@ export default {
     perClass: 'FrameSupportWeightsPerDispatchClassWeightsPerClass'
   },
   /**
-   * Lookup66: frame_support::weights::PerDispatchClass<frame_system::limits::WeightsPerClass>
+   * Lookup65: frame_support::weights::PerDispatchClass<frame_system::limits::WeightsPerClass>
    **/
   FrameSupportWeightsPerDispatchClassWeightsPerClass: {
     normal: 'FrameSystemLimitsWeightsPerClass',
@@ -621,7 +621,7 @@ export default {
     mandatory: 'FrameSystemLimitsWeightsPerClass'
   },
   /**
-   * Lookup67: frame_system::limits::WeightsPerClass
+   * Lookup66: frame_system::limits::WeightsPerClass
    **/
   FrameSystemLimitsWeightsPerClass: {
     baseExtrinsic: 'u64',
@@ -630,13 +630,13 @@ export default {
     reserved: 'Option<u64>'
   },
   /**
-   * Lookup69: frame_system::limits::BlockLength
+   * Lookup68: frame_system::limits::BlockLength
    **/
   FrameSystemLimitsBlockLength: {
     max: 'FrameSupportWeightsPerDispatchClassU32'
   },
   /**
-   * Lookup70: frame_support::weights::PerDispatchClass<T>
+   * Lookup69: frame_support::weights::PerDispatchClass<T>
    **/
   FrameSupportWeightsPerDispatchClassU32: {
     normal: 'u32',
@@ -644,14 +644,14 @@ export default {
     mandatory: 'u32'
   },
   /**
-   * Lookup71: frame_support::weights::RuntimeDbWeight
+   * Lookup70: frame_support::weights::RuntimeDbWeight
    **/
   FrameSupportWeightsRuntimeDbWeight: {
     read: 'u64',
     write: 'u64'
   },
   /**
-   * Lookup72: sp_version::RuntimeVersion
+   * Lookup71: sp_version::RuntimeVersion
    **/
   SpVersionRuntimeVersion: {
     specName: 'Text',
@@ -664,13 +664,13 @@ export default {
     stateVersion: 'u8'
   },
   /**
-   * Lookup78: frame_system::pallet::Error<T>
+   * Lookup77: frame_system::pallet::Error<T>
    **/
   FrameSystemError: {
     _enum: ['InvalidSpecName', 'SpecVersionNeedsToIncrease', 'FailedToExtractRuntimeVersion', 'NonDefaultComposite', 'NonZeroRefCount', 'CallFiltered']
   },
   /**
-   * Lookup80: pallet_timestamp::pallet::Call<T>
+   * Lookup79: pallet_timestamp::pallet::Call<T>
    **/
   PalletTimestampCall: {
     _enum: {
@@ -680,15 +680,15 @@ export default {
     }
   },
   /**
-   * Lookup83: sp_consensus_aura::sr25519::app_sr25519::Public
+   * Lookup82: sp_consensus_aura::sr25519::app_sr25519::Public
    **/
   SpConsensusAuraSr25519AppSr25519Public: 'SpCoreSr25519Public',
   /**
-   * Lookup84: sp_core::sr25519::Public
+   * Lookup83: sp_core::sr25519::Public
    **/
   SpCoreSr25519Public: '[u8;32]',
   /**
-   * Lookup87: pallet_grandpa::StoredState<N>
+   * Lookup86: pallet_grandpa::StoredState<N>
    **/
   PalletGrandpaStoredState: {
     _enum: {
@@ -705,7 +705,7 @@ export default {
     }
   },
   /**
-   * Lookup88: pallet_grandpa::StoredPendingChange<N, Limit>
+   * Lookup87: pallet_grandpa::StoredPendingChange<N, Limit>
    **/
   PalletGrandpaStoredPendingChange: {
     scheduledAt: 'u32',
@@ -714,7 +714,7 @@ export default {
     forced: 'Option<u32>'
   },
   /**
-   * Lookup90: pallet_grandpa::pallet::Call<T>
+   * Lookup89: pallet_grandpa::pallet::Call<T>
    **/
   PalletGrandpaCall: {
     _enum: {
@@ -733,14 +733,14 @@ export default {
     }
   },
   /**
-   * Lookup91: sp_finality_grandpa::EquivocationProof<primitive_types::H256, N>
+   * Lookup90: sp_finality_grandpa::EquivocationProof<primitive_types::H256, N>
    **/
   SpFinalityGrandpaEquivocationProof: {
     setId: 'u64',
     equivocation: 'SpFinalityGrandpaEquivocation'
   },
   /**
-   * Lookup92: sp_finality_grandpa::Equivocation<primitive_types::H256, N>
+   * Lookup91: sp_finality_grandpa::Equivocation<primitive_types::H256, N>
    **/
   SpFinalityGrandpaEquivocation: {
     _enum: {
@@ -749,7 +749,7 @@ export default {
     }
   },
   /**
-   * Lookup93: finality_grandpa::Equivocation<sp_finality_grandpa::app::Public, finality_grandpa::Prevote<primitive_types::H256, N>, sp_finality_grandpa::app::Signature>
+   * Lookup92: finality_grandpa::Equivocation<sp_finality_grandpa::app::Public, finality_grandpa::Prevote<primitive_types::H256, N>, sp_finality_grandpa::app::Signature>
    **/
   FinalityGrandpaEquivocationPrevote: {
     roundNumber: 'u64',
@@ -758,22 +758,22 @@ export default {
     second: '(FinalityGrandpaPrevote,SpFinalityGrandpaAppSignature)'
   },
   /**
-   * Lookup94: finality_grandpa::Prevote<primitive_types::H256, N>
+   * Lookup93: finality_grandpa::Prevote<primitive_types::H256, N>
    **/
   FinalityGrandpaPrevote: {
     targetHash: 'H256',
     targetNumber: 'u32'
   },
   /**
-   * Lookup95: sp_finality_grandpa::app::Signature
+   * Lookup94: sp_finality_grandpa::app::Signature
    **/
   SpFinalityGrandpaAppSignature: 'SpCoreEd25519Signature',
   /**
-   * Lookup96: sp_core::ed25519::Signature
+   * Lookup95: sp_core::ed25519::Signature
    **/
   SpCoreEd25519Signature: '[u8;64]',
   /**
-   * Lookup99: finality_grandpa::Equivocation<sp_finality_grandpa::app::Public, finality_grandpa::Precommit<primitive_types::H256, N>, sp_finality_grandpa::app::Signature>
+   * Lookup98: finality_grandpa::Equivocation<sp_finality_grandpa::app::Public, finality_grandpa::Precommit<primitive_types::H256, N>, sp_finality_grandpa::app::Signature>
    **/
   FinalityGrandpaEquivocationPrecommit: {
     roundNumber: 'u64',
@@ -782,24 +782,24 @@ export default {
     second: '(FinalityGrandpaPrecommit,SpFinalityGrandpaAppSignature)'
   },
   /**
-   * Lookup100: finality_grandpa::Precommit<primitive_types::H256, N>
+   * Lookup99: finality_grandpa::Precommit<primitive_types::H256, N>
    **/
   FinalityGrandpaPrecommit: {
     targetHash: 'H256',
     targetNumber: 'u32'
   },
   /**
-   * Lookup102: sp_core::Void
+   * Lookup101: sp_core::Void
    **/
   SpCoreVoid: 'Null',
   /**
-   * Lookup103: pallet_grandpa::pallet::Error<T>
+   * Lookup102: pallet_grandpa::pallet::Error<T>
    **/
   PalletGrandpaError: {
     _enum: ['PauseFailed', 'ResumeFailed', 'ChangePending', 'TooSoon', 'InvalidKeyOwnershipProof', 'InvalidEquivocationProof', 'DuplicateOffenceReport']
   },
   /**
-   * Lookup105: pallet_balances::BalanceLock<Balance>
+   * Lookup104: pallet_balances::BalanceLock<Balance>
    **/
   PalletBalancesBalanceLock: {
     id: '[u8;8]',
@@ -807,26 +807,26 @@ export default {
     reasons: 'PalletBalancesReasons'
   },
   /**
-   * Lookup106: pallet_balances::Reasons
+   * Lookup105: pallet_balances::Reasons
    **/
   PalletBalancesReasons: {
     _enum: ['Fee', 'Misc', 'All']
   },
   /**
-   * Lookup109: pallet_balances::ReserveData<ReserveIdentifier, Balance>
+   * Lookup108: pallet_balances::ReserveData<ReserveIdentifier, Balance>
    **/
   PalletBalancesReserveData: {
     id: '[u8;8]',
     amount: 'u128'
   },
   /**
-   * Lookup111: pallet_balances::Releases
+   * Lookup110: pallet_balances::Releases
    **/
   PalletBalancesReleases: {
     _enum: ['V1_0_0', 'V2_0_0']
   },
   /**
-   * Lookup112: pallet_balances::pallet::Call<T, I>
+   * Lookup111: pallet_balances::pallet::Call<T, I>
    **/
   PalletBalancesCall: {
     _enum: {
@@ -859,19 +859,19 @@ export default {
     }
   },
   /**
-   * Lookup117: pallet_balances::pallet::Error<T, I>
+   * Lookup116: pallet_balances::pallet::Error<T, I>
    **/
   PalletBalancesError: {
     _enum: ['VestingBalance', 'LiquidityRestrictions', 'InsufficientBalance', 'ExistentialDeposit', 'KeepAlive', 'ExistingVestingSchedule', 'DeadAccount', 'TooManyReserves']
   },
   /**
-   * Lookup119: pallet_transaction_payment::Releases
+   * Lookup118: pallet_transaction_payment::Releases
    **/
   PalletTransactionPaymentReleases: {
     _enum: ['V1Ancient', 'V2']
   },
   /**
-   * Lookup121: frame_support::weights::WeightToFeeCoefficient<Balance>
+   * Lookup120: frame_support::weights::WeightToFeeCoefficient<Balance>
    **/
   FrameSupportWeightsWeightToFeeCoefficient: {
     coeffInteger: 'u128',
@@ -880,7 +880,7 @@ export default {
     degree: 'u8'
   },
   /**
-   * Lookup122: pallet_sudo::pallet::Call<T>
+   * Lookup121: pallet_sudo::pallet::Call<T>
    **/
   PalletSudoCall: {
     _enum: {
@@ -904,7 +904,7 @@ export default {
     }
   },
   /**
-   * Lookup124: pallet_template::pallet::Call<T>
+   * Lookup123: pallet_template::pallet::Call<T>
    **/
   PalletTemplateCall: {
     _enum: {
@@ -915,7 +915,7 @@ export default {
     }
   },
   /**
-   * Lookup125: pallet_rmrk_equip::pallet::Call<T>
+   * Lookup124: pallet_rmrk_equip::pallet::Call<T>
    **/
   PalletRmrkEquipCall: {
     _enum: {
@@ -926,6 +926,7 @@ export default {
       equip: {
         item: '(u32,u32)',
         equipper: '(u32,u32)',
+        resourceId: 'u32',
         base: 'u32',
         slot: 'u32',
       },
@@ -946,7 +947,7 @@ export default {
     }
   },
   /**
-   * Lookup126: rmrk_traits::part::EquippableList<frame_support::storage::bounded_vec::BoundedVec<T, S>>
+   * Lookup125: rmrk_traits::part::EquippableList<frame_support::storage::bounded_vec::BoundedVec<T, S>>
    **/
   RmrkTraitsPartEquippableList: {
     _enum: {
@@ -956,7 +957,7 @@ export default {
     }
   },
   /**
-   * Lookup128: rmrk_traits::theme::Theme<frame_support::storage::bounded_vec::BoundedVec<T, S>, PropertyList>
+   * Lookup127: rmrk_traits::theme::Theme<frame_support::storage::bounded_vec::BoundedVec<T, S>, PropertyList>
    **/
   RmrkTraitsTheme: {
     name: 'Bytes',
@@ -964,14 +965,14 @@ export default {
     inherit: 'bool'
   },
   /**
-   * Lookup130: rmrk_traits::theme::ThemeProperty<frame_support::storage::bounded_vec::BoundedVec<T, S>>
+   * Lookup129: rmrk_traits::theme::ThemeProperty<frame_support::storage::bounded_vec::BoundedVec<T, S>>
    **/
   RmrkTraitsThemeThemeProperty: {
     key: 'Bytes',
     value: 'Bytes'
   },
   /**
-   * Lookup132: rmrk_traits::part::PartType<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>
+   * Lookup131: rmrk_traits::part::PartType<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>
    **/
   RmrkTraitsPartPartType: {
     _enum: {
@@ -980,7 +981,7 @@ export default {
     }
   },
   /**
-   * Lookup133: rmrk_traits::part::FixedPart<frame_support::storage::bounded_vec::BoundedVec<T, S>>
+   * Lookup132: rmrk_traits::part::FixedPart<frame_support::storage::bounded_vec::BoundedVec<T, S>>
    **/
   RmrkTraitsPartFixedPart: {
     id: 'u32',
@@ -988,7 +989,7 @@ export default {
     src: 'Bytes'
   },
   /**
-   * Lookup134: rmrk_traits::part::SlotPart<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>
+   * Lookup133: rmrk_traits::part::SlotPart<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>
    **/
   RmrkTraitsPartSlotPart: {
     id: 'u32',
@@ -997,7 +998,7 @@ export default {
     z: 'u32'
   },
   /**
-   * Lookup136: pallet_rmrk_core::pallet::Call<T>
+   * Lookup135: pallet_rmrk_core::pallet::Call<T>
    **/
   PalletRmrkCoreCall: {
     _enum: {
@@ -1007,6 +1008,7 @@ export default {
         recipient: 'Option<AccountId32>',
         royalty: 'Option<Permill>',
         metadata: 'Bytes',
+        transferable: 'bool',
       },
       create_collection: {
         metadata: 'Bytes',
@@ -1050,7 +1052,6 @@ export default {
       add_basic_resource: {
         collectionId: 'u32',
         nftId: 'u32',
-        resourceId: 'Bytes',
         resource: 'RmrkTraitsResourceBasicResource',
       },
       add_composable_resource: {
@@ -1062,23 +1063,22 @@ export default {
       add_slot_resource: {
         collectionId: 'u32',
         nftId: 'u32',
-        resourceId: 'Bytes',
         resource: 'RmrkTraitsResourceSlotResource',
       },
       accept_resource: {
         collectionId: 'u32',
         nftId: 'u32',
-        resourceId: 'Bytes',
+        resourceId: 'u32',
       },
       remove_resource: {
         collectionId: 'u32',
         nftId: 'u32',
-        resourceId: 'Bytes',
+        resourceId: 'u32',
       },
       accept_resource_removal: {
         collectionId: 'u32',
         nftId: 'u32',
-        resourceId: 'Bytes',
+        resourceId: 'u32',
       },
       set_priority: {
         collectionId: 'u32',
@@ -1088,7 +1088,7 @@ export default {
     }
   },
   /**
-   * Lookup140: rmrk_traits::resource::BasicResource<frame_support::storage::bounded_vec::BoundedVec<T, S>>
+   * Lookup139: rmrk_traits::resource::BasicResource<frame_support::storage::bounded_vec::BoundedVec<T, S>>
    **/
   RmrkTraitsResourceBasicResource: {
     src: 'Option<Bytes>',
@@ -1364,7 +1364,8 @@ export default {
     royalty: 'Option<RmrkTraitsNftRoyaltyInfo>',
     metadata: 'Bytes',
     equipped: 'bool',
-    pending: 'bool'
+    pending: 'bool',
+    transferable: 'bool'
   },
   /**
    * Lookup163: rmrk_traits::nft::RoyaltyInfo<sp_core::crypto::AccountId32, sp_arithmetic::per_things::Permill>
@@ -1374,16 +1375,16 @@ export default {
     amount: 'Permill'
   },
   /**
-   * Lookup167: rmrk_traits::resource::ResourceInfo<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>
+   * Lookup166: rmrk_traits::resource::ResourceInfo<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>
    **/
   RmrkTraitsResourceResourceInfo: {
-    id: 'Bytes',
+    id: 'u32',
     resource: 'RmrkTraitsResourceResourceTypes',
     pending: 'bool',
     pendingRemoval: 'bool'
   },
   /**
-   * Lookup168: rmrk_traits::resource::ResourceTypes<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>
+   * Lookup167: rmrk_traits::resource::ResourceTypes<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>
    **/
   RmrkTraitsResourceResourceTypes: {
     _enum: {
@@ -1414,7 +1415,7 @@ export default {
    * Lookup175: pallet_rmrk_core::pallet::Error<T>
    **/
   PalletRmrkCoreError: {
-    _enum: ['NoneValue', 'StorageOverflow', 'TooLong', 'NoAvailableCollectionId', 'MetadataNotSet', 'RecipientNotSet', 'NoAvailableNftId', 'NotInRange', 'RoyaltyNotSet', 'CollectionUnknown', 'NoPermission', 'NoWitness', 'CollectionNotEmpty', 'CollectionFullOrLocked', 'CannotSendToDescendentOrSelf', 'ResourceAlreadyExists', 'EmptyResource', 'TooManyRecursions', 'NftIsLocked', 'CannotAcceptNonOwnedNft', 'CannotRejectNonOwnedNft', 'ResourceDoesntExist', 'ResourceNotPending']
+    _enum: ['NoneValue', 'StorageOverflow', 'TooLong', 'NoAvailableCollectionId', 'NoAvailableResourceId', 'MetadataNotSet', 'RecipientNotSet', 'NoAvailableNftId', 'NotInRange', 'RoyaltyNotSet', 'CollectionUnknown', 'NoPermission', 'NoWitness', 'CollectionNotEmpty', 'CollectionFullOrLocked', 'CannotSendToDescendentOrSelf', 'ResourceAlreadyExists', 'EmptyResource', 'TooManyRecursions', 'NftIsLocked', 'CannotAcceptNonOwnedNft', 'CannotRejectNonOwnedNft', 'ResourceDoesntExist', 'ResourceNotPending', 'NonTransferable']
   },
   /**
    * Lookup176: pallet_rmrk_market::types::ListInfo<sp_core::crypto::AccountId32, Balance, BlockNumber>
@@ -1436,7 +1437,7 @@ export default {
    * Lookup179: pallet_rmrk_market::pallet::Error<T>
    **/
   PalletRmrkMarketError: {
-    _enum: ['NoPermission', 'TokenNotForSale', 'CannotWithdrawOffer', 'CannotUnlistToken', 'CannotOfferOnOwnToken', 'CannotBuyOwnToken', 'UnknownOffer', 'CannotListNftOwnedByNft', 'TokenDoesNotExist', 'OfferTooLow', 'AlreadyOffered', 'OfferHasExpired', 'ListingHasExpired', 'PriceDiffersFromExpected']
+    _enum: ['NoPermission', 'TokenNotForSale', 'CannotWithdrawOffer', 'CannotUnlistToken', 'CannotOfferOnOwnToken', 'CannotBuyOwnToken', 'UnknownOffer', 'CannotListNftOwnedByNft', 'TokenDoesNotExist', 'OfferTooLow', 'AlreadyOffered', 'OfferHasExpired', 'ListingHasExpired', 'PriceDiffersFromExpected', 'NonTransferable']
   },
   /**
    * Lookup180: pallet_uniques::types::ClassDetails<sp_core::crypto::AccountId32, DepositBalance>

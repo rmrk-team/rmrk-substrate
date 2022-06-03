@@ -34,6 +34,7 @@ import {
   isCollectionPropertyExists,
   isNftPropertyExists
 } from "./helpers";
+import { IKeyringPair } from "@polkadot/types/types";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -209,7 +210,8 @@ export async function mintNft(
     collectionId: number,
     metadata: string,
     recipientUri: string | null = null,
-    royalty: number | null = null
+    royalty: number | null = null,
+    transferable: boolean = true,
 ): Promise<number> {
     let nftId = 0;
 
@@ -225,7 +227,8 @@ export async function mintNft(
         collectionId,
         recipient,
         royaltyOptional,
-        metadata
+        metadata,
+        transferable
     );
 
     const events = await executeTransaction(api, issuer, tx);
@@ -668,36 +671,12 @@ export async function burnNft(
   expect(nftBurned.isSome).to.be.false;
 }
 
-async function getResourceById(
-    api: ApiPromise,
-    collectionId: number,
-    nftId: number,
-    resourceId: string,
-): Promise<ResourceInfo> {
-    const resources = await getResources(api, collectionId, nftId);
-
-    let resource = null;
-
-    for (var i = 0; i < resources.length; i++) {
-        const res = resources[i];
-
-        if (res.id.eq(resourceId)) {
-            resource = res;
-            break;
-        }
-    }
-
-    expect(resource !== null, 'Error: resource was not added').to.be.true;
-
-    return resource!;
-}
-
 async function findResourceById(
     api: ApiPromise,
     collectionId: number,
     nftId: number,
-    resourceId: string,
-): Promise<ResourceInfo | null> {
+    resourceId: number,
+): Promise<ResourceInfo> {
     const resources = await getResources(api, collectionId, nftId);
 
     let resource = null;
@@ -706,34 +685,6 @@ async function findResourceById(
         const res = resources[i];
 
         if (res.id.eq(resourceId)) {
-            resource = res;
-            break;
-        }
-    }
-
-    return resource;
-}
-
-async function findResourceByInfo(
-    api: ApiPromise,
-    collectionId: number,
-    nftId: number,
-    resourceType: string,
-    inputResource: BasicResource | ComposableResource | SlotResource
-): Promise<ResourceInfo> {
-    let resourceTypeObj: any = {};
-    resourceTypeObj[resourceType] = inputResource;
-
-    const resourceTypes = api.createType('RmrkTraitsResourceResourceTypes', resourceTypeObj);
-
-    const resources = await getResources(api, collectionId, nftId);
-
-    let resource = null;
-
-    for (var i = 0; i < resources.length; i++) {
-        const res = resources[i];
-
-        if (res.resource.eq(resourceTypes)) {
             resource = res;
             break;
         }
@@ -757,7 +708,7 @@ export async function acceptNftResource(
     issuerUri: string,
     collectionId: number,
     nftId: number,
-    resourceId: string,
+    resourceId: number,
 ) {
     const issuer = privateKey(issuerUri);
 
@@ -770,8 +721,32 @@ export async function acceptNftResource(
     const events = await executeTransaction(api, issuer, tx);
     expect(isTxResultSuccess(events)).to.be.true;
 
-    const resource = await getResourceById(api, collectionId, nftId, resourceId);
-    checkResourceStatus(resource, "added");
+    const resource = await findResourceById(api, collectionId, nftId, resourceId);
+    checkResourceStatus(resource!, "added");
+}
+
+async function parseResourceId(
+    api: ApiPromise,
+    issuer: IKeyringPair,
+    tx: any,
+    collectionId: number,
+    nftId: number,
+    expectedStatus: "pending" | "added"
+): Promise<number> {
+    const events = await executeTransaction(api, issuer, tx);
+
+    const resourceResult = extractRmrkCoreTxResult(
+        events, 'ResourceAdded', (data) => {
+            return parseInt(data[1].toString(), 10);
+        }
+    );
+    expect(resourceResult.success, 'Error: Unable to add resource').to.be.true;
+    const resourceId = resourceResult.successData!;
+
+    const resource = await findResourceById(api, collectionId, nftId, resourceId);
+    checkResourceStatus(resource!, expectedStatus);
+
+    return resourceId;
 }
 
 export async function addNftBasicResource(
@@ -780,12 +755,11 @@ export async function addNftBasicResource(
     expectedStatus: "pending" | "added",
     collectionId: number,
     nftId: number,
-    resourceId: string,
     src: string | null,
     metadata: string | null,
     license: string | null,
     thumb: string | null
-) {
+): Promise<number> {
     const issuer = privateKey(issuerUri);
 
     const basicResource = api.createType('RmrkTraitsResourceBasicResource', {
@@ -798,15 +772,11 @@ export async function addNftBasicResource(
     const tx = api.tx.rmrkCore.addBasicResource(
         collectionId,
         nftId,
-        resourceId,
         basicResource
     );
-
-    const events = await executeTransaction(api, issuer, tx);
-    expect(isTxResultSuccess(events)).to.be.true;
-
-    const resource = await findResourceByInfo(api, collectionId, nftId, "Basic", basicResource);
-    checkResourceStatus(resource, expectedStatus);
+    
+    const resourceId = parseResourceId(api, issuer, tx, collectionId, nftId, expectedStatus);
+    return resourceId;
 }
 
 export async function addNftComposableResource(
@@ -815,14 +785,13 @@ export async function addNftComposableResource(
     expectedStatus: "pending" | "added",
     collectionId: number,
     nftId: number,
-    resourceId: string,
     parts: number[],
     baseId: number,
     src: string | null,
     metadata: string | null,
     license: string | null,
     thumb: string | null
-) {
+): Promise<number> {
     const issuer = privateKey(issuerUri);
 
     const composableResource = api.createType('RmrkTraitsResourceComposableResource', {
@@ -837,15 +806,12 @@ export async function addNftComposableResource(
     const tx = api.tx.rmrkCore.addComposableResource(
         collectionId,
         nftId,
-        resourceId,
+        "",
         composableResource
     );
 
-    const events = await executeTransaction(api, issuer, tx);
-    expect(isTxResultSuccess(events)).to.be.true;
-
-    const resource = await findResourceByInfo(api, collectionId, nftId, "Composable", composableResource);
-    checkResourceStatus(resource, expectedStatus);
+    const resourceId = parseResourceId(api, issuer, tx, collectionId, nftId, expectedStatus);
+    return resourceId;
 }
 
 export async function addNftSlotResource(
@@ -854,13 +820,12 @@ export async function addNftSlotResource(
   expectedStatus: "pending" | "added",
   collectionId: number,
   nftId: number,
-  resourceId: string,
   baseId: number,
   slotId: number,
   src: string | null,
   license: string | null,
   thumb: string | null
-) {
+): Promise<number>  {
   const issuer = privateKey(issuerUri);
 
   const slotResource = api.createType('RmrkTraitsResourceSlotResource', {
@@ -875,14 +840,11 @@ export async function addNftSlotResource(
   const tx = api.tx.rmrkCore.addSlotResource(
     collectionId,
     nftId,
-    resourceId,
     slotResource
   );
-  const events = await executeTransaction(api, issuer, tx);
-  expect(isTxResultSuccess(events)).to.be.true;
-
-  const resource = await findResourceByInfo(api, collectionId, nftId, "Slot", slotResource);
-  checkResourceStatus(resource, expectedStatus);
+  
+  const resourceId = parseResourceId(api, issuer, tx, collectionId, nftId, expectedStatus);
+  return resourceId;
 }
 
 export async function equipNft(
@@ -890,11 +852,12 @@ export async function equipNft(
   issuerUri: string,
   item: any,
   equipper: any,
+  resource: number,
   base: number,
   slot: number
 ) {
   const issuer = privateKey(issuerUri);
-  const tx = api.tx.rmrkEquip.equip(item, equipper, base, slot);
+  const tx = api.tx.rmrkEquip.equip(item, equipper, resource, base, slot);
   const events = await executeTransaction(api, issuer, tx);
   expect(isTxResultSuccess(events)).to.be.true;
 }
@@ -904,11 +867,12 @@ export async function unequipNft(
   issuerUri: string,
   item: any,
   equipper: any,
+  resource: number,
   base: number,
   slot: number
 ) {
   const issuer = privateKey(issuerUri);
-  const tx = api.tx.rmrkEquip.equip(item, equipper, base, slot);
+  const tx = api.tx.rmrkEquip.equip(item, equipper, resource, base, slot);
   const events = await executeTransaction(api, issuer, tx);
 
   const result = extractRmrkEquipTxResult(
@@ -929,7 +893,7 @@ export async function removeNftResource(
     issuerUri: string, 
     collectionId: number, 
     nftId: number, 
-    resourceId: string
+    resourceId: number
 ) {
     const issuer = privateKey(issuerUri);
     
@@ -952,7 +916,7 @@ export async function acceptResourceRemoval(
     issuerUri: string,
     collectionId: number,
     nftId: number,
-    resourceId: string
+    resourceId: number
 ) {
     const issuer = privateKey(issuerUri);
 

@@ -128,7 +128,7 @@ export function extractTxResult<T>(
     let successData = null;
     events.forEach(({event: {data, method, section}}) => {
         if (method == 'ExtrinsicSuccess') {
-        success = true;
+            success = true;
         } else if ((expectSection == section) && (expectMethod == method)) {
             successData = extractAction(data);
         }

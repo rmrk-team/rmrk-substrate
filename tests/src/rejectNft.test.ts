@@ -42,7 +42,7 @@ describe("Integration test: reject NFT", () => {
         await rejectNft(api, alice, bobCollectionId, childNftId);
 
         const isChild = await isNftChildOfAnother(api, bobCollectionId, childNftId, newOwnerNFT);
-        expect(isChild, 'Error: rejected NFT is still a child of the target NFT').to.be.false;
+        expect(isChild, 'Error: rejected NFT is still a child of the target NFT').to.be.false; // FIXME: fails, the NFT is still a child
     });
 
     it("[negative] unable to reject NFT by a not-an-owner", async () => {
