@@ -1,14 +1,14 @@
 import { ApiPromise } from "@polkadot/api";
 import { Bytes, Option, u32, Vec } from '@polkadot/types-codec';
 import {
-    RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
-    RmrkTraitsResourceBasicResource as BasicResource,
-    RmrkTraitsResourceComposableResource as ComposableResource,
-    RmrkTraitsResourceSlotResource as SlotResource,
-    RmrkTraitsResourceResourceInfo as ResourceInfo,
-    RmrkTraitsPartEquippableList as EquippableList,
-    RmrkTraitsPartPartType as PartType,
-    RmrkTraitsTheme as Theme
+    UpDataStructsRmrkAccountIdOrCollectionNftTuple as NftOwner,
+    UpDataStructsRmrkBasicResource as BasicResource,
+    UpDataStructsRmrkComposableResource as ComposableResource,
+    UpDataStructsRmrkSlotResource as SlotResource,
+    UpDataStructsRmrkResourceInfo as ResourceInfo,
+    UpDataStructsRmrkEquippableList as EquippableList,
+    UpDataStructsRmrkPartType as PartType,
+    UpDataStructsRmrkTheme as Theme
 } from "@polkadot/types/lookup";
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';

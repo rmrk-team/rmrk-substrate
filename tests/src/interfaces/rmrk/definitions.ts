@@ -17,14 +17,14 @@ export default {
     types,
     rpc: {
         lastCollectionIdx: fn('Get the latest created collection id', [], 'u32'),
-        collectionById: fn('Get collection by id', [{name: 'id', type: 'u32'}], 'Option<RmrkTraitsCollectionCollectionInfo>'),
+        collectionById: fn('Get collection by id', [{name: 'id', type: 'u32'}], 'Option<UpDataStructsRmrkCollectionInfo>'),
         nftById: fn(
             'Get NFT by collection id and NFT id',
             [
                 {name: 'collectionId', type: 'u32'},
                 {name: 'nftId', type: 'u32'},
             ],
-            'Option<RmrkTraitsNftNftInfo>'
+            'Option<UpDataStructsRmrkNftInfo>'
         ),
         accountTokens: fn(
             'Get tokens owned by an account in a collection',
@@ -40,12 +40,12 @@ export default {
                 {name: 'collectionId', type: 'u32'},
                 {name: 'nftId', type: 'u32'},
             ],
-            'Vec<RmrkTraitsNftNftChild>'
+            'Vec<UpDataStructsRmrkNftChild>'
         ),
         collectionProperties: fn(
             'Get collection properties',
             [{name: 'collectionId', type: 'u32'}],
-            'Vec<RmrkTraitsPropertyPropertyInfo>'
+            'Vec<UpDataStructsRmrkPropertyInfo>'
         ),
         nftProperties: fn(
             'Get NFT properties',
@@ -53,7 +53,7 @@ export default {
                 {name: 'collectionId', type: 'u32'},
                 {name: 'nftId', type: 'u32'}
             ],
-            'Vec<RmrkTraitsPropertyPropertyInfo>'
+            'Vec<UpDataStructsRmrkPropertyInfo>'
         ),
         nftResources: fn(
             'Get NFT resources',
@@ -61,7 +61,7 @@ export default {
                 {name: 'collectionId', type: 'u32'},
                 {name: 'nftId', type: 'u32'}
             ],
-            'Vec<RmrkTraitsResourceResourceInfo>'
+            'Vec<UpDataStructsRmrkResourceInfo>'
         ),
         nftResourcePriorities: fn(
             'Get NFT resource priorities',
@@ -74,12 +74,12 @@ export default {
         base: fn(
             'Get base info',
             [{name: 'baseId', type: 'u32'}],
-            'Option<RmrkTraitsBaseBaseInfo>'
+            'Option<UpDataStructsRmrkBaseInfo>'
         ),
         baseParts: fn(
             'Get all Base\'s parts',
             [{name: 'baseId', type: 'u32'}],
-            'Vec<RmrkTraitsPartPartType>'
+            'Vec<UpDataStructsRmrkPartType>'
         ),
         themeNames: fn(
             'Get Base\'s theme names',
@@ -93,7 +93,7 @@ export default {
                 {name: 'themeName', type: 'String'},
                 {name: 'keys', type: 'Option<Vec<String>>'}
             ],
-            'Option<RmrkTraitsTheme>'
+            'Option<UpDataStructsRmrkTheme>'
         )
     }
 };

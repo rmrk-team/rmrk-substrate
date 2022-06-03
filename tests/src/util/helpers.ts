@@ -1,7 +1,7 @@
 import { ApiPromise } from "@polkadot/api";
 import {
-    RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
-    RmrkTraitsPropertyPropertyInfo as Property,
+    UpDataStructsRmrkAccountIdOrCollectionNftTuple as NftOwner,
+    UpDataStructsRmrkPropertyInfo as Property,
 } from "@polkadot/types/lookup";
 import type { EventRecord } from '@polkadot/types/interfaces';
 import type { GenericEventData } from '@polkadot/types';
