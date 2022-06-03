@@ -690,8 +690,6 @@ async function findResourceById(
         }
     }
 
-    expect(resource !== null, 'Error: resource was not added').to.be.true;
-
     return resource!;
 }
 
@@ -725,7 +723,7 @@ export async function acceptNftResource(
     checkResourceStatus(resource!, "added");
 }
 
-async function parseResourceId(
+async function executeResourceCreation(
     api: ApiPromise,
     issuer: IKeyringPair,
     tx: any,
@@ -744,6 +742,7 @@ async function parseResourceId(
     const resourceId = resourceResult.successData!;
 
     const resource = await findResourceById(api, collectionId, nftId, resourceId);
+    expect(resource !== null, 'Error: resource was not found').to.be.true;
     checkResourceStatus(resource!, expectedStatus);
 
     return resourceId;
@@ -775,7 +774,7 @@ export async function addNftBasicResource(
         basicResource
     );
     
-    const resourceId = parseResourceId(api, issuer, tx, collectionId, nftId, expectedStatus);
+    const resourceId = executeResourceCreation(api, issuer, tx, collectionId, nftId, expectedStatus);
     return resourceId;
 }
 
@@ -810,7 +809,7 @@ export async function addNftComposableResource(
         composableResource
     );
 
-    const resourceId = parseResourceId(api, issuer, tx, collectionId, nftId, expectedStatus);
+    const resourceId = executeResourceCreation(api, issuer, tx, collectionId, nftId, expectedStatus);
     return resourceId;
 }
 
@@ -843,7 +842,7 @@ export async function addNftSlotResource(
     slotResource
   );
   
-  const resourceId = parseResourceId(api, issuer, tx, collectionId, nftId, expectedStatus);
+  const resourceId = executeResourceCreation(api, issuer, tx, collectionId, nftId, expectedStatus);
   return resourceId;
 }
 
