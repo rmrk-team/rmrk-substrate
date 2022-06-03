@@ -22,11 +22,11 @@ export function makeNftOwner(api: ApiPromise, owner: string | NftIdTuple): NftOw
     const isNftSending = (typeof owner !== "string");
 
     if (isNftSending) {
-        return api.createType("RmrkTraitsNftAccountIdOrCollectionNftTuple", {
+        return api.createType("UpDataStructsRmrkAccountIdOrCollectionNftTuple", {
             "CollectionAndNftTuple": owner
         });
     } else {
-        return api.createType("RmrkTraitsNftAccountIdOrCollectionNftTuple", {
+        return api.createType("UpDataStructsRmrkAccountIdOrCollectionNftTuple", {
             "AccountId": privateKey(owner).address
         });
     }

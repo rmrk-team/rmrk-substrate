@@ -465,7 +465,7 @@ export async function createBase(
 
     const issuer = privateKey(issuerUri);
 
-    const partTypes = api.createType("Vec<RmrkTraitsPartPartType>", parts) as Vec<PartType>;
+    const partTypes = api.createType("Vec<UpDataStructsRmrkPartType>", parts) as Vec<PartType>;
 
     const tx = api.tx.rmrkEquip.createBase(baseType, symbol, partTypes);
     const events = await executeTransaction(api, issuer, tx);
@@ -539,7 +539,7 @@ export async function setEquippableList(
     equippableList: "All" | "Empty" | { 'Custom': number[] }
 ) {
     const issuer = privateKey(issuerUri);
-    const equippable = api.createType('RmrkTraitsPartEquippableList', equippableList) as EquippableList;
+    const equippable = api.createType('UpDataStructsRmrkEquippableList', equippableList) as EquippableList;
 
     const tx = api.tx.rmrkEquip.equippable(baseId, slotId, equippable);
     const events = await executeTransaction(api, issuer, tx);
@@ -579,7 +579,7 @@ export async function addTheme(
     filterKeys: string[] | null = null
 ) {
     const issuer = privateKey(issuerUri);
-    const theme = api.createType('RmrkTraitsTheme', themeObj) as Theme;
+    const theme = api.createType('UpDataStructsRmrkTheme', themeObj) as Theme;
 
     const tx = api.tx.rmrkEquip.themeAdd(baseId, theme);
     const events = await executeTransaction(api, issuer, tx);
@@ -761,7 +761,7 @@ export async function addNftBasicResource(
 ): Promise<number> {
     const issuer = privateKey(issuerUri);
 
-    const basicResource = api.createType('RmrkTraitsResourceBasicResource', {
+    const basicResource = api.createType('UpDataStructsRmrkBasicResource', {
         src: src,
         metadata: metadata,
         license: license,
@@ -793,7 +793,7 @@ export async function addNftComposableResource(
 ): Promise<number> {
     const issuer = privateKey(issuerUri);
 
-    const composableResource = api.createType('RmrkTraitsResourceComposableResource', {
+    const composableResource = api.createType('UpDataStructsRmrkComposableResource', {
         parts: parts, // api.createType('Vec<u32>', parts),
         base: baseId,
         src: src,
@@ -827,7 +827,7 @@ export async function addNftSlotResource(
 ): Promise<number>  {
   const issuer = privateKey(issuerUri);
 
-  const slotResource = api.createType('RmrkTraitsResourceSlotResource', {
+  const slotResource = api.createType('UpDataStructsRmrkSlotResource', {
       base: baseId,
       src: src,
       metadata: "slot-resource-metadata",
