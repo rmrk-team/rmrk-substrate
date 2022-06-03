@@ -16,14 +16,14 @@ describe("Integration test: set slot's Equippable List", () => {
                 alice,
                 "equiplist-collection-metadata",
                 null,
-                "equiplist-collection-0"
+                "equiplist-0"
             ),
             await createCollection(
                 api,
                 alice,
                 "equiplist-collection-metadata",
                 null,
-                "equiplist-collection-1"
+                "equiplist-1"
             )
         ]
 

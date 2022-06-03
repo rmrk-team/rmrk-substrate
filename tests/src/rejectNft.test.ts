@@ -22,7 +22,7 @@ describe("Integration test: reject NFT", () => {
             issuerUri,
             "reject-metadata",
             null,
-            "reject-collection"
+            "reject-nft"
         );
     }
 

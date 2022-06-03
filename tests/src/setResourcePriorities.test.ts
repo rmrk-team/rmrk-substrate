@@ -15,7 +15,7 @@ describe("Integration test: set NFT resource priorities", () => {
             issuerUri,
             'resprio-collection-metadata',
             null,
-            'resprio-collection'
+            'resprio'
         );
     };
 
