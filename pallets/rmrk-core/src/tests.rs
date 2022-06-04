@@ -564,6 +564,39 @@ fn reject_nft_works() {
 	});
 }
 
+/// NFT: Reject tests (RMRK2.0 spec: new)
+#[test]
+fn reject_nft_removes_self_from_parents_children() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Alice mints (0, 0) for herself
+		assert_ok!(basic_mint());
+		// Alice mints (0, 1) for Bob
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			BOB,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			true,
+		));
+		// BOB sends NFT (0, 1) to ALICE's NFT (0, 0)
+		assert_ok!(RMRKCore::send(
+			Origin::signed(BOB),
+			0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
+		));
+		// ALICE rejects NFT (0, 1)
+		assert_ok!(RMRKCore::reject_nft(Origin::signed(ALICE), 0, 1));
+		// Rejected NFT gets burned
+		assert_eq!(RMRKCore::nfts(0, 1).is_none(), true);
+		assert_eq!(RMRKCore::children((0, 0), (0, 1)).is_none(), true);
+	});
+}
+
 /// NFT: Send tests, siblings (RMRK2.0 spec: SEND)
 #[test]
 fn send_two_nfts_to_same_nft_creates_two_children() {
@@ -1158,6 +1191,11 @@ fn set_property_works() {
 		let key = stbk("test-key");
 		// Define property value
 		let value = stb("test-value");
+		// set_property fails without a collection (CollectionUnknown)
+		assert_noop!(
+			RMRKCore::set_property(Origin::signed(ALICE), 0, Some(0), key.clone(), value.clone()),
+			Error::<Test>::CollectionUnknown
+		);
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// Mint NFT
