@@ -1,8 +1,6 @@
 // Copyright (C) 2021-2022 RMRK
 // This file is part of rmrk-equip.
 // License: Apache 2.0 modified by RMRK, see LICENSE.md
-
-use super::*;
 use crate as pallet_rmrk_equip;
 
 use frame_support::{
