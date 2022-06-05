@@ -590,6 +590,7 @@ fn reject_nft_removes_self_from_parents_children() {
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
 			true,
+			None
 		));
 		// BOB sends NFT (0, 1) to ALICE's NFT (0, 0)
 		assert_ok!(RMRKCore::send(
@@ -1064,7 +1065,6 @@ fn add_resource_on_mint_beyond_max_fails() {
 			true,
 			Some(resources_to_add),
 		)
-
 	});
 }
 
