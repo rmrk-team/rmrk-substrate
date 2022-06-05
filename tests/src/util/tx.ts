@@ -336,14 +336,12 @@ export async function sendNft(
 
     const nftAfterSending = nftAfterSendingOpt.unwrap();
 
-    // FIXME the ownership is the uniques responsibility
-    // so the `owner` field should be removed from the NFT info.
-    // expect(nftAfterSending.owner.eq(newOwnerObj), 'Error: Invalid NFT owner after sending')
-    //     .to.be.true;
-
-    const isOwnedInUniques = await isNftOwnedBy(api, newOwner, collectionId, nftId);
-    expect(isOwnedInUniques, `Error: created NFT is not actually owned by ${newOwner.toString()}`)
-        .to.be.true;
+    const isOwnedByNewOwner = await isNftOwnedBy(api, newOwner, collectionId, nftId);
+    const isPending = expectedStatus === "pending";
+    expect(
+        isOwnedByNewOwner,
+        `Error: The NFT should be ${isPending ? "NOT" : ""}owned by ${newOwner.toString()}`
+    ).to.be.equal(!isPending);
 
     expect(nftAfterSending.royalty.eq(nftBeforeSending.royalty), 'Error: Invalid NFT royalty after sending')
         .to.be.true;
@@ -773,7 +771,7 @@ export async function addNftBasicResource(
         nftId,
         basicResource
     );
-    
+
     const resourceId = executeResourceCreation(api, issuer, tx, collectionId, nftId, expectedStatus);
     return resourceId;
 }
@@ -841,7 +839,7 @@ export async function addNftSlotResource(
     nftId,
     slotResource
   );
-  
+
   const resourceId = executeResourceCreation(api, issuer, tx, collectionId, nftId, expectedStatus);
   return resourceId;
 }
@@ -887,15 +885,15 @@ export async function unequipNft(
 }
 
 export async function removeNftResource(
-    api: ApiPromise, 
-    expectedStatus: "pending" | "removed", 
-    issuerUri: string, 
-    collectionId: number, 
-    nftId: number, 
+    api: ApiPromise,
+    expectedStatus: "pending" | "removed",
+    issuerUri: string,
+    collectionId: number,
+    nftId: number,
     resourceId: number
 ) {
     const issuer = privateKey(issuerUri);
-    
+
     const tx = api.tx.rmrkCore.removeResource(collectionId, nftId, resourceId);
     const events = await executeTransaction(api, issuer, tx);
     expect(isTxResultSuccess(events)).to.be.true;
