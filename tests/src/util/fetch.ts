@@ -1,14 +1,14 @@
 import { ApiPromise } from '@polkadot/api';
 import type { Option, Bytes } from '@polkadot/types-codec';
 import type {
-    UpDataStructsRmrkCollectionInfo as Collection,
-    UpDataStructsRmrkNftInfo as Nft,
-    UpDataStructsRmrkResourceInfo as Resource,
-    UpDataStructsRmrkBaseInfo as Base,
-    UpDataStructsRmrkPartType as PartType,
-    UpDataStructsRmrkNftChild as NftChild,
-    UpDataStructsRmrkTheme as Theme,
-    UpDataStructsRmrkPropertyInfo as Property,
+    RmrkTraitsCollectionCollectionInfo as Collection,
+    RmrkTraitsNftNftInfo as Nft,
+    RmrkTraitsResourceResourceInfo as Resource,
+    RmrkTraitsBaseBaseInfo as Base,
+    RmrkTraitsPartPartType as PartType,
+    RmrkTraitsNftNftChild as NftChild,
+    RmrkTraitsTheme as Theme,
+    RmrkTraitsPropertyPropertyInfo as Property,
 } from '@polkadot/types/lookup';
 import '../interfaces/augment-api';
 import '../interfaces/augment-api-query';

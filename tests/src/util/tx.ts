@@ -1,14 +1,14 @@
 import { ApiPromise } from "@polkadot/api";
 import { Bytes, Option, u32, Vec } from '@polkadot/types-codec';
 import {
-    UpDataStructsRmrkAccountIdOrCollectionNftTuple as NftOwner,
-    UpDataStructsRmrkBasicResource as BasicResource,
-    UpDataStructsRmrkComposableResource as ComposableResource,
-    UpDataStructsRmrkSlotResource as SlotResource,
-    UpDataStructsRmrkResourceInfo as ResourceInfo,
-    UpDataStructsRmrkEquippableList as EquippableList,
-    UpDataStructsRmrkPartType as PartType,
-    UpDataStructsRmrkTheme as Theme
+    RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
+    RmrkTraitsResourceBasicResource as BasicResource,
+    RmrkTraitsResourceComposableResource as ComposableResource,
+    RmrkTraitsResourceSlotResource as SlotResource,
+    RmrkTraitsResourceResourceInfo as ResourceInfo,
+    RmrkTraitsPartEquippableList as EquippableList,
+    RmrkTraitsPartPartType as PartType,
+    RmrkTraitsTheme as Theme
 } from "@polkadot/types/lookup";
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -340,7 +340,7 @@ export async function sendNft(
     const isPending = expectedStatus === "pending";
     expect(
         isOwnedByNewOwner,
-        `Error: The NFT should be ${isPending ? "NOT" : ""}owned by ${newOwner.toString()}`
+        `Error: The NFT should be ${isPending ? "NOT " : ""}owned by ${newOwner.toString()}`
     ).to.be.equal(!isPending);
 
     expect(nftAfterSending.royalty.eq(nftBeforeSending.royalty), 'Error: Invalid NFT royalty after sending')
@@ -463,7 +463,7 @@ export async function createBase(
 
     const issuer = privateKey(issuerUri);
 
-    const partTypes = api.createType("Vec<UpDataStructsRmrkPartType>", parts) as Vec<PartType>;
+    const partTypes = api.createType("Vec<RmrkTraitsPartPartType>", parts) as Vec<PartType>;
 
     const tx = api.tx.rmrkEquip.createBase(baseType, symbol, partTypes);
     const events = await executeTransaction(api, issuer, tx);
@@ -537,7 +537,7 @@ export async function setEquippableList(
     equippableList: "All" | "Empty" | { 'Custom': number[] }
 ) {
     const issuer = privateKey(issuerUri);
-    const equippable = api.createType('UpDataStructsRmrkEquippableList', equippableList) as EquippableList;
+    const equippable = api.createType('RmrkTraitsPartEquippableList', equippableList) as EquippableList;
 
     const tx = api.tx.rmrkEquip.equippable(baseId, slotId, equippable);
     const events = await executeTransaction(api, issuer, tx);
@@ -577,7 +577,7 @@ export async function addTheme(
     filterKeys: string[] | null = null
 ) {
     const issuer = privateKey(issuerUri);
-    const theme = api.createType('UpDataStructsRmrkTheme', themeObj) as Theme;
+    const theme = api.createType('RmrkTraitsTheme', themeObj) as Theme;
 
     const tx = api.tx.rmrkEquip.themeAdd(baseId, theme);
     const events = await executeTransaction(api, issuer, tx);
@@ -776,7 +776,7 @@ export async function addNftBasicResource(
 ): Promise<number> {
     const issuer = privateKey(issuerUri);
 
-    const basicResource = api.createType('UpDataStructsRmrkBasicResource', {
+    const basicResource = api.createType('RmrkTraitsResourceBasicResource', {
         src: src,
         metadata: metadata,
         license: license,
@@ -808,7 +808,7 @@ export async function addNftComposableResource(
 ): Promise<number> {
     const issuer = privateKey(issuerUri);
 
-    const composableResource = api.createType('UpDataStructsRmrkComposableResource', {
+    const composableResource = api.createType('RmrkTraitsResourceComposableResource', {
         parts: parts, // api.createType('Vec<u32>', parts),
         base: baseId,
         src: src,
@@ -842,7 +842,7 @@ export async function addNftSlotResource(
 ): Promise<number>  {
   const issuer = privateKey(issuerUri);
 
-  const slotResource = api.createType('UpDataStructsRmrkSlotResource', {
+  const slotResource = api.createType('RmrkTraitsResourceSlotResource', {
       base: baseId,
       src: src,
       metadata: "slot-resource-metadata",

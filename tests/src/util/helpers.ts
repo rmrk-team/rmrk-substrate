@@ -1,7 +1,7 @@
 import { ApiPromise } from "@polkadot/api";
 import {
-    UpDataStructsRmrkAccountIdOrCollectionNftTuple as NftOwner,
-    UpDataStructsRmrkPropertyInfo as Property,
+    RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
+    RmrkTraitsPropertyPropertyInfo as Property,
 } from "@polkadot/types/lookup";
 import type { EventRecord } from '@polkadot/types/interfaces';
 import type { GenericEventData } from '@polkadot/types';
@@ -22,11 +22,11 @@ export function makeNftOwner(api: ApiPromise, owner: string | NftIdTuple): NftOw
     const isNftSending = (typeof owner !== "string");
 
     if (isNftSending) {
-        return api.createType("UpDataStructsRmrkAccountIdOrCollectionNftTuple", {
+        return api.createType("RmrkTraitsNftAccountIdOrCollectionNftTuple", {
             "CollectionAndNftTuple": owner
         });
     } else {
-        return api.createType("UpDataStructsRmrkAccountIdOrCollectionNftTuple", {
+        return api.createType("RmrkTraitsNftAccountIdOrCollectionNftTuple", {
             "AccountId": privateKey(owner).address
         });
     }
