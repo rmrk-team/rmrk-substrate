@@ -55,11 +55,19 @@ pallet-rmrk-core = { version = "0.0.1", default-features = false, path = "../pal
 pallet-rmrk-equip = { version = "0.0.1", default-features = false, path = "../pallets/rmrk-equip" }
 pallet-rmrk-market = { version = "0.0.1", default-features = false, path = "../pallets/rmrk-market" }
 
+# Contracts specific packages
+pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.22", package = "pallet-contracts", default-features = false }
+pallet-contracts-primitives = { git = "https://github.com/paritytech/substrate",  branch = "polkadot-v0.9.22", package = "pallet-contracts-primitives", default-features = false }
+pallet-contracts-rpc-runtime-api = { git = "https://github.com/paritytech/substrate",  branch = "polkadot-v0.9.22", package = "pallet-contracts-rpc-runtime-api", default-features = false }
+
+
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
 
 [features]
-default = ["std"]
+default = ["std",
+	# temporarily enable unstable contracts features by default, remove this before using on a production chain.
+	"contracts-unstable-interface",]
 std = [
 	"codec/std",
 	"scale-info/std",
@@ -92,6 +100,10 @@ std = [
 	"sp-std/std",
 	"sp-transaction-pool/std",
 	"sp-version/std",
+	"pallet-contracts/std",
+	"pallet-contracts-primitives/std",
+	"pallet-contracts-rpc-runtime-api/std",
+
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
@@ -103,4 +115,10 @@ runtime-benchmarks = [
 	"pallet-template/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
 	"sp-runtime/runtime-benchmarks",
+]
+
+# Make contract callable functions marked as __unstable__ available. Do not enable
+# on live chains as those are subject to change.
+contracts-unstable-interface = [
+	"pallet-contracts/unstable-interface"
 ]
