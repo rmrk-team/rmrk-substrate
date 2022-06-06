@@ -174,14 +174,15 @@ pub trait RmrkApi<
 		at: Option<BlockHash>
 	) -> RpcResult<Vec<ResourceInfo>>;
 
-	#[method(name = "nftResourcePriorities")]
-	/// Get NFT resource priorities
-	fn nft_resource_priorities(
+	#[method(name = "nftResourcePriority")]
+	/// Get NFT resource priority
+	fn nft_resource_priority(
 		&self,
 		collection_id: CollectionId,
 		nft_id: NftId,
+		resource_id: ResourceId,
 		at: Option<BlockHash>
-	) -> RpcResult<Vec<ResourceId>>;
+	) -> RpcResult<Option<u32>>;
 
 	#[method(name = "base")]
 	/// Get base info
@@ -273,7 +274,7 @@ where
 		) -> Vec<PropertyInfo>
 	);
 	pass_method!(nft_resources(collection_id: CollectionId, nft_id: NftId) -> Vec<ResourceInfo>);
-	pass_method!(nft_resource_priorities(collection_id: CollectionId, nft_id: NftId) -> Vec<ResourceId>);
+	pass_method!(nft_resource_priority(collection_id: CollectionId, nft_id: NftId, resource_id: ResourceId) -> Option<u32>);
 	pass_method!(base(base_id: BaseId) -> Option<BaseInfo>);
 	pass_method!(base_parts(base_id: BaseId) -> Vec<PartType>);
 	pass_method!(theme_names(base_id: BaseId) -> Vec<ThemeName>);

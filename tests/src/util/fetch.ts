@@ -96,13 +96,14 @@ export async function getEquippableList(
     }
 }
 
-export async function getResourcePriorities(
+export async function getResourcePriority(
     api: ApiPromise,
     collectionId: number,
-    nftId: number
-): Promise<number[]> {
-    return (await api.rpc.rmrk.nftResourcePriorities(collectionId, nftId))
-        .map(i => i.toNumber());
+    nftId: number,
+    resourceId: number,
+): Promise<number> {
+    return (await api.rpc.rmrk.nftResourcePriority(collectionId, nftId, resourceId))
+        .unwrap().toNumber();
 }
 
 export async function getThemeNames(api: ApiPromise, baseId: number): Promise<string[]> {

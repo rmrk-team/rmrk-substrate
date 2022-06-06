@@ -573,15 +573,6 @@ where
 		Resources::<T>::iter_prefix_values((collection_id, nft_id))
 	}
 
-	pub fn iterate_resource_priorities(collection_id: CollectionId, nft_id: NftId) -> impl Iterator<Item=ResourceId> {
-		let mut priorities = Priorities::<T>::iter_prefix((collection_id, nft_id))
-				.collect::<sp_std::vec::Vec<_>>();
-
-		priorities.sort_by_key(|(_, index)| *index);
-
-		priorities.into_iter().map(|(resource_id, _)| resource_id)
-	}
-
 	pub fn query_properties(
 		collection_id: CollectionId,
 		nft_id: Option<NftId>,

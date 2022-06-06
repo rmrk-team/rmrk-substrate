@@ -22,8 +22,7 @@ import {
   getEquippableList,
   getNft,
   getParts,
-  getCollectionProperties,
-  getResourcePriorities,
+  getResourcePriority,
   getTheme,
   NftIdTuple,
   getResources,
@@ -524,9 +523,13 @@ export async function setResourcePriorities(
         expect(eventData.nftId).to.be.equal(nftId, 'Error: Invalid NFT ID (set priorities event data');
     }
 
-    const fetchedPrios = await getResourcePriorities(api, collectionId, nftId);
+    for (var i = 0; i < priorities.length; i++) {
+        const resourceId = priorities[i];
 
-    expect(fetchedPrios).to.be.deep.equal(priorities, 'Error: Invalid priorities are set');
+        const fetchedPrio = await getResourcePriority(api, collectionId, nftId, resourceId);
+        expect(fetchedPrio).to.be.equal(i, 'Error: Invalid priorities are set');
+    }
+
 }
 
 export async function setEquippableList(

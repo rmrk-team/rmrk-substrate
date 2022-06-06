@@ -548,10 +548,10 @@ impl_runtime_apis! {
 			Ok(RmrkCore::iterate_resources(collection_id, nft_id).collect())
 		}
 
-		fn nft_resource_priorities(collection_id: CollectionId, nft_id: NftId) -> rmrk_rpc::Result<Vec<ResourceId>> {
-			let priorities = RmrkCore::iterate_resource_priorities(collection_id, nft_id).collect();
+		fn nft_resource_priority(collection_id: CollectionId, nft_id: NftId, resource_id: ResourceId) -> rmrk_rpc::Result<Option<u32>> {
+			let priority = RmrkCore::priorities((collection_id, nft_id, resource_id));
 
-			Ok(priorities)
+			Ok(priority)
 		}
 
 		fn base(base_id: BaseId) -> rmrk_rpc::Result<Option<BaseInfoOf<Runtime>>> {
