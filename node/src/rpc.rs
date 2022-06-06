@@ -39,6 +39,7 @@ where
 	C::Api: pallet_contracts_rpc::ContractsRuntimeApi<Block, AccountId, Balance, BlockNumber, Hash>,
 	P: TransactionPool + 'static,
 {
+	use pallet_contracts_rpc::{Contracts, ContractsApiServer};
 	use pallet_transaction_payment_rpc::{TransactionPaymentApiServer, TransactionPaymentRpc};
 	use substrate_frame_rpc_system::{SystemApiServer, SystemRpc};
 
@@ -49,8 +50,7 @@ where
 	module.merge(TransactionPaymentRpc::new(client).into_rpc())?;
 
 	// Contracts RPC API extension
-	use pallet_contracts_rpc::{ContractsApiServer, ContractsRpc};
-	module.merge(ContractsRpc::new(client.clone()).into_rpc())?;
+	module.merge(Contracts::new(client.clone()).into_rpc())?;
 
 
 	// Extend this RPC with a custom API by using the following syntax.
