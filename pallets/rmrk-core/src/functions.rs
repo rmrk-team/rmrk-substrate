@@ -556,6 +556,13 @@ where
 	pub fn iterate_nft_children(collection_id: CollectionId, nft_id: NftId) -> impl Iterator<Item=NftChild> {
 		Children::<T>::iter_key_prefix((collection_id, nft_id))
 				.into_iter()
+				.filter(|(collection_id, nft_id)| {
+					let pending = <Nfts<T>>::get(collection_id, nft_id)
+						.map(|nft| nft.pending)
+						.unwrap_or(true);
+
+					!pending
+				})
 				.map(|(collection_id, nft_id)| NftChild {
 					collection_id,
 					nft_id
