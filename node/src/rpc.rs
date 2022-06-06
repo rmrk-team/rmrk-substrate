@@ -8,12 +8,15 @@
 use std::sync::Arc;
 
 use jsonrpsee::RpcModule;
-use rmrk_substrate_runtime::{opaque::Block, AccountId, Balance, Index};
+use rmrk_substrate_runtime::{opaque::Block, AccountId, Balance, Index, BlockNumber, Hash};
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
 use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
+
+
+
 
 /// Full client dependencies.
 pub struct FullDeps<C, P> {
@@ -35,8 +38,8 @@ where
 	C: Send + Sync + 'static,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
-	C::Api: BlockBuilder<Block>,
 	C::Api: pallet_contracts_rpc::ContractsRuntimeApi<Block, AccountId, Balance, BlockNumber, Hash>,
+	C::Api: BlockBuilder<Block>,
 	P: TransactionPool + 'static,
 {
 	use pallet_contracts_rpc::{Contracts, ContractsApiServer};
