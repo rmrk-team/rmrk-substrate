@@ -40,13 +40,13 @@ sp-inherents = { version = "4.0.0-dev", git = "https://github.com/paritytech/sub
 sp-keyring = { version = "6.0.0", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
 frame-system = { version = "4.0.0-dev", default-features=false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
 pallet-transaction-payment = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
-pallet-contracts-rpc = { git = "https://github.com/paritytech/substrate", package = "pallet-contracts-rpc" }
+pallet-contracts-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.22", package = "pallet-contracts-rpc" }
 
 
 # These dependencies are used for the node template"s RPCs
 jsonrpsee = { version = "0.13.0", features = ["server"] }
 sc-rpc = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
-sp-api = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
+sp-api = { version = "4.0.0-dev", default-features=false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
 sc-rpc-api = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
 sp-blockchain = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }
 sp-block-builder = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.22" }

@@ -58,6 +58,7 @@ pallet-rmrk-market = { version = "0.0.1", default-features = false, path = "../p
 # Contracts specific packages
 pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.22", package = "pallet-contracts", default-features = false }
 pallet-contracts-primitives = { git = "https://github.com/paritytech/substrate",  branch = "polkadot-v0.9.22", package = "pallet-contracts-primitives", default-features = false }
+#pallet-contracts-rpc = { git = "https://github.com/paritytech/substrate",  branch = "polkadot-v0.9.22", package = "pallet-contracts-rpc", default-features = false }
 pallet-contracts-rpc-runtime-api = { git = "https://github.com/paritytech/substrate",  branch = "polkadot-v0.9.22", package = "pallet-contracts-rpc-runtime-api", default-features = false }
 
 
