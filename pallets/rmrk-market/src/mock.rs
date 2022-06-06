@@ -117,8 +117,8 @@ impl pallet_rmrk_core::Config for Test {
 }
 
 parameter_types! {
-	pub const ClassDeposit: Balance = 10_000 * RMRK; // 1 UNIT deposit to create asset class
-	pub const InstanceDeposit: Balance = 100 * RMRK; // 1/100 UNIT deposit to create asset instance
+	pub const CollectionDeposit: Balance = 10_000 * RMRK; // 1 UNIT deposit to create asset class
+	pub const ItemDeposit: Balance = 100 * RMRK; // 1/100 UNIT deposit to create asset instance
 	pub const KeyLimit: u32 = 32;	// Max 32 bytes per key
 	pub const ValueLimit: u32 = 64;	// Max 64 bytes per value
 	pub const UniquesMetadataDepositBase: Balance = 1000 * RMRK;
@@ -129,14 +129,14 @@ parameter_types! {
 
 impl pallet_uniques::Config for Test {
 	type Event = Event;
-	type ClassId = u32;
-	type InstanceId = u32;
+	type CollectionId = u32;
+	type ItemId = u32;
 	type Currency = Balances;
 	type ForceOrigin = EnsureRoot<AccountId>;
 	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<AccountId>>;
 	type Locker = pallet_rmrk_core::Pallet<Test>;
-	type ClassDeposit = ClassDeposit;
-	type InstanceDeposit = InstanceDeposit;
+	type CollectionDeposit = CollectionDeposit;
+	type ItemDeposit = ItemDeposit;
 	type MetadataDepositBase = UniquesMetadataDepositBase;
 	type AttributeDepositBase = AttributeDepositBase;
 	type DepositPerByte = DepositPerByte;
@@ -163,11 +163,11 @@ pub const BOB: AccountId = AccountId::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const UNITS: Balance = 100_000_000_000;
 pub const RMRK: Balance = 1;
-pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::ClassId = 0;
-pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::ClassId = 1;
-pub const NFT_ID_0: <Test as pallet_uniques::Config>::InstanceId = 0;
-pub const NFT_ID_1: <Test as pallet_uniques::Config>::InstanceId = 1;
-pub const NOT_EXISTING_NFT_ID: <Test as pallet_uniques::Config>::ClassId = 999;
+pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::CollectionId = 0;
+pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::CollectionId = 1;
+pub const NFT_ID_0: <Test as pallet_uniques::Config>::ItemId = 0;
+pub const NFT_ID_1: <Test as pallet_uniques::Config>::ItemId = 1;
+pub const NOT_EXISTING_NFT_ID: <Test as pallet_uniques::Config>::ItemId = 999;
 pub const MIN_OFFER_ON_NFT: Balance = 50 * UNITS;
 
 // Build genesis storage according to the mock runtime.
