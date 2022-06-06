@@ -322,7 +322,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T>
 	where
-		T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+		T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 	{
 		/// Mints an NFT in the specified collection
 		/// Sets metadata and the royalty attribute
@@ -345,7 +345,7 @@ pub mod pallet {
 			transferable: bool,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			if let Some(collection_issuer) = pallet_uniques::Pallet::<T>::class_owner(collection_id)
+			if let Some(collection_issuer) = pallet_uniques::Pallet::<T>::collection_owner(collection_id)
 			{
 				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
 			} else {
@@ -387,14 +387,14 @@ pub mod pallet {
 
 			let collection_id = Self::collection_create(sender.clone(), metadata, max, symbol)?;
 
-			pallet_uniques::Pallet::<T>::do_create_class(
+			pallet_uniques::Pallet::<T>::do_create_collection(
 				collection_id,
 				sender.clone(),
 				sender.clone(),
-				T::ClassDeposit::get(),
+				T::CollectionDeposit::get(),
 				false,
 				pallet_uniques::Event::Created {
-					class: collection_id,
+					collection: collection_id,
 					creator: sender.clone(),
 					owner: sender.clone(),
 				},
@@ -438,9 +438,9 @@ pub mod pallet {
 
 			let witness = pallet_uniques::Pallet::<T>::get_destroy_witness(&collection_id)
 				.ok_or(Error::<T>::NoWitness)?;
-			ensure!(witness.instances == 0u32, Error::<T>::CollectionNotEmpty);
+			ensure!(witness.items == 0u32, Error::<T>::CollectionNotEmpty);
 
-			pallet_uniques::Pallet::<T>::do_destroy_class(
+			pallet_uniques::Pallet::<T>::do_destroy_collection(
 				collection_id,
 				witness,
 				sender.clone().into(),

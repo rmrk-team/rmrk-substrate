@@ -18,7 +18,7 @@ pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
 impl<T: Config> Priority<StringLimitOf<T>, T::AccountId, BoundedVec<ResourceId, T::MaxPriorities>>
 	for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	fn priority_set(
 		sender: T::AccountId,
@@ -43,7 +43,7 @@ where
 
 impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId> for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	fn property_set(
 		sender: T::AccountId,
@@ -73,7 +73,7 @@ impl<T: Config>
 	Resource<BoundedVec<u8, T::StringLimit>, T::AccountId, BoundedVec<PartId, T::PartsLimit>>
 	for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	fn resource_add(
 		sender: T::AccountId,
@@ -200,7 +200,7 @@ where
 impl<T: Config> Collection<StringLimitOf<T>, BoundedCollectionSymbolOf<T>, T::AccountId>
 	for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	fn issuer(_collection_id: CollectionId) -> Option<T::AccountId> {
 		None
@@ -262,7 +262,7 @@ where
 
 impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	type MaxRecursions = T::MaxRecursions;
 
@@ -533,7 +533,7 @@ where
 
 impl<T: Config> Locker<CollectionId, NftId> for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	fn is_locked(collection_id: CollectionId, nft_id: NftId) -> bool {
 		Lock::<T>::get((collection_id, nft_id))
@@ -542,7 +542,7 @@ where
 
 impl<T: Config> Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	/// Encodes a RMRK NFT with randomness + `collection_id` + `nft_id` into a virtual account
 	/// then returning the `AccountId`. Note that we must be careful of the size of `AccountId`
