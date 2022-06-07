@@ -40,7 +40,7 @@ fn basic_collection() -> DispatchResult {
 fn basic_mint() -> DispatchResult {
 	RmrkCore::mint_nft(
 		Origin::signed(ALICE),
-		ALICE,
+		None, // if not specified defaults to minter
 		COLLECTION_ID_0,
 		Some(ALICE),
 		Some(Permill::from_float(1.525)),
@@ -127,7 +127,7 @@ fn list_non_transferable_fail() {
 		// Mint non-transferable NFT
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			ALICE,
+			Some(ALICE),
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),

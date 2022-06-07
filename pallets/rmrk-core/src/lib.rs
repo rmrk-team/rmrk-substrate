@@ -337,7 +337,7 @@ pub mod pallet {
 		#[transactional]
 		pub fn mint_nft(
 			origin: OriginFor<T>,
-			owner: T::AccountId,
+			owner: Option<T::AccountId>,
 			collection_id: CollectionId,
 			royalty_recipient: Option<T::AccountId>,
 			royalty: Option<Permill>,
@@ -345,16 +345,23 @@ pub mod pallet {
 			transferable: bool,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			if let Some(collection_issuer) = pallet_uniques::Pallet::<T>::collection_owner(collection_id)
+			if let Some(collection_issuer) =
+				pallet_uniques::Pallet::<T>::collection_owner(collection_id)
 			{
 				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
 			} else {
 				return Err(Error::<T>::CollectionUnknown.into())
 			}
 
+			// Default owner to minter
+			let nft_owner = match owner {
+				Some(owner) => owner,
+				None => sender.clone(),
+			};
+
 			let (collection_id, nft_id) = Self::nft_mint(
-				sender.clone(),
-				owner.clone(),
+				sender,
+				nft_owner.clone(),
 				collection_id,
 				royalty_recipient,
 				royalty,
@@ -365,11 +372,11 @@ pub mod pallet {
 			pallet_uniques::Pallet::<T>::do_mint(
 				collection_id,
 				nft_id,
-				owner.clone(),
+				nft_owner.clone(),
 				|_details| Ok(()),
 			)?;
 
-			Self::deposit_event(Event::NftMinted { owner, collection_id, nft_id });
+			Self::deposit_event(Event::NftMinted { owner: nft_owner, collection_id, nft_id });
 
 			Ok(())
 		}
