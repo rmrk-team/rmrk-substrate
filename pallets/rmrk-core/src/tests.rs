@@ -54,7 +54,7 @@ fn basic_collection() -> DispatchResult {
 fn basic_mint() -> DispatchResult {
 	RMRKCore::mint_nft(
 		Origin::signed(ALICE),
-		Some(ALICE),
+		None, // if not specified defaults to minter
 		COLLECTION_ID_0,
 		Some(ALICE),
 		Some(Permill::from_float(1.525)),
