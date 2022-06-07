@@ -335,8 +335,8 @@ impl pallet_template::Config for Runtime {
 parameter_types! {
 	pub const MaxRecursions: u32 = 10;
 	pub const ResourceSymbolLimit: u32 = 10;
-	pub const PartsLimit: u32 = 3;
-	pub const MaxPriorities: u32 = 3;
+	pub const PartsLimit: u32 = 25;
+	pub const MaxPriorities: u32 = 25;
 	pub const CollectionSymbolLimit: u32 = 100;
 }
 
