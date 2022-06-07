@@ -234,7 +234,7 @@ fn mint_nft_works() {
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(ALICE),
+			None,
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(20.525)),
@@ -298,7 +298,7 @@ fn royalty_recipient_default_works() {
 		// Mint an NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(ALICE),
+			None,
 			COLLECTION_ID_0,
 			None, // No royalty recipient
 			Some(Permill::from_float(20.525)),
@@ -310,7 +310,7 @@ fn royalty_recipient_default_works() {
 		// Mint another NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(ALICE),
+			None,
 			COLLECTION_ID_0,
 			Some(BOB), // Royalty recipient is BOB
 			Some(Permill::from_float(20.525)),
@@ -322,7 +322,7 @@ fn royalty_recipient_default_works() {
 		// Mint another NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(ALICE),
+			None,
 			COLLECTION_ID_0,
 			None, // No royalty recipient is BOB
 			None, // No royalty amount
@@ -334,7 +334,7 @@ fn royalty_recipient_default_works() {
 		// Mint another NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(ALICE),
+			None,
 			COLLECTION_ID_0,
 			Some(ALICE), // Royalty recipient is ALICE
 			None,        // No royalty amount
@@ -505,7 +505,7 @@ fn send_non_transferable_fail() {
 		// Mint non-transferable NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(ALICE),
+			None,
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
