@@ -155,7 +155,7 @@ describe('Integration test: remove nft resource', () => {
         );
 
         const tx = removeNftResource(api, 'removed', Alice, 0xFFFFFFFF, nftAlice, resourceId);
-        await expectTxFailure(/rmrkCore.CollectionUnknown/, tx); // FIXME: inappropriate error message (NoAvailableNftId)
+        await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx); // FIXME: inappropriate error message (NoAvailableNftId)
     });
 
     it('[Negative test]: only collection owner can delete a resource', async () => {
@@ -190,7 +190,7 @@ describe('Integration test: remove nft resource', () => {
         const issuer = privateKey(Alice);
 
         const tx = removeNftResource(api, 'removed', Bob, collectionIdAlice, nftAlice, resourceId);
-        await expectTxFailure(/rmrkCore.NoPermission/, tx);
+        await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
 
     it('[Negative test]: cannot delete a resource that does not exist', async () => {
@@ -213,7 +213,7 @@ describe('Integration test: remove nft resource', () => {
         const issuer = privateKey(Alice);
 
         const tx = removeNftResource(api, 'removed', Alice, collectionIdAlice, nftAlice, 127);
-        await expectTxFailure(/rmrkCore.ResourceDoesntExist/, tx);
+        await expectTxFailure(/rmrkCore\.ResourceDoesntExist/, tx);
     });
 
     it('[Negative test]: Cannot accept deleting resource without owner attempt do delete it', async () => {
@@ -246,7 +246,7 @@ describe('Integration test: remove nft resource', () => {
         );
 
         const tx = acceptResourceRemoval(api, Bob, collectionIdAlice, nftBob, resourceId);
-        await expectTxFailure(/rmrkCore.ResourceNotPending/, tx);
+        await expectTxFailure(/rmrkCore\.ResourceNotPending/, tx);
     });
 
     it('[Negative test]: cannot confirm the deletion of a non-existing resource', async () => {
@@ -267,7 +267,7 @@ describe('Integration test: remove nft resource', () => {
         );
 
         const tx = acceptResourceRemoval(api, Bob, collectionIdAlice, nftBob, 127);
-        await expectTxFailure(/rmrkCore.ResourceDoesntExist/, tx);
+        await expectTxFailure(/rmrkCore\.ResourceDoesntExist/, tx);
     });
 
     it('[Negative test]: Non-owner user cannot confirm the deletion of resource', async () => {
@@ -300,7 +300,7 @@ describe('Integration test: remove nft resource', () => {
         );
 
         const tx = acceptResourceRemoval(api, Bob, collectionIdAlice, nftAlice, resourceId);
-        await expectTxFailure(/rmrkCore.NoPermission/, tx);
+        await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
 
     after(() => {

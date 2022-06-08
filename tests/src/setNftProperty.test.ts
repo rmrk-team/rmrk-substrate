@@ -37,7 +37,7 @@ describe("Integration test: set NFT property", () => {
 
         const tx = setNftProperty(api, alice, collectionId, maxNftId, 'test-key', 'test-value');
 
-        await expectTxFailure(/rmrkCore.NoAvailableNftId/, tx);
+        await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
     });
 
     it("[negative] unable to set a property by not-an-owner", async () => {
@@ -48,7 +48,7 @@ describe("Integration test: set NFT property", () => {
 
         const tx = setNftProperty(api, bob, collectionId, nftId, 'test-key', 'test-key-value');
 
-        await expectTxFailure(/rmrkCore.NoPermission/, tx);
+        await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
 
     it("set a property to nested NFT", async () => {
@@ -78,7 +78,7 @@ describe("Integration test: set NFT property", () => {
 
         const tx = setNftProperty(api, bob, collectionId, childNftId, 'test-key', 'test-key-value');
 
-        await expectTxFailure(/rmrkCore.NoPermission/, tx);
+        await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
 
     after(() => { api.disconnect(); });

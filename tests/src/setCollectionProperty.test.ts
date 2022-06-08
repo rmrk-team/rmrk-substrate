@@ -39,7 +39,7 @@ describe("Integration test: set collection property", () => {
       "test_key",
       "42"
     );
-    await expectTxFailure(/rmrkCore.CollectionUnknown/, tx);
+    await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx);
   });
 
   it("[Negative] Set property not an owner NFT collection issuer", async () => {
@@ -57,7 +57,7 @@ describe("Integration test: set collection property", () => {
           "test_key",
           "42"
         );
-        await expectTxFailure(/rmrkCore.NoPermission/, tx);
+        await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
   });
 

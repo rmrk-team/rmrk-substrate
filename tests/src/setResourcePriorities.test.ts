@@ -37,7 +37,7 @@ describe("Integration test: set NFT resource priorities", () => {
 
         const tx = setResourcePriorities(api, attacker, collectionId, nftId, [10, 42]);
 
-        await expectTxFailure(/rmrkCore.NoPermission/, tx);
+        await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
 
     it("[negative] set NFT resource priorities to non-existing NFT", async () => {
@@ -48,7 +48,7 @@ describe("Integration test: set NFT resource priorities", () => {
 
         const tx = setResourcePriorities(api, alice, collectionId, maxNftId, [10, 42]);
 
-        await expectTxFailure(/rmrkCore.NoAvailableNftId/, tx);
+        await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
     });
 
     after(() => { api.disconnect(); });

@@ -232,7 +232,7 @@ describe("Integration test: Equip NFT", () => {
   //     const newOwnerNFTError: NftIdTuple = [collectionId, 9999999];
 
   //     const tx = equipNft(api, Alice, oldOwnerNFT, newOwnerNFTError, baseId, 1);
-  //     await expectTxFailure(/rmrkCore.NoAvailableNftId/, tx);
+  //     await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
   //   });
   // });
 
@@ -297,7 +297,7 @@ describe("Integration test: Equip NFT", () => {
   //     );
 
   //     const tx = equipNft(api, Alice, oldOwnerNFT, newOwnerNFT, baseId, 1);
-  //     await expectTxFailure(/rmrkCore.NoAvailableNftId/, tx);
+  //     await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
   //   });
   // });
 
@@ -362,7 +362,7 @@ describe("Integration test: Equip NFT", () => {
   //     );
 
   //     const tx = equipNft(api, Bob, oldOwnerNFT, newOwnerNFT, baseId, 1);
-  //     await expectTxFailure(/rmrkEquip.PermissionError/, tx);
+  //     await expectTxFailure(/rmrkEquip\.PermissionError/, tx);
   //   });
   // });
 
@@ -428,7 +428,7 @@ describe("Integration test: Equip NFT", () => {
   //     const newOwnerNFTError: NftIdTuple = [collectionId, 99999];
 
   //     const tx = equipNft(api, Bob, oldOwnerNFT, newOwnerNFTError, baseId, 1);
-  //     await expectTxFailure(/rmrkCore.NoAvailableNftId/, tx);
+  //     await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
   //   });
   // });
 
@@ -492,7 +492,7 @@ describe("Integration test: Equip NFT", () => {
   //       slotId
   //     );
   //     const tx = equipNft(api, Bob, oldOwnerNFT, newOwnerNFT, baseId, 1);
-  //     await expectTxFailure(/rmrkEquip.PermissionError/, tx);
+  //     await expectTxFailure(/rmrkEquip\.PermissionError/, tx);
   //   });
   // });
 
@@ -556,7 +556,7 @@ describe("Integration test: Equip NFT", () => {
   //       slotId
   //     );
   //     const tx = equipNft(api, Alice, oldOwnerNFT, newOwnerNFT, 99999, 1);
-  //     await expectTxFailure(/rmrkEquip.NoResourceForThisBaseFoundOnNft/, tx);
+  //     await expectTxFailure(/rmrkEquip\.NoResourceForThisBaseFoundOnNft/, tx);
   //   });
   // });
 
@@ -620,7 +620,7 @@ describe("Integration test: Equip NFT", () => {
   //       "88888"
   //     );
   //     const tx = equipNft(api, Alice, oldOwnerNFT, newOwnerNFT, baseId, 1);
-  //     await expectTxFailure(/rmrkEquip.ItemHasNoResourceToEquipThere/, tx);
+  //     await expectTxFailure(/rmrkEquip\.ItemHasNoResourceToEquipThere/, tx);
   //   });
   // });
 
@@ -684,7 +684,7 @@ describe("Integration test: Equip NFT", () => {
   //       slotId
   //     );
   //     const tx = equipNft(api, Alice, oldOwnerNFT, newOwnerNFT, baseId, 1);
-  //     await expectTxFailure(/rmrkEquip.CantEquipFixedPart/, tx);
+  //     await expectTxFailure(/rmrkEquip\.CantEquipFixedPart/, tx);
   //   });
   // });
 
@@ -748,7 +748,7 @@ describe("Integration test: Equip NFT", () => {
   //       slotId
   //     );
   //     const tx = equipNft(api, Alice, oldOwnerNFT, newOwnerNFT, baseId, 1);
-  //     await expectTxFailure(/rmrkEquip.CollectionNotEquippable/, tx);
+  //     await expectTxFailure(/rmrkEquip\.CollectionNotEquippable/, tx);
   //   });
   // });
 

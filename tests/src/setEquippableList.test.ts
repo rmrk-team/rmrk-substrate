@@ -50,7 +50,7 @@ describe("Integration test: set slot's Equippable List", () => {
         const slotId = 0;
 
         const tx = setEquippableList(api, alice, maxBaseId, slotId, "All");
-        await expectTxFailure(/rmrkEquip.BaseDoesntExist/, tx);
+        await expectTxFailure(/rmrkEquip\.BaseDoesntExist/, tx);
     });
 
     it("[negative] unable to set equippable list by a not-an-owner", async () => {
@@ -68,7 +68,7 @@ describe("Integration test: set slot's Equippable List", () => {
         ]);
 
         const tx = setEquippableList(api, bob, baseId, slotId, "All");
-        await expectTxFailure(/rmrkEquip.PermissionError/, tx);
+        await expectTxFailure(/rmrkEquip\.PermissionError/, tx);
     });
 
     it("[negative] unable to set equippable list to a fixed part", async () => {
@@ -85,7 +85,7 @@ describe("Integration test: set slot's Equippable List", () => {
         ]);
 
         const tx = setEquippableList(api, alice, baseId, fixedPartId, "All");
-        await expectTxFailure(/rmrkEquip.NoEquippableOnFixedPart/, tx);
+        await expectTxFailure(/rmrkEquip\.NoEquippableOnFixedPart/, tx);
     });
 
     it("[negative] unable to set equippable list to non-existing slot", async () => {
@@ -104,7 +104,7 @@ describe("Integration test: set slot's Equippable List", () => {
         ]);
 
         const tx = setEquippableList(api, alice, baseId, maxSlotId, "All");
-        await expectTxFailure(/rmrkEquip.PartDoesntExist/, tx);
+        await expectTxFailure(/rmrkEquip\.PartDoesntExist/, tx);
     })
 
     after(() => { api.disconnect(); });

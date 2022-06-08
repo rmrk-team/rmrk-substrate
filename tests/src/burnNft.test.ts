@@ -140,7 +140,7 @@ describe("Integration test: burn nft", () => {
       "test-symbol"
     ).then(async (collectionId) => {
       const tx = burnNft(api, Alice, collectionId, 99999);
-      await expectTxFailure(/rmrkCore.NoAvailableNftId/, tx);
+      await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
     });
   });
 
@@ -160,7 +160,7 @@ describe("Integration test: burn nft", () => {
         "nft-metadata"
       );
       const tx = burnNft(api, Bob, collectionId, nftId);
-      await expectTxFailure(/rmrkCore.NoPermission/, tx);
+      await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
   });
 

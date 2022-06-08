@@ -30,7 +30,7 @@ describe("Integration test: collection issuer", () => {
     await createCollection(api, Bob, "test-metadata", null, "test-symbol").then(
       async (collectionId) => {
         const tx = changeIssuer(api, Alice, collectionId, Bob);
-        await expectTxFailure(/rmrkCore.NoPermission/, tx);
+        await expectTxFailure(/rmrkCore\.NoPermission/, tx);
       }
     );
   });
@@ -44,7 +44,7 @@ describe("Integration test: collection issuer", () => {
       "test-symbol"
     ).then(async () => {
       const tx = changeIssuer(api, Alice, 99999, Bob);
-      await expectTxFailure(/rmrkCore.CollectionUnknown/, tx);
+      await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx);
     });
   });
 

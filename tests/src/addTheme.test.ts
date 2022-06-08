@@ -101,7 +101,7 @@ describe("Integration test: add Theme to Base", () => {
             properties: []
         });
 
-        await expectTxFailure(/rmrkEquip.BaseDoesntExist/, tx);
+        await expectTxFailure(/rmrkEquip\.BaseDoesntExist/, tx);
     });
 
     it("[negative] unable to add custom theme if no default theme", async () => {
@@ -111,7 +111,7 @@ describe("Integration test: add Theme to Base", () => {
             properties: []
         });
 
-        await expectTxFailure(/rmrkEquip.NeedsDefaultThemeFirst/, tx);
+        await expectTxFailure(/rmrkEquip\.NeedsDefaultThemeFirst/, tx);
     });
 
     it("[negative] unable to add theme by a not-an-owner", async () => {
@@ -121,7 +121,7 @@ describe("Integration test: add Theme to Base", () => {
             properties: []
         });
 
-        await expectTxFailure(/rmrkEquip.PermissionError/, tx);
+        await expectTxFailure(/rmrkEquip\.PermissionError/, tx);
     });
 
     after(() => { api.disconnect(); });

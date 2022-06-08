@@ -113,7 +113,7 @@ describe("Integration test: mint new NFT", () => {
         royalty
       );
 
-      await expectTxFailure(/rmrkCore.CollectionUnknown/, tx);
+      await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx);
     });
 
     it("[Negative] unable to mint NFT by a user that isn't the owner of the collection", async () => {
@@ -143,7 +143,7 @@ describe("Integration test: mint new NFT", () => {
         royalty
       );
 
-      await expectTxFailure(/rmrkCore.NoPermission/, tx);
+      await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
 
     it("[Negative] unable to fetch non-existing NFT", async () => {

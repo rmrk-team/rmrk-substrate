@@ -26,7 +26,7 @@ describe("Integration test: lock collection", () => {
 
   it("[Negative] Lock non-existing NFT collection", async () => {
     const tx = lockCollection(api, Alice, 99999);
-    await expectTxFailure(/rmrkCore.CollectionUnknown/, tx);
+    await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx);
   });
 
   it("[Negative] Lock not an owner NFT collection issuer", async () => {
@@ -38,7 +38,7 @@ describe("Integration test: lock collection", () => {
       "test-symbol"
     ).then(async (collectionId) => {
       const tx = lockCollection(api, Bob, collectionId);
-      await expectTxFailure(/rmrkCore.NoPermission/, tx);
+      await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
   });
 
@@ -83,7 +83,7 @@ describe("Integration test: lock collection", () => {
         null,
         null
       );
-      await expectTxFailure(/rmrkCore.CollectionFullOrLocked/, tx);
+      await expectTxFailure(/rmrkCore\.CollectionFullOrLocked/, tx);
     });
   });
 
@@ -108,7 +108,7 @@ describe("Integration test: lock collection", () => {
           null,
           null
         );
-        await expectTxFailure(/rmrkCore.CollectionFullOrLocked/, tx);
+        await expectTxFailure(/rmrkCore\.CollectionFullOrLocked/, tx);
       }
     );
   });

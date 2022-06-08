@@ -60,7 +60,7 @@ describe("Integration test: reject NFT", () => {
         await sendNft(api, "pending", ownerBob, bobCollectionId, childNftId, newOwnerNFT);
         const tx = rejectNft(api, bob, bobCollectionId, childNftId);
 
-        await expectTxFailure(/rmrkCore.CannotRejectNonOwnedNft/, tx);
+        await expectTxFailure(/rmrkCore\.CannotRejectNonOwnedNft/, tx);
     });
 
     it("[negative] unable to reject non-existing NFT", async () => {
@@ -74,7 +74,7 @@ describe("Integration test: reject NFT", () => {
 
         const tx = rejectNft(api, alice, collectionId, maxNftId);
 
-        await expectTxFailure(/rmrkCore.NoAvailableNftId/, tx);
+        await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
     });
 
     it("[negative] unable to reject NFT which is not sent", async () => {
@@ -89,7 +89,7 @@ describe("Integration test: reject NFT", () => {
 
         const tx = rejectNft(api, alice, bobCollectionId, childNftId);
 
-        await expectTxFailure(/rmrkCore.CannotRejectNonOwnedNft/, tx);
+        await expectTxFailure(/rmrkCore\.CannotRejectNonOwnedNft/, tx);
 
         const possibleParentNFT: NftIdTuple = [aliceCollectionId, parentNftId];
         const isChild = await isNftChildOfAnother(api, bobCollectionId, childNftId, possibleParentNFT);
