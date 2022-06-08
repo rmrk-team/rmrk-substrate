@@ -8,7 +8,7 @@ import {
     RmrkTraitsResourceResourceInfo as ResourceInfo,
     RmrkTraitsPartEquippableList as EquippableList,
     RmrkTraitsPartPartType as PartType,
-    RmrkTraitsTheme as Theme
+    RmrkTraitsTheme as Theme,
 } from "@polkadot/types/lookup";
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
@@ -101,7 +101,14 @@ export async function changeIssuer(
 
     tx = api.tx.rmrkCore.changeCollectionIssuer(collectionId, bob.address);
     events = await executeTransaction(api, alice, tx);
-    expect(isTxResultSuccess(events), 'Error: Unable to change NFT collection issuer').to.be.true;
+    const changeIssuerResult = extractRmrkCoreTxResult(
+        events, 'IssuerChanged', (data) => {
+            return parseInt(data[2].toString(), 10);
+        }
+    );
+    expect(changeIssuerResult.success, 'Error: Unable to change NFT collection issuer').to.be.true;
+    expect(changeIssuerResult.successData!, 'Error: Invalid collection id after changing the issuer')
+        .to.be.eq(collectionId);
 
     await getCollection(api, collectionId).then((collectionOption) => {
         const collection = collectionOption.unwrap();
@@ -179,22 +186,20 @@ export async function setNftProperty(
     );
 
     expect(propResult.success, 'Error: Unable to set NFT property').to.be.true;
-    if (propResult.successData) {
-        const eventData = propResult.successData;
-        const eventDescription = 'from set NFT property event';
+    const eventData = propResult.successData!;
+    const eventDescription = 'from set NFT property event';
 
-        expect(eventData.collectionId, 'Error: Invalid collection ID ' + eventDescription)
-            .to.be.equal(collectionId);
+    expect(eventData.collectionId, 'Error: Invalid collection ID ' + eventDescription)
+        .to.be.equal(collectionId);
 
-        expect(eventData.nftId.eq(nftIdOpt), 'Error: Invalid NFT ID ' + eventDescription)
-            .to.be.true;
+    expect(eventData.nftId.eq(nftIdOpt), 'Error: Invalid NFT ID ' + eventDescription)
+        .to.be.true;
 
-        expect(eventData.key.eq(key), 'Error: Invalid property key ' + eventDescription)
-            .to.be.true;
+    expect(eventData.key.eq(key), 'Error: Invalid property key ' + eventDescription)
+        .to.be.true;
 
-        expect(eventData.value.eq(value), 'Error: Invalid property value ' + eventDescription)
-            .to.be.true;
-    }
+    expect(eventData.value.eq(value), 'Error: Invalid property value ' + eventDescription)
+        .to.be.true;
 
     expect(
         await isNftPropertyExists(api, collectionId, nftId, key, value),
@@ -313,17 +318,15 @@ export async function sendNft(
     });
 
     expect(sendResult.success, 'Error: Unable to send NFT').to.be.true;
-    if (sendResult.successData) {
-        const sendData = sendResult.successData;
+    const sendData = sendResult.successData!;
 
-        expect(sendData.dstOwner.eq(newOwnerObj), 'Error: Invalid target user (from event data)')
-            .to.be.true;
+    expect(sendData.dstOwner.eq(newOwnerObj), 'Error: Invalid target user (from event data)')
+        .to.be.true;
 
-        expect(sendData.collectionId)
-            .to.be.equal(collectionId, 'Error: Invalid collection ID (from event data)');
+    expect(sendData.collectionId)
+        .to.be.equal(collectionId, 'Error: Invalid collection ID (from event data)');
 
-        expect(sendData.nftId).to.be.equal(nftId, 'Error: Invalid NFT ID (from event data)');
-    }
+    expect(sendData.nftId).to.be.equal(nftId, 'Error: Invalid NFT ID (from event data)');
 
     expect(nftBeforeSendingOpt.isSome, 'Error: Unable to fetch NFT before sending').to.be.true;
 
@@ -379,18 +382,16 @@ export async function acceptNft(
     });
 
     expect(acceptResult.success, 'Error: Unable to accept NFT').to.be.true;
-    if (acceptResult.successData) {
-        const acceptData = acceptResult.successData;
+    const acceptData = acceptResult.successData!;
 
-        expect(acceptData.recipient.eq(newOwnerObj), 'Error: Invalid NFT recipient (from event data)')
-            .to.be.true;
+    expect(acceptData.recipient.eq(newOwnerObj), 'Error: Invalid NFT recipient (from event data)')
+        .to.be.true;
 
-        expect(acceptData.collectionId)
-            .to.be.equal(collectionId, 'Error: Invalid collection ID (from event data)');
+    expect(acceptData.collectionId)
+        .to.be.equal(collectionId, 'Error: Invalid collection ID (from event data)');
 
-        expect(acceptData.nftId)
-            .to.be.equal(nftId, 'Error: Invalid NFT ID (from event data)');
-    }
+    expect(acceptData.nftId)
+        .to.be.equal(nftId, 'Error: Invalid NFT ID (from event data)');
 
     const nftBefore = nftBeforeOpt.unwrap();
 
@@ -428,15 +429,13 @@ export async function rejectNft(
         };
     });
 
-    if (rejectResult.successData) {
-        const rejectData = rejectResult.successData;
+    const rejectData = rejectResult.successData!;
 
-        expect(rejectData.collectionId)
-            .to.be.equal(collectionId, 'Error: Invalid collection ID (from event data)');
+    expect(rejectData.collectionId)
+        .to.be.equal(collectionId, 'Error: Invalid collection ID (from event data)');
 
-        expect(rejectData.nftId)
-            .to.be.equal(nftId, 'Error: Invalid NFT ID (from event data)');
-    }
+    expect(rejectData.nftId)
+        .to.be.equal(nftId, 'Error: Invalid NFT ID (from event data)');
 
     const nftBefore = nftBeforeOpt.unwrap();
 
@@ -514,14 +513,12 @@ export async function setResourcePriorities(
     });
 
     expect(prioResult.success, 'Error: Unable to set resource priorities').to.be.true;
-    if (prioResult.successData) {
-        const eventData = prioResult.successData;
+    const eventData = prioResult.successData!;
 
-        expect(eventData.collectionId)
-            .to.be.equal(collectionId, 'Error: Invalid collection ID (set priorities event data)');
+    expect(eventData.collectionId)
+        .to.be.equal(collectionId, 'Error: Invalid collection ID (set priorities event data)');
 
-        expect(eventData.nftId).to.be.equal(nftId, 'Error: Invalid NFT ID (set priorities event data');
-    }
+    expect(eventData.nftId).to.be.equal(nftId, 'Error: Invalid NFT ID (set priorities event data');
 
     for (var i = 0; i < priorities.length; i++) {
         const resourceId = priorities[i];
@@ -553,15 +550,13 @@ export async function setEquippableList(
     });
 
     expect(equipListResult.success, 'Error: unable to update equippable list').to.be.true;
-    if (equipListResult.successData) {
-        const updateEvent = equipListResult.successData;
+    const updateEvent = equipListResult.successData!;
 
-        expect(updateEvent.baseId)
-            .to.be.equal(baseId, 'Error: invalid base ID from update equippable event');
+    expect(updateEvent.baseId)
+        .to.be.equal(baseId, 'Error: invalid base ID from update equippable event');
 
-        expect(updateEvent.slotId)
-            .to.be.equal(slotId, 'Error: invalid base ID from update equippable event');
-    }
+    expect(updateEvent.slotId)
+        .to.be.equal(slotId, 'Error: invalid base ID from update equippable event');
 
     const fetchedEquippableList = await getEquippableList(api, baseId, slotId);
 
@@ -632,7 +627,14 @@ export async function lockCollection(
   const issuer = privateKey(issuerUri);
   const tx = api.tx.rmrkCore.lockCollection(collectionId);
   const events = await executeTransaction(api, issuer, tx);
-  expect(isTxResultSuccess(events)).to.be.true;
+  const lockResult = extractRmrkCoreTxResult(
+      events, 'CollectionLocked', (data) => {
+          return parseInt(data[1].toString(), 10);
+      }
+  );
+  expect(lockResult.success, 'Error: Unable to lock a collection').to.be.true;
+  expect(lockResult.successData!, 'Error: Invalid collection was locked')
+      .to.be.eq(collectionId);
 
   await getCollection(api, collectionId).then((collectionOption) => {
     const collection = collectionOption.unwrap();
@@ -651,7 +653,32 @@ export async function setPropertyCollection(
 
   const tx = api.tx.rmrkCore.setProperty(collectionId, null, key, value);
   const events = await executeTransaction(api, alice, tx);
-  expect(isTxResultSuccess(events)).to.be.true;
+  const propResult = extractRmrkCoreTxResult(
+        events, 'PropertySet', (data) => {
+            return {
+                collectionId: parseInt(data[0].toString(), 10),
+                nftId: data[1] as Option<u32>,
+                key: data[2] as Bytes,
+                value: data[3] as Bytes
+            };
+        }
+    );
+
+  expect(propResult.success, 'Error: Unable to set collection property').to.be.true;
+  const eventData = propResult.successData!;
+  const eventDescription = 'from set collection property event';
+
+  expect(eventData.collectionId, 'Error: Invalid collection ID ' + eventDescription)
+    .to.be.equal(collectionId);
+
+  expect(eventData.nftId.eq(null), 'Error: Unexpected NFT ID ' + eventDescription)
+    .to.be.true;
+
+  expect(eventData.key.eq(key), 'Error: Invalid property key ' + eventDescription)
+    .to.be.true;
+
+  expect(eventData.value.eq(value), 'Error: Invalid property value ' + eventDescription)
+    .to.be.true;
 
   expect(await isCollectionPropertyExists(api, collectionId, key, value))
     .to.be.true;
@@ -666,7 +693,15 @@ export async function burnNft(
   const issuer = privateKey(issuerUri);
   const tx = api.tx.rmrkCore.burnNft(collectionId, nftId);
   const events = await executeTransaction(api, issuer, tx);
-  expect(isTxResultSuccess(events)).to.be.true;
+  const burnResult = extractRmrkCoreTxResult(
+    events, 'NFTBurned', (data) => {
+      return parseInt(data[1].toString(), 10); 
+    }
+  );
+
+  expect(burnResult.success, 'Error: Unable to burn an NFT').to.be.true;
+  expect(burnResult.successData!, 'Error: Invalid NFT was burned')
+    .to.be.eq(nftId);
 
   const nftBurned = await getNft(api, collectionId, nftId);
   expect(nftBurned.isSome).to.be.false;
@@ -736,7 +771,20 @@ export async function acceptNftResource(
     );
 
     const events = await executeTransaction(api, issuer, tx);
-    expect(isTxResultSuccess(events)).to.be.true;
+    const acceptResult = extractRmrkCoreTxResult(
+        events, 'ResourceAccepted', (data) => {
+            return {
+                nftId: parseInt(data[0].toString(), 10),
+                resourceId: parseInt(data[0].toString(), 10)
+            };
+        }
+    )
+
+    expect(acceptResult.success, 'Error: Unable to accept a resource').to.be.true;
+    expect(acceptResult.successData!.nftId, 'Error: Invalid NFT ID while accepting a resource')
+        .to.be.eq(nftId);
+    expect(acceptResult.successData!.resourceId, 'Error: Invalid resource ID while accepting a resource')
+        .to.be.eq(resourceId);
 
     const resource = await getResourceById(api, collectionId, nftId, resourceId);
     checkResourceStatus(resource!, "added");
@@ -867,8 +915,8 @@ export async function addNftSlotResource(
 export async function equipNft(
   api: ApiPromise,
   issuerUri: string,
-  item: any,
-  equipper: any,
+  item: NftIdTuple,
+  equipper: NftIdTuple,
   resource: number,
   base: number,
   slot: number
@@ -876,7 +924,25 @@ export async function equipNft(
   const issuer = privateKey(issuerUri);
   const tx = api.tx.rmrkEquip.equip(item, equipper, resource, base, slot);
   const events = await executeTransaction(api, issuer, tx);
-  expect(isTxResultSuccess(events)).to.be.true;
+  const equipResult = extractRmrkEquipTxResult(
+    events, 'SlotEquipped', (data) => {
+      return {
+        item_collection: parseInt(data[0].toString(), 10),
+        item_nft: parseInt(data[1].toString(), 10),
+        base_id: parseInt(data[2].toString(), 10),
+        slot_id: parseInt(data[3].toString(), 10),
+      };
+    }
+  )
+  expect(equipResult.success, 'Error: Unable to equip an item').to.be.true;
+  expect(equipResult.successData!.item_collection, 'Error: Invalid item collection id')    
+    .to.be.eq(item[0]);
+  expect(equipResult.successData!.item_nft, 'Error: Invalid item NFT id')    
+    .to.be.eq(item[1]);
+  expect(equipResult.successData!.base_id, 'Error: Invalid base id')    
+    .to.be.eq(base);
+  expect(equipResult.successData!.slot_id, 'Error: Invalid slot id')    
+    .to.be.eq(slot);
 }
 
 export async function unequipNft(
@@ -892,16 +958,28 @@ export async function unequipNft(
   const tx = api.tx.rmrkEquip.equip(item, equipper, resource, base, slot);
   const events = await executeTransaction(api, issuer, tx);
 
-  const result = extractRmrkEquipTxResult(
+  const unEquipResult = extractRmrkEquipTxResult(
     events,
     "SlotUnequipped",
     (data) => {
-      return parseInt(data[1].toString(), 10);
+      return {
+        item_collection: parseInt(data[0].toString(), 10),
+        item_nft: parseInt(data[1].toString(), 10),
+        base_id: parseInt(data[2].toString(), 10),
+        slot_id: parseInt(data[3].toString(), 10),
+      };
     }
   );
 
-  expect(result.success).to.be.true;
-  expect(isTxResultSuccess(events)).to.be.true;
+  expect(unEquipResult.success, 'Error: Unable to unequip an item').to.be.true;
+  expect(unEquipResult.successData!.item_collection, 'Error: Invalid item collection id')    
+    .to.be.eq(item[0]);
+  expect(unEquipResult.successData!.item_nft, 'Error: Invalid item NFT id')    
+    .to.be.eq(item[1]);
+  expect(unEquipResult.successData!.base_id, 'Error: Invalid base id')    
+    .to.be.eq(base);
+  expect(unEquipResult.successData!.slot_id, 'Error: Invalid slot id')    
+    .to.be.eq(slot);
 }
 
 export async function removeNftResource(
@@ -916,7 +994,19 @@ export async function removeNftResource(
 
     const tx = api.tx.rmrkCore.removeResource(collectionId, nftId, resourceId);
     const events = await executeTransaction(api, issuer, tx);
-    expect(isTxResultSuccess(events)).to.be.true;
+    const removeResult = extractRmrkCoreTxResult(
+        events, 'ResourceRemoval', (data) => {
+            return {
+                nftId: parseInt(data[0].toString(), 10),
+                resourceId: parseInt(data[1].toString(), 10)
+            };
+        }
+    )
+    expect(removeResult.success, 'Error: Unable to remove a resource').to.be.true;
+    expect(removeResult.successData!.nftId, 'Error: Invalid NFT Id while removing a resource')
+        .to.be.eq(nftId);
+    expect(removeResult.successData!.resourceId, 'Error: Invalid resource Id while removing a resource')
+        .to.be.eq(resourceId);
 
     let afterDeleting = await findResourceById(api, collectionId, nftId, resourceId);
 
@@ -939,7 +1029,19 @@ export async function acceptResourceRemoval(
 
     const tx = api.tx.rmrkCore.acceptResourceRemoval(collectionId, nftId, resourceId);
     const events = await executeTransaction(api, issuer, tx);
-    expect(isTxResultSuccess(events)).to.be.true;
+    const acceptResult = extractRmrkCoreTxResult(
+        events, 'ResourceRemovalAccepted', (data) => {
+            return {
+                nftId: parseInt(data[0].toString(), 10),
+                resourceId: parseInt(data[1].toString(), 10)
+            };
+        }
+    )
+    expect(acceptResult.success, 'Error: Unable to accept a resource').to.be.true;
+    expect(acceptResult.successData!.nftId, 'Error: Invalid NFT Id while accepting a resource')
+        .to.be.eq(nftId);
+    expect(acceptResult.successData!.resourceId, 'Error: Invalid resource Id while accepting a resource')
+        .to.be.eq(resourceId);
 
     let afterDeleting = await findResourceById(api, collectionId, nftId, resourceId);
     expect(afterDeleting, 'Error: resource deleting failed').to.be.null;
