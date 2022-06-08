@@ -2,9 +2,8 @@ import { getApiConnection } from "./substrate/substrate-api";
 import { NftIdTuple } from "./util/fetch";
 import { expectTxFailure } from "./util/helpers";
 import {
-  acceptNft,
   addNftBasicResource,
-  createBase,
+  acceptNftResource,
   createCollection,
   mintNft,
   sendNft,
@@ -108,7 +107,7 @@ describe("Integration test: Add top-level NFT resource (by the same user)", () =
       thumb
     );
   
-    await expectTxFailure(/rmrkCore.NoAvailableNftId/, tx);
+    await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
   });
 
   it('[Negative test]: unable to add a resource by a not-an-owner user', async () => {
@@ -140,7 +139,7 @@ describe("Integration test: Add top-level NFT resource (by the same user)", () =
       thumb
     );
   
-    await expectTxFailure(/rmrkCore.NoPermission/, tx);
+    await expectTxFailure(/rmrkCore\.NoPermission/, tx);
   });
 
   it('[Negative test]: unable to add a resource to the nested NFT if it isnt root owned by the caller', async () => {
@@ -171,7 +170,136 @@ describe("Integration test: Add top-level NFT resource (by the same user)", () =
       thumb
     );
     
-    await expectTxFailure(/rmrkCore.NoPermission/, tx);
+    await expectTxFailure(/rmrkCore\.NoPermission/, tx);
+  });
+
+  it("Accept resource", async () => {
+    const collectionIdBob = await createCollection(
+      api,
+      Bob,
+      "test-metadata",
+      null,
+      "test-symbol"
+    );
+
+    const nftAlice = await mintNft(
+        api,
+        Bob,
+        Alice,
+        collectionIdBob,
+        "nft-metadata"
+    );
+
+    const resourceId = await addNftBasicResource(
+      api,
+      Bob,
+      "pending",
+      collectionIdBob,
+      nftAlice,
+      src,
+      metadata,
+      license,
+      thumb
+    );
+
+    await acceptNftResource(api, Alice, collectionIdBob, nftAlice, resourceId);
+  });
+
+  it("[Negative test]: unable to accept a non-existing resource", async () => {
+    const collectionIdBob = await createCollection(
+      api,
+      Bob,
+      "test-metadata",
+      null,
+      "test-symbol"
+    );
+
+    const nftAlice = await mintNft(
+        api,
+        Bob,
+        Alice,
+        collectionIdBob,
+        "nft-metadata"
+    );
+
+    const tx = acceptNftResource(api, Alice, collectionIdBob, nftAlice, nonexistentId);
+    await expectTxFailure(/rmrkCore\.ResourceDoesntExist/, tx);
+  });
+
+  it("[Negative test]: unable to accept a resource by a not-an-NFT-owner user", async () => {
+    const collectionIdBob = await createCollection(
+      api,
+      Bob,
+      "test-metadata",
+      null,
+      "test-symbol"
+    );
+
+    const nftAlice = await mintNft(
+        api,
+        Bob,
+        Alice,
+        collectionIdBob,
+        "nft-metadata"
+    );
+
+    const resourceId = await addNftBasicResource(
+      api,
+      Bob,
+      "pending",
+      collectionIdBob,
+      nftAlice,
+      src,
+      metadata,
+      license,
+      thumb
+    );
+
+    const tx = acceptNftResource(api, Bob, collectionIdBob, nftAlice, resourceId);
+
+    await expectTxFailure(/rmrkCore\.NoPermission/, tx);
+  });
+
+  it("[Negative test]: unable to accept a resource to a non-target NFT", async () => {
+    const collectionIdBob = await createCollection(
+      api,
+      Bob,
+      "test-metadata",
+      null,
+      "test-symbol"
+    );
+
+    const nftAlice = await mintNft(
+        api,
+        Bob,
+        Alice,
+        collectionIdBob,
+        "nft-metadata"
+    );
+
+    const wrongNft = await mintNft(
+        api,
+        Bob,
+        Alice,
+        collectionIdBob,
+        "nft-metadata"
+    );
+    
+    const resourceId = await addNftBasicResource(
+      api,
+      Bob,
+      "pending",
+      collectionIdBob,
+      nftAlice,
+      src,
+      metadata,
+      license,
+      thumb
+    );
+
+    const tx = acceptNftResource(api, Bob, collectionIdBob, wrongNft, resourceId);
+
+    await expectTxFailure(/rmrkCore\.ResourceDoesntExist/, tx);
   });
 
 
