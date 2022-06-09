@@ -16,11 +16,10 @@ import {RmrkTraitsResourceResourceInfo as ResourceInfo} from "@polkadot/types/lo
 describe("Integration test: Add NFT resource", () => {
   const Alice = "//Alice";
   const Bob = "//Bob";
-  const resourceId = "resid0";
-  const src = "test-basic-src";
-  const metadata = "test-basic-metadata";
-  const license = "test-basic-license";
-  const thumb = "test-basic-thumb";
+  const src = "test-res-src";
+  const metadata = "test-res-metadata";
+  const license = "test-res-license";
+  const thumb = "test-res-thumb";
 
   const nonexistentId = 99999;
 
