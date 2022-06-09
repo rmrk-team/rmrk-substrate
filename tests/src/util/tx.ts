@@ -856,7 +856,6 @@ export async function addNftComposableResource(
     const tx = api.tx.rmrkCore.addComposableResource(
         collectionId,
         nftId,
-        "",
         composableResource
     );
 
