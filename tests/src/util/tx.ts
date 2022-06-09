@@ -1,20 +1,16 @@
 import { ApiPromise } from "@polkadot/api";
 import { Bytes, Option, u32, Vec } from '@polkadot/types-codec';
 import {
-    RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
-    RmrkTraitsResourceBasicResource as BasicResource,
-    RmrkTraitsResourceComposableResource as ComposableResource,
-    RmrkTraitsResourceSlotResource as SlotResource,
-    RmrkTraitsResourceResourceInfo as ResourceInfo,
-    RmrkTraitsPartEquippableList as EquippableList,
-    RmrkTraitsPartPartType as PartType,
-    RmrkTraitsTheme as Theme,
+  RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner, RmrkTraitsPartEquippableList as EquippableList,
+  RmrkTraitsPartPartType as PartType, RmrkTraitsResourceBasicResource as BasicResource,
+  RmrkTraitsResourceComposableResource as ComposableResource, RmrkTraitsResourceResourceInfo as ResourceInfo, RmrkTraitsResourceSlotResource as SlotResource, RmrkTraitsTheme as Theme
 } from "@polkadot/types/lookup";
+import { IKeyringPair } from "@polkadot/types/types";
 import chai from 'chai';
 import chaiAsPromised from 'chai-as-promised';
+import '../interfaces/augment-api';
 import privateKey from "../substrate/privateKey";
 import { executeTransaction } from "../substrate/substrate-api";
-import '../interfaces/augment-api';
 import {
   getBase,
   getCollection,
@@ -22,18 +18,13 @@ import {
   getEquippableList,
   getNft,
   getParts,
-  getResourcePriority,
-  getTheme,
-  NftIdTuple,
-  getResources,
+  getResourcePriority, getResources, getTheme,
+  NftIdTuple
 } from "./fetch";
 import {
   extractRmrkCoreTxResult,
-  extractRmrkEquipTxResult, isNftOwnedBy, isTxResultSuccess, makeNftOwner,
-  isCollectionPropertyExists,
-  isNftPropertyExists
+  extractRmrkEquipTxResult, isCollectionPropertyExists, isNftOwnedBy, isNftPropertyExists, isTxResultSuccess, makeNftOwner
 } from "./helpers";
-import { IKeyringPair } from "@polkadot/types/types";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -49,8 +40,8 @@ export async function createCollection(
 
     const oldCollectionCount = await getCollectionsCount(api);
     const maxOptional = max ? max.toString() : null;
-
-    const issuer = privateKey(issuerUri);
+    const ss58Format = (api.registry.getChainProperties())!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
     const tx = api.tx.rmrkCore.createCollection(metadata, maxOptional, symbol);
     const events = await executeTransaction(api, issuer, tx);
 
@@ -90,8 +81,9 @@ export async function changeIssuer(
     collectionId: number,
     newIssuer: string
 ) {
-    const alice = privateKey(issuerUri);
-    const bob = privateKey(newIssuer);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const alice = privateKey(issuerUri, Number(ss58Format));
+    const bob = privateKey(newIssuer, Number(ss58Format));
 
     let tx = api.tx.uniques.setAcceptOwnership(
         api.createType('Option<u32>', collectionId)
@@ -122,7 +114,8 @@ export async function deleteCollection(
     issuerUri: string,
     collectionId: string
 ): Promise<number> {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
     const tx = api.tx.rmrkCore.destroyCollection(collectionId);
     const events = await executeTransaction(api, issuer, tx);
 
@@ -149,7 +142,8 @@ export async function negativeDeleteCollection(
     issuerUri: string,
     collectionId: string
 ): Promise<number> {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
     const tx = api.tx.rmrkCore.destroyCollection(collectionId);
     await expect(executeTransaction(api, issuer, tx)).to.be.rejected;
 
@@ -164,7 +158,8 @@ export async function setNftProperty(
     key: string,
     value: string
 ) {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
     const nftIdOpt = api.createType('Option<u32>', nftId);
     const tx = api.tx.rmrkCore.setProperty(
         collectionId,
@@ -218,10 +213,10 @@ export async function mintNft(
     transferable: boolean = true,
 ): Promise<number> {
     let nftId = 0;
-
-    const issuer = privateKey(issuerUri);
-    const owner = privateKey(ownerUri).address;
-    const recipient = recipientUri ? privateKey(recipientUri).address : null;
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
+    const owner = privateKey(ownerUri, Number(ss58Format)).address;
+    const recipient = recipientUri ? privateKey(recipientUri, Number(ss58Format)).address : null;
     const royaltyOptional = royalty ? royalty.toString() : null;
 
     const collectionOpt = await getCollection(api, collectionId);
@@ -301,7 +296,8 @@ export async function sendNft(
     nftId: number,
     newOwner: string | NftIdTuple
 ) {
-    const originalOwner = privateKey(originalOwnerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const originalOwner = privateKey(originalOwnerUri, Number(ss58Format));
     const newOwnerObj = makeNftOwner(api, newOwner);
 
     const nftBeforeSendingOpt = await getNft(api, collectionId, nftId);
@@ -365,7 +361,8 @@ export async function acceptNft(
     nftId: number,
     newOwner: string | [number, number]
 ) {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
     const newOwnerObj = makeNftOwner(api, newOwner);
 
     let nftBeforeOpt = await getNft(api, collectionId, nftId);
@@ -417,7 +414,8 @@ export async function rejectNft(
     collectionId: number,
     nftId: number,
 ) {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
     let nftBeforeOpt = await getNft(api, collectionId, nftId);
 
     const tx = api.tx.rmrkCore.rejectNft(collectionId, nftId);
@@ -458,8 +456,8 @@ export async function createBase(
     parts: object[]
 ): Promise<number> {
     let baseId = 0;
-
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
 
     const partTypes = api.createType("Vec<RmrkTraitsPartPartType>", parts) as Vec<PartType>;
 
@@ -499,7 +497,8 @@ export async function setResourcePriorities(
     nftId: number,
     priorities: number[]
 ) {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
 
     const prioritiesVec = api.createType('Vec<u32>', priorities);
     const tx = api.tx.rmrkCore.setPriority(collectionId, nftId, prioritiesVec);
@@ -536,7 +535,8 @@ export async function setEquippableList(
     slotId: number,
     equippableList: "All" | "Empty" | { 'Custom': number[] }
 ) {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
     const equippable = api.createType('RmrkTraitsPartEquippableList', equippableList) as EquippableList;
 
     const tx = api.tx.rmrkEquip.equippable(baseId, slotId, equippable);
@@ -574,7 +574,8 @@ export async function addTheme(
     themeObj: object,
     filterKeys: string[] | null = null
 ) {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
     const theme = api.createType('RmrkTraitsTheme', themeObj) as Theme;
 
     const tx = api.tx.rmrkEquip.themeAdd(baseId, theme);
@@ -624,7 +625,8 @@ export async function lockCollection(
   collectionId: number,
   max: number = 0
 ) {
-  const issuer = privateKey(issuerUri);
+  const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+  const issuer = privateKey(issuerUri, Number(ss58Format));
   const tx = api.tx.rmrkCore.lockCollection(collectionId);
   const events = await executeTransaction(api, issuer, tx);
   const lockResult = extractRmrkCoreTxResult(
@@ -649,7 +651,8 @@ export async function setPropertyCollection(
   key: string,
   value: string
 ) {
-  const alice = privateKey(issuerUri);
+  const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+  const alice = privateKey(issuerUri, Number(ss58Format));
 
   const tx = api.tx.rmrkCore.setProperty(collectionId, null, key, value);
   const events = await executeTransaction(api, alice, tx);
@@ -690,12 +693,13 @@ export async function burnNft(
   collectionId: number,
   nftId: number
 ) {
-  const issuer = privateKey(issuerUri);
+  const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+  const issuer = privateKey(issuerUri, Number(ss58Format));
   const tx = api.tx.rmrkCore.burnNft(collectionId, nftId);
   const events = await executeTransaction(api, issuer, tx);
   const burnResult = extractRmrkCoreTxResult(
     events, 'NFTBurned', (data) => {
-      return parseInt(data[1].toString(), 10); 
+      return parseInt(data[1].toString(), 10);
     }
   );
 
@@ -762,7 +766,8 @@ export async function acceptNftResource(
     nftId: number,
     resourceId: number,
 ) {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
 
     const tx = api.tx.rmrkCore.acceptResource(
         collectionId,
@@ -825,7 +830,8 @@ export async function addNftBasicResource(
     license: string | null,
     thumb: string | null
 ): Promise<number> {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
 
     const basicResource = api.createType('RmrkTraitsResourceBasicResource', {
         src: src,
@@ -857,7 +863,8 @@ export async function addNftComposableResource(
     license: string | null,
     thumb: string | null
 ): Promise<number> {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
 
     const composableResource = api.createType('RmrkTraitsResourceComposableResource', {
         parts: parts, // api.createType('Vec<u32>', parts),
@@ -891,7 +898,8 @@ export async function addNftSlotResource(
   license: string | null,
   thumb: string | null
 ): Promise<number>  {
-  const issuer = privateKey(issuerUri);
+  const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+  const issuer = privateKey(issuerUri, Number(ss58Format));
 
   const slotResource = api.createType('RmrkTraitsResourceSlotResource', {
       base: baseId,
@@ -921,7 +929,8 @@ export async function equipNft(
   base: number,
   slot: number
 ) {
-  const issuer = privateKey(issuerUri);
+  const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+  const issuer = privateKey(issuerUri, Number(ss58Format));
   const tx = api.tx.rmrkEquip.equip(item, equipper, resource, base, slot);
   const events = await executeTransaction(api, issuer, tx);
   const equipResult = extractRmrkEquipTxResult(
@@ -935,13 +944,13 @@ export async function equipNft(
     }
   )
   expect(equipResult.success, 'Error: Unable to equip an item').to.be.true;
-  expect(equipResult.successData!.item_collection, 'Error: Invalid item collection id')    
+  expect(equipResult.successData!.item_collection, 'Error: Invalid item collection id')
     .to.be.eq(item[0]);
-  expect(equipResult.successData!.item_nft, 'Error: Invalid item NFT id')    
+  expect(equipResult.successData!.item_nft, 'Error: Invalid item NFT id')
     .to.be.eq(item[1]);
-  expect(equipResult.successData!.base_id, 'Error: Invalid base id')    
+  expect(equipResult.successData!.base_id, 'Error: Invalid base id')
     .to.be.eq(base);
-  expect(equipResult.successData!.slot_id, 'Error: Invalid slot id')    
+  expect(equipResult.successData!.slot_id, 'Error: Invalid slot id')
     .to.be.eq(slot);
 }
 
@@ -954,7 +963,8 @@ export async function unequipNft(
   base: number,
   slot: number
 ) {
-  const issuer = privateKey(issuerUri);
+  const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+  const issuer = privateKey(issuerUri, Number(ss58Format));
   const tx = api.tx.rmrkEquip.equip(item, equipper, resource, base, slot);
   const events = await executeTransaction(api, issuer, tx);
 
@@ -972,13 +982,13 @@ export async function unequipNft(
   );
 
   expect(unEquipResult.success, 'Error: Unable to unequip an item').to.be.true;
-  expect(unEquipResult.successData!.item_collection, 'Error: Invalid item collection id')    
+  expect(unEquipResult.successData!.item_collection, 'Error: Invalid item collection id')
     .to.be.eq(item[0]);
-  expect(unEquipResult.successData!.item_nft, 'Error: Invalid item NFT id')    
+  expect(unEquipResult.successData!.item_nft, 'Error: Invalid item NFT id')
     .to.be.eq(item[1]);
-  expect(unEquipResult.successData!.base_id, 'Error: Invalid base id')    
+  expect(unEquipResult.successData!.base_id, 'Error: Invalid base id')
     .to.be.eq(base);
-  expect(unEquipResult.successData!.slot_id, 'Error: Invalid slot id')    
+  expect(unEquipResult.successData!.slot_id, 'Error: Invalid slot id')
     .to.be.eq(slot);
 }
 
@@ -990,7 +1000,8 @@ export async function removeNftResource(
     nftId: number,
     resourceId: number
 ) {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
 
     const tx = api.tx.rmrkCore.removeResource(collectionId, nftId, resourceId);
     const events = await executeTransaction(api, issuer, tx);
@@ -1025,7 +1036,8 @@ export async function acceptResourceRemoval(
     nftId: number,
     resourceId: number
 ) {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
 
     const tx = api.tx.rmrkCore.acceptResourceRemoval(collectionId, nftId, resourceId);
     const events = await executeTransaction(api, issuer, tx);

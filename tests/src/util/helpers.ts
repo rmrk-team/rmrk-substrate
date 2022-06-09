@@ -26,8 +26,9 @@ export function makeNftOwner(api: ApiPromise, owner: string | NftIdTuple): NftOw
             "CollectionAndNftTuple": owner
         });
     } else {
+        const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
         return api.createType("RmrkTraitsNftAccountIdOrCollectionNftTuple", {
-            "AccountId": privateKey(owner).address
+          AccountId: privateKey(owner, Number(ss58Format)).address,
         });
     }
 }

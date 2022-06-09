@@ -29,7 +29,8 @@ export async function getOwnedNfts(
     ownerUri: string,
     collectionId: number
 ): Promise<number[]> {
-    const owner = privateKey(ownerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const owner = privateKey(ownerUri, Number(ss58Format));
 
     return (await api.rpc.rmrk.accountTokens(owner.address, collectionId))
         .map((value) => value.toNumber())

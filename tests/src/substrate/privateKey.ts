@@ -17,8 +17,11 @@
 import {Keyring} from '@polkadot/api';
 import {IKeyringPair} from '@polkadot/types/types';
 
-export default function privateKey(account: string): IKeyringPair {
-  const keyring = new Keyring({type: 'sr25519'});
+export default function privateKey(
+  account: string,
+  ss58Format: number
+): IKeyringPair {
+  const keyring = new Keyring({ ss58Format, type: "sr25519" });
 
   return keyring.addFromUri(account);
 }

@@ -19,7 +19,8 @@ export async function addResource(
     thumb: string | null,
     parts: number[] | null
 ) {
-    const issuer = privateKey(issuerUri);
+    const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    const issuer = privateKey(issuerUri, Number(ss58Format));
 
     const baseIdOptional = api.createType('Option<u32>', baseId);
     const slotIdOptional = api.createType('Option<u32>', slotId);

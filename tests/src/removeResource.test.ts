@@ -1,26 +1,25 @@
 import { expect } from 'chai';
-import { getApiConnection } from './substrate/substrate-api';
+import privateKey from "./substrate/privateKey";
+import { executeTransaction, getApiConnection } from './substrate/substrate-api';
 import { getNft, NftIdTuple } from './util/fetch';
 import { expectTxFailure } from './util/helpers';
-import { executeTransaction } from "./substrate/substrate-api";
-
 import {
-    acceptNft,
-    addNftBasicResource,
-    createBase,
-    createCollection,
-    mintNft,
-    sendNft,
-    removeNftResource,
-    acceptResourceRemoval
+  acceptNft, acceptResourceRemoval, addNftBasicResource,
+  createBase,
+  createCollection,
+  mintNft, removeNftResource, sendNft
 } from "./util/tx";
 
-import privateKey from "./substrate/privateKey";
+
 
 
 describe('Integration test: remove nft resource', () => {
     let api: any;
-    before(async () => { api = await getApiConnection(); });
+    let ss58Format: string;
+    before(async () => {
+      api = await getApiConnection();
+      ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+    });
 
     const Alice = "//Alice";
     const Bob = "//Bob";
@@ -37,7 +36,7 @@ describe('Integration test: remove nft resource', () => {
             null,
             "test-symbol"
         );
-      
+
         const nftAlice = await mintNft(
             api,
             Alice,
@@ -45,7 +44,7 @@ describe('Integration test: remove nft resource', () => {
             collectionIdAlice,
             "nft-metadata"
         );
-      
+
         const resourceId = await addNftBasicResource(
             api,
             Alice,
@@ -69,7 +68,7 @@ describe('Integration test: remove nft resource', () => {
             null,
             "test-symbol"
         );
-        
+
         const parentNftId = await mintNft(api, Alice, Alice, collectionIdAlice, "parent-nft-metadata");
         const childNftId = await mintNft(api, Alice, Alice, collectionIdAlice, "child-nft-metadata");
 
@@ -100,7 +99,7 @@ describe('Integration test: remove nft resource', () => {
             null,
             "test-symbol"
         );
-      
+
         const nftBob = await mintNft(
             api,
             Alice,
@@ -108,7 +107,7 @@ describe('Integration test: remove nft resource', () => {
             collectionIdAlice,
             "nft-metadata"
         );
-      
+
         const resourceId = await addNftBasicResource(
             api,
             Alice,
@@ -133,7 +132,7 @@ describe('Integration test: remove nft resource', () => {
             null,
             "test-symbol"
         );
-      
+
         const nftAlice = await mintNft(
             api,
             Alice,
@@ -141,7 +140,7 @@ describe('Integration test: remove nft resource', () => {
             collectionIdAlice,
             "nft-metadata"
         );
-      
+
         const resourceId = await addNftBasicResource(
             api,
             Alice,
@@ -166,7 +165,7 @@ describe('Integration test: remove nft resource', () => {
             null,
             "test-symbol"
         );
-      
+
         const nftAlice = await mintNft(
             api,
             Alice,
@@ -174,7 +173,7 @@ describe('Integration test: remove nft resource', () => {
             collectionIdAlice,
             "nft-metadata"
         );
-      
+
         const resourceId = await addNftBasicResource(
             api,
             Alice,
@@ -187,7 +186,7 @@ describe('Integration test: remove nft resource', () => {
             thumb
         );
 
-        const issuer = privateKey(Alice);
+        const issuer = privateKey(Alice, Number(ss58Format));
 
         const tx = removeNftResource(api, 'removed', Bob, collectionIdAlice, nftAlice, resourceId);
         await expectTxFailure(/rmrkCore\.NoPermission/, tx);
@@ -201,7 +200,7 @@ describe('Integration test: remove nft resource', () => {
             null,
             "test-symbol"
         );
-      
+
         const nftAlice = await mintNft(
             api,
             Alice,
@@ -210,7 +209,7 @@ describe('Integration test: remove nft resource', () => {
             "nft-metadata"
         );
 
-        const issuer = privateKey(Alice);
+        const issuer = privateKey(Alice, Number(ss58Format));
 
         const tx = removeNftResource(api, 'removed', Alice, collectionIdAlice, nftAlice, 127);
         await expectTxFailure(/rmrkCore\.ResourceDoesntExist/, tx);
@@ -224,7 +223,7 @@ describe('Integration test: remove nft resource', () => {
             null,
             "test-symbol"
         );
-      
+
         const nftBob = await mintNft(
             api,
             Alice,
@@ -232,7 +231,7 @@ describe('Integration test: remove nft resource', () => {
             collectionIdAlice,
             "nft-metadata"
         );
-      
+
         const resourceId = await addNftBasicResource(
             api,
             Alice,
@@ -257,7 +256,7 @@ describe('Integration test: remove nft resource', () => {
             null,
             "test-symbol"
         );
-      
+
         const nftBob = await mintNft(
             api,
             Alice,
@@ -278,7 +277,7 @@ describe('Integration test: remove nft resource', () => {
             null,
             "test-symbol"
         );
-      
+
         const nftAlice = await mintNft(
             api,
             Alice,
@@ -286,7 +285,7 @@ describe('Integration test: remove nft resource', () => {
             collectionIdAlice,
             "nft-metadata"
         );
-      
+
         const resourceId = await addNftBasicResource(
             api,
             Alice,
