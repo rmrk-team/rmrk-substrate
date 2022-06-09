@@ -67,7 +67,7 @@ pub trait Nft<AccountId, BoundedString> {
 	fn nft_burn(
 		collection_id: CollectionId,
 		nft_id: NftId,
-		max_recursions: u32,
+		max_burns: u32,
 	) -> Result<(CollectionId, NftId), DispatchError>;
 	fn nft_send(
 		sender: AccountId,
