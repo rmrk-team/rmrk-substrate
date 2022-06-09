@@ -488,6 +488,7 @@ export interface PalletRmrkCoreCall extends Enum {
   readonly asBurnNft: {
     readonly collectionId: u32;
     readonly nftId: u32;
+    readonly maxBurns: u32;
   } & Struct;
   readonly isDestroyCollection: boolean;
   readonly asDestroyCollection: {
@@ -509,6 +510,7 @@ export interface PalletRmrkCoreCall extends Enum {
   readonly asRejectNft: {
     readonly collectionId: u32;
     readonly nftId: u32;
+    readonly maxBurns: u32;
   } & Struct;
   readonly isChangeCollectionIssuer: boolean;
   readonly asChangeCollectionIssuer: {
