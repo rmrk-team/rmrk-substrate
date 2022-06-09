@@ -27,6 +27,7 @@ const composableThumb = null;
 // FIXME unable to set anything -- have an error from PolkadotJS
 const slotSrc = null;
 const slotLicense = null;
+const slotMetadata = null;
 const slotThumb = null;
 
 // const composableResourceId = "comp-0";
@@ -106,6 +107,7 @@ async function addTestSlot(api: ApiPromise, collectionId: number, nftId: number,
     baseId,
     slotId,
     slotSrc,
+    slotMetadata,
     slotLicense,
     slotThumb
   );

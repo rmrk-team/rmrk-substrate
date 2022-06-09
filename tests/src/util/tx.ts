@@ -18,12 +18,13 @@ import {
   getEquippableList,
   getNft,
   getParts,
-  getResourcePriority, getResources, getTheme,
+  getResourcePriority, getTheme,
   NftIdTuple
 } from "./fetch";
 import {
   extractRmrkCoreTxResult,
-  extractRmrkEquipTxResult, isCollectionPropertyExists, isNftOwnedBy, isNftPropertyExists, isTxResultSuccess, makeNftOwner
+  extractRmrkEquipTxResult, isCollectionPropertyExists, isNftOwnedBy, isNftPropertyExists, isTxResultSuccess, makeNftOwner,
+  findResourceById, getResourceById, checkResourceStatus
 } from "./helpers";
 
 chai.use(chaiAsPromised);
@@ -713,54 +714,6 @@ export async function burnNft(
   expect(nftBurned.isSome).to.be.false;
 }
 
-async function findResourceById(
-    api: ApiPromise,
-    collectionId: number,
-    nftId: number,
-    resourceId: number,
-): Promise<ResourceInfo> {
-    const resources = await getResources(api, collectionId, nftId);
-
-    let resource = null;
-
-    for (let i = 0; i < resources.length; i++) {
-        const res = resources[i];
-
-        if (res.id.eq(resourceId)) {
-            resource = res;
-            break;
-        }
-    }
-
-    return resource!;
-}
-
-async function getResourceById(
-    api: ApiPromise,
-    collectionId: number,
-    nftId: number,
-    resourceId: number,
-): Promise<ResourceInfo> {
-    const resource = findResourceById(
-        api,
-        collectionId,
-        nftId,
-        resourceId,
-    );
-
-    expect(resource !== null, 'Error: resource was not found').to.be.true;
-
-    return resource!;
-}
-
-function checkResourceStatus(
-    resource: ResourceInfo,
-    expectedStatus: "pending" | "added"
-) {
-    expect(resource.pending.isTrue, `Error: added resource should be ${expectedStatus}`)
-          .to.be.equal(expectedStatus === "pending");
-}
-
 export async function acceptNftResource(
     api: ApiPromise,
     issuerUri: string,
@@ -804,7 +757,7 @@ async function executeResourceCreation(
     collectionId: number,
     nftId: number,
     expectedStatus: "pending" | "added"
-): Promise<number> {
+): Promise<ResourceInfo> {
     const events = await executeTransaction(api, issuer, tx);
 
     const resourceResult = extractRmrkCoreTxResult(
@@ -818,7 +771,7 @@ async function executeResourceCreation(
     const resource = await getResourceById(api, collectionId, nftId, resourceId);
     checkResourceStatus(resource!, expectedStatus);
 
-    return resourceId;
+    return resource;
 }
 
 export async function addNftBasicResource(
@@ -848,8 +801,31 @@ export async function addNftBasicResource(
         basicResource
     );
 
-    const resourceId = executeResourceCreation(api, issuer, tx, collectionId, nftId, expectedStatus);
-    return resourceId;
+    const resource = await executeResourceCreation(api, issuer, tx, collectionId, nftId, expectedStatus);
+
+    // FIXME A workaround. It seems it is a PolkadotJS bug.
+    // All of the following are `false`.
+    //
+    // console.log('>>> basic:', resource.resource.isBasic);
+    // console.log('>>> composable:', resource.resource.isComposable);
+    // console.log('>>> slot:', resource.resource.isSlot);
+    const resourceJson = resource.resource.toHuman() as any;
+
+    expect(resourceJson.hasOwnProperty('Basic'), 'Error: Expected basic resource type')
+        .to.be.true;
+
+    const recvBasicRes = resourceJson['Basic'];
+
+    expect(recvBasicRes.src, 'Error: Invalid basic resource src')
+      .to.be.eq(src);
+    expect(recvBasicRes.metadata, 'Error: basic first resource metadata')
+      .to.be.eq(metadata);
+    expect(recvBasicRes.license, 'Error: basic first resource license')
+      .to.be.eq(license);
+    expect(recvBasicRes.thumb, 'Error: basic first resource thumb')
+      .to.be.eq(thumb);
+
+    return resource.id.toNumber();
 }
 
 export async function addNftComposableResource(
@@ -884,8 +860,35 @@ export async function addNftComposableResource(
         composableResource
     );
 
-    const resourceId = executeResourceCreation(api, issuer, tx, collectionId, nftId, expectedStatus);
-    return resourceId;
+    const resource = await executeResourceCreation(api, issuer, tx, collectionId, nftId, expectedStatus);
+
+    // FIXME A workaround. It seems it is a PolkadotJS bug.
+    // All of the following are `false`.
+    //
+    // console.log('>>> basic:', resource.resource.isBasic);
+    // console.log('>>> composable:', resource.resource.isComposable);
+    // console.log('>>> slot:', resource.resource.isSlot);
+    const resourceJson = resource.resource.toHuman() as any;
+
+    expect(resourceJson.hasOwnProperty('Composable'), 'Error: Expected composable resource type')
+        .to.be.true;
+
+    const recvComposableRes = resourceJson['Composable'];
+
+    expect(recvComposableRes.parts.toString(), 'Error: Invalid composable resource parts')
+      .to.be.eq(parts.toString());
+    expect(recvComposableRes.base, 'Error: Invalid composable resource base id')
+      .to.be.eq(baseId.toString());
+    expect(recvComposableRes.src, 'Error: Invalid composable resource src')
+      .to.be.eq(src);
+    expect(recvComposableRes.metadata, 'Error: Invalid composable resource metadata')
+      .to.be.eq(metadata);
+    expect(recvComposableRes.license, 'Error: Invalid composable resource license')
+      .to.be.eq(license);
+    expect(recvComposableRes.thumb, 'Error: Invalid composable resource thumb')
+      .to.be.eq(thumb);
+
+    return resource.id.toNumber();
 }
 
 export async function addNftSlotResource(
@@ -897,6 +900,7 @@ export async function addNftSlotResource(
   baseId: number,
   slotId: number,
   src: string | null,
+  metadata: string | null,
   license: string | null,
   thumb: string | null
 ): Promise<number>  {
@@ -906,7 +910,7 @@ export async function addNftSlotResource(
   const slotResource = api.createType('RmrkTraitsResourceSlotResource', {
       base: baseId,
       src: src,
-      metadata: "slot-resource-metadata",
+      metadata,
       slot: slotId,
       license: license,
       thumb: thumb
@@ -918,8 +922,35 @@ export async function addNftSlotResource(
     slotResource
   );
 
-  const resourceId = executeResourceCreation(api, issuer, tx, collectionId, nftId, expectedStatus);
-  return resourceId;
+  const resource = await executeResourceCreation(api, issuer, tx, collectionId, nftId, expectedStatus);
+
+  // FIXME A workaround. It seems it is a PolkadotJS bug.
+  // All of the following are `false`.
+  //
+  // console.log('>>> basic:', resource.resource.isBasic);
+  // console.log('>>> composable:', resource.resource.isComposable);
+  // console.log('>>> slot:', resource.resource.isSlot);
+  const resourceJson = resource.resource.toHuman() as any;
+
+  expect(resourceJson.hasOwnProperty('Slot'), 'Error: Expected slot resource type')
+        .to.be.true;
+
+  const recvSlotRes = resourceJson['Slot'];
+
+  expect(recvSlotRes.base, 'Error: Invalid slot resource base id')
+    .to.be.eq(baseId.toString());
+  expect(recvSlotRes.slot, 'Error: Invalid slot resource slot id')
+    .to.be.eq(slotId.toString());
+  expect(recvSlotRes.src, 'Error: Invalid slot resource src')
+    .to.be.eq(src);
+  expect(recvSlotRes.metadata, 'Error: Invalid slot resource metadata')
+    .to.be.eq(metadata);
+  expect(recvSlotRes.license, 'Error: Invalid slot resource license')
+    .to.be.eq(license);
+  expect(recvSlotRes.thumb, 'Error: Invalid slot resource thumb')
+    .to.be.eq(thumb);
+
+  return resource.id.toNumber();
 }
 
 export async function equipNft(

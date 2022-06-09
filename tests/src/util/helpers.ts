@@ -2,11 +2,12 @@ import { ApiPromise } from "@polkadot/api";
 import {
     RmrkTraitsNftAccountIdOrCollectionNftTuple as NftOwner,
     RmrkTraitsPropertyPropertyInfo as Property,
+    RmrkTraitsResourceResourceInfo as ResourceInfo,
 } from "@polkadot/types/lookup";
 import type { EventRecord } from '@polkadot/types/interfaces';
 import type { GenericEventData } from '@polkadot/types';
 import privateKey from "../substrate/privateKey";
-import { NftIdTuple, getChildren, getOwnedNfts, getCollectionProperties, getNftProperties } from './fetch';
+import { NftIdTuple, getChildren, getOwnedNfts, getCollectionProperties, getNftProperties, getResources } from './fetch';
 import chaiAsPromised from 'chai-as-promised';
 import chai from 'chai';
 
@@ -155,4 +156,52 @@ export function extractRmrkEquipTxResult<T>(
     extractAction: (data: GenericEventData) => T
 ): TxResult<T> {
     return extractTxResult(events, 'rmrkEquip', expectMethod, extractAction);
+}
+
+export async function findResourceById(
+    api: ApiPromise,
+    collectionId: number,
+    nftId: number,
+    resourceId: number,
+): Promise<ResourceInfo> {
+    const resources = await getResources(api, collectionId, nftId);
+
+    let resource = null;
+
+    for (let i = 0; i < resources.length; i++) {
+        const res = resources[i];
+
+        if (res.id.eq(resourceId)) {
+            resource = res;
+            break;
+        }
+    }
+
+    return resource!;
+}
+
+export async function getResourceById(
+    api: ApiPromise,
+    collectionId: number,
+    nftId: number,
+    resourceId: number,
+): Promise<ResourceInfo> {
+    const resource = findResourceById(
+        api,
+        collectionId,
+        nftId,
+        resourceId,
+    );
+
+    expect(resource !== null, 'Error: resource was not found').to.be.true;
+
+    return resource!;
+}
+
+export function checkResourceStatus(
+    resource: ResourceInfo,
+    expectedStatus: "pending" | "added"
+) {
+    expect(resource.pending.isTrue, `Error: added resource should be ${expectedStatus}`)
+          .to.be.equal(expectedStatus === "pending");
 }
