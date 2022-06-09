@@ -590,6 +590,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
+			_max_burns: u32
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
