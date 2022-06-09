@@ -17,21 +17,17 @@ import {
 const Alice = "//Alice";
 const Bob = "//Bob";
 
-// FIXME unable to set anything -- have an error from PolkadotJS
-const composableParts: number[] = [];
-const composableSrc = null;
-const composableMetadata = null;
-const composableLicense = null;
-const composableThumb = null;
+const composableParts: number[] = [5, 2, 7];
+const composableSrc = 'test-cmp-src';
+const composableMetadata = 'test-cmp-metadata';
+const composableLicense = 'test-comp-license';
+const composableThumb = 'test-comp-thumb';
 
-// FIXME unable to set anything -- have an error from PolkadotJS
-const slotSrc = null;
-const slotLicense = null;
-const slotMetadata = null;
-const slotThumb = null;
+const slotSrc = 'test-slot-src';
+const slotLicense = 'test-slot-license';
+const slotMetadata = 'test-slot-metadata';
+const slotThumb = 'test-slot-thumb';
 
-// const composableResourceId = "comp-0";
-// const slotResourceId = "slot-1";
 const slotId = 1;
 
 async function createTestCollection(api: ApiPromise): Promise<number> {
