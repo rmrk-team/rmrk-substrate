@@ -174,7 +174,7 @@ fn equip_works() {
 		// Mint NFT 0 from collection 0 (character-0)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			ALICE,                              // owner
+			None,                               // owner
 			0,                                  // collection ID
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
@@ -186,7 +186,7 @@ fn equip_works() {
 		// Mint NFT 1 from collection 0 (character-1)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			ALICE,                              // owner
+			None,                               // owner
 			0,                                  // collection ID
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
@@ -198,7 +198,7 @@ fn equip_works() {
 		// Mint NFT 0 from collection 1 (sword)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			ALICE,                            // owner
+			None,                             // owner
 			1,                                // collection ID
 			Some(ALICE),                      // recipient
 			Some(Permill::from_float(1.525)), // royalties
@@ -210,7 +210,7 @@ fn equip_works() {
 		// Mint NFT 1 from collection 1 (flashlight)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			ALICE,                             // owner
+			None,                              // owner
 			1,                                 // collection ID
 			Some(ALICE),                       // recipient
 			Some(Permill::from_float(1.525)),  // royalties
