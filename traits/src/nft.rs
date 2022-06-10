@@ -57,7 +57,7 @@ pub trait Nft<AccountId, BoundedString> {
 
 	fn nft_mint(
 		sender: AccountId,
-		owner: AccountId,
+		owner: AccountIdOrCollectionNftTuple<AccountId>,
 		collection_id: CollectionId,
 		royalty_recipient: Option<AccountId>,
 		royalty_amount: Option<Permill>,

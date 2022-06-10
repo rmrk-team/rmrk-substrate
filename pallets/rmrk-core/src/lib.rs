@@ -228,7 +228,7 @@ pub mod pallet {
 		},
 		// NftMinted(T::AccountId, CollectionId, NftId),
 		NftMinted {
-			owner: T::AccountId,
+			owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 			collection_id: CollectionId,
 			nft_id: NftId,
 		},
@@ -346,7 +346,7 @@ pub mod pallet {
 		#[transactional]
 		pub fn mint_nft(
 			origin: OriginFor<T>,
-			owner: T::AccountId,
+			owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 			collection_id: CollectionId,
 			royalty_recipient: Option<T::AccountId>,
 			royalty: Option<Permill>,
@@ -372,16 +372,19 @@ pub mod pallet {
 				transferable,
 			)?;
 
-			pallet_uniques::Pallet::<T>::do_mint(
-				collection_id,
-				nft_id,
-				owner.clone(),
-				|_details| Ok(()),
-			)?;
+			let rootowner = match owner.clone() {
+				AccountIdOrCollectionNftTuple::AccountId(account_id) => account_id,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(col_id, nft_id) =>
+					Self::lookup_root_owner(col_id, nft_id)?.0,
+			};
+
+			pallet_uniques::Pallet::<T>::do_mint(collection_id, nft_id, rootowner, |_details| {
+				Ok(())
+			})?;
 
 			if let Some(resources) = resources {
 				for res in resources {
-					Self::resource_add(owner.clone(), collection_id, nft_id, res)?;
+					Self::resource_add(sender.clone(), collection_id, nft_id, res)?;
 				}
 			}
 			

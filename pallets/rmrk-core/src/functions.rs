@@ -268,7 +268,7 @@ where
 
 	fn nft_mint(
 		_sender: T::AccountId,
-		owner: T::AccountId,
+		owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 		collection_id: CollectionId,
 		royalty_recipient: Option<T::AccountId>,
 		royalty_amount: Option<Permill>,
@@ -283,6 +283,12 @@ where
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 		}
 
+		let rootowner = match owner.clone() {
+			AccountIdOrCollectionNftTuple::AccountId(account_id) => account_id,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, nft_id) =>
+				Self::lookup_root_owner(collection_id, nft_id)?.0,
+		};
+
 		let mut royalty: Option<RoyaltyInfo<T::AccountId>> = None;
 
 		if let Some(amount) = royalty_amount {
@@ -291,22 +297,13 @@ where
 					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient, amount });
 				},
 				None => {
-					royalty =
-						Some(RoyaltyInfo::<T::AccountId> { recipient: owner.clone(), amount });
+					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient: rootowner, amount });
 				},
 			}
 		};
 
-		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
-
-		let nft = NftInfo {
-			owner: owner_as_maybe_account,
-			royalty,
-			metadata,
-			equipped: false,
-			pending: false,
-			transferable,
-		};
+		let nft =
+			NftInfo { owner, royalty, metadata, equipped: false, pending: false, transferable };
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 
