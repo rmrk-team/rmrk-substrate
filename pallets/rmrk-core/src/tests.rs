@@ -972,7 +972,6 @@ fn create_resource_works() {
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			stbr("res-3"), // resource_id
 			composable_resource,
 		));
 

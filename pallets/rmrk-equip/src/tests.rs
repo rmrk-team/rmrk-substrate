@@ -267,21 +267,9 @@ fn equip_works() {
 		// Add a Base 0 resource (body-1 and left-hand slot) to our character-0 nft
 		assert_ok!(RmrkCore::add_composable_resource(
 			Origin::signed(ALICE),
-			0,             // collection_id
-			0,             // nft id
-			stbr("res-1"), // resource_id
+			0, // collection_id
+			0, // nft id
 			composable_resource,
-			// Some(0),                        // pub base: BaseId,
-			// Some(stb("ipfs://backup-src")), // pub src: BoundedString,
-			// None,                           // metadata
-			// None,                           // slot
-			// None,                           // license
-			// None,                           // thumb
-			// Some(bvec![
-			// 	// parts
-			// 	101, // ID of body-1 part
-			// 	201, // ID of left-hand slot
-			// ]),
 		));
 
 		// Attempt to equip sword should fail as the sword doesn't have a resource that is

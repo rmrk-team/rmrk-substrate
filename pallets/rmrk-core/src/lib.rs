@@ -657,7 +657,6 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 			resource: ComposableResource<StringLimitOf<T>, BoundedVec<PartId, T::PartsLimit>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
