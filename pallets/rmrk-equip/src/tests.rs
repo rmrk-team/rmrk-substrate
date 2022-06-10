@@ -54,7 +54,7 @@ fn create_base_works() {
 			// id: stb("slot_part_id"),
 			id: 102,
 			z: 0,
-			src: stb("slot_part_src"),
+			src: Some(stb("slot_part_src")),
 			equippable: EquippableList::Custom(bvec![
 				0, // Collection 0
 				1, // Collection 1
@@ -126,7 +126,7 @@ fn equip_works() {
 		let slot_part_left_hand = SlotPart {
 			id: 201,
 			z: 0,
-			src: stb("left-hand"),
+			src: Some(stb("left-hand")),
 			equippable: EquippableList::Custom(bvec![
 				0, // Collection 0
 				1, // Collection 1
@@ -136,7 +136,7 @@ fn equip_works() {
 		let slot_part_right_hand = SlotPart {
 			id: 202,
 			z: 0,
-			src: stb("right-hand"),
+			src: Some(stb("right-hand")),
 			equippable: EquippableList::Custom(bvec![
 				0, // Collection 2
 				1, // Collection 3
@@ -431,7 +431,7 @@ fn equippable_works() {
 		let slot_part_left_hand = SlotPart {
 			id: 201,
 			z: 0,
-			src: stb("left-hand"),
+			src: Some(stb("left-hand")),
 			equippable: EquippableList::Custom(bvec![
 				0, // Collection 0
 				1, // Collection 1
@@ -441,7 +441,7 @@ fn equippable_works() {
 		let slot_part_right_hand = SlotPart {
 			id: 202,
 			z: 0,
-			src: stb("right-hand"),
+			src: Some(stb("right-hand")),
 			equippable: EquippableList::Custom(bvec![
 				2, // Collection 2
 				3, // Collection 3
@@ -478,7 +478,7 @@ fn equippable_works() {
 		let should_be = SlotPart {
 			id: 202,
 			z: 0,
-			src: stb("right-hand"),
+			src: Some(stb("right-hand")),
 			equippable: EquippableList::Custom(bvec![5, 6, 7]),
 		};
 		assert_eq!(RmrkEquip::parts(0, 202).unwrap(), PartType::SlotPart(should_be));
