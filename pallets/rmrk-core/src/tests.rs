@@ -1018,7 +1018,7 @@ fn add_resource_on_mint_works() {
 		// Mint NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			ALICE,
+			None,
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
@@ -1057,7 +1057,7 @@ fn add_resource_on_mint_beyond_max_fails() {
 		// Mint NFT
 		RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			ALICE,
+			None,
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
