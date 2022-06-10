@@ -46,6 +46,13 @@ pub type KeyLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::KeyLimit>
 
 pub type ValueLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::ValueLimit>;
 
+pub type BoundedResourceTypeOf<T> = BoundedVec<
+	ResourceTypes<
+		BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+		BoundedVec<PartId, <T as Config>::PartsLimit>>,
+		<T as Config>::MaxResourcesOnMint
+	>;
+
 pub mod types;
 
 // Re-export pallet items so that they can be accessed from the crate namespace.
@@ -78,6 +85,8 @@ pub mod pallet {
 		type MaxPriorities: Get<u32>;
 
 		type CollectionSymbolLimit: Get<u32>;
+
+		type MaxResourcesOnMint: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -343,6 +352,7 @@ pub mod pallet {
 			royalty: Option<Permill>,
 			metadata: BoundedVec<u8, T::StringLimit>,
 			transferable: bool,
+			resources: Option<BoundedResourceTypeOf<T>>
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			if let Some(collection_issuer) = pallet_uniques::Pallet::<T>::collection_owner(collection_id)
@@ -369,6 +379,12 @@ pub mod pallet {
 				|_details| Ok(()),
 			)?;
 
+			if let Some(resources) = resources {
+				for res in resources {
+					Self::resource_add(owner.clone(), collection_id, nft_id, res)?;
+				}
+			}
+			
 			Self::deposit_event(Event::NftMinted { owner, collection_id, nft_id });
 
 			Ok(())
