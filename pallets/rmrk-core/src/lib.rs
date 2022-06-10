@@ -589,13 +589,13 @@ pub mod pallet {
 		pub fn reject_nft(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
-			nft_id: NftId,
-			max_burns: u32
+			nft_id: NftId
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
+			let max_recursions = T::MaxRecursions::get();
 			let (sender, collection_id, nft_id) =
-				Self::nft_reject(sender, collection_id, nft_id, max_burns)?;
+				Self::nft_reject(sender, collection_id, nft_id, max_recursions)?;
 
 			Self::deposit_event(Event::NFTRejected { sender, collection_id, nft_id });
 			Ok(())

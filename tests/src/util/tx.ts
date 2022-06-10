@@ -420,8 +420,7 @@ export async function rejectNft(
     const issuer = privateKey(issuerUri, Number(ss58Format));
     let nftBeforeOpt = await getNft(api, collectionId, nftId);
 
-    const maxBurns = 10;
-    const tx = api.tx.rmrkCore.rejectNft(collectionId, nftId, maxBurns);
+    const tx = api.tx.rmrkCore.rejectNft(collectionId, nftId);
     const events = await executeTransaction(api, issuer, tx);
     const rejectResult = extractRmrkCoreTxResult(events, "NFTRejected", (data) => {
         return {
