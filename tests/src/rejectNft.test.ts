@@ -70,8 +70,6 @@ describe("Integration test: reject NFT", () => {
         const owner = alice;
         const aliceCollectionId = await createTestCollection(alice);
 
-        const parentNftId = await mintNft(api, alice, owner, aliceCollectionId, "parent-nft-metadata");
-
         const tx = rejectNft(api, alice, collectionId, maxNftId);
 
         await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
@@ -81,19 +79,13 @@ describe("Integration test: reject NFT", () => {
         const ownerAlice = alice;
         const ownerBob = bob;
 
-        const aliceCollectionId = await createTestCollection(alice);
-        const bobCollectionId = await createTestCollection(bob);
+        const collectionId = await createTestCollection(alice);
 
-        const parentNftId = await mintNft(api, alice, ownerAlice, aliceCollectionId, "parent-nft-metadata");
-        const childNftId = await mintNft(api, bob, ownerBob, bobCollectionId, "child-nft-metadata");
+        const nftId = await mintNft(api, alice, ownerAlice, collectionId, "parent-nft-metadata");
 
-        const tx = rejectNft(api, alice, bobCollectionId, childNftId);
+        const tx = rejectNft(api, alice, collectionId, nftId);
 
-        await expectTxFailure(/rmrkCore\.CannotRejectNonOwnedNft/, tx);
-
-        const possibleParentNFT: NftIdTuple = [aliceCollectionId, parentNftId];
-        const isChild = await isNftChildOfAnother(api, bobCollectionId, childNftId, possibleParentNFT);
-        expect(isChild).to.be.false;
+        await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
 
     after(() => { api.disconnect(); });
