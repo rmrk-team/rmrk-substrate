@@ -17,6 +17,7 @@ pub use pallet::*;
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, BasicResource,
 	ComposableResource, EquippableList, PartType, ResourceTypes, SlotResource, Theme,
+	ThemeProperty,
 };
 
 mod functions;
@@ -36,6 +37,13 @@ pub use pallet::*;
 pub type StringLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>;
 
 pub type BoundedResource<T> = BoundedVec<u8, <T as pallet_rmrk_core::Config>::ResourceSymbolLimit>;
+
+pub type BoundedThemeOf<T> = Theme<
+	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+	BoundedVec<
+		ThemeProperty<BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>,
+		<T as Config>::MaxPropertiesPerTheme>
+	>;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -337,7 +345,7 @@ pub mod pallet {
 		pub fn theme_add(
 			origin: OriginFor<T>,
 			base_id: BaseId,
-			theme: Theme<BoundedVec<u8, T::StringLimit>>,
+			theme: BoundedThemeOf<T>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
