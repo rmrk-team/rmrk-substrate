@@ -2,9 +2,9 @@
 /* eslint-disable */
 
 import type { ApiTypes } from '@polkadot/api-base/types';
-import type { Vec, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
+import type { u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { Codec } from '@polkadot/types-codec/types';
-import type { FrameSupportWeightsRuntimeDbWeight, FrameSupportWeightsWeightToFeeCoefficient, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
+import type { FrameSupportWeightsRuntimeDbWeight, FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion } from '@polkadot/types/lookup';
 
 declare module '@polkadot/api-base/types/consts' {
   export interface AugmentedConsts<ApiType extends ApiTypes> {
@@ -128,10 +128,6 @@ declare module '@polkadot/api-base/types/consts' {
     };
     transactionPayment: {
       /**
-       * The polynomial that is applied in order to derive fee from length.
-       **/
-      lengthToFee: Vec<FrameSupportWeightsWeightToFeeCoefficient> & AugmentedConst<ApiType>;
-      /**
        * A fee mulitplier for `Operational` extrinsics to compute "virtual tip" to boost their
        * `priority`
        * 
@@ -156,38 +152,34 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       operationalFeeMultiplier: u8 & AugmentedConst<ApiType>;
       /**
-       * The polynomial that is applied in order to derive fee from weight.
-       **/
-      weightToFee: Vec<FrameSupportWeightsWeightToFeeCoefficient> & AugmentedConst<ApiType>;
-      /**
        * Generic const
        **/
       [key: string]: Codec;
     };
     uniques: {
       /**
-       * The basic amount of funds that must be reserved when adding an attribute to an asset.
+       * The basic amount of funds that must be reserved when adding an attribute to an item.
        **/
       attributeDepositBase: u128 & AugmentedConst<ApiType>;
       /**
-       * The basic amount of funds that must be reserved for an asset class.
+       * The basic amount of funds that must be reserved for collection.
        **/
-      classDeposit: u128 & AugmentedConst<ApiType>;
+      collectionDeposit: u128 & AugmentedConst<ApiType>;
       /**
        * The additional funds that must be reserved for the number of bytes store in metadata,
        * either "normal" metadata or attribute metadata.
        **/
       depositPerByte: u128 & AugmentedConst<ApiType>;
       /**
-       * The basic amount of funds that must be reserved for an asset instance.
+       * The basic amount of funds that must be reserved for an item.
        **/
-      instanceDeposit: u128 & AugmentedConst<ApiType>;
+      itemDeposit: u128 & AugmentedConst<ApiType>;
       /**
        * The maximum length of an attribute key.
        **/
       keyLimit: u32 & AugmentedConst<ApiType>;
       /**
-       * The basic amount of funds that must be reserved when adding metadata to your asset.
+       * The basic amount of funds that must be reserved when adding metadata to your item.
        **/
       metadataDepositBase: u128 & AugmentedConst<ApiType>;
       /**

@@ -124,7 +124,7 @@ export function extractTxResult<T>(
     events: EventRecord[],
     expectSection: string,
     expectMethod: string,
-    extractAction: (data: GenericEventData) => T
+    extractAction: (data: any) => T
 ): TxResult<T> {
     let success = false;
     let successData = null;

@@ -228,7 +228,8 @@ export async function mintNft(
         recipient,
         royaltyOptional,
         metadata,
-        transferable
+        transferable,
+        null
     );
 
     const events = await executeTransaction(api, issuer, tx);

@@ -99,14 +99,6 @@ export interface FrameSupportWeightsRuntimeDbWeight extends Struct {
   readonly write: u64;
 }
 
-/** @name FrameSupportWeightsWeightToFeeCoefficient */
-export interface FrameSupportWeightsWeightToFeeCoefficient extends Struct {
-  readonly coeffInteger: u128;
-  readonly coeffFrac: Perbill;
-  readonly negative: bool;
-  readonly degree: u8;
-}
-
 /** @name FrameSystemAccountInfo */
 export interface FrameSystemAccountInfo extends Struct {
   readonly nonce: u32;
@@ -477,6 +469,7 @@ export interface PalletRmrkCoreCall extends Enum {
     readonly royalty: Option<Permill>;
     readonly metadata: Bytes;
     readonly transferable: bool;
+    readonly resources: Option<Vec<RmrkTraitsResourceResourceTypes>>;
   } & Struct;
   readonly isCreateCollection: boolean;
   readonly asCreateCollection: {
@@ -538,7 +531,6 @@ export interface PalletRmrkCoreCall extends Enum {
   readonly asAddComposableResource: {
     readonly collectionId: u32;
     readonly nftId: u32;
-    readonly resourceId: Bytes;
     readonly resource: RmrkTraitsResourceComposableResource;
   } & Struct;
   readonly isAddSlotResource: boolean;
@@ -1008,88 +1000,88 @@ export interface PalletTransactionPaymentReleases extends Enum {
 export interface PalletUniquesCall extends Enum {
   readonly isCreate: boolean;
   readonly asCreate: {
-    readonly class: u32;
+    readonly collection: u32;
     readonly admin: MultiAddress;
   } & Struct;
   readonly isForceCreate: boolean;
   readonly asForceCreate: {
-    readonly class: u32;
+    readonly collection: u32;
     readonly owner: MultiAddress;
     readonly freeHolding: bool;
   } & Struct;
   readonly isDestroy: boolean;
   readonly asDestroy: {
-    readonly class: u32;
+    readonly collection: u32;
     readonly witness: PalletUniquesDestroyWitness;
   } & Struct;
   readonly isMint: boolean;
   readonly asMint: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
     readonly owner: MultiAddress;
   } & Struct;
   readonly isBurn: boolean;
   readonly asBurn: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
     readonly checkOwner: Option<MultiAddress>;
   } & Struct;
   readonly isTransfer: boolean;
   readonly asTransfer: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
     readonly dest: MultiAddress;
   } & Struct;
   readonly isRedeposit: boolean;
   readonly asRedeposit: {
-    readonly class: u32;
-    readonly instances: Vec<u32>;
+    readonly collection: u32;
+    readonly items: Vec<u32>;
   } & Struct;
   readonly isFreeze: boolean;
   readonly asFreeze: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
   } & Struct;
   readonly isThaw: boolean;
   readonly asThaw: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
   } & Struct;
-  readonly isFreezeClass: boolean;
-  readonly asFreezeClass: {
-    readonly class: u32;
+  readonly isFreezeCollection: boolean;
+  readonly asFreezeCollection: {
+    readonly collection: u32;
   } & Struct;
-  readonly isThawClass: boolean;
-  readonly asThawClass: {
-    readonly class: u32;
+  readonly isThawCollection: boolean;
+  readonly asThawCollection: {
+    readonly collection: u32;
   } & Struct;
   readonly isTransferOwnership: boolean;
   readonly asTransferOwnership: {
-    readonly class: u32;
+    readonly collection: u32;
     readonly owner: MultiAddress;
   } & Struct;
   readonly isSetTeam: boolean;
   readonly asSetTeam: {
-    readonly class: u32;
+    readonly collection: u32;
     readonly issuer: MultiAddress;
     readonly admin: MultiAddress;
     readonly freezer: MultiAddress;
   } & Struct;
   readonly isApproveTransfer: boolean;
   readonly asApproveTransfer: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
     readonly delegate: MultiAddress;
   } & Struct;
   readonly isCancelApproval: boolean;
   readonly asCancelApproval: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
     readonly maybeCheckDelegate: Option<MultiAddress>;
   } & Struct;
-  readonly isForceAssetStatus: boolean;
-  readonly asForceAssetStatus: {
-    readonly class: u32;
+  readonly isForceItemStatus: boolean;
+  readonly asForceItemStatus: {
+    readonly collection: u32;
     readonly owner: MultiAddress;
     readonly issuer: MultiAddress;
     readonly admin: MultiAddress;
@@ -1099,62 +1091,67 @@ export interface PalletUniquesCall extends Enum {
   } & Struct;
   readonly isSetAttribute: boolean;
   readonly asSetAttribute: {
-    readonly class: u32;
-    readonly maybeInstance: Option<u32>;
+    readonly collection: u32;
+    readonly maybeItem: Option<u32>;
     readonly key: Bytes;
     readonly value: Bytes;
   } & Struct;
   readonly isClearAttribute: boolean;
   readonly asClearAttribute: {
-    readonly class: u32;
-    readonly maybeInstance: Option<u32>;
+    readonly collection: u32;
+    readonly maybeItem: Option<u32>;
     readonly key: Bytes;
   } & Struct;
   readonly isSetMetadata: boolean;
   readonly asSetMetadata: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
     readonly data: Bytes;
     readonly isFrozen: bool;
   } & Struct;
   readonly isClearMetadata: boolean;
   readonly asClearMetadata: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
   } & Struct;
-  readonly isSetClassMetadata: boolean;
-  readonly asSetClassMetadata: {
-    readonly class: u32;
+  readonly isSetCollectionMetadata: boolean;
+  readonly asSetCollectionMetadata: {
+    readonly collection: u32;
     readonly data: Bytes;
     readonly isFrozen: bool;
   } & Struct;
-  readonly isClearClassMetadata: boolean;
-  readonly asClearClassMetadata: {
-    readonly class: u32;
+  readonly isClearCollectionMetadata: boolean;
+  readonly asClearCollectionMetadata: {
+    readonly collection: u32;
   } & Struct;
   readonly isSetAcceptOwnership: boolean;
   readonly asSetAcceptOwnership: {
-    readonly maybeClass: Option<u32>;
+    readonly maybeCollection: Option<u32>;
   } & Struct;
-  readonly type: 'Create' | 'ForceCreate' | 'Destroy' | 'Mint' | 'Burn' | 'Transfer' | 'Redeposit' | 'Freeze' | 'Thaw' | 'FreezeClass' | 'ThawClass' | 'TransferOwnership' | 'SetTeam' | 'ApproveTransfer' | 'CancelApproval' | 'ForceAssetStatus' | 'SetAttribute' | 'ClearAttribute' | 'SetMetadata' | 'ClearMetadata' | 'SetClassMetadata' | 'ClearClassMetadata' | 'SetAcceptOwnership';
+  readonly isSetCollectionMaxSupply: boolean;
+  readonly asSetCollectionMaxSupply: {
+    readonly collection: u32;
+    readonly maxSupply: u32;
+  } & Struct;
+  readonly type: 'Create' | 'ForceCreate' | 'Destroy' | 'Mint' | 'Burn' | 'Transfer' | 'Redeposit' | 'Freeze' | 'Thaw' | 'FreezeCollection' | 'ThawCollection' | 'TransferOwnership' | 'SetTeam' | 'ApproveTransfer' | 'CancelApproval' | 'ForceItemStatus' | 'SetAttribute' | 'ClearAttribute' | 'SetMetadata' | 'ClearMetadata' | 'SetCollectionMetadata' | 'ClearCollectionMetadata' | 'SetAcceptOwnership' | 'SetCollectionMaxSupply';
 }
 
-/** @name PalletUniquesClassDetails */
-export interface PalletUniquesClassDetails extends Struct {
+/** @name PalletUniquesCollectionDetails */
+export interface PalletUniquesCollectionDetails extends Struct {
   readonly owner: AccountId32;
   readonly issuer: AccountId32;
   readonly admin: AccountId32;
   readonly freezer: AccountId32;
   readonly totalDeposit: u128;
   readonly freeHolding: bool;
-  readonly instances: u32;
-  readonly instanceMetadatas: u32;
+  readonly items: u32;
+  readonly itemMetadatas: u32;
   readonly attributes: u32;
   readonly isFrozen: bool;
 }
 
-/** @name PalletUniquesClassMetadata */
-export interface PalletUniquesClassMetadata extends Struct {
+/** @name PalletUniquesCollectionMetadata */
+export interface PalletUniquesCollectionMetadata extends Struct {
   readonly deposit: u128;
   readonly data: Bytes;
   readonly isFrozen: bool;
@@ -1162,15 +1159,15 @@ export interface PalletUniquesClassMetadata extends Struct {
 
 /** @name PalletUniquesDestroyWitness */
 export interface PalletUniquesDestroyWitness extends Struct {
-  readonly instances: Compact<u32>;
-  readonly instanceMetadatas: Compact<u32>;
+  readonly items: Compact<u32>;
+  readonly itemMetadatas: Compact<u32>;
   readonly attributes: Compact<u32>;
 }
 
 /** @name PalletUniquesError */
 export interface PalletUniquesError extends Enum {
   readonly isNoPermission: boolean;
-  readonly isUnknownClass: boolean;
+  readonly isUnknownCollection: boolean;
   readonly isAlreadyExists: boolean;
   readonly isWrongOwner: boolean;
   readonly isBadWitness: boolean;
@@ -1181,151 +1178,159 @@ export interface PalletUniquesError extends Enum {
   readonly isUnapproved: boolean;
   readonly isUnaccepted: boolean;
   readonly isLocked: boolean;
-  readonly type: 'NoPermission' | 'UnknownClass' | 'AlreadyExists' | 'WrongOwner' | 'BadWitness' | 'InUse' | 'Frozen' | 'WrongDelegate' | 'NoDelegate' | 'Unapproved' | 'Unaccepted' | 'Locked';
+  readonly isMaxSupplyReached: boolean;
+  readonly isMaxSupplyAlreadySet: boolean;
+  readonly isMaxSupplyTooSmall: boolean;
+  readonly type: 'NoPermission' | 'UnknownCollection' | 'AlreadyExists' | 'WrongOwner' | 'BadWitness' | 'InUse' | 'Frozen' | 'WrongDelegate' | 'NoDelegate' | 'Unapproved' | 'Unaccepted' | 'Locked' | 'MaxSupplyReached' | 'MaxSupplyAlreadySet' | 'MaxSupplyTooSmall';
 }
 
 /** @name PalletUniquesEvent */
 export interface PalletUniquesEvent extends Enum {
   readonly isCreated: boolean;
   readonly asCreated: {
-    readonly class: u32;
+    readonly collection: u32;
     readonly creator: AccountId32;
     readonly owner: AccountId32;
   } & Struct;
   readonly isForceCreated: boolean;
   readonly asForceCreated: {
-    readonly class: u32;
+    readonly collection: u32;
     readonly owner: AccountId32;
   } & Struct;
   readonly isDestroyed: boolean;
   readonly asDestroyed: {
-    readonly class: u32;
+    readonly collection: u32;
   } & Struct;
   readonly isIssued: boolean;
   readonly asIssued: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
     readonly owner: AccountId32;
   } & Struct;
   readonly isTransferred: boolean;
   readonly asTransferred: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
     readonly from: AccountId32;
     readonly to: AccountId32;
   } & Struct;
   readonly isBurned: boolean;
   readonly asBurned: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
     readonly owner: AccountId32;
   } & Struct;
   readonly isFrozen: boolean;
   readonly asFrozen: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
   } & Struct;
   readonly isThawed: boolean;
   readonly asThawed: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
   } & Struct;
-  readonly isClassFrozen: boolean;
-  readonly asClassFrozen: {
-    readonly class: u32;
+  readonly isCollectionFrozen: boolean;
+  readonly asCollectionFrozen: {
+    readonly collection: u32;
   } & Struct;
-  readonly isClassThawed: boolean;
-  readonly asClassThawed: {
-    readonly class: u32;
+  readonly isCollectionThawed: boolean;
+  readonly asCollectionThawed: {
+    readonly collection: u32;
   } & Struct;
   readonly isOwnerChanged: boolean;
   readonly asOwnerChanged: {
-    readonly class: u32;
+    readonly collection: u32;
     readonly newOwner: AccountId32;
   } & Struct;
   readonly isTeamChanged: boolean;
   readonly asTeamChanged: {
-    readonly class: u32;
+    readonly collection: u32;
     readonly issuer: AccountId32;
     readonly admin: AccountId32;
     readonly freezer: AccountId32;
   } & Struct;
   readonly isApprovedTransfer: boolean;
   readonly asApprovedTransfer: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
     readonly owner: AccountId32;
     readonly delegate: AccountId32;
   } & Struct;
   readonly isApprovalCancelled: boolean;
   readonly asApprovalCancelled: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
     readonly owner: AccountId32;
     readonly delegate: AccountId32;
   } & Struct;
-  readonly isAssetStatusChanged: boolean;
-  readonly asAssetStatusChanged: {
-    readonly class: u32;
+  readonly isItemStatusChanged: boolean;
+  readonly asItemStatusChanged: {
+    readonly collection: u32;
   } & Struct;
-  readonly isClassMetadataSet: boolean;
-  readonly asClassMetadataSet: {
-    readonly class: u32;
+  readonly isCollectionMetadataSet: boolean;
+  readonly asCollectionMetadataSet: {
+    readonly collection: u32;
     readonly data: Bytes;
     readonly isFrozen: bool;
   } & Struct;
-  readonly isClassMetadataCleared: boolean;
-  readonly asClassMetadataCleared: {
-    readonly class: u32;
+  readonly isCollectionMetadataCleared: boolean;
+  readonly asCollectionMetadataCleared: {
+    readonly collection: u32;
   } & Struct;
   readonly isMetadataSet: boolean;
   readonly asMetadataSet: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
     readonly data: Bytes;
     readonly isFrozen: bool;
   } & Struct;
   readonly isMetadataCleared: boolean;
   readonly asMetadataCleared: {
-    readonly class: u32;
-    readonly instance: u32;
+    readonly collection: u32;
+    readonly item: u32;
   } & Struct;
   readonly isRedeposited: boolean;
   readonly asRedeposited: {
-    readonly class: u32;
-    readonly successfulInstances: Vec<u32>;
+    readonly collection: u32;
+    readonly successfulItems: Vec<u32>;
   } & Struct;
   readonly isAttributeSet: boolean;
   readonly asAttributeSet: {
-    readonly class: u32;
-    readonly maybeInstance: Option<u32>;
+    readonly collection: u32;
+    readonly maybeItem: Option<u32>;
     readonly key: Bytes;
     readonly value: Bytes;
   } & Struct;
   readonly isAttributeCleared: boolean;
   readonly asAttributeCleared: {
-    readonly class: u32;
-    readonly maybeInstance: Option<u32>;
+    readonly collection: u32;
+    readonly maybeItem: Option<u32>;
     readonly key: Bytes;
   } & Struct;
   readonly isOwnershipAcceptanceChanged: boolean;
   readonly asOwnershipAcceptanceChanged: {
     readonly who: AccountId32;
-    readonly maybeClass: Option<u32>;
+    readonly maybeCollection: Option<u32>;
   } & Struct;
-  readonly type: 'Created' | 'ForceCreated' | 'Destroyed' | 'Issued' | 'Transferred' | 'Burned' | 'Frozen' | 'Thawed' | 'ClassFrozen' | 'ClassThawed' | 'OwnerChanged' | 'TeamChanged' | 'ApprovedTransfer' | 'ApprovalCancelled' | 'AssetStatusChanged' | 'ClassMetadataSet' | 'ClassMetadataCleared' | 'MetadataSet' | 'MetadataCleared' | 'Redeposited' | 'AttributeSet' | 'AttributeCleared' | 'OwnershipAcceptanceChanged';
+  readonly isCollectionMaxSupplySet: boolean;
+  readonly asCollectionMaxSupplySet: {
+    readonly collection: u32;
+    readonly maxSupply: u32;
+  } & Struct;
+  readonly type: 'Created' | 'ForceCreated' | 'Destroyed' | 'Issued' | 'Transferred' | 'Burned' | 'Frozen' | 'Thawed' | 'CollectionFrozen' | 'CollectionThawed' | 'OwnerChanged' | 'TeamChanged' | 'ApprovedTransfer' | 'ApprovalCancelled' | 'ItemStatusChanged' | 'CollectionMetadataSet' | 'CollectionMetadataCleared' | 'MetadataSet' | 'MetadataCleared' | 'Redeposited' | 'AttributeSet' | 'AttributeCleared' | 'OwnershipAcceptanceChanged' | 'CollectionMaxSupplySet';
 }
 
-/** @name PalletUniquesInstanceDetails */
-export interface PalletUniquesInstanceDetails extends Struct {
+/** @name PalletUniquesItemDetails */
+export interface PalletUniquesItemDetails extends Struct {
   readonly owner: AccountId32;
   readonly approved: Option<AccountId32>;
   readonly isFrozen: bool;
   readonly deposit: u128;
 }
 
-/** @name PalletUniquesInstanceMetadata */
-export interface PalletUniquesInstanceMetadata extends Struct {
+/** @name PalletUniquesItemMetadata */
+export interface PalletUniquesItemMetadata extends Struct {
   readonly deposit: u128;
   readonly data: Bytes;
   readonly isFrozen: bool;
@@ -1386,7 +1391,7 @@ export interface PalletUtilityEvent extends Enum {
 }
 
 /** @name PhantomTypeUpDataStructs */
-export interface PhantomTypeUpDataStructs extends Vec<Lookup173> {}
+export interface PhantomTypeUpDataStructs extends Vec<Lookup174> {}
 
 /** @name RmrkSubstrateRuntimeOriginCaller */
 export interface RmrkSubstrateRuntimeOriginCaller extends Enum {
