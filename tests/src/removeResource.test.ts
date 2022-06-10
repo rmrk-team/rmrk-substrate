@@ -124,6 +124,50 @@ describe('Integration test: remove nft resource', () => {
         await acceptResourceRemoval(api, Bob, collectionIdAlice, nftBob, resourceId);
     });
 
+    it('Deleting a resource in a nested NFT by the collection owner', async () => {
+        const collectionIdAlice = await createCollection(
+            api,
+            Alice,
+            "test-metadata",
+            null,
+            "test-symbol"
+        );
+
+        const parentNftId = await mintNft(
+            api,
+            Alice,
+            Bob,
+            collectionIdAlice,
+            "parent-nft-metadata"
+        );
+        const childNftId = await mintNft(
+            api,
+            Alice,
+            Bob,
+            collectionIdAlice,
+            "child-nft-metadata"
+        );
+
+        const resourceId = await addNftBasicResource(
+            api,
+            Alice,
+            "pending",
+            collectionIdAlice,
+            childNftId,
+            src,
+            metadata,
+            license,
+            thumb
+        );
+
+        const newOwnerNFT: NftIdTuple = [collectionIdAlice, parentNftId];
+
+        await sendNft(api, "sent", Bob, collectionIdAlice, childNftId, newOwnerNFT);
+
+        await removeNftResource(api, 'pending', Alice, collectionIdAlice, childNftId, resourceId);
+        await acceptResourceRemoval(api, Bob, collectionIdAlice, childNftId, resourceId);
+    });
+
     it('[Negative test]: can\'t delete a resource in a non-existing collection', async () => {
         const collectionIdAlice = await createCollection(
             api,
