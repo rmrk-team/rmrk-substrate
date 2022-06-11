@@ -383,17 +383,17 @@ pub mod pallet {
 				transferable,
 			)?;
 
-			// Extract rootowner (needs calculated if minting directly to NFT)
-			let rootowner = match nft_owner.clone() {
+			// For Uniques, we need to decode the "virtual account" ID to be the owner
+			let uniques_owner = match nft_owner.clone() {
 				AccountIdOrCollectionNftTuple::AccountId(account_id) => account_id,
-				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(col_id, nft_id) =>
-					Self::lookup_root_owner(col_id, nft_id)?.0,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, nft_id) =>
+					Self::nft_to_account_id(collection_id, nft_id),
 			};
 
 			pallet_uniques::Pallet::<T>::do_mint(
 				collection_id,
 				nft_id,
-				rootowner.clone(),
+				uniques_owner,
 				|_details| Ok(()),
 			)?;
 

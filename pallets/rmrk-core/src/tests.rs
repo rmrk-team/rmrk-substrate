@@ -647,6 +647,80 @@ fn send_non_transferable_fail() {
 	});
 }
 
+#[test]
+fn mint_non_transferrable_gem_on_to_nft_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+
+		// Mint NFT (transferrable, will be the parent of a later-minted non-transferrable NFT)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			Some(AccountIdOrCollectionNftTuple::AccountId(BOB)),
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			true, // transferable
+			None,
+		));
+
+		// Mint non-transferable NFT *on to* Bob-owned NFT (0, 0)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			Some(AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)),
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			false, // non-transferable
+			None,
+		));
+
+		// NFT (0, 1) exists and is non-transferrable
+		assert!(!RMRKCore::nfts(0, 1).unwrap().transferable);
+
+		// NFT (0, 1) is owned by BOB-owned NFT (0, 0)
+		assert_eq!(
+			RMRKCore::nfts(0, 1).unwrap().owner,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)
+		);
+
+		// BOB *cannot send* non-transferrable NFT (0, 1) to CHARLIE
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(BOB),
+				0,
+				1,
+				AccountIdOrCollectionNftTuple::AccountId(CHARLIE)
+			),
+			Error::<Test>::NonTransferable
+		);
+
+		// BOB *cannot send* non-transferrable NFT (0, 1) to BOB (his own root account)
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(BOB),
+				0,
+				1,
+				AccountIdOrCollectionNftTuple::AccountId(BOB)
+			),
+			Error::<Test>::NonTransferable
+		);
+
+		// BOB *can* send NFT (0, 0) to CHARLIE
+		assert_ok!(RMRKCore::send(
+			Origin::signed(BOB),
+			0,
+			0,
+			AccountIdOrCollectionNftTuple::AccountId(CHARLIE)
+		));
+
+		// CHARLIE now rootowns NFT (0, 1)
+		assert_eq!(RMRKCore::lookup_root_owner(0, 1).unwrap().0, CHARLIE);
+	});
+}
+
 /// NFT: Reject tests (RMRK2.0 spec: new)
 #[test]
 fn reject_nft_works() {
