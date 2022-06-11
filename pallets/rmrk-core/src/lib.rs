@@ -49,9 +49,10 @@ pub type ValueLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::ValueLi
 pub type BoundedResourceTypeOf<T> = BoundedVec<
 	ResourceTypes<
 		BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
-		BoundedVec<PartId, <T as Config>::PartsLimit>>,
-		<T as Config>::MaxResourcesOnMint
-	>;
+		BoundedVec<PartId, <T as Config>::PartsLimit>,
+	>,
+	<T as Config>::MaxResourcesOnMint,
+>;
 
 pub mod types;
 
@@ -346,25 +347,35 @@ pub mod pallet {
 		#[transactional]
 		pub fn mint_nft(
 			origin: OriginFor<T>,
-			owner: AccountIdOrCollectionNftTuple<T::AccountId>,
+			owner: Option<AccountIdOrCollectionNftTuple<T::AccountId>>,
 			collection_id: CollectionId,
 			royalty_recipient: Option<T::AccountId>,
 			royalty: Option<Permill>,
 			metadata: BoundedVec<u8, T::StringLimit>,
 			transferable: bool,
-			resources: Option<BoundedResourceTypeOf<T>>
+			resources: Option<BoundedResourceTypeOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			if let Some(collection_issuer) = pallet_uniques::Pallet::<T>::collection_owner(collection_id)
+
+			// Collection must exist and sender must be issuer of collection
+			if let Some(collection_issuer) =
+				pallet_uniques::Pallet::<T>::collection_owner(collection_id)
 			{
 				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
 			} else {
 				return Err(Error::<T>::CollectionUnknown.into())
 			}
 
+			// Extract intended owner or default to sender
+			let nft_owner = match owner {
+				Some(owner) => owner,
+				None => AccountIdOrCollectionNftTuple::AccountId(sender.clone()),
+			};
+
+			// Mint NFT for RMRK storage
 			let (collection_id, nft_id) = Self::nft_mint(
-				sender.clone(),
-				owner.clone(),
+				sender,
+				nft_owner.clone(),
 				collection_id,
 				royalty_recipient,
 				royalty,
@@ -372,23 +383,27 @@ pub mod pallet {
 				transferable,
 			)?;
 
-			let rootowner = match owner.clone() {
+			// Extract rootowner (needs calculated if minting directly to NFT)
+			let rootowner = match nft_owner.clone() {
 				AccountIdOrCollectionNftTuple::AccountId(account_id) => account_id,
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(col_id, nft_id) =>
 					Self::lookup_root_owner(col_id, nft_id)?.0,
 			};
 
-			pallet_uniques::Pallet::<T>::do_mint(collection_id, nft_id, rootowner, |_details| {
-				Ok(())
-			})?;
+			pallet_uniques::Pallet::<T>::do_mint(
+				collection_id,
+				nft_id,
+				rootowner.clone(),
+				|_details| Ok(()),
+			)?;
 
 			if let Some(resources) = resources {
 				for res in resources {
-					Self::resource_add(sender.clone(), collection_id, nft_id, res)?;
+					Self::resource_add(rootowner.clone(), collection_id, nft_id, res)?;
 				}
 			}
-			
-			Self::deposit_event(Event::NftMinted { owner, collection_id, nft_id });
+
+			Self::deposit_event(Event::NftMinted { owner: nft_owner, collection_id, nft_id });
 
 			Ok(())
 		}
