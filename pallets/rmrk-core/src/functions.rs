@@ -267,7 +267,7 @@ where
 	type MaxRecursions = T::MaxRecursions;
 
 	fn nft_mint(
-		_sender: T::AccountId,
+		sender: T::AccountId,
 		owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 		collection_id: CollectionId,
 		royalty_recipient: Option<T::AccountId>,
@@ -283,11 +283,17 @@ where
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 		}
 
+		// Calculate the rootowner of the intended owner of the minted NFT, which will be an account
+		// ID if specified, or a calculated rootowner of an NFT, if being minted directly to an NFT
 		let rootowner = match owner.clone() {
 			AccountIdOrCollectionNftTuple::AccountId(account_id) => account_id,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, nft_id) =>
 				Self::lookup_root_owner(collection_id, nft_id)?.0,
 		};
+
+		// NFT should be pending if minting either to another account or to an NFT owned by another
+		// account
+		let pending = rootowner != sender;
 
 		let mut royalty: Option<RoyaltyInfo<T::AccountId>> = None;
 
@@ -302,8 +308,7 @@ where
 			}
 		};
 
-		let nft =
-			NftInfo { owner, royalty, metadata, equipped: false, pending: false, transferable };
+		let nft = NftInfo { owner, royalty, metadata, equipped: false, pending, transferable };
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 
@@ -501,7 +506,6 @@ where
 		nft_id: NftId,
 		max_recursions: u32,
 	) -> Result<(T::AccountId, CollectionId, NftId), DispatchError> {
-
 		// Look up root owner to ensure permissions
 		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
@@ -511,17 +515,18 @@ where
 		// Get current owner, which we will use to remove the Children storage
 		if let Some(parent_account_id) = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id) {
 			// Decode the parent_account_id to extract the parent (CollectionId, NftId)
-			if let Some(parent) = 
-				Pallet::<T>::decode_nft_account_id::<T::AccountId>(parent_account_id) {
-					// Remove the parent-child Children storage 
-					Self::remove_child(parent, (collection_id, nft_id));
+			if let Some(parent) =
+				Pallet::<T>::decode_nft_account_id::<T::AccountId>(parent_account_id)
+			{
+				// Remove the parent-child Children storage
+				Self::remove_child(parent, (collection_id, nft_id));
 			}
 		}
 
 		// Get NFT info
 		let mut rejecting_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-		
+
 		Self::nft_burn(collection_id, nft_id, max_recursions)?;
 
 		Ok((sender, collection_id, nft_id))

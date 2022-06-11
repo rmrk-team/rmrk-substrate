@@ -274,6 +274,72 @@ fn mint_nft_works() {
 	});
 }
 
+/// NFT: Mint directly to NFT
+#[test]
+fn mint_directly_to_nft() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+
+		// Mint directly to non-existent NFT fails
+		assert_noop!(
+			RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				Some(AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)),
+				COLLECTION_ID_0,
+				None,
+				Some(Permill::from_float(20.525)),
+				bvec![0u8; 20],
+				true,
+				None,
+			),
+			Error::<Test>::NoAvailableNftId
+		);
+
+		// ALICE mints an NFT for BOB
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			Some(AccountIdOrCollectionNftTuple::AccountId(BOB)),
+			COLLECTION_ID_0,
+			None,
+			Some(Permill::from_float(20.525)),
+			bvec![0u8; 20],
+			true,
+			None,
+		));
+
+		// BOB owns NFT (0, 0)
+		assert_eq!(
+			RmrkCore::nfts(0, 0).unwrap().owner,
+			AccountIdOrCollectionNftTuple::AccountId(BOB)
+		);
+
+		// ALICE mints NFT directly to BOB-owned NFT (0, 0)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			Some(AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)),
+			COLLECTION_ID_0,
+			None,
+			Some(Permill::from_float(20.525)),
+			bvec![0u8; 20],
+			true,
+			None,
+		));
+
+		// Minted NFT (0, 1) exists
+		assert!(RmrkCore::nfts(0, 1).is_some());
+
+		// Minted NFT (0, 1) has owner NFT (0, 0)
+		assert_eq!(
+			RmrkCore::nfts(0, 1).unwrap().owner,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)
+		);
+
+		// Minted NFT (0, 1) is pending
+		assert!(RmrkCore::nfts(0, 1).unwrap().pending);
+	});
+}
+
 /// NFT: Mint tests with max (RMRK2.0 spec: MINT)
 #[test]
 fn mint_collection_max_logic_works() {
