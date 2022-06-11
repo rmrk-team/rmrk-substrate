@@ -374,7 +374,7 @@ pub mod pallet {
 
 			// Mint NFT for RMRK storage
 			let (collection_id, nft_id) = Self::nft_mint(
-				sender,
+				sender.clone(),
 				nft_owner.clone(),
 				collection_id,
 				royalty_recipient,
@@ -399,7 +399,7 @@ pub mod pallet {
 
 			if let Some(resources) = resources {
 				for res in resources {
-					Self::resource_add(rootowner.clone(), collection_id, nft_id, res)?;
+					Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
 				}
 			}
 
@@ -661,8 +661,13 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let resource_id =
-				Self::resource_add(sender, collection_id, nft_id, ResourceTypes::Basic(resource))?;
+			let resource_id = Self::resource_add(
+				sender,
+				collection_id,
+				nft_id,
+				ResourceTypes::Basic(resource),
+				false,
+			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
 			Ok(())
@@ -685,6 +690,7 @@ pub mod pallet {
 				collection_id,
 				nft_id,
 				ResourceTypes::Composable(resource),
+				false,
 			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
@@ -702,8 +708,13 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
-			let resource_id =
-				Self::resource_add(sender, collection_id, nft_id, ResourceTypes::Slot(resource))?;
+			let resource_id = Self::resource_add(
+				sender,
+				collection_id,
+				nft_id,
+				ResourceTypes::Slot(resource),
+				false,
+			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
 			Ok(())

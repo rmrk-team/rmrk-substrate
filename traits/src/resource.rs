@@ -138,6 +138,7 @@ pub trait Resource<BoundedString, AccountId, BoundedPart> {
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource: ResourceTypes<BoundedString, BoundedPart>,
+		adding_on_mint: bool,
 	) -> Result<ResourceId, DispatchError>;
 	fn accept(
 		sender: AccountId,

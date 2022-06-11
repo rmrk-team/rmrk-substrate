@@ -80,6 +80,7 @@ where
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource: ResourceTypes<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>>,
+		adding_on_mint: bool,
 	) -> Result<ResourceId, DispatchError> {
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		let resource_id = Self::get_next_resource_id(collection_id, nft_id)?;
@@ -102,10 +103,19 @@ where
 			},
 		}
 
+		// Resource should be in a pending state if the rootowner of the resource is not the sender
+		// of the transaction, unless the resource is being added on mint.  This prevents the
+		// situation where an NFT being minted *directly to* a non-owned NFT *with resources* will
+		// have those resources be *pending*.  While the minted NFT itself will be pending, it is
+		// inefficent and unnecessary to have the resources also be pending.  Otherwise, in such a
+		// case, the owner would have to accept not only the NFT but also all originally-added
+		// resources.
+		let pending = (root_owner != sender) && !adding_on_mint;
+
 		let res: ResourceInfo<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> =
 			ResourceInfo::<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> {
 				id: resource_id,
-				pending: root_owner != sender,
+				pending,
 				pending_removal: false,
 				resource,
 			};

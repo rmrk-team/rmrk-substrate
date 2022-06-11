@@ -340,6 +340,54 @@ fn mint_directly_to_nft() {
 	});
 }
 
+/// NFT: When minting directly to a non-owned NFT *with resources*, the resources should *not* be
+/// pending
+#[test]
+fn mint_directly_to_nft_with_resources() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+
+		// ALICE mints an NFT for BOB
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			Some(AccountIdOrCollectionNftTuple::AccountId(BOB)),
+			COLLECTION_ID_0,
+			None,
+			Some(Permill::from_float(20.525)),
+			bvec![0u8; 20],
+			true,
+			None,
+		));
+
+		// Compose a resource to add to an NFT
+		let basic_resource =
+			BasicResource { src: None, metadata: None, license: None, thumb: None };
+
+		// Construct as a BoundedVec of resources which mint_nft will accept
+		let resources_to_add = bvec![ResourceTypes::Basic(basic_resource)];
+
+		// ALICE mints NFT directly to BOB-owned NFT (0, 0), with the above resource
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			Some(AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)),
+			COLLECTION_ID_0,
+			None,
+			Some(Permill::from_float(20.525)),
+			bvec![0u8; 20],
+			true,
+			Some(resources_to_add),
+		));
+
+		// Created resource 0 on NFT (0, 1) should exist
+		assert!(RmrkCore::resources((0, 1, 0)).is_some());
+
+		println!("{:?}", RmrkCore::resources((0, 1, 0)).unwrap());
+		// Created resource 0 on NFT (0, 1) should not be pending
+		assert!(!RmrkCore::resources((0, 1, 0)).unwrap().pending);
+	});
+}
+
 /// NFT: Mint tests with max (RMRK2.0 spec: MINT)
 #[test]
 fn mint_collection_max_logic_works() {
