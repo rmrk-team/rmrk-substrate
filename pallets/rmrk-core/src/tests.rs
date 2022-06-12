@@ -539,6 +539,11 @@ fn reject_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
+		// Cannot reject non-existent NFT
+		assert_noop!(
+			RMRKCore::reject_nft(Origin::signed(BOB), 0, 2,),
+			Error::<Test>::NoAvailableNftId
+		);
 		// Mint NFTs (0, 0), (0, 1), (0, 2)
 		for _ in 0..3 {
 			assert_ok!(basic_mint());
@@ -564,12 +569,41 @@ fn reject_nft_works() {
 			0,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
 		));
-		// Bob rejects NFT (0,2) for Bob-owned NFT (0,0)
-		assert_ok!(RMRKCore::reject_nft(Origin::signed(BOB), 0, 2,));
+		// Bob rejects NFT (0,0) for Bob-owned NFT (0,0)
+		assert_ok!(RMRKCore::reject_nft(Origin::signed(BOB), 0, 0,));
 		// Rejected NFT gets burned
-		assert_eq!(RMRKCore::nfts(0, 0).is_none(), true);
+		assert!(RMRKCore::nfts(0, 0).is_none());
 		// Child is burned if parent is rejected
-		assert_eq!(RMRKCore::nfts(0, 1).is_none(), true);
+		assert!(RMRKCore::nfts(0, 1).is_none());
+	});
+}
+
+/// NFT: Reject test: Cannot reject non-pending NFT
+#[test]
+fn reject_cannot_reject_non_pending_nft() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// ALICE mints (0, 0) for ALICE
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			None,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			true,
+			None
+		));
+		// NFT (0, 0) is not pending
+		assert!(!RMRKCore::nfts(0, 0).unwrap().pending);
+		// ALICE cannot reject NFT (0, 0) since it is not pending
+		assert_noop!(
+			RMRKCore::reject_nft(Origin::signed(ALICE), 0, 0),
+			Error::<Test>::CannotRejectNonPendingNft
+		);
+		// NFT (0, 0) still exists after failed rejection
+		assert!(RMRKCore::nfts(0, 0).is_some());
 	});
 }
 

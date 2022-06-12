@@ -323,6 +323,7 @@ pub mod pallet {
 		NftIsLocked,
 		CannotAcceptNonOwnedNft,
 		CannotRejectNonOwnedNft,
+		CannotRejectNonPendingNft,
 		ResourceDoesntExist,
 		/// Accepting a resource that is not pending should fail
 		ResourceNotPending,
