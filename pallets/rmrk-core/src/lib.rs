@@ -168,9 +168,11 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn composable_resources)]
-	/// Stores resource info
-	pub type ComposableResources<T: Config> = StorageNMap<
+	#[pallet::getter(fn equippable_bases)]
+	/// Stores the existence of a base for a particular NFT
+	/// This is populated on `add_composable_resource`, and is
+	/// used in the rmrk-equip pallet when equipping a resource.
+	pub type EquippableBases<T: Config> = StorageNMap<
 		_,
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
@@ -181,9 +183,12 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn slot_resources)]
-	/// Stores resource info
-	pub type SlotResources<T: Config> = StorageNMap<
+	#[pallet::getter(fn equippable_slots)]
+	/// Stores the existence of a Base + Slot for a particular
+	/// NFT's particular resource.  This is populated on
+	/// `add_slot_resource`, and is used in the rmrk-equip
+	/// pallet when equipping a resource.
+	pub type EquippableSlots<T: Config> = StorageNMap<
 		_,
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
