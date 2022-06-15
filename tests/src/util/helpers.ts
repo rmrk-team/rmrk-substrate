@@ -165,6 +165,7 @@ export async function findResourceById(
     resourceId: number,
 ): Promise<ResourceInfo> {
     const resources = await getResources(api, collectionId, nftId);
+    console.log('resources:', JSON.stringify(resources));
 
     let resource = null;
 
@@ -186,7 +187,7 @@ export async function getResourceById(
     nftId: number,
     resourceId: number,
 ): Promise<ResourceInfo> {
-    const resource = findResourceById(
+    const resource = await findResourceById(
         api,
         collectionId,
         nftId,
