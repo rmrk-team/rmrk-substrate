@@ -799,7 +799,7 @@ export async function acceptNftResource(
         events, 'ResourceAccepted', (data) => {
             return {
                 nftId: parseInt(data[0].toString(), 10),
-                resourceId: parseInt(data[0].toString(), 10)
+                resourceId: parseInt(data[1].toString(), 10)
             };
         }
     )
@@ -811,7 +811,7 @@ export async function acceptNftResource(
         .to.be.eq(resourceId);
 
     const resource = await getResourceById(api, collectionId, nftId, resourceId);
-    checkResourceStatus(resource!, "added");
+    checkResourceStatus(resource, "added");
 }
 
 async function executeResourceCreation(
@@ -833,7 +833,7 @@ async function executeResourceCreation(
     const resourceId = resourceResult.successData!;
 
     const resource = await getResourceById(api, collectionId, nftId, resourceId);
-    checkResourceStatus(resource!, expectedStatus);
+    checkResourceStatus(resource, expectedStatus);
 
     return resource;
 }
