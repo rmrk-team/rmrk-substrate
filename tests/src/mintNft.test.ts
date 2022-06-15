@@ -97,6 +97,55 @@ describe("Integration test: mint new NFT", () => {
         );
     });
 
+    it("mint NFT with resources", async () => {
+        const owner = alice;
+        const collectionMetadata = 'mintingCollectionMetadata';
+        const collectionMax = null;
+        const collectionSymbol = 'MCS';
+        const nftMetadata = 'NFT-with-resources-test-metadata';
+        const resources = [
+          {
+            basic: {
+              metadata: 'basic-resource-nft-minting',
+            },
+          }, {
+            slot: {
+              metadata: 'slot-resource-nft-minting',
+              slot: 9,
+            },
+          }, {
+            composable: {
+              metadata: 'composable-resource-nft-minting',
+              parts: [0, 5, 2],
+            }
+          }, {
+            slot: {
+              metadata: 'slot-resource-nft-minting-2',
+              thumb: 'srnm2',
+              base: 5,
+            }
+          }
+        ];
+
+        let collectionId = await createCollection(
+            api,
+            alice,
+            collectionMetadata,
+            collectionMax,
+            collectionSymbol
+        );
+
+        await mintNft(
+            api,
+            alice,
+            owner,
+            collectionId,
+            nftMetadata,
+            null, null, true,
+            resources
+        );
+    });
+
     it("[Negative] unable to mint NFT within non-existing collection", async () => {
       const owner = alice;
       const recipientUri = null;

@@ -18,7 +18,9 @@ import {
   getEquippableList,
   getNft,
   getParts,
-  getResourcePriority, getTheme,
+  getResources, 
+  getResourcePriority, 
+  getTheme,
   NftIdTuple
 } from "./fetch";
 import {
@@ -212,6 +214,7 @@ export async function mintNft(
     recipientUri: string | null = null,
     royalty: number | null = null,
     transferable: boolean = true,
+    resources: {basic?: any, composable?: any, slot?: any}[] | null = null
 ): Promise<number> {
     let nftId = 0;
     const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
@@ -229,7 +232,7 @@ export async function mintNft(
         royaltyOptional,
         metadata,
         transferable,
-        null
+        resources,
     );
 
     const events = await executeTransaction(api, issuer, tx);
@@ -286,6 +289,67 @@ export async function mintNft(
     }
 
     expect(nft.metadata.toUtf8()).to.be.equal(metadata, "Error: Invalid NFT metadata");
+    
+    const nftResources = await getResources(api, collectionId, nftId);
+    if (resources == null) {
+        expect(nftResources, 'Error: Invalid NFT resources').to.be.empty;
+    } else {
+        expect(nftResources.length).to.be.equal(resources.length);
+
+        for (let i = 0; i < resources.length; i++) {
+            let successFindingResource = false;
+            const resource = resources[i];
+            // try to find the matching resource from the query
+            for (let j = 0; j < nftResources.length && !successFindingResource; j++) {
+                const nftResourceData = nftResources[j].toHuman();
+                expect(nftResourceData.hasOwnProperty('resource'), `Error: Corrupted resource data on resource #${i}`);
+                const nftResource = nftResourceData.resource!;
+                type NftResourceKey = keyof typeof nftResource;
+
+                let typedResource = null;
+                let typedNftResource = null;
+
+                if (resource.basic && nftResource.hasOwnProperty("Basic")) {
+                    typedResource = resource.basic!;
+                    typedNftResource = nftResource["Basic" as NftResourceKey]!;
+                } else if (resource.composable && nftResource.hasOwnProperty("Composable")) {
+                    typedResource = resource.composable!;
+                    typedNftResource = nftResource["Composable" as NftResourceKey]! as any;
+                    if (typedResource.parts != undefined && typedResource.parts.toString() != typedNftResource.parts.toString()
+                        || typedResource.base != typedNftResource.base && typedResource.base != undefined) {
+                        continue;
+                    }
+                } else if (resource.slot && nftResource.hasOwnProperty("Slot")) {
+                    typedResource = resource.slot!;
+                    typedNftResource = nftResource["Slot" as NftResourceKey]! as any;
+                    if (typedResource.slot != typedNftResource.slot && typedResource.slot != undefined 
+                        || typedResource.base != typedNftResource.base && typedResource.base != undefined) {
+                        continue;
+                    }
+                } else {
+                    continue;
+                }
+
+                if (typedResource.src != typedNftResource.src 
+                    || typedResource.metadata != typedNftResource.metadata 
+                    || typedResource.thumb != typedNftResource.thumb
+                    || typedResource.license != typedNftResource.license
+                ) {
+                    continue;
+                }
+
+                // do final checks since this is now established to be the resource we seek
+                expect(nftResourceData.pending, `Error: Resource #${i} is pending`).to.be.false;
+                expect(nftResourceData.pendingRemoval, `Error: Resource #${i} is pending removal`).to.be.false;
+
+                // remove the matching resource from the resources we check
+                nftResources.splice(j, 1);
+                successFindingResource = true;
+            };
+
+            expect(successFindingResource, `Error: Couldn't find resource #${i}'s counterpart among the returned`).to.be.true;
+        }
+    }
 
     return nftId;
 }
