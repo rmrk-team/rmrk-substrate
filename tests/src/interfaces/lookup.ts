@@ -989,16 +989,16 @@ export default {
   RmrkTraitsPartSlotPart: {
     id: 'u32',
     equippable: 'RmrkTraitsPartEquippableList',
-    src: 'Bytes',
+    src: 'Option<Bytes>',
     z: 'u32'
   },
   /**
-   * Lookup134: pallet_rmrk_core::pallet::Call<T>
+   * Lookup135: pallet_rmrk_core::pallet::Call<T>
    **/
   PalletRmrkCoreCall: {
     _enum: {
       mint_nft: {
-        owner: 'AccountId32',
+        owner: 'Option<AccountId32>',
         collectionId: 'u32',
         royaltyRecipient: 'Option<AccountId32>',
         royalty: 'Option<Permill>',
@@ -1084,7 +1084,7 @@ export default {
     }
   },
   /**
-   * Lookup139: rmrk_traits::resource::ResourceTypes<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>
+   * Lookup140: rmrk_traits::resource::ResourceTypes<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>
    **/
   RmrkTraitsResourceResourceTypes: {
     _enum: {
@@ -1094,7 +1094,7 @@ export default {
     }
   },
   /**
-   * Lookup141: rmrk_traits::resource::BasicResource<frame_support::storage::bounded_vec::BoundedVec<T, S>>
+   * Lookup142: rmrk_traits::resource::BasicResource<frame_support::storage::bounded_vec::BoundedVec<T, S>>
    **/
   RmrkTraitsResourceBasicResource: {
     src: 'Option<Bytes>',

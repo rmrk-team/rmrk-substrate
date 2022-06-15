@@ -9,7 +9,7 @@ import type {
     RmrkTraitsNftNftChild as NftChild,
     RmrkTraitsTheme as Theme,
     RmrkTraitsPropertyPropertyInfo as Property,
-} from '@polkadot/types/lookup';
+} from '../interfaces/rmrk/types'; // '@polkadot/types/lookup';
 import '../interfaces/augment-api';
 import '../interfaces/augment-api-query';
 import privateKey from '../substrate/privateKey';

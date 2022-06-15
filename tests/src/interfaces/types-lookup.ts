@@ -1050,15 +1050,15 @@ declare module '@polkadot/types/lookup' {
   export interface RmrkTraitsPartSlotPart extends Struct {
     readonly id: u32;
     readonly equippable: RmrkTraitsPartEquippableList;
-    readonly src: Bytes;
+    readonly src: Option<Bytes>;
     readonly z: u32;
   }
 
-  /** @name PalletRmrkCoreCall (134) */
+  /** @name PalletRmrkCoreCall (135) */
   export interface PalletRmrkCoreCall extends Enum {
     readonly isMintNft: boolean;
     readonly asMintNft: {
-      readonly owner: AccountId32;
+      readonly owner: Option<AccountId32>;
       readonly collectionId: u32;
       readonly royaltyRecipient: Option<AccountId32>;
       readonly royalty: Option<Permill>;
@@ -1160,7 +1160,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'MintNft' | 'CreateCollection' | 'BurnNft' | 'DestroyCollection' | 'Send' | 'AcceptNft' | 'RejectNft' | 'ChangeCollectionIssuer' | 'SetProperty' | 'LockCollection' | 'AddBasicResource' | 'AddComposableResource' | 'AddSlotResource' | 'AcceptResource' | 'RemoveResource' | 'AcceptResourceRemoval' | 'SetPriority';
   }
 
-  /** @name RmrkTraitsResourceResourceTypes (139) */
+  /** @name RmrkTraitsResourceResourceTypes (140) */
   export interface RmrkTraitsResourceResourceTypes extends Enum {
     readonly isBasic: boolean;
     readonly asBasic: RmrkTraitsResourceBasicResource;
@@ -1171,7 +1171,7 @@ declare module '@polkadot/types/lookup' {
     readonly type: 'Basic' | 'Composable' | 'Slot';
   }
 
-  /** @name RmrkTraitsResourceBasicResource (141) */
+  /** @name RmrkTraitsResourceBasicResource (142) */
   export interface RmrkTraitsResourceBasicResource extends Struct {
     readonly src: Option<Bytes>;
     readonly metadata: Option<Bytes>;

@@ -201,7 +201,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - `royalty`: Permillage reward from each trade for the Recipient
        * - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
        **/
-      mintNft: AugmentedSubmittable<(owner: AccountId32 | string | Uint8Array, collectionId: u32 | AnyNumber | Uint8Array, royaltyRecipient: Option<AccountId32> | null | object | string | Uint8Array, royalty: Option<Permill> | null | object | string | Uint8Array, metadata: Bytes | string | Uint8Array, transferable: bool | boolean | Uint8Array, resources: Option<Vec<RmrkTraitsResourceResourceTypes>> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [AccountId32, u32, Option<AccountId32>, Option<Permill>, Bytes, bool, Option<Vec<RmrkTraitsResourceResourceTypes>>]>;
+      mintNft: AugmentedSubmittable<(owner: Option<AccountId32> | null | object | string | Uint8Array, collectionId: u32 | AnyNumber | Uint8Array, royaltyRecipient: Option<AccountId32> | null | object | string | Uint8Array, royalty: Option<Permill> | null | object | string | Uint8Array, metadata: Bytes | string | Uint8Array, transferable: bool | boolean | Uint8Array, resources: Option<Vec<RmrkTraitsResourceResourceTypes>> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Option<AccountId32>, u32, Option<AccountId32>, Option<Permill>, Bytes, bool, Option<Vec<RmrkTraitsResourceResourceTypes>>]>;
       /**
        * Rejects an NFT sent from another account to self or owned NFT
        * 
