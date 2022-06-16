@@ -208,7 +208,7 @@ export async function setNftProperty(
 export async function mintNft(
     api: ApiPromise,
     issuerUri: string,
-    ownerUri: string,
+    ownerUri: string | null,
     collectionId: number,
     metadata: string,
     recipientUri: string | null = null,
@@ -219,9 +219,12 @@ export async function mintNft(
     let nftId = 0;
     const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
     const issuer = privateKey(issuerUri, Number(ss58Format));
-    const owner = privateKey(ownerUri, Number(ss58Format)).address;
+    const owner = ownerUri ? privateKey(ownerUri, Number(ss58Format)).address : null;
     const recipient = recipientUri ? privateKey(recipientUri, Number(ss58Format)).address : null;
     const royaltyOptional = royalty ? royalty.toString() : null;
+
+    const actualOwnerUri = ownerUri ? ownerUri : issuerUri;
+    const actualOwnerAddress = ownerUri ? owner : issuer.address;
 
     const collectionOpt = await getCollection(api, collectionId);
 
@@ -264,12 +267,10 @@ export async function mintNft(
 
     const nft = nftOption.unwrap();
 
-    // FIXME the ownership is the uniques responsibility
-    // so the `owner` field should be removed from the NFT info.
     expect(nft.owner.isAccountId, 'Error: NFT owner should be some user').to.be.true;
-    expect(nft.owner.asAccountId.toString()).to.be.equal(owner, "Error: Invalid NFT owner");
+    expect(nft.owner.asAccountId.toString()).to.be.equal(actualOwnerAddress, "Error: Invalid NFT owner");
 
-    const isOwnedInUniques = await isNftOwnedBy(api, ownerUri, collectionId, nftId);
+    const isOwnedInUniques = await isNftOwnedBy(api, actualOwnerUri, collectionId, nftId);
     expect(isOwnedInUniques, `Error: created NFT is not actually owned by ${ownerUri}`)
         .to.be.true;
 

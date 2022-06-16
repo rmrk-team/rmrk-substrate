@@ -14,7 +14,7 @@ describe("Integration test: mint new NFT", () => {
     const maxNftId = 0xFFFFFFFF;
 
     it("mint NFT", async () => {
-        const owner = alice;
+        const owner = null;
         const collectionMetadata = 'mintingCollectionMetadata';
         const collectionMax = null;
         const collectionSymbol = 'MCS';
