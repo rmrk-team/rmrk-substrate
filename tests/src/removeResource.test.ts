@@ -198,7 +198,7 @@ describe('Integration test: remove nft resource', () => {
         );
 
         const tx = removeNftResource(api, 'removed', Alice, 0xFFFFFFFF, nftAlice, resourceId);
-        await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx);
+        await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx); // FIXME: inappropriate error message (NoAvailableNftId)
     });
 
     it('[Negative test]: only collection owner can delete a resource', async () => {
@@ -230,8 +230,6 @@ describe('Integration test: remove nft resource', () => {
             thumb
         );
 
-        const issuer = privateKey(Alice, Number(ss58Format));
-
         const tx = removeNftResource(api, 'removed', Bob, collectionIdAlice, nftAlice, resourceId);
         await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
@@ -252,8 +250,6 @@ describe('Integration test: remove nft resource', () => {
             collectionIdAlice,
             "nft-metadata"
         );
-
-        const issuer = privateKey(Alice, Number(ss58Format));
 
         const tx = removeNftResource(api, 'removed', Alice, collectionIdAlice, nftAlice, 127);
         await expectTxFailure(/rmrkCore\.ResourceDoesntExist/, tx);
