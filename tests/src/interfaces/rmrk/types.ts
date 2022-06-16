@@ -463,7 +463,7 @@ export interface PalletGrandpaStoredState extends Enum {
 export interface PalletRmrkCoreCall extends Enum {
   readonly isMintNft: boolean;
   readonly asMintNft: {
-    readonly owner: AccountId32;
+    readonly owner: Option<AccountId32>;
     readonly collectionId: u32;
     readonly royaltyRecipient: Option<AccountId32>;
     readonly royalty: Option<Permill>;
@@ -1480,7 +1480,7 @@ export interface RmrkTraitsPartPartType extends Enum {
 export interface RmrkTraitsPartSlotPart extends Struct {
   readonly id: u32;
   readonly equippable: RmrkTraitsPartEquippableList;
-  readonly src: Bytes;
+  readonly src: Option<Bytes>;
   readonly z: u32;
 }
 
