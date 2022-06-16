@@ -64,11 +64,9 @@ describe("Integration test: reject NFT", () => {
     });
 
     it("[negative] unable to reject non-existing NFT", async () => {
-        const collectionId = 0;
         const maxNftId = 0xFFFFFFFF;
 
-        const owner = alice;
-        const aliceCollectionId = await createTestCollection(alice);
+        const collectionId = await createTestCollection(alice);
 
         const tx = rejectNft(api, alice, collectionId, maxNftId);
 
@@ -77,7 +75,6 @@ describe("Integration test: reject NFT", () => {
 
     it("[negative] unable to reject NFT which is not sent", async () => {
         const ownerAlice = alice;
-        const ownerBob = bob;
 
         const collectionId = await createTestCollection(alice);
 
@@ -85,7 +82,7 @@ describe("Integration test: reject NFT", () => {
 
         const tx = rejectNft(api, alice, collectionId, nftId);
 
-        await expectTxFailure(/rmrkCore\.NoPermission/, tx);
+        await expectTxFailure(/rmrkCore\.CannotRejectNonPendingNft/, tx);
     });
 
     after(() => { api.disconnect(); });
