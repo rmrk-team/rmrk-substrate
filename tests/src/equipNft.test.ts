@@ -40,28 +40,24 @@ async function createTestCollection(api: ApiPromise): Promise<number> {
   );
 }
 
-async function createTestParentChildNfts(api: ApiPromise, collectionId: number): Promise<[number, number]> {
-  const nftParentId = await mintNft(
+async function mintTestNft(api: ApiPromise, collectionId: number): Promise<number> {
+  return await mintNft(
     api,
     Alice,
     Alice,
     collectionId,
     "nft-metadata"
   );
+}
 
-  const nftChildId = await mintNft(
-    api,
-    Alice,
-    Alice,
-    collectionId,
-    "nft-metadata"
-  );
+async function mintChildNft(api: ApiPromise, collectionId: number, parentNftId: number): Promise<number> {
+  const nftChildId = await mintTestNft(api, collectionId);
 
-  const parentNFT: NftIdTuple = [collectionId, nftParentId];
+  const parentNFT: NftIdTuple = [collectionId, parentNftId];
 
   await sendNft(api, "sent", Alice, collectionId, nftChildId, parentNFT);
 
-  return [nftParentId, nftChildId];
+  return nftChildId;
 }
 
 async function createTestBase(api: ApiPromise): Promise<number> {
@@ -77,8 +73,8 @@ async function createTestBase(api: ApiPromise): Promise<number> {
   ]);
 }
 
-async function addTestComposable(api: ApiPromise, collectionId: number, nftId: number, baseId: number): Promise<number>{
-  return await addNftComposableResource(
+async function addTestComposable(api: ApiPromise, collectionId: number, nftId: number, baseId: number) {
+  await addNftComposableResource(
     api,
     Alice,
     "added",
@@ -93,8 +89,8 @@ async function addTestComposable(api: ApiPromise, collectionId: number, nftId: n
   );
 }
 
-async function addTestSlot(api: ApiPromise, collectionId: number, nftId: number, baseId: number, slotId: number) {
-  await addNftSlotResource(
+async function addTestSlot(api: ApiPromise, collectionId: number, nftId: number, baseId: number, slotId: number): Promise<number> {
+  return await addNftSlotResource(
     api,
     Alice,
     "added",
@@ -132,12 +128,13 @@ describe("Integration test: Equip NFT", () => {
 
   it("Equip nft", async () => {
     const collectionId = await createTestCollection(api);
-    const [nftParentId, nftChildId] = await createTestParentChildNfts(api, collectionId);
+    const nftParentId = await mintTestNft(api, collectionId);
+    const nftChildId = await mintChildNft(api, collectionId, nftParentId);
 
     const baseId = await createTestBase(api);
 
-    const resourceId = await addTestComposable(api, collectionId, nftParentId, baseId);
-    await addTestSlot(api, collectionId, nftChildId, baseId, slotId);
+    await addTestComposable(api, collectionId, nftParentId, baseId);
+    const resourceId = await addTestSlot(api, collectionId, nftChildId, baseId, slotId);
 
     const equipperNFT: NftIdTuple = [collectionId, nftParentId];
     const itemNFT: NftIdTuple = [collectionId, nftChildId];
@@ -149,12 +146,13 @@ describe("Integration test: Equip NFT", () => {
 
   it("Unequip nft", async () => {
     const collectionId = await createTestCollection(api);
-    const [nftParentId, nftChildId] = await createTestParentChildNfts(api, collectionId);
+    const nftParentId = await mintTestNft(api, collectionId);
+    const nftChildId = await mintChildNft(api, collectionId, nftParentId);
 
     const baseId = await createTestBase(api);
 
-    const resourceId = await addTestComposable(api, collectionId, nftParentId, baseId);
-    await addTestSlot(api, collectionId, nftChildId, baseId, slotId);
+    await addTestComposable(api, collectionId, nftParentId, baseId);
+    const resourceId = await addTestSlot(api, collectionId, nftChildId, baseId, slotId);
 
     const equipperNFT: NftIdTuple = [collectionId, nftParentId];
     const itemNFT: NftIdTuple = [collectionId, nftChildId];
@@ -167,588 +165,174 @@ describe("Integration test: Equip NFT", () => {
     await checkEquipStatus(api, "unequipped", collectionId, nftChildId);
   });
 
-  // it("Negative: equip NFT into non-existing NFT", async () => {
-  //   await createCollection(
-  //     api,
-  //     Alice,
-  //     "test-metadata",
-  //     null,
-  //     "test-symbol"
-  //   ).then(async (collectionId) => {
-  //     const nftParentId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const nftChildId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const baseId = await createBase(api, Alice, "test-base", "DTBase", [
-  //       {
-  //         SlotPart: {
-  //           id: slotId,
-  //           equippable: "All",
-  //           z: 1,
-  //           src: slotSrc,
-  //         },
-  //       },
-  //     ]);
-
-  //     await addNftResource(
-  //       api,
-  //       nftParentId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-
-  //     const newOwnerNFT: NftIdTuple = [collectionId, nftParentId];
-  //     const oldOwnerNFT: NftIdTuple = [collectionId, nftChildId];
-
-  //     await sendNft(api, "sent", Alice, collectionId, nftChildId, newOwnerNFT);
-
-  //     await addNftResource(
-  //       api,
-  //       nftChildId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-
-  //     const newOwnerNFTError: NftIdTuple = [collectionId, 9999999];
-
-  //     const tx = equipNft(api, Alice, oldOwnerNFT, newOwnerNFTError, baseId, 1);
-  //     await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
-  //   });
-  // });
-
-  // it("Negative: equip non-existing NFT", async () => {
-  //   await createCollection(
-  //     api,
-  //     Alice,
-  //     "test-metadata",
-  //     null,
-  //     "test-symbol"
-  //   ).then(async (collectionId) => {
-  //     const nftParentId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const nftChildId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const baseId = await createBase(api, Alice, "test-base", "DTBase", [
-  //       {
-  //         SlotPart: {
-  //           id: slotId,
-  //           equippable: "All",
-  //           z: 1,
-  //           src: slotSrc,
-  //         },
-  //       },
-  //     ]);
-
-  //     await addNftResource(
-  //       api,
-  //       nftParentId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-
-  //     const newOwnerNFT: NftIdTuple = [collectionId, nftParentId];
-  //     const oldOwnerNFT: NftIdTuple = [collectionId, 99999999];
-
-  //     await sendNft(api, "sent", Alice, collectionId, nftChildId, newOwnerNFT);
-
-  //     await addNftResource(
-  //       api,
-  //       nftChildId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-
-  //     const tx = equipNft(api, Alice, oldOwnerNFT, newOwnerNFT, baseId, 1);
-  //     await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
-  //   });
-  // });
-
-  // it("Negative: equip NFT by a not-an-owner user", async () => {
-  //   await createCollection(
-  //     api,
-  //     Alice,
-  //     "test-metadata",
-  //     null,
-  //     "test-symbol"
-  //   ).then(async (collectionId) => {
-  //     const nftParentId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const nftChildId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const baseId = await createBase(api, Alice, "test-base", "DTBase", [
-  //       {
-  //         SlotPart: {
-  //           id: slotId,
-  //           equippable: "All",
-  //           z: 1,
-  //           src: slotSrc,
-  //         },
-  //       },
-  //     ]);
-
-  //     await addNftResource(
-  //       api,
-  //       nftParentId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-
-  //     const newOwnerNFT: NftIdTuple = [collectionId, nftParentId];
-  //     const oldOwnerNFT: NftIdTuple = [collectionId, nftChildId];
-
-  //     await sendNft(api, "sent", Alice, collectionId, nftChildId, newOwnerNFT);
-
-  //     await addNftResource(
-  //       api,
-  //       nftChildId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-
-  //     const tx = equipNft(api, Bob, oldOwnerNFT, newOwnerNFT, baseId, 1);
-  //     await expectTxFailure(/rmrkEquip\.PermissionError/, tx);
-  //   });
-  // });
-
-  // it("Negative: equip NFT into non-existing by a not-an-owner user", async () => {
-  //   await createCollection(
-  //     api,
-  //     Alice,
-  //     "test-metadata",
-  //     null,
-  //     "test-symbol"
-  //   ).then(async (collectionId) => {
-  //     const nftParentId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const nftChildId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const baseId = await createBase(api, Alice, "test-base", "DTBase", [
-  //       {
-  //         SlotPart: {
-  //           id: slotId,
-  //           equippable: "All",
-  //           z: 1,
-  //           src: slotSrc,
-  //         },
-  //       },
-  //     ]);
-
-  //     await addNftResource(
-  //       api,
-  //       nftParentId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-
-  //     const newOwnerNFT: NftIdTuple = [collectionId, nftParentId];
-  //     const oldOwnerNFT: NftIdTuple = [collectionId, nftChildId];
-
-  //     await sendNft(api, "sent", Alice, collectionId, nftChildId, newOwnerNFT);
-
-  //     await addNftResource(
-  //       api,
-  //       nftChildId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-  //     const newOwnerNFTError: NftIdTuple = [collectionId, 99999];
-
-  //     const tx = equipNft(api, Bob, oldOwnerNFT, newOwnerNFTError, baseId, 1);
-  //     await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
-  //   });
-  // });
-
-  // it("Negative: unable to equip NFT into indirect parent NFT", async () => {
-  //   await createCollection(
-  //     api,
-  //     Alice,
-  //     "test-metadata",
-  //     null,
-  //     "test-symbol"
-  //   ).then(async (collectionId) => {
-  //     const nftParentId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const nftChildId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const baseId = await createBase(api, Alice, "test-base", "DTBase", [
-  //       {
-  //         SlotPart: {
-  //           id: slotId,
-  //           equippable: "All",
-  //           z: 1,
-  //           src: slotSrc,
-  //         },
-  //       },
-  //     ]);
-
-  //     await addNftResource(
-  //       api,
-  //       nftParentId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-
-  //     const newOwnerNFT: NftIdTuple = [collectionId, nftParentId];
-  //     const oldOwnerNFT: NftIdTuple = [collectionId, nftChildId];
-
-  //     await sendNft(api, "sent", Alice, collectionId, nftChildId, newOwnerNFT);
-
-  //     await addNftResource(
-  //       api,
-  //       nftChildId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-  //     const tx = equipNft(api, Bob, oldOwnerNFT, newOwnerNFT, baseId, 1);
-  //     await expectTxFailure(/rmrkEquip\.PermissionError/, tx);
-  //   });
-  // });
-
-  // it("Negative: unable to equip NFT onto parent NFT with non-existing base", async () => {
-  //   await createCollection(
-  //     api,
-  //     Alice,
-  //     "test-metadata",
-  //     null,
-  //     "test-symbol"
-  //   ).then(async (collectionId) => {
-  //     const nftParentId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const nftChildId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const baseId = await createBase(api, Alice, "test-base", "DTBase", [
-  //       {
-  //         SlotPart: {
-  //           id: slotId,
-  //           equippable: "All",
-  //           z: 1,
-  //           src: slotSrc,
-  //         },
-  //       },
-  //     ]);
-
-  //     await addNftResource(
-  //       api,
-  //       nftParentId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-
-  //     const newOwnerNFT: NftIdTuple = [collectionId, nftParentId];
-  //     const oldOwnerNFT: NftIdTuple = [collectionId, nftChildId];
-
-  //     await sendNft(api, "sent", Alice, collectionId, nftChildId, newOwnerNFT);
-
-  //     await addNftResource(
-  //       api,
-  //       nftChildId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-  //     const tx = equipNft(api, Alice, oldOwnerNFT, newOwnerNFT, 99999, 1);
-  //     await expectTxFailure(/rmrkEquip\.NoResourceForThisBaseFoundOnNft/, tx);
-  //   });
-  // });
-
-  // it("Negative: unable to equip NFT with incorrect slot", async () => {
-  //   await createCollection(
-  //     api,
-  //     Alice,
-  //     "test-metadata",
-  //     null,
-  //     "test-symbol"
-  //   ).then(async (collectionId) => {
-  //     const nftParentId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const nftChildId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const baseId = await createBase(api, Alice, "test-base", "DTBase", [
-  //       {
-  //         SlotPart: {
-  //           id: 1111,
-  //           equippable: "All",
-  //           z: 1,
-  //           src: slotSrc,
-  //         },
-  //       },
-  //     ]);
-
-  //     await addNftResource(
-  //       api,
-  //       nftParentId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       "999999"
-  //     );
-
-  //     const newOwnerNFT: NftIdTuple = [collectionId, nftParentId];
-  //     const oldOwnerNFT: NftIdTuple = [collectionId, nftChildId];
-
-  //     await sendNft(api, "sent", Alice, collectionId, nftChildId, newOwnerNFT);
-
-  //     await addNftResource(
-  //       api,
-  //       nftChildId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       "88888"
-  //     );
-  //     const tx = equipNft(api, Alice, oldOwnerNFT, newOwnerNFT, baseId, 1);
-  //     await expectTxFailure(/rmrkEquip\.ItemHasNoResourceToEquipThere/, tx);
-  //   });
-  // });
-
-  // it("Negative: unable to equip NFT with incorrect slot", async () => {
-  //   await createCollection(
-  //     api,
-  //     Alice,
-  //     "test-metadata",
-  //     null,
-  //     "test-symbol"
-  //   ).then(async (collectionId) => {
-  //     const nftParentId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const nftChildId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const baseId = await createBase(api, Alice, "test-base", "DTBase", [
-  //       {
-  //         FixedPart: {
-  //           id: 1,
-  //           equippable: "All",
-  //           z: 1,
-  //           src: slotSrc,
-  //         },
-  //       },
-  //     ]);
-
-  //     await addNftResource(
-  //       api,
-  //       nftParentId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-
-  //     const newOwnerNFT: NftIdTuple = [collectionId, nftParentId];
-  //     const oldOwnerNFT: NftIdTuple = [collectionId, nftChildId];
-
-  //     await sendNft(api, "sent", Alice, collectionId, nftChildId, newOwnerNFT);
-
-  //     await addNftResource(
-  //       api,
-  //       nftChildId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-  //     const tx = equipNft(api, Alice, oldOwnerNFT, newOwnerNFT, baseId, 1);
-  //     await expectTxFailure(/rmrkEquip\.CantEquipFixedPart/, tx);
-  //   });
-  // });
-
-  // it("Negative: unable to equip NFT from a collection that is not allowed by the slot", async () => {
-  //   await createCollection(
-  //     api,
-  //     Alice,
-  //     "test-metadata",
-  //     null,
-  //     "test-symbol"
-  //   ).then(async (collectionId) => {
-  //     const nftParentId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const nftChildId = await mintNft(
-  //       api,
-  //       Alice,
-  //       Alice,
-  //       collectionId,
-  //       "nft-metadata"
-  //     );
-
-  //     const baseId = await createBase(api, Alice, "test-base", "DTBase", [
-  //       {
-  //         SlotPart: {
-  //           id: 1,
-  //           z: 1,
-  //           equippable: "Empty",
-  //           src: slotSrc,
-  //         },
-  //       },
-  //     ]);
-
-  //     await addNftResource(
-  //       api,
-  //       nftParentId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-
-  //     const newOwnerNFT: NftIdTuple = [collectionId, nftParentId];
-  //     const oldOwnerNFT: NftIdTuple = [collectionId, nftChildId];
-
-  //     await sendNft(api, "sent", Alice, collectionId, nftChildId, newOwnerNFT);
-
-  //     await addNftResource(
-  //       api,
-  //       nftChildId,
-  //       resourceId,
-  //       collectionId,
-  //       baseId.toString(),
-  //       Alice,
-  //       slotId
-  //     );
-  //     const tx = equipNft(api, Alice, oldOwnerNFT, newOwnerNFT, baseId, 1);
-  //     await expectTxFailure(/rmrkEquip\.CollectionNotEquippable/, tx);
-  //   });
-  // });
+  it("Negative: equip NFT onto non-existing NFT", async () => {
+    const collectionId = await createTestCollection(api);
+
+    const nftChildId = await mintNft(
+      api,
+      Alice,
+      Alice,
+      collectionId,
+      "nft-metadata"
+    );
+
+    const itemNFT: NftIdTuple = [collectionId, nftChildId];
+    const invalidEquipperNFT: NftIdTuple = [collectionId, 9999999];
+
+    const baseId = 0;
+    const resourceId = 0;
+
+    const tx = equipNft(api, Alice, itemNFT, invalidEquipperNFT, resourceId, baseId, slotId);
+    await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
+  });
+
+  it("Negative: equip non-existing NFT", async () => {
+    const collectionId = await createTestCollection(api);
+    const nftParentId = await mintNft(
+      api,
+      Alice,
+      Alice,
+      collectionId,
+      "nft-metadata"
+    );
+
+    const baseId = await createTestBase(api);
+
+    await addTestComposable(api, collectionId, nftParentId, baseId);
+
+    const equipperNFT: NftIdTuple = [collectionId, nftParentId];
+    const invalidItemNFT: NftIdTuple = [collectionId, 99999999];
+
+    const resourceId = 0;
+
+    const tx = equipNft(api, Alice, invalidItemNFT, equipperNFT, resourceId, baseId, slotId);
+    await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
+  });
+
+  it("Negative: equip NFT by a not-an-owner user", async () => {
+    const collectionId = await createTestCollection(api);
+    const nftParentId = await mintTestNft(api, collectionId);
+    const nftChildId = await mintChildNft(api, collectionId, nftParentId);
+
+    const baseId = await createTestBase(api);
+
+    await addTestComposable(api, collectionId, nftParentId, baseId);
+
+    const equipperNFT: NftIdTuple = [collectionId, nftParentId];
+    const itemNFT: NftIdTuple = [collectionId, nftChildId];
+
+    const resourceId = await addTestSlot(api, collectionId, nftChildId, baseId, slotId);
+
+    const tx = equipNft(api, Bob, itemNFT, equipperNFT, resourceId, baseId, slotId);
+    await expectTxFailure(/rmrkEquip\.PermissionError/, tx);
+  });
+
+  it("Negative: unable to equip NFT onto indirect parent NFT", async () => {
+    const collectionId = await createTestCollection(api);
+    const nftParentId = await mintTestNft(api, collectionId);
+    const nftChildId = await mintChildNft(api, collectionId, nftParentId);
+    const nftGrandchildId = await mintChildNft(api, collectionId, nftChildId);
+
+    const baseId = await createTestBase(api);
+
+    await addTestComposable(api, collectionId, nftParentId, baseId);
+    const resourceId = await addTestSlot(api, collectionId, nftGrandchildId, baseId, slotId);
+
+    const equipperNFT: NftIdTuple = [collectionId, nftParentId];
+    const itemNFT: NftIdTuple = [collectionId, nftGrandchildId];
+
+    const tx = equipNft(api, Alice, itemNFT, equipperNFT, resourceId, baseId, slotId);
+    await expectTxFailure(/rmrkEquip\.MustBeDirectParent/, tx);
+  });
+
+  it("Negative: unable to equip NFT onto parent NFT with another base", async () => {
+    const collectionId = await createTestCollection(api);
+    const nftParentId = await mintTestNft(api, collectionId);
+    const nftChildId = await mintChildNft(api, collectionId, nftParentId);
+
+    const baseId = await createTestBase(api);
+
+    await addTestComposable(api, collectionId, nftParentId, baseId);
+    const resourceId = await addTestSlot(api, collectionId, nftChildId, baseId, slotId);
+
+    const equipperNFT: NftIdTuple = [collectionId, nftParentId];
+    const itemNFT: NftIdTuple = [collectionId, nftChildId];
+
+    const invalidBaseId = 99999;
+
+    const tx = equipNft(api, Alice, itemNFT, equipperNFT, resourceId, invalidBaseId, slotId);
+    await expectTxFailure(/rmrkEquip\.NoResourceForThisBaseFoundOnNft/, tx);
+  });
+
+  it("Negative: unable to equip NFT into slot with another id", async () => {
+    const collectionId = await createTestCollection(api);
+    const nftParentId = await mintTestNft(api, collectionId);
+    const nftChildId = await mintChildNft(api, collectionId, nftParentId);
+
+    const baseId = await createTestBase(api);
+
+    await addTestComposable(api, collectionId, nftParentId, baseId);
+    const resourceId = await addTestSlot(api, collectionId, nftChildId, baseId, slotId);
+
+    const equipperNFT: NftIdTuple = [collectionId, nftParentId];
+    const itemNFT: NftIdTuple = [collectionId, nftChildId];
+
+    const incorrectSlotId = slotId + 1;
+    const tx = equipNft(api, Alice, itemNFT, equipperNFT, resourceId, baseId, incorrectSlotId);
+    await expectTxFailure(/rmrkEquip\.ItemHasNoResourceToEquipThere/, tx);
+  });
+
+  it("Negative: unable to equip NFT with incorrect slot (fixed part)", async () => {
+    const collectionId = await createTestCollection(api);
+    const nftParentId = await mintTestNft(api, collectionId);
+    const nftChildId = await mintChildNft(api, collectionId, nftParentId);
+
+    const baseId = await createBase(api, Alice, "test-base", "DTBase", [
+      {
+        FixedPart: {
+          id: slotId,
+          equippable: "All",
+          z: 1,
+          src: slotSrc,
+        },
+      },
+    ]);
+
+    await addTestComposable(api, collectionId, nftParentId, baseId);
+    const resourceId = await addTestSlot(api, collectionId, nftChildId, baseId, slotId);
+
+    const equipperNFT: NftIdTuple = [collectionId, nftParentId];
+    const itemNFT: NftIdTuple = [collectionId, nftChildId];
+
+    const tx = equipNft(api, Alice, itemNFT, equipperNFT, resourceId, baseId, slotId);
+    await expectTxFailure(/rmrkEquip\.CantEquipFixedPart/, tx);
+  });
+
+  it("Negative: unable to equip NFT from a collection that is not allowed by the slot", async () => {
+    const collectionId = await createTestCollection(api);
+    const nftParentId = await mintTestNft(api, collectionId);
+    const nftChildId = await mintChildNft(api, collectionId, nftParentId);
+
+    const baseId = await createBase(api, Alice, "test-base", "DTBase", [
+      {
+        SlotPart: {
+          id: 1,
+          z: 1,
+          equippable: "Empty",
+          src: slotSrc,
+        },
+      },
+    ]);
+
+    await addTestComposable(api, collectionId, nftParentId, baseId);
+    const resourceId = await addTestSlot(api, collectionId, nftChildId, baseId, slotId);
+
+    const equipperNFT: NftIdTuple = [collectionId, nftParentId];
+    const itemNFT: NftIdTuple = [collectionId, nftChildId];
+
+    const tx = equipNft(api, Alice, itemNFT, equipperNFT, resourceId, baseId, slotId);
+    await expectTxFailure(/rmrkEquip\.CollectionNotEquippable/, tx);
+  });
 
   after(() => {
     api.disconnect();
