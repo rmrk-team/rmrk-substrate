@@ -28,7 +28,7 @@ describe('Integration test: remove nft resource', () => {
     const license = "test-basic-license";
     const thumb = "test-basic-thumb";
 
-    it('Deleting a resource directly by the NFT owner', async () => {
+    it('deleting a resource directly by the NFT owner', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,
@@ -60,7 +60,7 @@ describe('Integration test: remove nft resource', () => {
         await removeNftResource(api, 'removed', Alice, collectionIdAlice, nftAlice, resourceId);
     });
 
-    it('Deleting resources indirectly by the NFT owner', async () => {
+    it('deleting resources indirectly by the NFT owner', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,
@@ -91,7 +91,7 @@ describe('Integration test: remove nft resource', () => {
         await removeNftResource(api, 'removed', Alice, collectionIdAlice, childNftId, resourceId);
     });
 
-    it('Deleting a resource by the collection owner', async () => {
+    it('deleting a resource by the collection owner', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,
@@ -124,7 +124,7 @@ describe('Integration test: remove nft resource', () => {
         await acceptResourceRemoval(api, Bob, collectionIdAlice, nftBob, resourceId);
     });
 
-    it('Deleting a resource in a nested NFT by the collection owner', async () => {
+    it('deleting a resource in a nested NFT by the collection owner', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,
@@ -168,7 +168,7 @@ describe('Integration test: remove nft resource', () => {
         await acceptResourceRemoval(api, Bob, collectionIdAlice, childNftId, resourceId);
     });
 
-    it('[Negative test]: can\'t delete a resource in a non-existing collection', async () => {
+    it('[negative]: can\'t delete a resource in a non-existing collection', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,
@@ -201,7 +201,7 @@ describe('Integration test: remove nft resource', () => {
         await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx); // FIXME: inappropriate error message (NoAvailableNftId)
     });
 
-    it('[Negative test]: only collection owner can delete a resource', async () => {
+    it('[negative]: only collection owner can delete a resource', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,
@@ -234,7 +234,7 @@ describe('Integration test: remove nft resource', () => {
         await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
 
-    it('[Negative test]: cannot delete a resource that does not exist', async () => {
+    it('[negative]: cannot delete a resource that does not exist', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,
@@ -255,7 +255,7 @@ describe('Integration test: remove nft resource', () => {
         await expectTxFailure(/rmrkCore\.ResourceDoesntExist/, tx);
     });
 
-    it('[Negative test]: Cannot accept deleting resource without owner attempt do delete it', async () => {
+    it('[negative]: Cannot accept deleting resource without owner attempt do delete it', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,
@@ -288,7 +288,7 @@ describe('Integration test: remove nft resource', () => {
         await expectTxFailure(/rmrkCore\.ResourceNotPending/, tx);
     });
 
-    it('[Negative test]: cannot confirm the deletion of a non-existing resource', async () => {
+    it('[negative]: cannot confirm the deletion of a non-existing resource', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,
@@ -309,7 +309,7 @@ describe('Integration test: remove nft resource', () => {
         await expectTxFailure(/rmrkCore\.ResourceDoesntExist/, tx);
     });
 
-    it('[Negative test]: Non-owner user cannot confirm the deletion of resource', async () => {
+    it('[negative]: Non-owner user cannot confirm the deletion of resource', async () => {
         const collectionIdAlice = await createCollection(
             api,
             Alice,

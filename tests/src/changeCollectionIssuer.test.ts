@@ -5,7 +5,7 @@ import {
   createCollection,
 } from "./util/tx";
 
-describe("Integration test: collection issuer", () => {
+describe("integration test: collection issuer", () => {
   const Alice = "//Alice";
   const Bob = "//Bob";
 
@@ -14,7 +14,7 @@ describe("Integration test: collection issuer", () => {
     api = await getApiConnection();
   });
 
-  it("Change collection issuer", async () => {
+  it("change collection issuer", async () => {
     await createCollection(
       api,
       Alice,
@@ -26,7 +26,7 @@ describe("Integration test: collection issuer", () => {
     });
   });
 
-  it("[Negative] Change not an owner NFT collection issuer", async () => {
+  it("[negative] change not an owner NFT collection issuer", async () => {
     await createCollection(api, Bob, "test-metadata", null, "test-symbol").then(
       async (collectionId) => {
         const tx = changeIssuer(api, Alice, collectionId, Bob);
@@ -35,7 +35,7 @@ describe("Integration test: collection issuer", () => {
     );
   });
 
-  it("[Negative] Change non-existigit NFT collection issuer", async () => {
+  it("[negative] change non-existigit NFT collection issuer", async () => {
     await createCollection(
       api,
       Alice,

@@ -9,7 +9,7 @@ import {
 import { NftIdTuple } from "./util/fetch";
 import { isNftChildOfAnother, expectTxFailure } from "./util/helpers";
 
-describe("Integration test: accept NFT", () => {
+describe("integration test: accept NFT", () => {
     let api: any;
     before(async () => { api = await getApiConnection(); });
 

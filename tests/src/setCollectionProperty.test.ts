@@ -2,7 +2,7 @@ import { getApiConnection } from "./substrate/substrate-api";
 import { expectTxFailure } from "./util/helpers";
 import { createCollection, setPropertyCollection } from "./util/tx";
 
-describe("Integration test: set collection property", () => {
+describe("integration test: set collection property", () => {
   const Alice = "//Alice";
   const Bob = "//Bob";
 
@@ -11,7 +11,7 @@ describe("Integration test: set collection property", () => {
     api = await getApiConnection();
   });
 
-  it("Set collection property", async () => {
+  it("set collection property", async () => {
     await createCollection(
       api,
       Alice,
@@ -31,7 +31,7 @@ describe("Integration test: set collection property", () => {
     });
   });
 
-  it("[Negative] Set non-existing collection property", async () => {
+  it("[negative] set non-existing collection property", async () => {
     const tx = setPropertyCollection(
       api,
       Alice,
@@ -42,7 +42,7 @@ describe("Integration test: set collection property", () => {
     await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx);
   });
 
-  it("[Negative] Set property not an owner NFT collection issuer", async () => {
+  it("[negative] set property not an owner NFT collection issuer", async () => {
     await createCollection(
       api,
       Bob,

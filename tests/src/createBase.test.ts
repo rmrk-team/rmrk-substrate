@@ -1,7 +1,7 @@
 import { getApiConnection } from './substrate/substrate-api';
 import { createCollection, createBase } from "./util/tx";
 
-describe("Integration test: create new Base", () => {
+describe("integration test: create new Base", () => {
     let api: any;
     before(async () => { api = await getApiConnection(); });
 

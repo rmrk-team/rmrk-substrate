@@ -2,7 +2,7 @@ import { getApiConnection } from './substrate/substrate-api';
 import { expectTxFailure } from './util/helpers';
 import { mintNft, createCollection, setResourcePriorities } from './util/tx';
 
-describe("Integration test: set NFT resource priorities", () => {
+describe("integration test: set NFT resource priorities", () => {
     let api: any;
     before(async () => { api = await getApiConnection(); });
 

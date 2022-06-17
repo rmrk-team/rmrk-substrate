@@ -4,7 +4,7 @@ import { createCollection, mintNft, sendNft } from "./util/tx";
 import { NftIdTuple } from "./util/fetch";
 import { isNftChildOfAnother, expectTxFailure } from "./util/helpers";
 
-describe("Integration test: send NFT", () => {
+describe("integration test: send NFT", () => {
     let api: any;
     before(async () => { api = await getApiConnection(); });
 

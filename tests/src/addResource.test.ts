@@ -13,7 +13,7 @@ import {
 } from "./util/tx";
 import {RmrkTraitsResourceResourceInfo as ResourceInfo} from "@polkadot/types/lookup";
 
-describe("Integration test: Add NFT resource", () => {
+describe("integration test: Add NFT resource", () => {
   const Alice = "//Alice";
   const Bob = "//Bob";
   const src = "test-res-src";
@@ -28,7 +28,7 @@ describe("Integration test: Add NFT resource", () => {
     api = await getApiConnection();
   });
 
-  it("Add resource", async () => {
+  it("add resource", async () => {
     const collectionIdAlice = await createCollection(
       api,
       Alice,
@@ -213,7 +213,7 @@ describe("Integration test: Add NFT resource", () => {
     await checkResource(slotResource, 'Slot', slotResourceId, resourcesInfo[3]);
   });
 
-  it('[Negative test]: unable to add a resource to the non-existing NFT', async () => {
+  it('[negative]: unable to add a resource to the non-existing NFT', async () => {
     const collectionIdAlice = await createCollection(
       api,
       Alice,
@@ -237,7 +237,7 @@ describe("Integration test: Add NFT resource", () => {
     await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
   });
 
-  it('[Negative test]: unable to add a resource by a not-an-owner user', async () => {
+  it('[negative]: unable to add a resource by a not-an-owner user', async () => {
     const collectionIdAlice = await createCollection(
       api,
       Alice,
@@ -269,7 +269,7 @@ describe("Integration test: Add NFT resource", () => {
     await expectTxFailure(/rmrkCore\.NoPermission/, tx);
   });
 
-  it('[Negative test]: unable to add a resource to the nested NFT if it isnt root owned by the caller', async () => {
+  it('[negative]: unable to add a resource to the nested NFT if it isnt root owned by the caller', async () => {
     const collectionIdAlice = await createCollection(
       api,
       Alice,
@@ -300,7 +300,7 @@ describe("Integration test: Add NFT resource", () => {
     await expectTxFailure(/rmrkCore\.NoPermission/, tx);
   });
 
-  it("Accept resource", async () => {
+  it("accept resource", async () => {
     const collectionIdBob = await createCollection(
       api,
       Bob,
@@ -332,7 +332,7 @@ describe("Integration test: Add NFT resource", () => {
     await acceptNftResource(api, Alice, collectionIdBob, nftAlice, resourceId);
   });
 
-  it("[Negative test]: unable to accept a non-existing resource", async () => {
+  it("[negative]: unable to accept a non-existing resource", async () => {
     const collectionIdBob = await createCollection(
       api,
       Bob,
@@ -353,7 +353,7 @@ describe("Integration test: Add NFT resource", () => {
     await expectTxFailure(/rmrkCore\.ResourceDoesntExist/, tx);
   });
 
-  it("[Negative test]: unable to accept a resource by a not-an-NFT-owner user", async () => {
+  it("[negative]: unable to accept a resource by a not-an-NFT-owner user", async () => {
     const collectionIdBob = await createCollection(
       api,
       Bob,
@@ -387,7 +387,7 @@ describe("Integration test: Add NFT resource", () => {
     await expectTxFailure(/rmrkCore\.NoPermission/, tx);
   });
 
-  it("[Negative test]: unable to accept a resource to a non-target NFT", async () => {
+  it("[negative]: unable to accept a resource to a non-target NFT", async () => {
     const collectionIdBob = await createCollection(
       api,
       Bob,

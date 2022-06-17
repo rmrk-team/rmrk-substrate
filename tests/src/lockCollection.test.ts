@@ -2,7 +2,7 @@ import { getApiConnection } from "./substrate/substrate-api";
 import { expectTxFailure } from "./util/helpers";
 import { createCollection, lockCollection, mintNft } from "./util/tx";
 
-describe("Integration test: lock collection", () => {
+describe("integration test: lock collection", () => {
   const Alice = "//Alice";
   const Bob = "//Bob";
   const Max = 5;
@@ -12,7 +12,7 @@ describe("Integration test: lock collection", () => {
     api = await getApiConnection();
   });
 
-  it("Lock collection", async () => {
+  it("lock collection", async () => {
     await createCollection(
       api,
       Alice,
@@ -24,12 +24,12 @@ describe("Integration test: lock collection", () => {
     });
   });
 
-  it("[Negative] Lock non-existing NFT collection", async () => {
+  it("[negative] lock non-existing NFT collection", async () => {
     const tx = lockCollection(api, Alice, 99999);
     await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx);
   });
 
-  it("[Negative] Lock not an owner NFT collection issuer", async () => {
+  it("[negative] lock not an owner NFT collection issuer", async () => {
     await createCollection(
       api,
       Alice,
@@ -42,7 +42,7 @@ describe("Integration test: lock collection", () => {
     });
   });
 
-  it("Lock collection with minting", async () => {
+  it("lock collection with minting", async () => {
     await createCollection(
       api,
       Alice,
@@ -65,7 +65,7 @@ describe("Integration test: lock collection", () => {
     });
   });
 
-  it("[Negative] unable to mint NFT inside a locked collection", async () => {
+  it("[negative] unable to mint NFT inside a locked collection", async () => {
     await createCollection(
       api,
       Alice,
@@ -87,7 +87,7 @@ describe("Integration test: lock collection", () => {
     });
   });
 
-  it("[Negative] unable to mint NFT inside a full collection", async () => {
+  it("[negative] unable to mint NFT inside a full collection", async () => {
     await createCollection(api, Alice, "test-metadata", 1, "test-symbol").then(
       async (collectionId) => {
         await mintNft(

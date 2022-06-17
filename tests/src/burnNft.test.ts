@@ -9,7 +9,7 @@ import chaiAsPromised from 'chai-as-promised';
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-describe("Integration test: burn nft", () => {
+describe("integration test: burn nft", () => {
   const Alice = "//Alice";
   const Bob = "//Bob";
 
@@ -18,7 +18,7 @@ describe("Integration test: burn nft", () => {
     api = await getApiConnection();
   });
 
-  it("Burn nft", async () => {
+  it("burn nft", async () => {
     await createCollection(
       api,
       Alice,
@@ -37,7 +37,7 @@ describe("Integration test: burn nft", () => {
     });
   });
 
-  it("Burn nft with children", async () => {
+  it("burn nft with children", async () => {
     const collectionId = await createCollection(
       api,
       Alice,
@@ -84,7 +84,7 @@ describe("Integration test: burn nft", () => {
     expect(childrenAfter.length === 0, 'Error: children should be burned').to.be.true;
   });
 
-  it("Burn child nft", async () => {
+  it("burn child nft", async () => {
     const collectionId = await createCollection(
       api,
       Alice,
@@ -131,7 +131,7 @@ describe("Integration test: burn nft", () => {
     expect(childrenAfter.length === 0, 'Error: children should be burned').to.be.true;
   });
 
-  it("[Negative] Burn non-existing NFT", async () => {
+  it("[negative] burn non-existing NFT", async () => {
     await createCollection(
       api,
       Alice,
@@ -144,7 +144,7 @@ describe("Integration test: burn nft", () => {
     });
   });
 
-  it("[Negative] Burn not an owner NFT user", async () => {
+  it("[negative] burn not an owner NFT user", async () => {
     await createCollection(
       api,
       Alice,

@@ -4,7 +4,7 @@ import { getNft } from './util/fetch';
 import { expectTxFailure } from './util/helpers';
 import { createCollection, mintNft } from './util/tx';
 
-describe("Integration test: mint new NFT", () => {
+describe("integration test: mint new NFT", () => {
     let api: any;
     before(async () => { api = await getApiConnection(); });
 
@@ -146,7 +146,7 @@ describe("Integration test: mint new NFT", () => {
         );
     });
 
-    it("[Negative] unable to mint NFT within non-existing collection", async () => {
+    it("[negative] unable to mint NFT within non-existing collection", async () => {
       const owner = alice;
       const recipientUri = null;
       const royalty = null;
@@ -165,7 +165,7 @@ describe("Integration test: mint new NFT", () => {
       await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx);
     });
 
-    it("[Negative] unable to mint NFT by a user that isn't the owner of the collection", async () => {
+    it("[negative] unable to mint NFT by a user that isn't the owner of the collection", async () => {
       const owner = alice;
       const collectionMetadata = "mintingCollectionMetadata";
       const collectionMax = null;
@@ -195,7 +195,7 @@ describe("Integration test: mint new NFT", () => {
       await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
 
-    it("[Negative] unable to fetch non-existing NFT", async () => {
+    it("[negative] unable to fetch non-existing NFT", async () => {
       const nft = await getNft(api, maxCollectionId, maxNftId);
       expect(nft.isSome).to.be.false;
     });

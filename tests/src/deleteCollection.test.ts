@@ -2,7 +2,7 @@ import { getApiConnection } from "./substrate/substrate-api";
 import { expectTxFailure } from "./util/helpers";
 import { createCollection, deleteCollection } from "./util/tx";
 
-describe("Integration test: delete collection", () => {
+describe("integration test: delete collection", () => {
   let api: any;
   before(async () => {
     api = await getApiConnection();
@@ -11,7 +11,7 @@ describe("Integration test: delete collection", () => {
   const Alice = "//Alice";
   const Bob = "//Bob";
 
-  it("Delete NFT collection", async () => {
+  it("delete NFT collection", async () => {
     await createCollection(
       api,
       Alice,
@@ -23,12 +23,12 @@ describe("Integration test: delete collection", () => {
     });
   });
 
-  it("[Negative] delete non-existing NFT collection", async () => {
+  it("[negative] delete non-existing NFT collection", async () => {
     const tx = deleteCollection(api, Alice, "99999");
     await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx);
   });
 
-  it("[Negative] delete not an owner NFT collection", async () => {
+  it("[negative] delete not an owner NFT collection", async () => {
     await createCollection(
       api,
       Alice,

@@ -4,7 +4,7 @@ import { createBase, addTheme } from "./util/tx";
 import { expectTxFailure } from './util/helpers';
 import { getThemeNames } from './util/fetch';
 
-describe("Integration test: add Theme to Base", () => {
+describe("integration test: add Theme to Base", () => {
     let api: any;
     before(async () => { api = await getApiConnection(); });
 

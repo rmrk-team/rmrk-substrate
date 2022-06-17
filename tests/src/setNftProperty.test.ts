@@ -3,7 +3,7 @@ import { NftIdTuple } from "./util/fetch";
 import { expectTxFailure } from "./util/helpers";
 import { createCollection, mintNft, sendNft, setNftProperty } from "./util/tx";
 
-describe("Integration test: set NFT property", () => {
+describe("integration test: set NFT property", () => {
     let api: any;
     before(async () => { api = await getApiConnection(); });
 

@@ -2,14 +2,14 @@ import { getApiConnection } from './substrate/substrate-api';
 import { expectTxFailure } from './util/helpers';
 import { createCollection, createBase, setEquippableList } from "./util/tx";
 
-describe("Integration test: set slot's Equippable List", () => {
+describe("integration test: set slot's Equippable List", () => {
     let api: any;
     before(async () => { api = await getApiConnection(); });
 
     const alice = '//Alice';
     const bob = '//Bob';
 
-    it("Set Base's slot Equippable List", async () => {
+    it("set Base's slot Equippable List", async () => {
         const collectionIds = [
             await createCollection(
                 api,
