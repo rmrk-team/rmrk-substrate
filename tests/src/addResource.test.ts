@@ -13,7 +13,7 @@ import {
 } from "./util/tx";
 import {RmrkTraitsResourceResourceInfo as ResourceInfo} from "@polkadot/types/lookup";
 
-describe("integration test: Add NFT resource", () => {
+describe("integration test: add NFT resource", () => {
   const Alice = "//Alice";
   const Bob = "//Bob";
   const src = "test-res-src";
