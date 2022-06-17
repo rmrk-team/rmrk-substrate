@@ -1389,8 +1389,8 @@ export interface PalletUtilityEvent extends Enum {
   readonly type: 'BatchInterrupted' | 'BatchCompleted' | 'BatchCompletedWithErrors' | 'ItemCompleted' | 'ItemFailed' | 'DispatchedAs';
 }
 
-/** @name PhantomTypeUpDataStructs */
-export interface PhantomTypeUpDataStructs extends Vec<Lookup174> {}
+/** @name PhantomTypePhantomType */
+export interface PhantomTypePhantomType extends Vec<Lookup174> {}
 
 /** @name RmrkSubstrateRuntimeOriginCaller */
 export interface RmrkSubstrateRuntimeOriginCaller extends Enum {
