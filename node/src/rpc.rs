@@ -197,7 +197,7 @@ pub trait RmrkApi<
 	fn theme_names(&self, base_id: BaseId, at: Option<BlockHash>) -> RpcResult<Vec<ThemeName>>;
 
 	#[method(name = "themes")]
-	/// Get Theme's keys values
+	/// Get Theme info -- name, properties, and inherit flag
 	fn theme(
 		&self,
 		base_id: BaseId,
