@@ -1513,8 +1513,8 @@ declare module '@polkadot/types/lookup' {
     readonly nftId: u32;
   }
 
-  /** @name PhantomTypeUpDataStructs (173) */
-  export interface PhantomTypeUpDataStructs extends Vec<RmrkTraitsPropertyPropertyInfo> {}
+  /** @name PhantomTypePhantomType (173) */
+  export interface PhantomTypePhantomType extends Vec<RmrkTraitsPropertyPropertyInfo> {}
 
   /** @name RmrkTraitsPropertyPropertyInfo (174) */
   export interface RmrkTraitsPropertyPropertyInfo extends Struct {

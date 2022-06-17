@@ -1401,9 +1401,9 @@ export default {
     nftId: 'u32'
   },
   /**
-   * Lookup173: PhantomType::up_data_structs<rmrk_traits::property::PropertyInfo<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>>
+   * Lookup173: PhantomType::phantom_type<rmrk_traits::property::PropertyInfo<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>>
    **/
-  PhantomTypeUpDataStructs: '[Lookup174;0]',
+  PhantomTypePhantomType: '[Lookup174;0]',
   /**
    * Lookup174: rmrk_traits::property::PropertyInfo<frame_support::storage::bounded_vec::BoundedVec<T, S>, frame_support::storage::bounded_vec::BoundedVec<T, S>>
    **/
