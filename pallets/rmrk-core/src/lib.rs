@@ -589,7 +589,7 @@ pub mod pallet {
 		pub fn reject_nft(
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
-			nft_id: NftId
+			nft_id: NftId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
