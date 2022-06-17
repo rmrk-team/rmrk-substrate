@@ -14,7 +14,7 @@ impl<T: TypeInfo + 'static> TypeInfo for PhantomType<T> {
 			type_params,
 		};
 		Type::builder()
-			.path(Path::new("up_data_structs", "PhantomType"))
+			.path(Path::new("phantom_type", "PhantomType"))
 			.type_params(type_params!(T))
 			.composite(<FieldsBuilder<UnnamedFields>>::default().field(|b| b.ty::<[T; 0]>()))
 	}
