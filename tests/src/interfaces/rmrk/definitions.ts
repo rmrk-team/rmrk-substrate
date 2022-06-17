@@ -88,7 +88,7 @@ export default {
             'Vec<Bytes>'
         ),
         themes: fn(
-            'Get Theme\'s keys values',
+            'Get Theme info -- name, properties, and inherit flag',
             [
                 {name: 'baseId', type: 'u32'},
                 {name: 'themeName', type: 'String'},

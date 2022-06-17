@@ -447,7 +447,7 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        **/
       themeNames: AugmentedRpc<(baseId: u32 | AnyNumber | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<Bytes>>>;
       /**
-       * Get Theme's keys values
+       * Get Theme info -- name, properties, and inherit flag
        **/
       themes: AugmentedRpc<(baseId: u32 | AnyNumber | Uint8Array, themeName: Text | string, keys: Option<Vec<Text>> | null | object | string | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Option<RmrkTraitsTheme>>>;
     };
