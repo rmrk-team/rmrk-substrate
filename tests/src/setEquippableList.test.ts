@@ -29,7 +29,7 @@ describe("integration test: set slot's Equippable List", () => {
 
         const slotId = 202;
 
-        const baseId = await createBase(api, alice, 'slotpartany-base-type', 'slotpartany-base-symbol', [
+        const baseId = await createBase(api, alice, 'slotpartany-base-type', 'slotpartany', [
             {
                 "SlotPart": {
                     id: slotId,
