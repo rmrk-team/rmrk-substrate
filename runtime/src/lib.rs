@@ -239,17 +239,17 @@ impl Contains<Call> for BaseFilter {
 			Call::Uniques(pallet_uniques::Call::approve_transfer { .. }) |
 				Call::Uniques(pallet_uniques::Call::burn { .. }) |
 				Call::Uniques(pallet_uniques::Call::cancel_approval { .. }) |
-				Call::Uniques(pallet_uniques::Call::clear_class_metadata { .. }) |
+				Call::Uniques(pallet_uniques::Call::clear_collection_metadata { .. }) |
 				Call::Uniques(pallet_uniques::Call::clear_metadata { .. }) |
 				Call::Uniques(pallet_uniques::Call::create { .. }) |
 				Call::Uniques(pallet_uniques::Call::destroy { .. }) |
-				Call::Uniques(pallet_uniques::Call::force_asset_status { .. }) |
+				Call::Uniques(pallet_uniques::Call::force_item_status { .. }) |
 				Call::Uniques(pallet_uniques::Call::force_create { .. }) |
-				Call::Uniques(pallet_uniques::Call::freeze_class { .. }) |
+				Call::Uniques(pallet_uniques::Call::freeze_collection { .. }) |
 				Call::Uniques(pallet_uniques::Call::mint { .. }) |
 				Call::Uniques(pallet_uniques::Call::redeposit { .. }) |
-				Call::Uniques(pallet_uniques::Call::set_class_metadata { .. }) |
-				Call::Uniques(pallet_uniques::Call::thaw_class { .. }) |
+				Call::Uniques(pallet_uniques::Call::set_collection_metadata { .. }) |
+				Call::Uniques(pallet_uniques::Call::thaw_collection { .. }) |
 				Call::Uniques(pallet_uniques::Call::transfer { .. }) |
 				Call::Uniques(pallet_uniques::Call::transfer_ownership { .. })
 		)
@@ -441,8 +441,8 @@ impl pallet_contracts::Config for Runtime {
 	// if a too-large contract is uploaded. We noticed that it poses
 	// less friction during development when the requirement here is
 	// just more lax.
-	//type MaxCodeLen = ConstU32<{ 256 * 1024 }>;
-	//type RelaxedMaxCodeLen = ConstU32<{ 512 * 1024 }>;
+	type MaxCodeLen = ConstU32<{ 256 * 1024 }>;
+	type RelaxedMaxCodeLen = ConstU32<{ 512 * 1024 }>;
 }
 
 
@@ -454,9 +454,10 @@ impl pallet_template::Config for Runtime {
 parameter_types! {
 	pub const MaxRecursions: u32 = 10;
 	pub const ResourceSymbolLimit: u32 = 10;
-	pub const PartsLimit: u32 = 3;
-	pub const MaxPriorities: u32 = 3;
+	pub const PartsLimit: u32 = 25;
+	pub const MaxPriorities: u32 = 25;
 	pub const CollectionSymbolLimit: u32 = 100;
+	pub const MaxResourcesOnMint: u32 = 100;
 }
 
 impl pallet_rmrk_core::Config for Runtime {
@@ -467,6 +468,7 @@ impl pallet_rmrk_core::Config for Runtime {
 	type PartsLimit = PartsLimit;
 	type MaxPriorities = MaxPriorities;
 	type CollectionSymbolLimit = CollectionSymbolLimit;
+	type MaxResourcesOnMint = MaxResourcesOnMint;
 }
 
 parameter_types! {
@@ -481,8 +483,8 @@ impl pallet_rmrk_market::Config for Runtime {
 }
 
 parameter_types! {
-	pub const ClassDeposit: Balance = 10 * CENTS;
-	pub const InstanceDeposit: Balance = DOLLARS;
+	pub const CollectionDeposit: Balance = 10 * CENTS;
+	pub const ItemDeposit: Balance = DOLLARS;
 	pub const KeyLimit: u32 = 32;
 	pub const ValueLimit: u32 = 256;
 	pub const UniquesMetadataDepositBase: Balance = 10 * CENTS;
@@ -501,14 +503,14 @@ impl pallet_rmrk_equip::Config for Runtime {
 
 impl pallet_uniques::Config for Runtime {
 	type Event = Event;
-	type ClassId = u32;
-	type InstanceId = u32;
+	type CollectionId = u32;
+	type ItemId = u32;
 	type Currency = Balances;
 	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
 	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
 	type Locker = pallet_rmrk_core::Pallet<Runtime>;
-	type ClassDeposit = ClassDeposit;
-	type InstanceDeposit = InstanceDeposit;
+	type CollectionDeposit = CollectionDeposit;
+	type ItemDeposit = ItemDeposit;
 	type MetadataDepositBase = UniquesMetadataDepositBase;
 	type AttributeDepositBase = AttributeDepositBase;
 	type DepositPerByte = DepositPerByte;

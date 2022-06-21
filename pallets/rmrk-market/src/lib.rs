@@ -191,7 +191,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T>
 	where
-		T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+		T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 	{
 		/// Buy a listed NFT. Ensure that the NFT is available for purchase and has not recently
 		/// been purchased, sent, or burned.
@@ -451,7 +451,7 @@ pub mod pallet {
 
 impl<T: Config> Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	/// Buy the NFT helper funciton logic to handle both transactional calls of `buy` and
 	/// `accept_offer`

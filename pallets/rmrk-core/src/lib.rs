@@ -46,6 +46,14 @@ pub type KeyLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::KeyLimit>
 
 pub type ValueLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::ValueLimit>;
 
+pub type BoundedResourceTypeOf<T> = BoundedVec<
+	ResourceTypes<
+		BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+		BoundedVec<PartId, <T as Config>::PartsLimit>,
+	>,
+	<T as Config>::MaxResourcesOnMint,
+>;
+
 pub mod types;
 
 // Re-export pallet items so that they can be accessed from the crate namespace.
@@ -78,6 +86,8 @@ pub mod pallet {
 		type MaxPriorities: Get<u32>;
 
 		type CollectionSymbolLimit: Get<u32>;
+
+		type MaxResourcesOnMint: Get<u32>;
 	}
 
 	#[pallet::storage]
@@ -158,9 +168,11 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn composable_resources)]
-	/// Stores resource info
-	pub type ComposableResources<T: Config> = StorageNMap<
+	#[pallet::getter(fn equippable_bases)]
+	/// Stores the existence of a base for a particular NFT
+	/// This is populated on `add_composable_resource`, and is
+	/// used in the rmrk-equip pallet when equipping a resource.
+	pub type EquippableBases<T: Config> = StorageNMap<
 		_,
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
@@ -171,9 +183,12 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn slot_resources)]
-	/// Stores resource info
-	pub type SlotResources<T: Config> = StorageNMap<
+	#[pallet::getter(fn equippable_slots)]
+	/// Stores the existence of a Base + Slot for a particular
+	/// NFT's particular resource.  This is populated on
+	/// `add_slot_resource`, and is used in the rmrk-equip
+	/// pallet when equipping a resource.
+	pub type EquippableSlots<T: Config> = StorageNMap<
 		_,
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
@@ -322,7 +337,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T>
 	where
-		T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+		T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 	{
 		/// Mints an NFT in the specified collection
 		/// Sets metadata and the royalty attribute
@@ -337,24 +352,32 @@ pub mod pallet {
 		#[transactional]
 		pub fn mint_nft(
 			origin: OriginFor<T>,
-			owner: T::AccountId,
+			owner: Option<T::AccountId>,
 			collection_id: CollectionId,
 			royalty_recipient: Option<T::AccountId>,
 			royalty: Option<Permill>,
 			metadata: BoundedVec<u8, T::StringLimit>,
 			transferable: bool,
+			resources: Option<BoundedResourceTypeOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
-			if let Some(collection_issuer) = pallet_uniques::Pallet::<T>::class_owner(collection_id)
+			if let Some(collection_issuer) =
+				pallet_uniques::Pallet::<T>::collection_owner(collection_id)
 			{
 				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
 			} else {
 				return Err(Error::<T>::CollectionUnknown.into())
 			}
 
+			// Default owner to minter
+			let nft_owner = match owner {
+				Some(owner) => owner,
+				None => sender.clone(),
+			};
+
 			let (collection_id, nft_id) = Self::nft_mint(
-				sender.clone(),
-				owner.clone(),
+				sender,
+				nft_owner.clone(),
 				collection_id,
 				royalty_recipient,
 				royalty,
@@ -365,11 +388,17 @@ pub mod pallet {
 			pallet_uniques::Pallet::<T>::do_mint(
 				collection_id,
 				nft_id,
-				owner.clone(),
+				nft_owner.clone(),
 				|_details| Ok(()),
 			)?;
 
-			Self::deposit_event(Event::NftMinted { owner, collection_id, nft_id });
+			if let Some(resources) = resources {
+				for res in resources {
+					Self::resource_add(nft_owner.clone(), collection_id, nft_id, res)?;
+				}
+			}
+
+			Self::deposit_event(Event::NftMinted { owner: nft_owner, collection_id, nft_id });
 
 			Ok(())
 		}
@@ -387,14 +416,14 @@ pub mod pallet {
 
 			let collection_id = Self::collection_create(sender.clone(), metadata, max, symbol)?;
 
-			pallet_uniques::Pallet::<T>::do_create_class(
+			pallet_uniques::Pallet::<T>::do_create_collection(
 				collection_id,
 				sender.clone(),
 				sender.clone(),
-				T::ClassDeposit::get(),
+				T::CollectionDeposit::get(),
 				false,
 				pallet_uniques::Event::Created {
-					class: collection_id,
+					collection: collection_id,
 					creator: sender.clone(),
 					owner: sender.clone(),
 				},
@@ -411,13 +440,13 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
+			max_burns: u32,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 			// Check ownership
 			ensure!(sender == root_owner, Error::<T>::NoPermission);
-			let max_recursions = T::MaxRecursions::get();
-			let (_collection_id, nft_id) = Self::nft_burn(collection_id, nft_id, max_recursions)?;
+			let (_collection_id, nft_id) = Self::nft_burn(collection_id, nft_id, max_burns)?;
 
 			pallet_uniques::Pallet::<T>::do_burn(collection_id, nft_id, |_, _| Ok(()))?;
 
@@ -438,9 +467,9 @@ pub mod pallet {
 
 			let witness = pallet_uniques::Pallet::<T>::get_destroy_witness(&collection_id)
 				.ok_or(Error::<T>::NoWitness)?;
-			ensure!(witness.instances == 0u32, Error::<T>::CollectionNotEmpty);
+			ensure!(witness.items == 0u32, Error::<T>::CollectionNotEmpty);
 
-			pallet_uniques::Pallet::<T>::do_destroy_class(
+			pallet_uniques::Pallet::<T>::do_destroy_collection(
 				collection_id,
 				witness,
 				sender.clone().into(),
@@ -641,7 +670,6 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 			resource: ComposableResource<StringLimitOf<T>, BoundedVec<PartId, T::PartsLimit>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;

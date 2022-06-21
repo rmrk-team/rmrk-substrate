@@ -42,20 +42,26 @@ where
 	C::Api: BlockBuilder<Block>,
 	P: TransactionPool + 'static,
 {
-	use pallet_contracts_rpc::{ContractsRpc, ContractsApiServer};
-	use pallet_transaction_payment_rpc::{TransactionPaymentApiServer, TransactionPaymentRpc};
-	use substrate_frame_rpc_system::{SystemApiServer, SystemRpc};
+	use pallet_contracts_rpc::{Contracts, ContractsApiServer};
+	//use pallet_transaction_payment_rpc::{TransactionPaymentApiServer, TransactionPaymentRpc};
+	//use substrate_frame_rpc_system::{SystemApiServer, SystemRpc};
+	
+	use pallet_transaction_payment_rpc::{TransactionPaymentApiServer, TransactionPayment};
+	use substrate_frame_rpc_system::{SystemApiServer, System};
 
 	let mut module = RpcModule::new(());
 	let FullDeps { client, pool, deny_unsafe } = deps;
 
-	module.merge(SystemRpc::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
-	
+	module.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
+	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
+
+	// Extend this RPC with a custom API by using the following syntax.
+	// `YourRpcStruct` should have a reference to a client, which is needed
+	// to call into the runtime.
+	// `module.merge(YourRpcTrait::into_rpc(YourRpcStruct::new(ReferenceToClient, ...)))?;`
 
 	// Contracts RPC API extension
-	module.merge(ContractsRpc::new(client.clone()).into_rpc())?;
-
-	module.merge(TransactionPaymentRpc::new(client).into_rpc())?;
+	module.merge(Contracts::new(client.clone()).into_rpc())?;
 
 	// Extend this RPC with a custom API by using the following syntax.
 	// `YourRpcStruct` should have a reference to a client, which is needed

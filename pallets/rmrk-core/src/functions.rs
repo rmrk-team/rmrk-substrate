@@ -18,7 +18,7 @@ pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
 impl<T: Config> Priority<StringLimitOf<T>, T::AccountId, BoundedVec<ResourceId, T::MaxPriorities>>
 	for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	fn priority_set(
 		sender: T::AccountId,
@@ -43,7 +43,7 @@ where
 
 impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId> for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	fn property_set(
 		sender: T::AccountId,
@@ -73,7 +73,7 @@ impl<T: Config>
 	Resource<BoundedVec<u8, T::StringLimit>, T::AccountId, BoundedVec<PartId, T::PartsLimit>>
 	for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	fn resource_add(
 		sender: T::AccountId,
@@ -92,10 +92,10 @@ where
 		match resource.clone() {
 			ResourceTypes::Basic(_r) => (),
 			ResourceTypes::Composable(r) => {
-				ComposableResources::<T>::insert((collection_id, nft_id, r.base), ());
+				EquippableBases::<T>::insert((collection_id, nft_id, r.base), ());
 			},
 			ResourceTypes::Slot(r) => {
-				SlotResources::<T>::insert(
+				EquippableSlots::<T>::insert(
 					(collection_id, nft_id, resource_id, r.base, r.slot),
 					(),
 				);
@@ -200,7 +200,7 @@ where
 impl<T: Config> Collection<StringLimitOf<T>, BoundedCollectionSymbolOf<T>, T::AccountId>
 	for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	fn issuer(_collection_id: CollectionId) -> Option<T::AccountId> {
 		None
@@ -262,7 +262,7 @@ where
 
 impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	type MaxRecursions = T::MaxRecursions;
 
@@ -504,7 +504,6 @@ where
 		nft_id: NftId,
 		max_recursions: u32,
 	) -> Result<(T::AccountId, CollectionId, NftId), DispatchError> {
-
 		// Look up root owner to ensure permissions
 		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
@@ -514,17 +513,18 @@ where
 		// Get current owner, which we will use to remove the Children storage
 		if let Some(parent_account_id) = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id) {
 			// Decode the parent_account_id to extract the parent (CollectionId, NftId)
-			if let Some(parent) = 
-				Pallet::<T>::decode_nft_account_id::<T::AccountId>(parent_account_id) {
-					// Remove the parent-child Children storage 
-					Self::remove_child(parent, (collection_id, nft_id));
+			if let Some(parent) =
+				Pallet::<T>::decode_nft_account_id::<T::AccountId>(parent_account_id)
+			{
+				// Remove the parent-child Children storage
+				Self::remove_child(parent, (collection_id, nft_id));
 			}
 		}
 
 		// Get NFT info
 		let mut rejecting_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-		
+
 		Self::nft_burn(collection_id, nft_id, max_recursions)?;
 
 		Ok((sender, collection_id, nft_id))
@@ -533,7 +533,7 @@ where
 
 impl<T: Config> Locker<CollectionId, NftId> for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	fn is_locked(collection_id: CollectionId, nft_id: NftId) -> bool {
 		Lock::<T>::get((collection_id, nft_id))
@@ -542,7 +542,7 @@ where
 
 impl<T: Config> Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	/// Encodes a RMRK NFT with randomness + `collection_id` + `nft_id` into a virtual account
 	/// then returning the `AccountId`. Note that we must be careful of the size of `AccountId`
