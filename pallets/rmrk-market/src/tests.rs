@@ -40,12 +40,13 @@ fn basic_collection() -> DispatchResult {
 fn basic_mint() -> DispatchResult {
 	RmrkCore::mint_nft(
 		Origin::signed(ALICE),
-		ALICE,
+		None,
 		COLLECTION_ID_0,
 		Some(ALICE),
 		Some(Permill::from_float(1.525)),
 		bvec![0u8; 20],
 		true,
+		None,
 	)
 }
 
@@ -127,12 +128,13 @@ fn list_non_transferable_fail() {
 		// Mint non-transferable NFT
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			ALICE,
+			Some(ALICE),
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
 			false, // non-transferable
+			None,
 		));
 		assert_noop!(
 			RmrkMarket::list(Origin::signed(ALICE), COLLECTION_ID_0, 0, 10u128, None,),

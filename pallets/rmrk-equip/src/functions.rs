@@ -45,9 +45,10 @@ impl<T: Config>
 			T::PartsLimit,
 		>,
 		BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+		BoundedVec<ThemeProperty<BoundedVec<u8, T::StringLimit>>, T::MaxPropertiesPerTheme>
 	> for Pallet<T>
 where
-	T: pallet_uniques::Config<ClassId = CollectionId, InstanceId = NftId>,
+	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	/// Implementation of the base_create function for the Base trait
 	/// Called by the create_base extrinsic to create a new Base.
@@ -241,7 +242,7 @@ where
 		// Equipper must have a resource that is associated with the provided base ID
 		// First we iterate through the resources added to this NFT in search of the base ID
 		ensure!(
-			pallet_rmrk_core::Pallet::<T>::composable_resources((
+			pallet_rmrk_core::Pallet::<T>::equippable_bases((
 				equipper_collection_id,
 				equipper_nft_id,
 				// resource_id,
@@ -253,7 +254,7 @@ where
 
 		// The item being equipped must be have a resource that is equippable into that base.slot
 		ensure!(
-			pallet_rmrk_core::Pallet::<T>::slot_resources((
+			pallet_rmrk_core::Pallet::<T>::equippable_slots((
 				item_collection_id,
 				item_nft_id,
 				resource_id,
@@ -365,7 +366,7 @@ where
 	fn add_theme(
 		issuer: T::AccountId,
 		base_id: BaseId,
-		theme: Theme<BoundedVec<u8, T::StringLimit>>,
+		theme: Theme<BoundedVec<u8, T::StringLimit>, BoundedVec<ThemeProperty<BoundedVec<u8, T::StringLimit>>, T::MaxPropertiesPerTheme>>
 	) -> Result<(), DispatchError> {
 		// Base must exist
 		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);

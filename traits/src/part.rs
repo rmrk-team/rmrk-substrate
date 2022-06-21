@@ -30,7 +30,7 @@ pub enum EquippableList<BoundedCollectionList> {
 pub struct SlotPart<BoundedString, BoundedCollectionList> {
 	pub id: PartId,
 	pub equippable: EquippableList<BoundedCollectionList>,
-	pub src: BoundedString,
+	pub src: Option<BoundedString>,
 	pub z: ZIndex,
 }
 

@@ -54,7 +54,7 @@ fn create_base_works() {
 			// id: stb("slot_part_id"),
 			id: 102,
 			z: 0,
-			src: stb("slot_part_src"),
+			src: Some(stb("slot_part_src")),
 			equippable: EquippableList::Custom(bvec![
 				0, // Collection 0
 				1, // Collection 1
@@ -126,7 +126,7 @@ fn equip_works() {
 		let slot_part_left_hand = SlotPart {
 			id: 201,
 			z: 0,
-			src: stb("left-hand"),
+			src: Some(stb("left-hand")),
 			equippable: EquippableList::Custom(bvec![
 				0, // Collection 0
 				1, // Collection 1
@@ -136,7 +136,7 @@ fn equip_works() {
 		let slot_part_right_hand = SlotPart {
 			id: 202,
 			z: 0,
-			src: stb("right-hand"),
+			src: Some(stb("right-hand")),
 			equippable: EquippableList::Custom(bvec![
 				0, // Collection 2
 				1, // Collection 3
@@ -174,45 +174,49 @@ fn equip_works() {
 		// Mint NFT 0 from collection 0 (character-0)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			ALICE,                              // owner
+			None,                               // owner
 			0,                                  // collection ID
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
 			stb("ipfs://character-0-metadata"), // metadata
 			true,
+			None,
 		));
 
 		// Mint NFT 1 from collection 0 (character-1)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			ALICE,                              // owner
+			None,                               // owner
 			0,                                  // collection ID
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
 			stb("ipfs://character-1-metadata"), // metadata
 			true,
+			None,
 		));
 
 		// Mint NFT 0 from collection 1 (sword)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			ALICE,                            // owner
+			None,                             // owner
 			1,                                // collection ID
 			Some(ALICE),                      // recipient
 			Some(Permill::from_float(1.525)), // royalties
 			stb("ipfs://sword-metadata"),     // metadata
 			true,
+			None,
 		));
 
 		// Mint NFT 1 from collection 1 (flashlight)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			ALICE,                             // owner
+			None,                              // owner
 			1,                                 // collection ID
 			Some(ALICE),                       // recipient
 			Some(Permill::from_float(1.525)),  // royalties
 			stb("ipfs://flashlight-metadata"), // metadata
 			true,
+			None,
 		));
 
 		// Attempt to equip sword should fail as character-0 doesn't own sword
@@ -263,21 +267,9 @@ fn equip_works() {
 		// Add a Base 0 resource (body-1 and left-hand slot) to our character-0 nft
 		assert_ok!(RmrkCore::add_composable_resource(
 			Origin::signed(ALICE),
-			0,             // collection_id
-			0,             // nft id
-			stbr("res-1"), // resource_id
+			0, // collection_id
+			0, // nft id
 			composable_resource,
-			// Some(0),                        // pub base: BaseId,
-			// Some(stb("ipfs://backup-src")), // pub src: BoundedString,
-			// None,                           // metadata
-			// None,                           // slot
-			// None,                           // license
-			// None,                           // thumb
-			// Some(bvec![
-			// 	// parts
-			// 	101, // ID of body-1 part
-			// 	201, // ID of left-hand slot
-			// ]),
 		));
 
 		// Attempt to equip sword should fail as the sword doesn't have a resource that is
@@ -427,7 +419,7 @@ fn equippable_works() {
 		let slot_part_left_hand = SlotPart {
 			id: 201,
 			z: 0,
-			src: stb("left-hand"),
+			src: Some(stb("left-hand")),
 			equippable: EquippableList::Custom(bvec![
 				0, // Collection 0
 				1, // Collection 1
@@ -437,7 +429,7 @@ fn equippable_works() {
 		let slot_part_right_hand = SlotPart {
 			id: 202,
 			z: 0,
-			src: stb("right-hand"),
+			src: Some(stb("right-hand")),
 			equippable: EquippableList::Custom(bvec![
 				2, // Collection 2
 				3, // Collection 3
@@ -474,7 +466,7 @@ fn equippable_works() {
 		let should_be = SlotPart {
 			id: 202,
 			z: 0,
-			src: stb("right-hand"),
+			src: Some(stb("right-hand")),
 			equippable: EquippableList::Custom(bvec![5, 6, 7]),
 		};
 		assert_eq!(RmrkEquip::parts(0, 202).unwrap(), PartType::SlotPart(should_be));
@@ -552,7 +544,7 @@ fn theme_add_works() {
 		// Define a non-default theme
 		let non_default_theme = Theme {
 			name: stb("doglover"),
-			properties: vec![
+			properties: bvec![
 				ThemeProperty { key: stb("sound"), value: stb("woof") },
 				ThemeProperty { key: stb("secondary_color"), value: stb("blue") },
 			],
@@ -590,7 +582,7 @@ fn theme_add_works() {
 		// Define a default theme
 		let default_theme = Theme {
 			name: stb("default"),
-			properties: vec![
+			properties: bvec![
 				ThemeProperty { key: stb("primary_color"), value: stb("red") },
 				ThemeProperty { key: stb("secondary_color"), value: stb("blue") },
 			],
@@ -644,6 +636,7 @@ fn theme_add_works() {
 }
 
 /// Theme add fails when too many properties
+#[should_panic]
 #[test]
 fn theme_add_too_many_properties_fails() {
 	ExtBuilder::default().build().execute_with(|| {
@@ -656,9 +649,10 @@ fn theme_add_too_many_properties_fails() {
 		));
 
 		// Define a default theme with too many properties (10)
+		// Should panic as properties exceeds mock's max (5)
 		let default_theme = Theme {
 			name: stb("default"),
-			properties: vec![
+			properties: bvec![
 				ThemeProperty { key: stb("1"), value: stb("red") },
 				ThemeProperty { key: stb("2"), value: stb("blue") },
 				ThemeProperty { key: stb("3"), value: stb("red") },
@@ -673,14 +667,12 @@ fn theme_add_too_many_properties_fails() {
 			inherit: false,
 		};
 
-		// Add default theme to base should fail (too many properties)
-		assert_noop!(
-			RmrkEquip::theme_add(
-				Origin::signed(ALICE),
-				0, // BaseID
-				default_theme
-			),
-			Error::<Test>::TooManyProperties
+		// We only run this to avoid having to define default_theme's type above
+		// Otherwise it will fail to compile
+		RmrkEquip::theme_add(
+			Origin::signed(ALICE),
+			0, // BaseID
+			default_theme,
 		);
 	});
 }
