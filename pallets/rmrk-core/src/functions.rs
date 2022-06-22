@@ -507,17 +507,16 @@ where
 		// Look up root owner in Uniques to ensure permissions
 		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 
-		// Ensure NFT exists in Nfts storage
-		ensure!(Nfts::<T>::get(collection_id, nft_id).is_some(), Error::<T>::NoAvailableNftId);
+		let nft = Nfts::<T>::get(collection_id, nft_id);
+
+		// Ensure NFT is pending (cannot reject non-pending NFT) and exists in Nfts storage
+		match nft {
+			None => return Err(Error::<T>::NoAvailableNftId.into()),
+			Some(nft) => ensure!(nft.pending, Error::<T>::CannotRejectNonPendingNft),
+		}
 
 		// Check ownership
 		ensure!(sender == root_owner, Error::<T>::CannotRejectNonOwnedNft);
-
-		// Ensure NFT is pending (cannot reject non-pending NFT)
-		ensure!(
-			Nfts::<T>::get(collection_id, nft_id).unwrap().pending,
-			Error::<T>::CannotRejectNonPendingNft
-		);
 
 		// Get current owner, which we will use to remove the Children storage
 		if let Some(parent_account_id) = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id) {
