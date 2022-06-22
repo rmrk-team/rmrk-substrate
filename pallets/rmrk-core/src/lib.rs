@@ -168,9 +168,11 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn composable_resources)]
-	/// Stores resource info
-	pub type ComposableResources<T: Config> = StorageNMap<
+	#[pallet::getter(fn equippable_bases)]
+	/// Stores the existence of a base for a particular NFT
+	/// This is populated on `add_composable_resource`, and is
+	/// used in the rmrk-equip pallet when equipping a resource.
+	pub type EquippableBases<T: Config> = StorageNMap<
 		_,
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
@@ -181,9 +183,12 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
-	#[pallet::getter(fn slot_resources)]
-	/// Stores resource info
-	pub type SlotResources<T: Config> = StorageNMap<
+	#[pallet::getter(fn equippable_slots)]
+	/// Stores the existence of a Base + Slot for a particular
+	/// NFT's particular resource.  This is populated on
+	/// `add_slot_resource`, and is used in the rmrk-equip
+	/// pallet when equipping a resource.
+	pub type EquippableSlots<T: Config> = StorageNMap<
 		_,
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
@@ -436,13 +441,13 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
+			max_burns: u32,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 			// Check ownership
 			ensure!(sender == root_owner, Error::<T>::NoPermission);
-			let max_recursions = T::MaxRecursions::get();
-			let (_collection_id, nft_id) = Self::nft_burn(collection_id, nft_id, max_recursions)?;
+			let (_collection_id, nft_id) = Self::nft_burn(collection_id, nft_id, max_burns)?;
 
 			pallet_uniques::Pallet::<T>::do_burn(collection_id, nft_id, |_, _| Ok(()))?;
 
@@ -666,7 +671,6 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			resource_id: BoundedResource<T::ResourceSymbolLimit>,
 			resource: ComposableResource<StringLimitOf<T>, BoundedVec<PartId, T::PartsLimit>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;

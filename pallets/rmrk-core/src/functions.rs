@@ -92,10 +92,10 @@ where
 		match resource.clone() {
 			ResourceTypes::Basic(_r) => (),
 			ResourceTypes::Composable(r) => {
-				ComposableResources::<T>::insert((collection_id, nft_id, r.base), ());
+				EquippableBases::<T>::insert((collection_id, nft_id, r.base), ());
 			},
 			ResourceTypes::Slot(r) => {
-				SlotResources::<T>::insert(
+				EquippableSlots::<T>::insert(
 					(collection_id, nft_id, resource_id, r.base, r.slot),
 					(),
 				);

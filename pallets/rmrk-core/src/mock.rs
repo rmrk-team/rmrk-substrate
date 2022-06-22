@@ -158,6 +158,7 @@ pub const NOT_EXISTING_CLASS_ID: <Test as pallet_uniques::Config>::CollectionId 
 pub const RESOURCE_ZERO: ResourceId = 0;
 pub const RESOURCE_ONE: ResourceId = 1;
 pub const RESOURCE_TWO: ResourceId = 2;
+pub const MAX_BURNS: u32 = 4;
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {
