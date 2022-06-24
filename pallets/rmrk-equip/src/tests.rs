@@ -174,11 +174,11 @@ fn equip_works() {
 		// Mint NFT 0 from collection 0 (character-0)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(ALICE)), // owner
-			0,                                                     // collection ID
-			Some(ALICE),                                           // recipient
-			Some(Permill::from_float(1.525)),                      // royalties
-			stb("ipfs://character-0-metadata"),                    // metadata
+			Some(ALICE),                        // owner
+			0,                                  // collection ID
+			Some(ALICE),                        // recipient
+			Some(Permill::from_float(1.525)),   // royalties
+			stb("ipfs://character-0-metadata"), // metadata
 			true,
 			None,
 		));
@@ -186,11 +186,11 @@ fn equip_works() {
 		// Mint NFT 1 from collection 0 (character-1)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(ALICE)), // owner
-			0,                                                     // collection ID
-			Some(ALICE),                                           // recipient
-			Some(Permill::from_float(1.525)),                      // royalties
-			stb("ipfs://character-1-metadata"),                    // metadata
+			Some(ALICE),                        // owner
+			0,                                  // collection ID
+			Some(ALICE),                        // recipient
+			Some(Permill::from_float(1.525)),   // royalties
+			stb("ipfs://character-1-metadata"), // metadata
 			true,
 			None,
 		));
@@ -198,11 +198,11 @@ fn equip_works() {
 		// Mint NFT 0 from collection 1 (sword)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(ALICE)), // owner
-			1,                                                     // collection ID
-			Some(ALICE),                                           // recipient
-			Some(Permill::from_float(1.525)),                      // royalties
-			stb("ipfs://sword-metadata"),                          // metadata
+			Some(ALICE),                      // owner
+			1,                                // collection ID
+			Some(ALICE),                      // recipient
+			Some(Permill::from_float(1.525)), // royalties
+			stb("ipfs://sword-metadata"),     // metadata
 			true,
 			None,
 		));
@@ -210,11 +210,11 @@ fn equip_works() {
 		// Mint NFT 1 from collection 1 (flashlight)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(ALICE)), // owner
-			1,                                                     // collection ID
-			Some(ALICE),                                           // recipient
-			Some(Permill::from_float(1.525)),                      // royalties
-			stb("ipfs://flashlight-metadata"),                     // metadata
+			Some(ALICE),                       // owner
+			1,                                 // collection ID
+			Some(ALICE),                       // recipient
+			Some(Permill::from_float(1.525)),  // royalties
+			stb("ipfs://flashlight-metadata"), // metadata
 			true,
 			None,
 		));

@@ -247,7 +247,7 @@ fn mint_nft_works() {
 		assert_noop!(
 			RMRKCore::mint_nft(
 				Origin::signed(BOB),
-				Some(AccountIdOrCollectionNftTuple::AccountId(BOB)),
+				Some(BOB),
 				COLLECTION_ID_0,
 				Some(CHARLIE),
 				Some(Permill::from_float(20.525)),
@@ -261,7 +261,7 @@ fn mint_nft_works() {
 		assert_noop!(
 			RMRKCore::mint_nft(
 				Origin::signed(ALICE),
-				Some(AccountIdOrCollectionNftTuple::AccountId(ALICE)),
+				Some(ALICE),
 				NOT_EXISTING_CLASS_ID,
 				Some(CHARLIE),
 				Some(Permill::from_float(20.525)),
@@ -283,9 +283,9 @@ fn mint_directly_to_nft() {
 
 		// Mint directly to non-existent NFT fails
 		assert_noop!(
-			RMRKCore::mint_nft(
+			RMRKCore::mint_nft_directly_to_nft(
 				Origin::signed(ALICE),
-				Some(AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)),
+				(0, 0),
 				COLLECTION_ID_0,
 				None,
 				Some(Permill::from_float(20.525)),
@@ -299,7 +299,7 @@ fn mint_directly_to_nft() {
 		// ALICE mints an NFT for BOB
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(BOB)),
+			Some(BOB),
 			COLLECTION_ID_0,
 			None,
 			Some(Permill::from_float(20.525)),
@@ -315,9 +315,9 @@ fn mint_directly_to_nft() {
 		);
 
 		// ALICE mints NFT directly to BOB-owned NFT (0, 0)
-		assert_ok!(RMRKCore::mint_nft(
+		assert_ok!(RMRKCore::mint_nft_directly_to_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)),
+			(0, 0),
 			COLLECTION_ID_0,
 			None,
 			Some(Permill::from_float(20.525)),
@@ -351,7 +351,7 @@ fn mint_directly_to_nft_with_resources() {
 		// ALICE mints an NFT for BOB
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(BOB)),
+			Some(BOB),
 			COLLECTION_ID_0,
 			None,
 			Some(Permill::from_float(20.525)),
@@ -368,9 +368,9 @@ fn mint_directly_to_nft_with_resources() {
 		let resources_to_add = bvec![ResourceTypes::Basic(basic_resource)];
 
 		// ALICE mints NFT directly to BOB-owned NFT (0, 0), with the above resource
-		assert_ok!(RMRKCore::mint_nft(
+		assert_ok!(RMRKCore::mint_nft_directly_to_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)),
+			(0, 0),
 			COLLECTION_ID_0,
 			None,
 			Some(Permill::from_float(20.525)),
@@ -416,7 +416,7 @@ fn royalty_recipient_default_works() {
 		// Mint an NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(ALICE)),
+			Some(ALICE),
 			COLLECTION_ID_0,
 			None, // No royalty recipient
 			Some(Permill::from_float(20.525)),
@@ -429,7 +429,7 @@ fn royalty_recipient_default_works() {
 		// Mint another NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(ALICE)),
+			Some(ALICE),
 			COLLECTION_ID_0,
 			Some(BOB), // Royalty recipient is BOB
 			Some(Permill::from_float(20.525)),
@@ -442,7 +442,7 @@ fn royalty_recipient_default_works() {
 		// Mint another NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(ALICE)),
+			Some(ALICE),
 			COLLECTION_ID_0,
 			None, // No royalty recipient is BOB
 			None, // No royalty amount
@@ -455,7 +455,7 @@ fn royalty_recipient_default_works() {
 		// Mint another NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(ALICE)),
+			Some(ALICE),
 			COLLECTION_ID_0,
 			Some(ALICE), // Royalty recipient is ALICE
 			None,        // No royalty amount
@@ -627,7 +627,7 @@ fn send_non_transferable_fail() {
 		// Mint non-transferable NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(ALICE)),
+			Some(ALICE),
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
@@ -656,7 +656,7 @@ fn mint_non_transferrable_gem_on_to_nft_works() {
 		// Mint NFT (transferrable, will be the parent of a later-minted non-transferrable NFT)
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(BOB)),
+			Some(BOB),
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
@@ -666,9 +666,9 @@ fn mint_non_transferrable_gem_on_to_nft_works() {
 		));
 
 		// Mint non-transferable NFT *on to* Bob-owned NFT (0, 0)
-		assert_ok!(RMRKCore::mint_nft(
+		assert_ok!(RMRKCore::mint_nft_directly_to_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)),
+			(0, 0),
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
@@ -772,7 +772,7 @@ fn reject_nft_removes_self_from_parents_children() {
 		// Alice mints (0, 1) for Bob
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(BOB)),
+			Some(BOB),
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
@@ -1206,7 +1206,7 @@ fn add_resource_on_mint_works() {
 		// Mint NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(ALICE)),
+			Some(ALICE),
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
@@ -1242,7 +1242,7 @@ fn add_resource_on_mint_beyond_max_fails() {
 		// Mint NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(ALICE)),
+			Some(ALICE),
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
@@ -1262,7 +1262,7 @@ fn add_resource_pending_works() {
 		// Mint NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(BOB)),
+			Some(BOB),
 			COLLECTION_ID_0,
 			Some(BOB),
 			Some(Permill::from_float(1.525)),
@@ -1385,7 +1385,7 @@ fn resource_removal_pending_works() {
 		// Mint NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			Some(AccountIdOrCollectionNftTuple::AccountId(BOB)),
+			Some(BOB),
 			COLLECTION_ID_0,
 			Some(BOB),
 			Some(Permill::from_float(1.525)),

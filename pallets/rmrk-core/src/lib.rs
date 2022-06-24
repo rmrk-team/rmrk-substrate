@@ -347,7 +347,7 @@ pub mod pallet {
 		#[transactional]
 		pub fn mint_nft(
 			origin: OriginFor<T>,
-			owner: Option<AccountIdOrCollectionNftTuple<T::AccountId>>,
+			owner: Option<T::AccountId>,
 			collection_id: CollectionId,
 			royalty_recipient: Option<T::AccountId>,
 			royalty: Option<Permill>,
@@ -369,7 +369,7 @@ pub mod pallet {
 			// Extract intended owner or default to sender
 			let nft_owner = match owner {
 				Some(owner) => owner,
-				None => AccountIdOrCollectionNftTuple::AccountId(sender.clone()),
+				None => sender.clone(),
 			};
 
 			// Mint NFT for RMRK storage
@@ -383,12 +383,74 @@ pub mod pallet {
 				transferable,
 			)?;
 
+			pallet_uniques::Pallet::<T>::do_mint(
+				collection_id,
+				nft_id,
+				nft_owner.clone(),
+				|_details| Ok(()),
+			)?;
+
+			// Add all at-mint resources
+			if let Some(resources) = resources {
+				for res in resources {
+					Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
+				}
+			}
+
+			Self::deposit_event(Event::NftMinted {
+				owner: AccountIdOrCollectionNftTuple::AccountId(nft_owner),
+				collection_id,
+				nft_id,
+			});
+
+			Ok(())
+		}
+
+		/// Mints an NFT in the specified collection directly to another NFT
+		/// Sets metadata and the royalty attribute
+		///
+		/// Parameters:
+		/// - `collection_id`: The class of the asset to be minted.
+		/// - `nft_id`: The nft value of the asset to be minted.
+		/// - `recipient`: Receiver of the royalty
+		/// - `royalty`: Permillage reward from each trade for the Recipient
+		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn mint_nft_directly_to_nft(
+			origin: OriginFor<T>,
+			owner: (CollectionId, NftId),
+			collection_id: CollectionId,
+			royalty_recipient: Option<T::AccountId>,
+			royalty: Option<Permill>,
+			metadata: BoundedVec<u8, T::StringLimit>,
+			transferable: bool,
+			resources: Option<BoundedResourceTypeOf<T>>,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin.clone())?;
+
+			// Collection must exist and sender must be issuer of collection
+			if let Some(collection_issuer) =
+				pallet_uniques::Pallet::<T>::collection_owner(collection_id)
+			{
+				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
+			} else {
+				return Err(Error::<T>::CollectionUnknown.into())
+			}
+
+			// Mint NFT for RMRK storage
+			let (collection_id, nft_id) = Self::nft_mint_directly_to_nft(
+				sender.clone(),
+				owner,
+				collection_id,
+				royalty_recipient,
+				royalty,
+				metadata,
+				transferable,
+			)?;
+
 			// For Uniques, we need to decode the "virtual account" ID to be the owner
-			let uniques_owner = match nft_owner.clone() {
-				AccountIdOrCollectionNftTuple::AccountId(account_id) => account_id,
-				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, nft_id) =>
-					Self::nft_to_account_id(collection_id, nft_id),
-			};
+			let uniques_owner = Self::nft_to_account_id(owner.0, owner.1);
 
 			pallet_uniques::Pallet::<T>::do_mint(
 				collection_id,
@@ -397,13 +459,18 @@ pub mod pallet {
 				|_details| Ok(()),
 			)?;
 
+			// Add all at-mint resources
 			if let Some(resources) = resources {
 				for res in resources {
 					Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
 				}
 			}
 
-			Self::deposit_event(Event::NftMinted { owner: nft_owner, collection_id, nft_id });
+			Self::deposit_event(Event::NftMinted {
+				owner: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(owner.0, owner.1),
+				collection_id,
+				nft_id,
+			});
 
 			Ok(())
 		}

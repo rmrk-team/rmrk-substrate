@@ -57,7 +57,16 @@ pub trait Nft<AccountId, BoundedString> {
 
 	fn nft_mint(
 		sender: AccountId,
-		owner: AccountIdOrCollectionNftTuple<AccountId>,
+		owner: AccountId,
+		collection_id: CollectionId,
+		royalty_recipient: Option<AccountId>,
+		royalty_amount: Option<Permill>,
+		metadata: BoundedString,
+		transferable: bool,
+	) -> Result<(CollectionId, NftId), DispatchError>;
+	fn nft_mint_directly_to_nft(
+		sender: AccountId,
+		owner: (CollectionId, NftId),
 		collection_id: CollectionId,
 		royalty_recipient: Option<AccountId>,
 		royalty_amount: Option<Permill>,

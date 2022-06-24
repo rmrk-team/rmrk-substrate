@@ -278,7 +278,7 @@ where
 
 	fn nft_mint(
 		sender: T::AccountId,
-		owner: AccountIdOrCollectionNftTuple<T::AccountId>,
+		owner: T::AccountId,
 		collection_id: CollectionId,
 		royalty_recipient: Option<T::AccountId>,
 		royalty_amount: Option<Permill>,
@@ -293,16 +293,66 @@ where
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 		}
 
-		// Calculate the rootowner of the intended owner of the minted NFT, which will be an account
-		// ID if specified, or a calculated rootowner of an NFT, if being minted directly to an NFT
-		let rootowner = match owner.clone() {
-			AccountIdOrCollectionNftTuple::AccountId(account_id) => account_id,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, nft_id) =>
-				Self::lookup_root_owner(collection_id, nft_id)?.0,
+		// NFT should be pending if minting to another account
+		let pending = owner != sender;
+
+		let mut royalty: Option<RoyaltyInfo<T::AccountId>> = None;
+
+		if let Some(amount) = royalty_amount {
+			match royalty_recipient {
+				Some(recipient) => {
+					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient, amount });
+				},
+				None => {
+					// If a royalty amount is passed but no recipient, defaults to the sender
+					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient: sender, amount });
+				},
+			}
 		};
 
-		// NFT should be pending if minting either to another account or to an NFT owned by another
-		// account
+		let nft = NftInfo {
+			owner: AccountIdOrCollectionNftTuple::AccountId(owner),
+			royalty,
+			metadata,
+			equipped: false,
+			pending,
+			transferable,
+		};
+
+		Nfts::<T>::insert(collection_id, nft_id, nft);
+
+		// increment nfts counter
+		let nfts_count = collection.nfts_count.checked_add(1).ok_or(ArithmeticError::Overflow)?;
+		Collections::<T>::try_mutate(collection_id, |collection| -> DispatchResult {
+			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
+			collection.nfts_count = nfts_count;
+			Ok(())
+		})?;
+
+		Ok((collection_id, nft_id))
+	}
+
+	fn nft_mint_directly_to_nft(
+		sender: T::AccountId,
+		owner: (CollectionId, NftId),
+		collection_id: CollectionId,
+		royalty_recipient: Option<T::AccountId>,
+		royalty_amount: Option<Permill>,
+		metadata: StringLimitOf<T>,
+		transferable: bool,
+	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
+		let nft_id = Self::get_next_nft_id(collection_id)?;
+		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+
+		// Prevent minting when next NFT id is greater than the collection max.
+		if let Some(max) = collection.max {
+			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
+		}
+
+		// Calculate the rootowner of the intended owner of the minted NFT
+		let rootowner = Self::lookup_root_owner(owner.0, owner.1)?.0;
+
+		// NFT should be pending if minting either to an NFT owned by another account
 		let pending = rootowner != sender;
 
 		let mut royalty: Option<RoyaltyInfo<T::AccountId>> = None;
@@ -318,7 +368,14 @@ where
 			}
 		};
 
-		let nft = NftInfo { owner, royalty, metadata, equipped: false, pending, transferable };
+		let nft = NftInfo {
+			owner: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(owner.0, owner.1),
+			royalty,
+			metadata,
+			equipped: false,
+			pending,
+			transferable,
+		};
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 
