@@ -151,7 +151,7 @@ fn lock_collection_works() {
 		// Attempt to mint in a locked collection should fail
 		assert_noop!(basic_mint(), Error::<Test>::CollectionFullOrLocked);
 		// Burn an NFT
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS));
 		// Should now have only three NFTS in collection
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 3);
 		// Still we should be unable to mint another NFT
@@ -173,7 +173,7 @@ fn destroy_collection_works() {
 			Error::<Test>::CollectionNotEmpty
 		);
 		// Burn the single NFT in collection
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS));
 		// Empty collection can be destroyed
 		assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
 		// Destroy event is triggered by successful destroy_collection
@@ -401,7 +401,7 @@ fn mint_collection_max_logic_works() {
 		// Minting beyond collection max (5) should fail
 		assert_noop!(basic_mint(), Error::<Test>::CollectionFullOrLocked);
 		// Burn an NFT
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, 0));
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, 0, MAX_BURNS));
 		// Minting should still fail, as burning should not affect "fullness" of collection
 		assert_noop!(basic_mint(), Error::<Test>::CollectionFullOrLocked);
 	});
@@ -727,6 +727,11 @@ fn reject_nft_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
+		// Cannot reject non-existent NFT
+		assert_noop!(
+			RMRKCore::reject_nft(Origin::signed(BOB), 0, 2,),
+			Error::<Test>::NoAvailableNftId
+		);
 		// Mint NFTs (0, 0), (0, 1), (0, 2)
 		for _ in 0..3 {
 			assert_ok!(basic_mint());
@@ -752,12 +757,41 @@ fn reject_nft_works() {
 			0,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
 		));
-		// Bob rejects NFT (0,2) for Bob-owned NFT (0,0)
-		assert_ok!(RMRKCore::reject_nft(Origin::signed(BOB), 0, 2,));
+		// Bob rejects NFT (0,0) for Bob-owned NFT (0,0)
+		assert_ok!(RMRKCore::reject_nft(Origin::signed(BOB), 0, 0,));
 		// Rejected NFT gets burned
-		assert_eq!(RMRKCore::nfts(0, 0).is_none(), true);
+		assert!(RMRKCore::nfts(0, 0).is_none());
 		// Child is burned if parent is rejected
-		assert_eq!(RMRKCore::nfts(0, 1).is_none(), true);
+		assert!(RMRKCore::nfts(0, 1).is_none());
+	});
+}
+
+/// NFT: Reject test: Cannot reject non-pending NFT
+#[test]
+fn reject_cannot_reject_non_pending_nft() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// ALICE mints (0, 0) for ALICE
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			None,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			true,
+			None
+		));
+		// NFT (0, 0) is not pending
+		assert!(!RMRKCore::nfts(0, 0).unwrap().pending);
+		// ALICE cannot reject NFT (0, 0) since it is not pending
+		assert_noop!(
+			RMRKCore::reject_nft(Origin::signed(ALICE), 0, 0),
+			Error::<Test>::CannotRejectNonPendingNft
+		);
+		// NFT (0, 0) still exists after failed rejection
+		assert!(RMRKCore::nfts(0, 0).is_some());
 	});
 }
 
@@ -930,11 +964,11 @@ fn burn_nft_works() {
 
 		// BOB should not be able to burn ALICE's NFT
 		assert_noop!(
-			RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0),
+			RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS),
 			Error::<Test>::NoPermission
 		);
 		// ALICE burns her NFT
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS));
 		// Successful burn creates NFTBurned event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTBurned {
 			owner: ALICE,
@@ -944,7 +978,7 @@ fn burn_nft_works() {
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		// ALICE can't burn an NFT twice
 		assert_noop!(
-			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0),
+			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS),
 			Error::<Test>::NoAvailableNftId
 		);
 		// Burned NFT no longer exists
@@ -1010,7 +1044,7 @@ fn burn_nft_with_great_grandchildren_works() {
 		// Great-grandchild NFT (0, 3) exists
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_some(), true);
 		// Burn great-grandparent NFT (0, 0)
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS));
 		// Great-grandchild NFT (0, 3) is dead :'-(
 		assert!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_none());
 		// Great-grandchild resources are gone
@@ -1064,7 +1098,7 @@ fn burn_nft_beyond_max_recursions_fails_gracefully() {
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 4).is_some(), true);
 		// Burn great-grandparent NFT (0, 0)
 		assert_noop!(
-			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0),
+			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS),
 			Error::<Test>::TooManyRecursions
 		);
 		// All NFTs still exist
@@ -1099,7 +1133,7 @@ fn burn_child_nft_removes_parents_children() {
 		// NFT (0, 0) should have 1 Children storage member
 		assert_eq!(Children::<Test>::iter_prefix((0, 0)).count(), 1);
 		// Burn NFT (0, 1)
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), 0, 1),);
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), 0, 1, MAX_BURNS),);
 		// NFT (0, 0) should have 0 Children storage members
 		assert_eq!(Children::<Test>::iter_prefix((0, 0)).count(), 0);
 	});
@@ -1160,7 +1194,6 @@ fn create_resource_works() {
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			stbr("res-3"), // resource_id
 			composable_resource,
 		));
 

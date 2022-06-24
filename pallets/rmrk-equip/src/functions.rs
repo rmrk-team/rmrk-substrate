@@ -242,7 +242,7 @@ where
 		// Equipper must have a resource that is associated with the provided base ID
 		// First we iterate through the resources added to this NFT in search of the base ID
 		ensure!(
-			pallet_rmrk_core::Pallet::<T>::composable_resources((
+			pallet_rmrk_core::Pallet::<T>::equippable_bases((
 				equipper_collection_id,
 				equipper_nft_id,
 				// resource_id,
@@ -254,7 +254,7 @@ where
 
 		// The item being equipped must be have a resource that is equippable into that base.slot
 		ensure!(
-			pallet_rmrk_core::Pallet::<T>::slot_resources((
+			pallet_rmrk_core::Pallet::<T>::equippable_slots((
 				item_collection_id,
 				item_nft_id,
 				resource_id,

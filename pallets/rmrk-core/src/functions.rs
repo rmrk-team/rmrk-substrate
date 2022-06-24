@@ -93,10 +93,10 @@ where
 		match resource.clone() {
 			ResourceTypes::Basic(_r) => (),
 			ResourceTypes::Composable(r) => {
-				ComposableResources::<T>::insert((collection_id, nft_id, r.base), ());
+				EquippableBases::<T>::insert((collection_id, nft_id, r.base), ());
 			},
 			ResourceTypes::Slot(r) => {
-				SlotResources::<T>::insert(
+				EquippableSlots::<T>::insert(
 					(collection_id, nft_id, resource_id, r.base, r.slot),
 					(),
 				);
@@ -573,8 +573,16 @@ where
 		nft_id: NftId,
 		max_recursions: u32,
 	) -> Result<(T::AccountId, CollectionId, NftId), DispatchError> {
-		// Look up root owner to ensure permissions
+		// Look up root owner in Uniques to ensure permissions
 		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+
+		let nft = Nfts::<T>::get(collection_id, nft_id);
+
+		// Ensure NFT is pending (cannot reject non-pending NFT) and exists in Nfts storage
+		match nft {
+			None => return Err(Error::<T>::NoAvailableNftId.into()),
+			Some(nft) => ensure!(nft.pending, Error::<T>::CannotRejectNonPendingNft),
+		}
 
 		// Check ownership
 		ensure!(sender == root_owner, Error::<T>::CannotRejectNonOwnedNft);
