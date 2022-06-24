@@ -266,6 +266,7 @@ where
 {
 	type MaxRecursions = T::MaxRecursions;
 
+	
 	fn nft_mint(
 		_sender: T::AccountId,
 		owner: T::AccountId,
@@ -308,6 +309,7 @@ where
 			transferable,
 		};
 
+		// BOOKMARK
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 
 		// increment nfts counter
