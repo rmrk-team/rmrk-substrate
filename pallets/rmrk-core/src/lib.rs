@@ -333,6 +333,9 @@ pub mod pallet {
 		/// Accepting a resource that is not pending should fail
 		ResourceNotPending,
 		NonTransferable,
+		// Must unequip an item before sending (this only applies to the
+		// rmrk-equip pallet but the send operation lives in rmrk-core)
+		CannotSendEquippedItem,
 	}
 
 	#[pallet::call]
