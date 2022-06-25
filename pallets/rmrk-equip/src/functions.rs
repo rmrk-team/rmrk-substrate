@@ -45,7 +45,7 @@ impl<T: Config>
 			T::PartsLimit,
 		>,
 		BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
-		BoundedVec<ThemeProperty<BoundedVec<u8, T::StringLimit>>, T::MaxPropertiesPerTheme>
+		BoundedVec<ThemeProperty<BoundedVec<u8, T::StringLimit>>, T::MaxPropertiesPerTheme>,
 	> for Pallet<T>
 where
 	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
@@ -111,17 +111,14 @@ where
 
 	/// Implementation of the do_equip function for the Base trait
 	/// Called by the equip extrinsic to equip a child NFT's resource to a parent's slot, if all are
-	/// available. Also can be called to unequip, which can be successful if
-	/// - Item has beeen burned
-	/// - Item is equipped and extrinsic called by equipping item owner
-	/// - Item is equipped and extrinsic called by equipper NFT owner
+	/// available.
 	/// Equipping operations are maintained inside the Equippings storage.
 	/// Modeled after [equip interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/equip.md)
 	///
 	/// Parameters:
 	/// - issuer: The caller of the function, not necessarily anything else
-	/// - item: Child NFT being equipped (or unequipped)
-	/// - equipper: Parent NFT which will equip (or unequip) the item
+	/// - item: Child NFT being equipped
+	/// - equipper: Parent NFT which will equip the item
 	/// - base_id: ID of the base which the item and equipper must each have a resource referencing
 	/// - slot_id: ID of the slot which the item and equipper must each have a resource referencing
 	fn do_equip(
@@ -131,7 +128,7 @@ where
 		resource_id: ResourceId,
 		base_id: BaseId,
 		slot_id: SlotId,
-	) -> Result<(CollectionId, NftId, BaseId, SlotId, bool), DispatchError> {
+	) -> Result<(CollectionId, NftId, BaseId, SlotId), DispatchError> {
 		let item_collection_id = item.0;
 		let item_nft_id = item.1;
 		let equipper_collection_id = equipper.0;
@@ -147,72 +144,7 @@ where
 			pallet_uniques::Error::<T>::Locked
 		);
 
-		let item_is_equipped =
-			Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id))
-				.is_some();
-		let item_exists =
-			pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id).is_some();
-
-		// If item doesn't exist, anyone can unequip it.
-		if !item_exists && item_is_equipped {
-			// Remove from Equippings nft/base/slot storage
-			Equippings::<T>::remove(((equipper_collection_id, equipper_nft_id), base_id, slot_id));
-
-			// Update item's equipped property
-			pallet_rmrk_core::Nfts::<T>::try_mutate_exists(
-				item_collection_id,
-				item_nft_id,
-				|nft| -> DispatchResult {
-					if let Some(nft) = nft {
-						nft.equipped = false;
-					}
-					Ok(())
-				},
-			)?;
-
-			// Return unequip event details
-			return Ok((item_collection_id, item_nft_id, base_id, slot_id, false))
-		}
-
-		let item_owner =
-			pallet_rmrk_core::Pallet::<T>::lookup_root_owner(item_collection_id, item_nft_id)?;
-		let equipper_owner = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(
-			equipper_collection_id,
-			equipper_nft_id,
-		)?;
-
-		// If the item is equipped in this slot, and either the equipper or the item owner is the
-		// caller, it will be unequipped
-		if item_is_equipped && (item_owner.0 == issuer || equipper_owner.0 == issuer) {
-			// Remove from Equippings nft/base/slot storage
-			Equippings::<T>::remove(((equipper_collection_id, equipper_nft_id), base_id, slot_id));
-
-			// Update item's equipped property
-			pallet_rmrk_core::Nfts::<T>::try_mutate_exists(
-				item_collection_id,
-				item_nft_id,
-				|nft| -> DispatchResult {
-					if let Some(nft) = nft {
-						nft.equipped = false;
-					}
-					Ok(())
-				},
-			)?;
-
-			// Return unequip event details
-			return Ok((item_collection_id, item_nft_id, base_id, slot_id, false))
-		}
-
-		// Equipper NFT must exist
-		ensure!(
-			pallet_rmrk_core::Pallet::<T>::nfts(equipper_collection_id, equipper_nft_id).is_some(),
-			Error::<T>::EquipperDoesntExist
-		);
-
-		// Item must exist
-		ensure!(item_exists, Error::<T>::ItemDoesntExist);
-
-		// Is the item equipped anywhere?
+		// If the item's equipped property is true, it is already equipped
 		ensure!(
 			!pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id)
 				.unwrap()
@@ -220,11 +152,35 @@ where
 			Error::<T>::AlreadyEquipped
 		);
 
-		// Caller must root-own equipper?
-		ensure!(equipper_owner.0 == issuer, Error::<T>::PermissionError);
+		// If the Equippings storage contains the Base/Slot for the Collection+NFT ID, the item is
+		// already equipped
+		let item_is_equipped =
+			Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id))
+				.is_some();
+		ensure!(!item_is_equipped, Error::<T>::AlreadyEquipped);
+
+		// Item must exist
+		let item_exists =
+			pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id).is_some();
+		ensure!(item_exists, Error::<T>::ItemDoesntExist);
+
+		// Equipper must exist
+		ensure!(
+			pallet_rmrk_core::Pallet::<T>::nfts(equipper_collection_id, equipper_nft_id).is_some(),
+			Error::<T>::EquipperDoesntExist
+		);
 
 		// Caller must root-own item
+		let item_owner =
+			pallet_rmrk_core::Pallet::<T>::lookup_root_owner(item_collection_id, item_nft_id)?;
 		ensure!(item_owner.0 == issuer, Error::<T>::PermissionError);
+
+		// Caller must root-own equipper
+		let equipper_owner = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(
+			equipper_collection_id,
+			equipper_nft_id,
+		)?;
+		ensure!(equipper_owner.0 == issuer, Error::<T>::PermissionError);
 
 		// Equipper must be direct parent of item
 		let equipper_owner = pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id)
@@ -268,7 +224,7 @@ where
 		// Part must exist
 		ensure!(Self::parts(base_id, slot_id).is_some(), Error::<T>::PartDoesntExist);
 
-		// Returns Result
+		// Check the PartType stored for this Base + Slot
 		match Self::parts(base_id, slot_id).unwrap() {
 			PartType::FixedPart(_) => {
 				// Part must be SlotPart type
@@ -302,9 +258,107 @@ where
 						Ok(())
 					},
 				)?;
-				Ok((item_collection_id, item_nft_id, base_id, slot_id, true))
+				Ok((item_collection_id, item_nft_id, base_id, slot_id))
 			},
 		}
+	}
+
+	/// Implementation of the do_unequip function for the Base trait
+	/// Called by the equip extrinsic to unequip a child NFT's resource from a parent's slot, if it
+	/// is equipped. Unequip can be successful if
+	/// - Item has been burned
+	/// - Item is equipped and extrinsic called by equipping item owner
+	/// - Item is equipped and extrinsic called by equipper NFT owner
+	/// Equipping operations are maintained inside the Equippings storage.
+	/// Modeled after [equip interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/equip.md)
+	///
+	/// Parameters:
+	/// - issuer: The caller of the function, not necessarily anything else
+	/// - item: Child NFT being equipped (or unequipped)
+	/// - equipper: Parent NFT which will equip (or unequip) the item
+	/// - base_id: ID of the equipped item's base
+	/// - slot_id: ID of the equipped item's slot
+	fn do_unequip(
+		issuer: T::AccountId,
+		item: (CollectionId, NftId),
+		equipper: (CollectionId, NftId),
+		base_id: BaseId,
+		slot_id: SlotId,
+	) -> Result<(CollectionId, NftId, BaseId, SlotId), DispatchError> {
+		let item_collection_id = item.0;
+		let item_nft_id = item.1;
+		let equipper_collection_id = equipper.0;
+		let equipper_nft_id = equipper.1;
+		// Check item NFT lock status
+		ensure!(
+			!pallet_rmrk_core::Pallet::<T>::is_locked(item_collection_id, item_nft_id),
+			pallet_uniques::Error::<T>::Locked
+		);
+		// Check equipper NFT lock status
+		ensure!(
+			!pallet_rmrk_core::Pallet::<T>::is_locked(equipper_collection_id, equipper_nft_id),
+			pallet_uniques::Error::<T>::Locked
+		);
+
+		let item_is_equipped =
+			Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id))
+				.is_some();
+		ensure!(item_is_equipped, Error::<T>::ItemNotEquipped);
+
+		let item_exists =
+			pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id).is_some();
+
+		// If item doesn't exist, anyone can unequip it.  This can happen because burn_nft can
+		// happen in rmrk-core, which doesn't know about rmrk-equip.
+		if !item_exists {
+			// Remove from Equippings nft/base/slot storage
+			Equippings::<T>::remove(((equipper_collection_id, equipper_nft_id), base_id, slot_id));
+
+			// Update item's equipped property
+			pallet_rmrk_core::Nfts::<T>::try_mutate_exists(
+				item_collection_id,
+				item_nft_id,
+				|nft| -> DispatchResult {
+					if let Some(nft) = nft {
+						nft.equipped = false;
+					}
+					Ok(())
+				},
+			)?;
+
+			// Return unequip event details
+			return Ok((item_collection_id, item_nft_id, base_id, slot_id))
+		}
+
+		let item_owner =
+			pallet_rmrk_core::Pallet::<T>::lookup_root_owner(item_collection_id, item_nft_id)?;
+		let equipper_owner = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(
+			equipper_collection_id,
+			equipper_nft_id,
+		)?;
+
+		let issuer_owns_either_equipper_or_item =
+			item_owner.0 == issuer || equipper_owner.0 == issuer;
+		ensure!(
+			issuer_owns_either_equipper_or_item,
+			Error::<T>::UnequipperMustOwnEitherItemOrEquipper
+		);
+
+		// Remove from Equippings nft/base/slot storage
+		Equippings::<T>::remove(((equipper_collection_id, equipper_nft_id), base_id, slot_id));
+
+		// Update item's equipped property
+		pallet_rmrk_core::Nfts::<T>::try_mutate_exists(
+			item_collection_id,
+			item_nft_id,
+			|nft| -> DispatchResult {
+				if let Some(nft) = nft {
+					nft.equipped = false;
+				}
+				Ok(())
+			},
+		)?;
+		Ok((item_collection_id, item_nft_id, base_id, slot_id))
 	}
 
 	/// Implementation of the equippable function for the Base trait
@@ -366,7 +420,10 @@ where
 	fn add_theme(
 		issuer: T::AccountId,
 		base_id: BaseId,
-		theme: Theme<BoundedVec<u8, T::StringLimit>, BoundedVec<ThemeProperty<BoundedVec<u8, T::StringLimit>>, T::MaxPropertiesPerTheme>>
+		theme: Theme<
+			BoundedVec<u8, T::StringLimit>,
+			BoundedVec<ThemeProperty<BoundedVec<u8, T::StringLimit>>, T::MaxPropertiesPerTheme>,
+		>,
 	) -> Result<(), DispatchError> {
 		// Base must exist
 		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);

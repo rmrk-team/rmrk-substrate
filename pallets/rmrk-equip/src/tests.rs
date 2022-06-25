@@ -358,15 +358,26 @@ fn equip_works() {
 			Error::<Test>::AlreadyEquipped
 		);
 
-		// Unequipping from left-hand should work
-		assert_ok!(RmrkEquip::equip(
+		// Equipping to left-hand should fail (AlreadyEquipped)
+		assert_noop!(
+			RmrkEquip::equip(
+				Origin::signed(ALICE), // Signer
+				(1, 0),                // item
+				(0, 0),                // equipper
+				0,                     // ResourceId
+				0,                     // BaseId
+				201,                   // SlotId
+			),
+			Error::<Test>::AlreadyEquipped
+		);
+
+		assert_ok!(RmrkEquip::unequip(
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
 			(0, 0),                // equipper
-			0,                     // ResourceId
 			0,                     // BaseId
 			201,                   // SlotId
-		));
+		),);
 
 		System::assert_last_event(MockEvent::RmrkEquip(crate::Event::SlotUnequipped {
 			item_collection: 1,
@@ -385,15 +396,38 @@ fn equip_works() {
 			201,                   // SlotId
 		));
 
+		// CHARLIE can't unequip ALICE's item
+		assert_noop!(
+			RmrkEquip::unequip(
+				Origin::signed(CHARLIE), // Signer
+				(1, 0),                  // item
+				(0, 0),                  // unequipper
+				0,                       // BaseId
+				201,                     // SlotId
+			),
+			Error::<Test>::UnequipperMustOwnEitherItemOrEquipper
+		);
+
 		// Unequipping from left-hand should work
-		assert_ok!(RmrkEquip::equip(
+		assert_ok!(RmrkEquip::unequip(
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
 			(0, 0),                // equipper
-			0,                     // ResourceId
 			0,                     // BaseId
 			201,                   // SlotId
 		));
+
+		// Unequipping again should fail since it is no longer equipped
+		assert_noop!(
+			RmrkEquip::unequip(
+				Origin::signed(ALICE), // Signer
+				(1, 0),                // item
+				(0, 0),                // equipper
+				0,                     // BaseId
+				201,                   // SlotId
+			),
+			Error::<Test>::ItemNotEquipped
+		);
 
 		// Equipping to right-hand should work
 		assert_ok!(RmrkEquip::equip(
