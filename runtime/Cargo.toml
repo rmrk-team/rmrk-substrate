@@ -54,6 +54,7 @@ pallet-template = { version = "0.0.1", default-features = false, path = "../pall
 pallet-rmrk-core = { version = "0.0.1", default-features = false, path = "../pallets/rmrk-core" }
 pallet-rmrk-equip = { version = "0.0.1", default-features = false, path = "../pallets/rmrk-equip" }
 pallet-rmrk-market = { version = "0.0.1", default-features = false, path = "../pallets/rmrk-market" }
+rmrk-traits = { default-features = false, version = "0.0.1", path = "../traits" }
 
 # Contracts specific packages
 pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.24", package = "pallet-contracts", default-features = false }

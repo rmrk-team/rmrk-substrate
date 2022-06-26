@@ -1,7 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
 #![recursion_limit = "256"]
-
+use codec::Encode;
 use pallet_grandpa::{
 	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
 };
@@ -12,39 +12,43 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, MultiSignature,
+	ApplyExtrinsicResult, MultiSignature, DispatchError,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-use frame_system::limits::{BlockLength, BlockWeights};
+use frame_system::{limits::{BlockLength, BlockWeights}};
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
 	construct_runtime, parameter_types,
-	traits::{AsEnsureOriginWithArg, Contains, KeyOwnerProofSystem, Randomness, StorageInfo,OnRuntimeUpgrade,ConstU32,},
+	traits::{AsEnsureOriginWithArg, Contains, KeyOwnerProofSystem, Randomness, StorageInfo, OnRuntimeUpgrade, ConstU32},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
 		IdentityFee, Weight,
 		DispatchClass,
 	},
 	StorageValue,
-	
+	log::{error, trace},
+	BoundedVec,
 };
 use frame_system::EnsureSigned;
 //use frame_system::limits::{BlockLength, BlockWeights};
 
 
-
 use pallet_contracts::{migration, weights::WeightInfo, DefaultContractAccessWeight};
+use pallet_contracts::chain_extension::{
+	ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
+};
 
 pub struct Migrations;
+
 impl OnRuntimeUpgrade for Migrations {
-  fn on_runtime_upgrade() -> Weight {
-      migration::migrate::<Runtime>()
-  }
+	fn on_runtime_upgrade() -> Weight {
+		migration::migrate::<Runtime>()
+	}
 }
 
 #[cfg(any(feature = "std", test))]
@@ -60,6 +64,7 @@ pub use sp_runtime::{Perbill, Permill};
 pub use pallet_template;
 
 pub use pallet_rmrk_core;
+pub use pallet_rmrk_core::pallet::Config as CoreConfig;
 
 pub use pallet_rmrk_equip;
 pub use pallet_rmrk_market;
@@ -111,6 +116,7 @@ pub mod opaque {
 
 /// Constant values used within the runtime.
 pub mod constants;
+
 use constants::currency::*;
 
 // Make the WASM binary available.
@@ -184,7 +190,7 @@ const MILLIUNIT: Balance = 1_000_000_000;
 const EXISTENTIAL_DEPOSIT: Balance = MILLIUNIT;
 
 const fn deposit(items: u32, bytes: u32) -> Balance {
-  (items as Balance * UNIT + (bytes as Balance) * (5 * MILLIUNIT / 100)) / 10
+	(items as Balance * UNIT + (bytes as Balance) * (5 * MILLIUNIT / 100)) / 10
 }
 
 /// We assume that ~10% of the block weight is consumed by `on_initialize` handlers.
@@ -231,6 +237,7 @@ parameter_types! {
 }
 
 pub struct BaseFilter;
+
 impl Contains<Call> for BaseFilter {
 	fn contains(call: &Call) -> bool {
 		// Disable direct calls to pallet_uniques
@@ -257,6 +264,61 @@ impl Contains<Call> for BaseFilter {
 }
 
 // Configure FRAME pallets to include in runtime.
+
+// Chain-Extension for RMRK Pallet
+pub struct RmrkExtension;
+use rmrk_traits::nft::AccountIdOrCollectionNftTuple;
+
+impl ChainExtension<Runtime> for RmrkExtension {
+	fn call<E: Ext>(
+		func_id: u32,
+		env: Environment<E, InitState>,
+	) -> Result<RetVal, DispatchError>
+		where
+			<E::T as SysConfig>::AccountId:
+			UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
+			Runtime: CoreConfig,
+	{
+		match func_id {
+			// RMRK Core as Pallet# 12
+			// TODO: is_owner?
+			1201 => {
+				let mut env = env.buf_in_buf_out();
+				// FIXME: read args
+				let (caller, collectionId, nftId): (AccountId, u32, u32) = env.read_as()?;
+				
+				let is_owner = match crate::pallet_rmrk_core::Pallet::<Runtime>::nfts(collectionId, nftId) {
+					None => false,
+        			Some(nft) => match nft.owner {
+						AccountIdOrCollectionNftTuple::AccountId(a) => a == caller,
+						_ => false,
+					},
+				};
+
+				error!(
+                    target: "runtime",
+                    "[ChainExtension]|call|func_id:{:}| caller: {:?}| collection_id: {:?}| nft_id: {:?}| is_owner: {:?}",
+                    func_id, caller, collectionId, nftId, is_owner);
+
+				let is_owner = is_owner.encode();
+				
+				env.write(&is_owner, false, None).map_err(|_| {
+					DispatchError::Other("ChainExtension failed to call nft storage map")
+				})?;
+			}
+
+			_ => {
+				error!("Called an unregistered `func_id`: {:}", func_id);
+				return Err(DispatchError::Other("Unimplemented func_id"));
+			}
+		}
+		Ok(RetVal::Converging(0))
+	}
+
+	fn enabled() -> bool {
+		true
+	}
+}
 
 impl frame_system::Config for Runtime {
 	/// The basic call filter to use in dispatchable.
@@ -329,7 +391,7 @@ impl pallet_grandpa::Config for Runtime {
 	type KeyOwnerProofSystem = ();
 
 	type KeyOwnerProof =
-		<Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
+	<Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
 
 	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
 		KeyTypeId,
@@ -427,7 +489,7 @@ impl pallet_contracts::Config for Runtime {
 	type CallStack = [pallet_contracts::Frame<Self>; 31];
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = ();
+	type ChainExtension = RmrkExtension;
 	type DeletionQueueDepth = DeletionQueueDepth;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
@@ -551,7 +613,7 @@ construct_runtime!(
 		RmrkMarket: pallet_rmrk_market::{Pallet, Call, Storage, Event<T>},
 		Uniques: pallet_uniques::{Pallet, Call, Storage, Event<T>},
 		Utility: pallet_utility::{Pallet, Call, Storage, Event},
-		
+
 	}
 );
 

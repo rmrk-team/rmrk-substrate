@@ -266,6 +266,7 @@ where
 {
 	type MaxRecursions = T::MaxRecursions;
 
+	
 	fn nft_mint(
 		_sender: T::AccountId,
 		owner: T::AccountId,
