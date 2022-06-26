@@ -267,6 +267,7 @@ impl Contains<Call> for BaseFilter {
 
 // Chain-Extension for RMRK Pallet
 pub struct RmrkExtension;
+use rmrk_traits::nft::AccountIdOrCollectionNftTuple;
 
 impl ChainExtension<Runtime> for RmrkExtension {
 	fn call<E: Ext>(
@@ -285,16 +286,23 @@ impl ChainExtension<Runtime> for RmrkExtension {
 				let mut env = env.buf_in_buf_out();
 				// FIXME: read args
 				let arg: u32 = env.read_as()?;
-				let nft = crate::pallet_rmrk_core::Pallet::<Runtime>::nfts(0, arg)
-				.map(|nft| nft.owner)
-				.ok_or(DispatchError::Other("NFT does not exist!"));
-				
+
+				let nft = match crate::pallet_rmrk_core::Pallet::<Runtime>::nfts(0, arg) {
+					None => None,
+        			Some(nft) => match nft.owner {
+						AccountIdOrCollectionNftTuple::AccountId(a) => Some(a),
+						_ => None,
+					},
+				};
+
 				error!(
                     target: "runtime",
                     "[ChainExtension]|call|func_id:{:}| arg: {:}| nft: {:?}",
                     func_id, arg, nft);
 
+				let nft = nft.ok_or(DispatchError::Other("NFT does not exist!"));
 				let nft = nft.encode();
+				
 				env.write(&nft, false, None).map_err(|_| {
 					DispatchError::Other("ChainExtension failed to call nft storage map")
 				})?;
