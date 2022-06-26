@@ -121,7 +121,6 @@ pub mod pallet {
 		CollectionInfo<StringLimitOf<T>, BoundedCollectionSymbolOf<T>, T::AccountId>,
 	>;
 
-	// BOOKMARK
 	#[pallet::storage]
 	#[pallet::getter(fn nfts)]
 	/// Stores nft info

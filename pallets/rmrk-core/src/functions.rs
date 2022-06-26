@@ -309,7 +309,6 @@ where
 			transferable,
 		};
 
-		// BOOKMARK
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 
 		// increment nfts counter
