@@ -284,17 +284,19 @@ impl ChainExtension<Runtime> for RmrkExtension {
 			1201 => {
 				let mut env = env.buf_in_buf_out();
 				// FIXME: read args
-				let _arg: [u8; 32] = env.read_as()?;
-				let nft = crate::pallet_rmrk_core::Pallet::<Runtime>::nfts(0, 0);
-				let nft = nft.encode();
-
-				trace!(
+				let arg: u32 = env.read_as()?;
+				let nft = crate::pallet_rmrk_core::Pallet::<Runtime>::nfts(0, arg)
+				.map(|nft| nft.owner)
+				.ok_or(DispatchError::Other("NFT does not exist!"));
+				
+				error!(
                     target: "runtime",
-                    "[ChainExtension]|call|func_id:{:}",
-                    func_id
-                );
+                    "[ChainExtension]|call|func_id:{:}| arg: {:}| nft: {:?}",
+                    func_id, arg, nft);
+
+				let nft = nft.encode();
 				env.write(&nft, false, None).map_err(|_| {
-					DispatchError::Other("ChainExtension failed to call random")
+					DispatchError::Other("ChainExtension failed to call nft storage map")
 				})?;
 			}
 
