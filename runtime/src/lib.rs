@@ -281,29 +281,28 @@ impl ChainExtension<Runtime> for RmrkExtension {
 	{
 		match func_id {
 			// RMRK Core as Pallet# 12
-			// TODO: add more functions
+			// TODO: is_owner?
 			1201 => {
 				let mut env = env.buf_in_buf_out();
 				// FIXME: read args
-				let arg: u32 = env.read_as()?;
-
-				let nft = match crate::pallet_rmrk_core::Pallet::<Runtime>::nfts(0, arg) {
-					None => None,
+				let (caller, collectionId, nftId): (AccountId, u32, u32) = env.read_as()?;
+				
+				let is_owner = match crate::pallet_rmrk_core::Pallet::<Runtime>::nfts(collectionId, nftId) {
+					None => false,
         			Some(nft) => match nft.owner {
-						AccountIdOrCollectionNftTuple::AccountId(a) => Some(a),
-						_ => None,
+						AccountIdOrCollectionNftTuple::AccountId(a) => a == caller,
+						_ => false,
 					},
 				};
 
 				error!(
                     target: "runtime",
-                    "[ChainExtension]|call|func_id:{:}| arg: {:}| nft: {:?}",
-                    func_id, arg, nft);
+                    "[ChainExtension]|call|func_id:{:}| caller: {:?}| collection_id: {:?}| nft_id: {:?}| is_owner: {:?}",
+                    func_id, caller, collectionId, nftId, is_owner);
 
-				let nft = nft.ok_or(DispatchError::Other("NFT does not exist!"));
-				let nft = nft.encode();
+				let is_owner = is_owner.encode();
 				
-				env.write(&nft, false, None).map_err(|_| {
+				env.write(&is_owner, false, None).map_err(|_| {
 					DispatchError::Other("ChainExtension failed to call nft storage map")
 				})?;
 			}
