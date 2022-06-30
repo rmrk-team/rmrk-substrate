@@ -403,10 +403,11 @@ export async function sendNft(
 
     const isOwnedByNewOwner = await isNftOwnedBy(api, newOwner, collectionId, nftId);
     const isPending = expectedStatus === "pending";
+
     expect(
         isOwnedByNewOwner,
-        `Error: The NFT should be ${isPending ? "NOT " : ""}owned by ${newOwner.toString()}`
-    ).to.be.equal(!isPending);
+        `Error: The NFT should be owned by ${newOwner.toString()}`
+    ).to.be.true;
 
     expect(nftAfterSending.royalty.eq(nftBeforeSending.royalty), 'Error: Invalid NFT royalty after sending')
         .to.be.true;
@@ -417,7 +418,7 @@ export async function sendNft(
     expect(nftAfterSending.equipped.eq(nftBeforeSending.equipped), 'Error: Invalid NFT equipped status after sending')
         .to.be.true;
 
-    expect(nftAfterSending.pending.eq(expectedStatus === "pending"), 'Error: Invalid NFT pending state')
+    expect(nftAfterSending.pending.eq(isPending), 'Error: Invalid NFT pending state')
         .to.be.true;
 }
 
