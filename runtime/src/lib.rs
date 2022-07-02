@@ -285,9 +285,9 @@ impl ChainExtension<Runtime> for RmrkExtension {
 			1201 => {
 				let mut env = env.buf_in_buf_out();
 				// FIXME: read args
-				let (caller, collectionId, nftId): (AccountId, u32, u32) = env.read_as()?;
+				let (caller, collection_id, nft_id): (AccountId, u32, u32) = env.read_as()?;
 				
-				let is_owner = match crate::pallet_rmrk_core::Pallet::<Runtime>::nfts(collectionId, nftId) {
+				let is_owner = match crate::pallet_rmrk_core::Pallet::<Runtime>::nfts(collection_id, nft_id) {
 					None => false,
         			Some(nft) => match nft.owner {
 						AccountIdOrCollectionNftTuple::AccountId(a) => a == caller,
@@ -298,7 +298,7 @@ impl ChainExtension<Runtime> for RmrkExtension {
 				error!(
                     target: "runtime",
                     "[ChainExtension]|call|func_id:{:}| caller: {:?}| collection_id: {:?}| nft_id: {:?}| is_owner: {:?}",
-                    func_id, caller, collectionId, nftId, is_owner);
+                    func_id, caller, collection_id, nft_id, is_owner);
 
 				let is_owner = is_owner.encode();
 				
