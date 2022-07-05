@@ -12,35 +12,40 @@ use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
 	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify},
 	transaction_validity::{TransactionSource, TransactionValidity},
-	ApplyExtrinsicResult, MultiSignature, DispatchError,
+	ApplyExtrinsicResult, DispatchError, MultiSignature,
 };
 use sp_std::prelude::*;
 #[cfg(feature = "std")]
 use sp_version::NativeVersion;
 use sp_version::RuntimeVersion;
 
-use frame_system::{limits::{BlockLength, BlockWeights}};
+use frame_system::limits::{BlockLength, BlockWeights};
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
-	construct_runtime, parameter_types,
-	traits::{AsEnsureOriginWithArg, Contains, KeyOwnerProofSystem, Randomness, StorageInfo, OnRuntimeUpgrade, ConstU32},
+	construct_runtime,
+	log::{error, trace},
+	parameter_types,
+	traits::{
+		AsEnsureOriginWithArg, ConstU32, Contains, KeyOwnerProofSystem, OnRuntimeUpgrade,
+		Randomness, StorageInfo,
+	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
-		IdentityFee, Weight,
-		DispatchClass,
+		DispatchClass, IdentityFee, Weight,
 	},
-	StorageValue,
-	log::{error, trace},
-	BoundedVec,
+	BoundedVec, StorageValue,
 };
 use frame_system::EnsureSigned;
 //use frame_system::limits::{BlockLength, BlockWeights};
 
-
-use pallet_contracts::{migration, weights::WeightInfo, DefaultContractAccessWeight};
-use pallet_contracts::chain_extension::{
-	ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
+use pallet_contracts::{
+	chain_extension::{
+		ChainExtension, Environment, Ext, InitState, RetVal, SysConfig, UncheckedFrom,
+	},
+	migration,
+	weights::WeightInfo,
+	DefaultContractAccessWeight,
 };
 
 pub struct Migrations;
@@ -63,8 +68,7 @@ pub use sp_runtime::{Perbill, Permill};
 /// Import the template pallet.
 pub use pallet_template;
 
-pub use pallet_rmrk_core;
-pub use pallet_rmrk_core::pallet::Config as CoreConfig;
+pub use pallet_rmrk_core::{self, pallet::Config as CoreConfig};
 
 pub use pallet_rmrk_equip;
 pub use pallet_rmrk_market;
@@ -177,11 +181,9 @@ pub fn native_version() -> NativeVersion {
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 
-
 // Prints debug output of the `contracts` pallet to stdout if the node is
 // started with `-lruntime::contracts=debug`.
 const CONTRACTS_DEBUG_OUTPUT: bool = true;
-
 
 // Contracts price units.
 // Unit = the base number of indivisible units for balances
@@ -199,7 +201,6 @@ const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
 
 /// We allow for 2 seconds of compute with a 6 second average block time.
 const MAXIMUM_BLOCK_WEIGHT: Weight = 2 * WEIGHT_PER_SECOND;
-
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
@@ -268,32 +269,30 @@ impl Contains<Call> for BaseFilter {
 // Chain-Extension for RMRK Pallet
 pub struct RmrkExtension;
 use rmrk_traits::nft::AccountIdOrCollectionNftTuple;
+type NftId = u32;
 
 impl ChainExtension<Runtime> for RmrkExtension {
-	fn call<E: Ext>(
-		func_id: u32,
-		env: Environment<E, InitState>,
-	) -> Result<RetVal, DispatchError>
-		where
-			<E::T as SysConfig>::AccountId:
-			UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
-			Runtime: CoreConfig,
+	fn call<E: Ext>(func_id: u32, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
+	where
+		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
+		Runtime: CoreConfig,
 	{
 		match func_id {
-			// RMRK Core as Pallet# 12
-			// TODO: is_owner?
-			1201 => {
+			// TODO: rmrk functions
+			// check owner for a given account id, collection id, and nft id
+			1 => {
 				let mut env = env.buf_in_buf_out();
-				// FIXME: read args
-				let (caller, collection_id, nft_id): (AccountId, u32, u32) = env.read_as()?;
-				
-				let is_owner = match crate::pallet_rmrk_core::Pallet::<Runtime>::nfts(collection_id, nft_id) {
-					None => false,
-        			Some(nft) => match nft.owner {
-						AccountIdOrCollectionNftTuple::AccountId(a) => a == caller,
-						_ => false,
-					},
-				};
+				let (caller, collection_id, nft_id): (AccountId, CollectionId, NftId) =
+					env.read_as()?;
+
+				let is_owner =
+					match crate::pallet_rmrk_core::Pallet::<Runtime>::nfts(collection_id, nft_id) {
+						None => false,
+						Some(nft) => match nft.owner {
+							AccountIdOrCollectionNftTuple::AccountId(a) => a == caller,
+							_ => false,
+						},
+					};
 
 				error!(
                     target: "runtime",
@@ -301,16 +300,88 @@ impl ChainExtension<Runtime> for RmrkExtension {
                     func_id, caller, collection_id, nft_id, is_owner);
 
 				let is_owner = is_owner.encode();
-				
+
 				env.write(&is_owner, false, None).map_err(|_| {
 					DispatchError::Other("ChainExtension failed to call nft storage map")
 				})?;
-			}
+			},
+			// mint nft
+			// returns nft_id
+			// hacky, race condition prone
+			2 => {
+				let mut env = env.buf_in_buf_out();
+				let (contract_address, owner, collection_id, metadata): (
+					AccountId,
+					AccountId,
+					CollectionId,
+					BoundedVec<u8, StringLimit>,
+				) = env.read_as()?;
+				let origin: Origin =
+					frame_system::RawOrigin::Signed(contract_address.clone()).into();
+				let nft_id = crate::pallet_rmrk_core::Pallet::<Runtime>::next_nft_id(collection_id);
+				let mint_result = crate::pallet_rmrk_core::Pallet::<Runtime>::mint_nft(
+					origin,
+					Some(owner.clone()),
+					collection_id,
+					None,
+					None,
+					metadata,
+					false,
+					None,
+				)
+				.is_ok();
+
+				error!(
+                    target: "runtime",
+                    "[ChainExtension]|call|func_id:{:}| contract_address: {:?}| collection_id: {:?}| owner: {:?} | mint_result: {:?}",
+                    func_id, contract_address, collection_id, owner, mint_result);
+
+				let nft_id = nft_id.encode();
+
+				env.write(&nft_id, false, None)
+					.map_err(|_| DispatchError::Other("ChainExtension failed to mint nft"))?;
+			},
+			// create collection
+			// returns collection id
+			// hacky, race condition prone
+			3 => {
+				let mut env = env.buf_in_buf_out();
+				let (contract_address, metadata, symbol): (
+					AccountId,
+					BoundedVec<u8, StringLimit>,
+					BoundedVec<u8, CollectionSymbolLimit>,
+				) = env.read_as()?;
+				let origin: Origin =
+					frame_system::RawOrigin::Signed(contract_address.clone()).into();
+
+				let collection_id = crate::pallet_rmrk_core::Pallet::<Runtime>::collection_index();
+				let create_result = crate::pallet_rmrk_core::Pallet::<Runtime>::create_collection(
+					origin,
+					metadata.clone(),
+					None,
+					symbol.clone(),
+				)
+				.is_ok();
+
+				let collection =
+					crate::pallet_rmrk_core::Pallet::<Runtime>::collections(collection_id);
+
+				error!(
+                    target: "runtime",
+                    "[ChainExtension]|call|func_id:{:}| contract_address: {:?}| metadata: {:?}| symbol: {:?} | create_result: {:?} | collection: {:?}",
+                    func_id, contract_address, metadata, symbol, create_result, collection);
+
+				let collection_id = collection_id.encode();
+
+				env.write(&collection_id, false, None).map_err(|_| {
+					DispatchError::Other("ChainExtension failed to create collection")
+				})?;
+			},
 
 			_ => {
 				error!("Called an unregistered `func_id`: {:}", func_id);
-				return Err(DispatchError::Other("Unimplemented func_id"));
-			}
+				return Err(DispatchError::Other("Unimplemented func_id"))
+			},
 		}
 		Ok(RetVal::Converging(0))
 	}
@@ -391,7 +462,7 @@ impl pallet_grandpa::Config for Runtime {
 	type KeyOwnerProofSystem = ();
 
 	type KeyOwnerProof =
-	<Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
+		<Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(KeyTypeId, GrandpaId)>>::Proof;
 
 	type KeyOwnerIdentification = <Self::KeyOwnerProofSystem as KeyOwnerProofSystem<(
 		KeyTypeId,
@@ -507,7 +578,6 @@ impl pallet_contracts::Config for Runtime {
 	type RelaxedMaxCodeLen = ConstU32<{ 512 * 1024 }>;
 }
 
-
 /// Configure the pallet-template in pallets/template.
 impl pallet_template::Config for Runtime {
 	type Event = Event;
@@ -563,9 +633,13 @@ impl pallet_rmrk_equip::Config for Runtime {
 	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
 }
 
+type CollectionId = u32;
+
+type StringLimit = UniquesStringLimit;
+
 impl pallet_uniques::Config for Runtime {
 	type Event = Event;
-	type CollectionId = u32;
+	type CollectionId = CollectionId;
 	type ItemId = u32;
 	type Currency = Balances;
 	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
@@ -576,7 +650,7 @@ impl pallet_uniques::Config for Runtime {
 	type MetadataDepositBase = UniquesMetadataDepositBase;
 	type AttributeDepositBase = AttributeDepositBase;
 	type DepositPerByte = DepositPerByte;
-	type StringLimit = UniquesStringLimit;
+	type StringLimit = StringLimit;
 	type KeyLimit = KeyLimit;
 	type ValueLimit = ValueLimit;
 	type WeightInfo = ();
