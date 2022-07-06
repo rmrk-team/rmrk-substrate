@@ -233,6 +233,11 @@ pub mod pallet {
 	/// Lock for NFTs
 	pub type Lock<T: Config> = StorageMap<_, Twox64Concat, (CollectionId, NftId), bool, ValueQuery>;
 
+	/// This storage is not used by the chain.
+	/// It is need only for PolkadotJS types generation.
+	///
+	/// The stored types are use in the RPC interface only,
+	/// PolkadotJS won't generate TS types for them without this storage.
 	#[pallet::storage]
 	pub type DummyStorage<T: Config> = StorageValue<
 		_,
