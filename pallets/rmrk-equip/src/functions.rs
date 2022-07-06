@@ -77,7 +77,7 @@ impl<T: Config> Pallet<T> {
 					}
 				})
 				.collect::<Vec<_>>()
-		).map_err(|_| Error::<T>::TooManyProperties)
+		).or(Err(Error::<T>::TooManyProperties))
 	}
 }
 
