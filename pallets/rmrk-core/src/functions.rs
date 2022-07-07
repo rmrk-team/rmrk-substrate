@@ -449,6 +449,9 @@ where
 		// Check NFT is transferable
 		Self::check_is_transferable(&sending_nft)?;
 
+		// NFT cannot be sent if it is equipped
+		Self::check_is_not_equipped(&sending_nft)?;
+
 		// Needs to be pending if the sending to an account or to a non-owned NFT
 		let mut approval_required = true;
 
@@ -531,7 +534,7 @@ where
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
 		// Prepare acceptance
-		let new_owner_account = match new_owner.clone() {
+		let new_owner_account = match new_owner {
 			AccountIdOrCollectionNftTuple::AccountId(id) => id,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				// Check if NFT target exists
@@ -790,6 +793,12 @@ where
 	// Check NFT is transferable
 	pub fn check_is_transferable(nft: &InstanceInfoOf<T>) -> DispatchResult {
 		ensure!(nft.transferable, Error::<T>::NonTransferable);
+		Ok(())
+	}
+
+	// Check NFT is not equipped
+	pub fn check_is_not_equipped(nft: &InstanceInfoOf<T>) -> DispatchResult {
+		ensure!(!nft.equipped, Error::<T>::CannotSendEquippedItem);
 		Ok(())
 	}
 }

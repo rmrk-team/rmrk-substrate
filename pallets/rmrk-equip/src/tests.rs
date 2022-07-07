@@ -404,8 +404,20 @@ fn equip_works() {
 			0,                     // BaseId
 			202,                   // SlotId
 		));
+
+		// Sending equipped item should fail
+		assert_noop!(
+			RmrkCore::send(
+				Origin::signed(ALICE),
+				1,
+				0,
+				AccountIdOrCollectionNftTuple::AccountId(BOB)
+			),
+			pallet_rmrk_core::Error::<Test>::CannotSendEquippedItem,
+		);
 	});
 }
+
 /// Base: Basic equip tests
 #[test]
 fn equippable_works() {
