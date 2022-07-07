@@ -998,6 +998,7 @@ fn create_resource_works() {
 			base: 0, // BaseID
 			license: None,
 			metadata: None,
+			slot: None,
 			thumb: None,
 		};
 

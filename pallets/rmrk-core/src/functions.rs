@@ -93,6 +93,12 @@ where
 			ResourceTypes::Basic(_r) => (),
 			ResourceTypes::Composable(r) => {
 				EquippableBases::<T>::insert((collection_id, nft_id, r.base), ());
+				if let Some((base, slot)) = r.slot {
+					EquippableSlots::<T>::insert(
+						(collection_id, nft_id, resource_id, base, slot),
+						(),
+					);
+				}
 			},
 			ResourceTypes::Slot(r) => {
 				EquippableSlots::<T>::insert(
