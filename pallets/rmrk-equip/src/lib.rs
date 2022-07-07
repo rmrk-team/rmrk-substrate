@@ -42,8 +42,9 @@ pub type BoundedThemeOf<T> = Theme<
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 	BoundedVec<
 		ThemeProperty<BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>>,
-		<T as Config>::MaxPropertiesPerTheme>
-	>;
+		<T as Config>::MaxPropertiesPerTheme,
+	>,
+>;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -239,10 +240,10 @@ pub mod pallet {
 			base_id: BaseId,
 			new_issuer: <T::Lookup as StaticLookup>::Source,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 			let base = Self::bases(base_id).ok_or(Error::<T>::BaseDoesntExist)?;
 			ensure!(base.issuer == sender, Error::<T>::PermissionError);
-			let new_owner = T::Lookup::lookup(new_issuer.clone())?;
+			let new_owner = T::Lookup::lookup(new_issuer)?;
 
 			ensure!(Bases::<T>::contains_key(base_id), Error::<T>::NoAvailableBaseId);
 

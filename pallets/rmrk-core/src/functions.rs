@@ -297,7 +297,7 @@ where
 			}
 		};
 
-		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
+		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner);
 
 		let nft = NftInfo {
 			owner: owner_as_maybe_account,
@@ -465,7 +465,7 @@ where
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
 		// Prepare acceptance
-		let new_owner_account = match new_owner.clone() {
+		let new_owner_account = match new_owner {
 			AccountIdOrCollectionNftTuple::AccountId(id) => id,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				// Check if NFT target exists
