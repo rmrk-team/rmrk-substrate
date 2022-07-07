@@ -350,7 +350,7 @@ where
 		}
 
 		// Calculate the rootowner of the intended owner of the minted NFT
-		let rootowner = Self::lookup_root_owner(owner.0, owner.1)?.0;
+		let (rootowner, _) = Self::lookup_root_owner(owner.0, owner.1)?;
 
 		// NFT should be pending if minting either to an NFT owned by another account
 		let pending = rootowner != sender;
