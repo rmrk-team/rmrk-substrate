@@ -77,6 +77,9 @@ pub struct ComposableResource<BoundedString, BoundedParts> {
 	pub metadata: Option<BoundedString>,
 
 	/// If the resource has the slot property, it was designed to fit into a specific Base's slot.
+	pub slot: Option<(BaseId, SlotId)>,
+
+	/// If the resource has the slot property, it was designed to fit into a specific Base's slot.
 	/// The baseslot will be composed of two dot-delimited values, like so:
 	/// "base-4477293-kanaria_superbird.machine_gun_scope". This means: "This resource is
 	/// compatible with the machine_gun_scope slot of base base-4477293-kanaria_superbird
@@ -189,6 +192,7 @@ pub trait Resource<BoundedString, AccountId, BoundedPart> {
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource: ResourceTypes<BoundedString, BoundedPart>,
+		adding_on_mint: bool,
 	) -> Result<ResourceId, DispatchError>;
 	fn accept(
 		sender: AccountId,

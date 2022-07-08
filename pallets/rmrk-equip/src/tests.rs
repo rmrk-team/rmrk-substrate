@@ -174,7 +174,7 @@ fn equip_works() {
 		// Mint NFT 0 from collection 0 (character-0)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			None,                               // owner
+			Some(ALICE),                        // owner
 			0,                                  // collection ID
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
@@ -186,7 +186,7 @@ fn equip_works() {
 		// Mint NFT 1 from collection 0 (character-1)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			None,                               // owner
+			Some(ALICE),                        // owner
 			0,                                  // collection ID
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
@@ -198,7 +198,7 @@ fn equip_works() {
 		// Mint NFT 0 from collection 1 (sword)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			None,                             // owner
+			Some(ALICE),                      // owner
 			1,                                // collection ID
 			Some(ALICE),                      // recipient
 			Some(Permill::from_float(1.525)), // royalties
@@ -210,7 +210,7 @@ fn equip_works() {
 		// Mint NFT 1 from collection 1 (flashlight)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			None,                              // owner
+			Some(ALICE),                       // owner
 			1,                                 // collection ID
 			Some(ALICE),                       // recipient
 			Some(Permill::from_float(1.525)),  // royalties
@@ -261,6 +261,7 @@ fn equip_works() {
 			base: 0, // BaseID
 			license: None,
 			metadata: None,
+			slot: None,
 			thumb: None,
 		};
 
@@ -404,8 +405,247 @@ fn equip_works() {
 			0,                     // BaseId
 			202,                   // SlotId
 		));
+
+		// Sending equipped item should fail
+		assert_noop!(
+			RmrkCore::send(
+				Origin::signed(ALICE),
+				1,
+				0,
+				AccountIdOrCollectionNftTuple::AccountId(BOB)
+			),
+			pallet_rmrk_core::Error::<Test>::CannotSendEquippedItem,
+		);
 	});
 }
+
+/// Base: Nested equip tests
+#[test]
+fn nested_equip_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// We will equip a gem to a hat, which we will equip to a person
+		// The person will be in collection 0
+		// The hat will be in collection 1
+		// The gem will be in collection 2
+
+		// We will compose the parts for the PERSON base, then build the PERSON base
+
+		// BODY fixed part for the PERSON's base
+		let body_fixed_part = FixedPart { id: 100, z: 0, src: stb("body") };
+		// HEADWARE slot part for the PERSON's base
+		let headware_slot_part = SlotPart {
+			id: 200,
+			z: 0,
+			src: Some(stb("headware")),
+			equippable: EquippableList::Custom(bvec![
+				1, // HEADWARE collection
+			]),
+		};
+
+		// Create PERSON base
+		assert_ok!(RmrkEquip::create_base(
+			Origin::signed(ALICE), // origin
+			stb("svg"),            // base_type
+			stb("KANPEOPLE"),      // symbol
+			bvec![PartType::FixedPart(body_fixed_part), PartType::SlotPart(headware_slot_part),],
+		));
+
+		// Compose the parts for the HEADWARE base, then build the HEADWARE base
+
+		// HAT fixed part for the HEADWARE's base
+		let hat_fixed_part = FixedPart { id: 300, z: 0, src: stb("body") };
+		// GEM slot part for the HEADWARE's base
+		let gem_slot_part = SlotPart {
+			id: 400,
+			z: 0,
+			src: Some(stb("headware")),
+			equippable: EquippableList::Custom(bvec![
+				2, // GEM collection
+			]),
+		};
+
+		// Create HEADWARE base
+		assert_ok!(RmrkEquip::create_base(
+			Origin::signed(ALICE), // origin
+			stb("svg"),            // base_type
+			stb("HEADWARE"),       // symbol
+			bvec![PartType::FixedPart(hat_fixed_part), PartType::SlotPart(gem_slot_part),],
+		));
+
+		// Create PERSON collection (0)
+		assert_ok!(RmrkCore::create_collection(
+			Origin::signed(ALICE),
+			stb("person-collection"), // metadata
+			Some(5),                  // max
+			sbvec!["COL0"]            // symbol
+		));
+
+		// Create HEADWARE collection (1)
+		assert_ok!(RmrkCore::create_collection(
+			Origin::signed(ALICE),
+			stb("headware-collection"), // metadata
+			Some(5),                    // max
+			sbvec!["COL1"]              // symbol
+		));
+
+		// Create GEM collection (2)
+		assert_ok!(RmrkCore::create_collection(
+			Origin::signed(ALICE),
+			stb("gem-collection"), // metadata
+			Some(5),               // max
+			sbvec!["COL2"]         // symbol
+		));
+
+		// Mint PERSON 0
+		assert_ok!(RmrkCore::mint_nft(
+			Origin::signed(ALICE),
+			None,                             // owner
+			0,                                // collection ID
+			Some(ALICE),                      // recipient
+			Some(Permill::from_float(1.525)), // royalties
+			stb("ipfs://person-0-metadata"),  // metadata
+			true,
+			None,
+		));
+
+		// Mint HAT 0
+		assert_ok!(RmrkCore::mint_nft(
+			Origin::signed(ALICE),
+			None,                             // owner
+			1,                                // collection ID
+			Some(ALICE),                      // recipient
+			Some(Permill::from_float(1.525)), // royalties
+			stb("hat-0"),                     // metadata
+			true,
+			None,
+		));
+
+		// Mint GEM 0
+		assert_ok!(RmrkCore::mint_nft(
+			Origin::signed(ALICE),
+			None,                             // owner
+			2,                                // collection ID
+			Some(ALICE),                      // recipient
+			Some(Permill::from_float(1.525)), // royalties
+			stb("gem-0"),                     // metadata
+			true,
+			None,
+		));
+
+		// Sends hat-0 to person-0
+		assert_ok!(RmrkCore::send(
+			Origin::signed(ALICE),
+			1,                                                          // Collection ID
+			0,                                                          // NFT ID
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0), // Recipient
+		));
+
+		// Sends gem-0 to hat-0
+		assert_ok!(RmrkCore::send(
+			Origin::signed(ALICE),
+			2,                                                          // Collection ID
+			0,                                                          // NFT ID
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(1, 0), // Recipient
+		));
+
+		// Create Composable resource for person-0
+		// Recall part 100 is the BODY fixed part
+		// and part 200 is the HEADWARE slot part
+		let composable_resource_for_person_zero = ComposableResource {
+			parts: vec![100, 200].try_into().unwrap(), // BoundedVec of Parts
+			src: Some(stbd("ipfs://backup-src")),
+			base: 0, // BaseID
+			license: None,
+			metadata: None,
+			slot: None,
+			thumb: None,
+		};
+
+		// Add this composable resource to person-0
+		assert_ok!(RmrkCore::add_composable_resource(
+			Origin::signed(ALICE),
+			0, // collection_id
+			0, // nft id
+			composable_resource_for_person_zero,
+		));
+
+		// Create Composable resource for hat-0
+		// Recall part 300 is the HAT fixed part
+		// and part 400 is the GEM slot part
+		let composable_resource_for_hat_zero = ComposableResource {
+			parts: vec![300, 400].try_into().unwrap(), // BoundedVec of Parts
+			src: Some(stbd("ipfs://backup-src")),
+			base: 1, // BaseID
+			license: None,
+			metadata: None,
+			slot: Some((0, 200)), // Equippable into PERSON's base and that HEADWARE slot
+			thumb: None,
+		};
+
+		// Add this composable resource to hat-0
+		assert_ok!(RmrkCore::add_composable_resource(
+			Origin::signed(ALICE),
+			1, // collection_id
+			0, // nft id
+			composable_resource_for_hat_zero,
+		));
+
+		// Create Slot resource for gem-0
+		// References HEADWARE base (1) and GEM slot (400)
+		let gem_slot_resource = SlotResource {
+			src: Some(stbd("gem-resource")),
+			base: 1, // BaseID
+			license: None,
+			metadata: None,
+			slot: 400, // SlotID
+			thumb: None,
+		};
+
+		// Add this Slot resource to gem-0
+		assert_ok!(RmrkCore::add_slot_resource(
+			Origin::signed(ALICE),
+			2, // collection id
+			0, // nft id
+			gem_slot_resource
+		));
+
+		for i in pallet_rmrk_core::EquippableSlots::<Test>::iter_prefix((0, 0)) {
+			println!("i: {:?}", i);
+		}
+
+		// Equip hat-0 to body-0 should work
+		assert_ok!(RmrkEquip::equip(
+			Origin::signed(ALICE), // Signer
+			(1, 0),                // item
+			(0, 0),                // equipper
+			0,                     // ResourceId,
+			0,                     // BaseId
+			200,                   // SlotId
+		));
+
+		// Equip gem-0 to hat-0 should work
+		assert_ok!(RmrkEquip::equip(
+			Origin::signed(ALICE), // Signer
+			(2, 0),                // item
+			(1, 0),                // equipper
+			0,                     // ResourceId,
+			1,                     // BaseId
+			400,                   // SlotId
+		));
+
+		// body-0 should have hat-0's resource 0 equipped to HEADWARE slot 200
+		assert!(pallet::Equippings::<Test>::get(((0, 0), 0, 200)).is_some());
+
+		// hat-0 should have gem-0's resource 0 equipped to GEM slot 400
+		assert!(pallet::Equippings::<Test>::get(((1, 0), 1, 400)).is_some());
+
+		// hat-0 should be in equipped state
+		assert!(pallet_rmrk_core::Nfts::<Test>::get(1, 0).unwrap().equipped);
+		// gem-0 should be in equipped state
+		assert!(pallet_rmrk_core::Nfts::<Test>::get(2, 0).unwrap().equipped);
+	});
+}
+
 /// Base: Basic equip tests
 #[test]
 fn equippable_works() {

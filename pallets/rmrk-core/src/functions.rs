@@ -82,6 +82,7 @@ where
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource: ResourceTypes<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>>,
+		adding_on_mint: bool,
 	) -> Result<ResourceId, DispatchError> {
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		let resource_id = Self::get_next_resource_id(collection_id, nft_id)?;
@@ -95,6 +96,12 @@ where
 			ResourceTypes::Basic(_r) => (),
 			ResourceTypes::Composable(r) => {
 				EquippableBases::<T>::insert((collection_id, nft_id, r.base), ());
+				if let Some((base, slot)) = r.slot {
+					EquippableSlots::<T>::insert(
+						(collection_id, nft_id, resource_id, base, slot),
+						(),
+					);
+				}
 			},
 			ResourceTypes::Slot(r) => {
 				EquippableSlots::<T>::insert(
@@ -104,10 +111,19 @@ where
 			},
 		}
 
+		// Resource should be in a pending state if the rootowner of the resource is not the sender
+		// of the transaction, unless the resource is being added on mint.  This prevents the
+		// situation where an NFT being minted *directly to* a non-owned NFT *with resources* will
+		// have those resources be *pending*.  While the minted NFT itself will be pending, it is
+		// inefficent and unnecessary to have the resources also be pending.  Otherwise, in such a
+		// case, the owner would have to accept not only the NFT but also all originally-added
+		// resources.
+		let pending = (root_owner != sender) && !adding_on_mint;
+
 		let res: ResourceInfo<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> =
 			ResourceInfo::<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> {
 				id: resource_id,
-				pending: root_owner != sender,
+				pending,
 				pending_removal: false,
 				resource,
 			};
@@ -146,8 +162,8 @@ where
 		nft_id: NftId,
 		resource_id: ResourceId,
 	) -> DispatchResult {
-		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		ensure!(
 			Resources::<T>::contains_key((collection_id, nft_id, resource_id)),
@@ -269,7 +285,7 @@ where
 	type MaxRecursions = T::MaxRecursions;
 
 	fn nft_mint(
-		_sender: T::AccountId,
+		sender: T::AccountId,
 		owner: T::AccountId,
 		collection_id: CollectionId,
 		royalty_recipient: Option<T::AccountId>,
@@ -285,6 +301,9 @@ where
 			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
 		}
 
+		// NFT should be pending if minting to another account
+		let pending = owner != sender;
+
 		let mut royalty = None;
 
 		if let Some(amount) = royalty_amount {
@@ -293,19 +312,76 @@ where
 					royalty = Some(RoyaltyInfo { recipient, amount });
 				},
 				None => {
+					// If a royalty amount is passed but no recipient, defaults to the sender
 					royalty = Some(RoyaltyInfo { recipient: owner.clone(), amount });
 				}
 			}
 		};
 
-		let owner_as_maybe_account = AccountIdOrCollectionNftTuple::AccountId(owner.clone());
-
 		let nft = NftInfo {
-			owner: owner_as_maybe_account,
+			owner: AccountIdOrCollectionNftTuple::AccountId(owner),
 			royalty,
 			metadata,
 			equipped: false,
-			pending: false,
+			pending,
+			transferable,
+		};
+
+		Nfts::<T>::insert(collection_id, nft_id, nft);
+
+		// increment nfts counter
+		let nfts_count = collection.nfts_count.checked_add(1).ok_or(ArithmeticError::Overflow)?;
+		Collections::<T>::try_mutate(collection_id, |collection| -> DispatchResult {
+			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
+			collection.nfts_count = nfts_count;
+			Ok(())
+		})?;
+
+		Ok((collection_id, nft_id))
+	}
+
+	fn nft_mint_directly_to_nft(
+		sender: T::AccountId,
+		owner: (CollectionId, NftId),
+		collection_id: CollectionId,
+		royalty_recipient: Option<T::AccountId>,
+		royalty_amount: Option<Permill>,
+		metadata: StringLimitOf<T>,
+		transferable: bool,
+	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
+		let nft_id = Self::get_next_nft_id(collection_id)?;
+		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+
+		// Prevent minting when next NFT id is greater than the collection max.
+		if let Some(max) = collection.max {
+			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
+		}
+
+		// Calculate the rootowner of the intended owner of the minted NFT
+		let (rootowner, _) = Self::lookup_root_owner(owner.0, owner.1)?;
+
+		// NFT should be pending if minting either to an NFT owned by another account
+		let pending = rootowner != sender;
+
+		let mut royalty = None;
+
+		if let Some(amount) = royalty_amount {
+			match royalty_recipient {
+				Some(recipient) => {
+					royalty = Some(RoyaltyInfo { recipient, amount });
+				},
+				None => {
+					royalty = Some(RoyaltyInfo { recipient: rootowner, amount });
+				},
+			}
+		};
+
+		let nft = NftInfo {
+			owner: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(owner.0, owner.1),
+			royalty,
+			metadata,
+			equipped: false,
+			pending,
 			transferable,
 		};
 
@@ -380,6 +456,9 @@ where
 
 		// Check NFT is transferable
 		Self::check_is_transferable(&sending_nft)?;
+
+		// NFT cannot be sent if it is equipped
+		Self::check_is_not_equipped(&sending_nft)?;
 
 		// Needs to be pending if the sending to an account or to a non-owned NFT
 		let mut approval_required = true;
@@ -463,7 +542,7 @@ where
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
 		// Prepare acceptance
-		let new_owner_account = match new_owner.clone() {
+		let new_owner_account = match new_owner {
 			AccountIdOrCollectionNftTuple::AccountId(id) => id,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				// Check if NFT target exists
@@ -753,6 +832,12 @@ where
 	// Check NFT is transferable
 	pub fn check_is_transferable(nft: &InstanceInfoOf<T>) -> DispatchResult {
 		ensure!(nft.transferable, Error::<T>::NonTransferable);
+		Ok(())
+	}
+
+	// Check NFT is not equipped
+	pub fn check_is_not_equipped(nft: &InstanceInfoOf<T>) -> DispatchResult {
+		ensure!(!nft.equipped, Error::<T>::CannotSendEquippedItem);
 		Ok(())
 	}
 }
