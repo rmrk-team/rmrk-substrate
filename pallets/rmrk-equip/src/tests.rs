@@ -174,7 +174,7 @@ fn equip_works() {
 		// Mint NFT 0 from collection 0 (character-0)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			None,                               // owner
+			Some(ALICE),                        // owner
 			0,                                  // collection ID
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
@@ -186,7 +186,7 @@ fn equip_works() {
 		// Mint NFT 1 from collection 0 (character-1)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			None,                               // owner
+			Some(ALICE),                        // owner
 			0,                                  // collection ID
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
@@ -198,7 +198,7 @@ fn equip_works() {
 		// Mint NFT 0 from collection 1 (sword)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			None,                             // owner
+			Some(ALICE),                      // owner
 			1,                                // collection ID
 			Some(ALICE),                      // recipient
 			Some(Permill::from_float(1.525)), // royalties
@@ -210,7 +210,7 @@ fn equip_works() {
 		// Mint NFT 1 from collection 1 (flashlight)
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
-			None,                              // owner
+			Some(ALICE),                       // owner
 			1,                                 // collection ID
 			Some(ALICE),                       // recipient
 			Some(Permill::from_float(1.525)),  // royalties
@@ -476,8 +476,20 @@ fn equip_works() {
 			0,                     // BaseId
 			202,                   // SlotId
 		));
+
+		// Sending equipped item should fail
+		assert_noop!(
+			RmrkCore::send(
+				Origin::signed(ALICE),
+				1,
+				0,
+				AccountIdOrCollectionNftTuple::AccountId(BOB)
+			),
+			pallet_rmrk_core::Error::<Test>::CannotSendEquippedItem,
+		);
 	});
 }
+
 /// Base: Basic equip tests
 #[test]
 fn equippable_works() {

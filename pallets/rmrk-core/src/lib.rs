@@ -234,7 +234,7 @@ pub mod pallet {
 		},
 		// NftMinted(T::AccountId, CollectionId, NftId),
 		NftMinted {
-			owner: T::AccountId,
+			owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 			collection_id: CollectionId,
 			nft_id: NftId,
 		},
@@ -333,6 +333,9 @@ pub mod pallet {
 		/// Accepting a resource that is not pending should fail
 		ResourceNotPending,
 		NonTransferable,
+		// Must unequip an item before sending (this only applies to the
+		// rmrk-equip pallet but the send operation lives in rmrk-core)
+		CannotSendEquippedItem,
 	}
 
 	#[pallet::call]
@@ -361,7 +364,7 @@ pub mod pallet {
 			transferable: bool,
 			resources: Option<BoundedResourceTypeOf<T>>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 			if let Some(collection_issuer) =
 				pallet_uniques::Pallet::<T>::collection_owner(collection_id)
 			{
@@ -370,14 +373,15 @@ pub mod pallet {
 				return Err(Error::<T>::CollectionUnknown.into())
 			}
 
-			// Default owner to minter
+			// Extract intended owner or default to sender
 			let nft_owner = match owner {
 				Some(owner) => owner,
 				None => sender.clone(),
 			};
 
+			// Mint NFT for RMRK storage
 			let (collection_id, nft_id) = Self::nft_mint(
-				sender,
+				sender.clone(),
 				nft_owner.clone(),
 				collection_id,
 				royalty_recipient,
@@ -393,13 +397,87 @@ pub mod pallet {
 				|_details| Ok(()),
 			)?;
 
+			// Add all at-mint resources
 			if let Some(resources) = resources {
 				for res in resources {
-					Self::resource_add(nft_owner.clone(), collection_id, nft_id, res)?;
+					Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
 				}
 			}
 
-			Self::deposit_event(Event::NftMinted { owner: nft_owner, collection_id, nft_id });
+			Self::deposit_event(Event::NftMinted {
+				owner: AccountIdOrCollectionNftTuple::AccountId(nft_owner),
+				collection_id,
+				nft_id,
+			});
+
+			Ok(())
+		}
+
+		/// Mints an NFT in the specified collection directly to another NFT
+		/// Sets metadata and the royalty attribute
+		///
+		/// Parameters:
+		/// - `collection_id`: The class of the asset to be minted.
+		/// - `nft_id`: The nft value of the asset to be minted.
+		/// - `recipient`: Receiver of the royalty
+		/// - `royalty`: Permillage reward from each trade for the Recipient
+		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[transactional]
+		pub fn mint_nft_directly_to_nft(
+			origin: OriginFor<T>,
+			owner: (CollectionId, NftId),
+			collection_id: CollectionId,
+			royalty_recipient: Option<T::AccountId>,
+			royalty: Option<Permill>,
+			metadata: BoundedVec<u8, T::StringLimit>,
+			transferable: bool,
+			resources: Option<BoundedResourceTypeOf<T>>,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin.clone())?;
+
+			// Collection must exist and sender must be issuer of collection
+			if let Some(collection_issuer) =
+				pallet_uniques::Pallet::<T>::collection_owner(collection_id)
+			{
+				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
+			} else {
+				return Err(Error::<T>::CollectionUnknown.into())
+			}
+
+			// Mint NFT for RMRK storage
+			let (collection_id, nft_id) = Self::nft_mint_directly_to_nft(
+				sender.clone(),
+				owner,
+				collection_id,
+				royalty_recipient,
+				royalty,
+				metadata,
+				transferable,
+			)?;
+
+			// For Uniques, we need to decode the "virtual account" ID to be the owner
+			let uniques_owner = Self::nft_to_account_id(owner.0, owner.1);
+
+			pallet_uniques::Pallet::<T>::do_mint(
+				collection_id,
+				nft_id,
+				uniques_owner,
+				|_details| Ok(()),
+			)?;
+
+			// Add all at-mint resources
+			if let Some(resources) = resources {
+				for res in resources {
+					Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
+				}
+			}
+
+			Self::deposit_event(Event::NftMinted {
+				owner: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(owner.0, owner.1),
+				collection_id,
+				nft_id,
+			});
 
 			Ok(())
 		}
@@ -413,7 +491,7 @@ pub mod pallet {
 			max: Option<u32>,
 			symbol: BoundedCollectionSymbolOf<T>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
 			let collection_id = Self::collection_create(sender.clone(), metadata, max, symbol)?;
 
@@ -443,7 +521,7 @@ pub mod pallet {
 			nft_id: NftId,
 			max_burns: u32,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 			// Check ownership
 			ensure!(sender == root_owner, Error::<T>::NoPermission);
@@ -462,7 +540,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
 			Self::collection_burn(sender.clone(), collection_id)?;
 
@@ -495,7 +573,7 @@ pub mod pallet {
 			nft_id: NftId,
 			new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
 			let (new_owner_account, approval_required) =
 				Self::nft_send(sender.clone(), collection_id, nft_id, new_owner.clone())?;
@@ -533,7 +611,7 @@ pub mod pallet {
 			nft_id: NftId,
 			new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
 			let (new_owner_account, collection_id, nft_id) =
 				Self::nft_accept(sender.clone(), collection_id, nft_id, new_owner.clone())?;
@@ -567,7 +645,7 @@ pub mod pallet {
 			collection_id: CollectionId,
 			nft_id: NftId,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
 			let max_recursions = T::MaxRecursions::get();
 			let (sender, collection_id, nft_id) =
@@ -624,7 +702,7 @@ pub mod pallet {
 			key: KeyLimitOf<T>,
 			value: ValueLimitOf<T>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
 			Self::property_set(sender, collection_id, maybe_nft_id, key.clone(), value.clone())?;
 
@@ -638,7 +716,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
 			let collection_id = Self::collection_lock(sender.clone(), collection_id)?;
 
@@ -655,10 +733,15 @@ pub mod pallet {
 			nft_id: NftId,
 			resource: BasicResource<StringLimitOf<T>>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
-			let resource_id =
-				Self::resource_add(sender, collection_id, nft_id, ResourceTypes::Basic(resource))?;
+			let resource_id = Self::resource_add(
+				sender,
+				collection_id,
+				nft_id,
+				ResourceTypes::Basic(resource),
+				false,
+			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
 			Ok(())
@@ -673,13 +756,14 @@ pub mod pallet {
 			nft_id: NftId,
 			resource: ComposableResource<StringLimitOf<T>, BoundedVec<PartId, T::PartsLimit>>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
 			let resource_id = Self::resource_add(
 				sender,
 				collection_id,
 				nft_id,
 				ResourceTypes::Composable(resource),
+				false,
 			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
@@ -695,10 +779,15 @@ pub mod pallet {
 			nft_id: NftId,
 			resource: SlotResource<StringLimitOf<T>>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
-			let resource_id =
-				Self::resource_add(sender, collection_id, nft_id, ResourceTypes::Slot(resource))?;
+			let resource_id = Self::resource_add(
+				sender,
+				collection_id,
+				nft_id,
+				ResourceTypes::Slot(resource),
+				false,
+			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
 			Ok(())
@@ -713,7 +802,7 @@ pub mod pallet {
 			nft_id: NftId,
 			resource_id: ResourceId,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 			ensure!(
 				Resources::<T>::get((collection_id, nft_id, resource_id)).is_some(),
 				Error::<T>::ResourceDoesntExist
@@ -746,7 +835,7 @@ pub mod pallet {
 			nft_id: NftId,
 			resource_id: ResourceId,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
 			Self::resource_remove(sender, collection_id, nft_id, resource_id)?;
 
@@ -763,7 +852,7 @@ pub mod pallet {
 			nft_id: NftId,
 			resource_id: ResourceId,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 
 			Self::accept_removal(sender, collection_id, nft_id, resource_id)?;
 
@@ -780,7 +869,7 @@ pub mod pallet {
 			nft_id: NftId,
 			priorities: BoundedVec<ResourceId, T::MaxPriorities>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = ensure_signed(origin)?;
 			Self::priority_set(sender, collection_id, nft_id, priorities)?;
 			Self::deposit_event(Event::PrioritySet { collection_id, nft_id });
 			Ok(())
