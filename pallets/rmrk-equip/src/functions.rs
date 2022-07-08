@@ -29,6 +29,15 @@ impl<T: Config> Pallet<T> {
 			Ok(current_id)
 		})
 	}
+
+	/// Helper function for checking if an item is equipped
+	/// If the Equippings storage contains the Base/Slot for the Collection+NFT ID, the item is
+	/// already equipped
+	pub fn slot_is_equipped(item: (CollectionId, NftId), base_id: BaseId, slot_id: SlotId) -> bool {
+		let (equipper_collection_id, equipper_nft_id) = item;
+		Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id))
+			.is_some()
+	}
 }
 
 impl<T: Config>
@@ -149,19 +158,19 @@ where
 			!pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id)
 				.unwrap()
 				.equipped,
-			Error::<T>::AlreadyEquipped
+			Error::<T>::ItemAlreadyEquipped
 		);
 
 		// If the Equippings storage contains the Base/Slot for the Collection+NFT ID, the item is
 		// already equipped
-		let item_is_equipped =
-			Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id))
-				.is_some();
-		ensure!(!item_is_equipped, Error::<T>::AlreadyEquipped);
+		ensure!(
+			!Self::slot_is_equipped((equipper_collection_id, equipper_nft_id), base_id, slot_id),
+			Error::<T>::SlotAlreadyEquipped
+		);
 
 		// Item must exist
 		let item_exists =
-			pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id).is_some();
+			pallet_rmrk_core::Pallet::<T>::nft_exists((item_collection_id, item_nft_id));
 		ensure!(item_exists, Error::<T>::ItemDoesntExist);
 
 		// Equipper must exist
@@ -300,13 +309,14 @@ where
 			pallet_uniques::Error::<T>::Locked
 		);
 
-		let item_is_equipped =
-			Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id))
-				.is_some();
-		ensure!(item_is_equipped, Error::<T>::ItemNotEquipped);
+		ensure!(
+			Self::slot_is_equipped((equipper_collection_id, equipper_nft_id), base_id, slot_id),
+			Error::<T>::SlotNotEquipped
+		);
 
+		// Check if the item already exists
 		let item_exists =
-			pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id).is_some();
+			pallet_rmrk_core::Pallet::<T>::nft_exists((item_collection_id, item_nft_id));
 
 		// If item doesn't exist, anyone can unequip it.  This can happen because burn_nft can
 		// happen in rmrk-core, which doesn't know about rmrk-equip.

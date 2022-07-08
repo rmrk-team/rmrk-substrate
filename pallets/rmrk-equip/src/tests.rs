@@ -240,6 +240,14 @@ fn equip_works() {
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0), // Recipient
 		));
 
+		// Sends NFT (0, 2) [flashlight] to NFT (0, 0) [character-0]
+		assert_ok!(RmrkCore::send(
+			Origin::signed(ALICE),
+			1,                                                          // Collection ID
+			0,                                                          // NFT ID
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0), // Recipient
+		));
+
 		// Attempt to equip sword should fail as character-0 doesn't have a resource that is
 		// associated with this base
 		assert_noop!(
@@ -303,7 +311,24 @@ fn equip_works() {
 			sword_slot_resource_left
 		));
 
-		// Equipping should now work
+		let flashlight_slot_resource_left = SlotResource {
+			src: Some(stbd("ipfs://flashlight-metadata-left")),
+			base: 0, // BaseID
+			license: None,
+			metadata: None,
+			slot: 201, // SlotID
+			thumb: None,
+		};
+
+		// Add our flashlight left-hand resource to our flashlight NFT
+		assert_ok!(RmrkCore::add_slot_resource(
+			Origin::signed(ALICE),
+			1, // collection id
+			1, // nft id
+			flashlight_slot_resource_left
+		));
+
+		// Equipping sword should now work
 		assert_ok!(RmrkEquip::equip(
 			Origin::signed(ALICE), // Signer
 			(1, 0),                // item
@@ -320,10 +345,23 @@ fn equip_works() {
 			slot_id: 201,
 		}));
 
+		// Equipping flashlight to left-hand should fail (SlotAlreadyEquipped)
+		assert_noop!(
+			RmrkEquip::equip(
+				Origin::signed(ALICE), // Signer
+				(1, 1),                // item
+				(0, 0),                // equipper
+				0,                     // ResourceId,
+				0,                     // BaseId
+				201,                   // SlotId
+			),
+			Error::<Test>::SlotAlreadyEquipped
+		);
+
 		// Equipped resource ID 0 should now be associated with equippings for character-0
 		// on base 0, slot 201
 		let equipped = RmrkEquip::equippings(((0, 0), 0, 201));
-		assert_eq!(equipped.clone().unwrap(), 0,);
+		assert_eq!(equipped.unwrap(), 0,);
 
 		// Resource for equipped item should exist
 		assert!(RmrkCore::resources((1, 0, equipped.unwrap())).is_some());
@@ -355,10 +393,10 @@ fn equip_works() {
 				0,                     // BaseId
 				202,                   // SlotId
 			),
-			Error::<Test>::AlreadyEquipped
+			Error::<Test>::ItemAlreadyEquipped
 		);
 
-		// Equipping to left-hand should fail (AlreadyEquipped)
+		// Equipping to left-hand should fail (ItemAlreadyEquipped)
 		assert_noop!(
 			RmrkEquip::equip(
 				Origin::signed(ALICE), // Signer
@@ -368,7 +406,7 @@ fn equip_works() {
 				0,                     // BaseId
 				201,                   // SlotId
 			),
-			Error::<Test>::AlreadyEquipped
+			Error::<Test>::ItemAlreadyEquipped
 		);
 
 		assert_ok!(RmrkEquip::unequip(
@@ -426,7 +464,7 @@ fn equip_works() {
 				0,                     // BaseId
 				201,                   // SlotId
 			),
-			Error::<Test>::ItemNotEquipped
+			Error::<Test>::SlotNotEquipped
 		);
 
 		// Equipping to right-hand should work

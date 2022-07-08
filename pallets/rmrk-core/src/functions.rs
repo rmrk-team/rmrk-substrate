@@ -723,4 +723,10 @@ where
 		ensure!(nft.transferable, Error::<T>::NonTransferable);
 		Ok(())
 	}
+
+	/// Helper function for checking if an NFT exists
+	pub fn nft_exists(item: (CollectionId, NftId)) -> bool {
+		let (item_collection_id, item_nft_id) = item;
+		Nfts::<T>::get(item_collection_id, item_nft_id).is_some()
+	}
 }

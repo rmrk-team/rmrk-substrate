@@ -210,8 +210,12 @@ pub mod pallet {
 		NoEquippableOnFixedPart,
 		// No "default" Theme is defined, required prior to defining other themes
 		NeedsDefaultThemeFirst,
-		// Equipped item cannot be equipped elsewhere (without first unequipping)
-		AlreadyEquipped,
+		// Item is trying to be equipped but is already equipped
+		ItemAlreadyEquipped,
+		// Slot to which an item is being equipped already has something equipped there
+		SlotAlreadyEquipped,
+		// Slot from which an item is being unequipped has nothing equipped there
+		SlotNotEquipped,
 		// Error that should not occur
 		// TODO is this being used?
 		UnknownError,
