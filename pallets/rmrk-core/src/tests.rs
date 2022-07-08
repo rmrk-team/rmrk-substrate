@@ -119,7 +119,7 @@ fn create_collection_no_max_works() {
 		}
 		// Last event should be the 100th NFT creation
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NftMinted {
-			owner: ALICE,
+			owner: AccountIdOrCollectionNftTuple::AccountId(ALICE),
 			collection_id: 0,
 			nft_id: 99,
 		}));
@@ -227,7 +227,7 @@ fn mint_nft_works() {
 		assert_ok!(basic_mint());
 		// Minting an NFT should trigger an NftMinted event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NftMinted {
-			owner: ALICE,
+			owner: AccountIdOrCollectionNftTuple::AccountId(ALICE),
 			collection_id: 0,
 			nft_id: 0,
 		}));
@@ -274,6 +274,120 @@ fn mint_nft_works() {
 	});
 }
 
+/// NFT: Mint directly to NFT
+#[test]
+fn mint_directly_to_nft() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+
+		// Mint directly to non-existent NFT fails
+		assert_noop!(
+			RMRKCore::mint_nft_directly_to_nft(
+				Origin::signed(ALICE),
+				(0, 0),
+				COLLECTION_ID_0,
+				None,
+				Some(Permill::from_float(20.525)),
+				bvec![0u8; 20],
+				true,
+				None,
+			),
+			Error::<Test>::NoAvailableNftId
+		);
+
+		// ALICE mints an NFT for BOB
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			Some(BOB),
+			COLLECTION_ID_0,
+			None,
+			Some(Permill::from_float(20.525)),
+			bvec![0u8; 20],
+			true,
+			None,
+		));
+
+		// BOB owns NFT (0, 0)
+		assert_eq!(
+			RmrkCore::nfts(0, 0).unwrap().owner,
+			AccountIdOrCollectionNftTuple::AccountId(BOB)
+		);
+
+		// ALICE mints NFT directly to BOB-owned NFT (0, 0)
+		assert_ok!(RMRKCore::mint_nft_directly_to_nft(
+			Origin::signed(ALICE),
+			(0, 0),
+			COLLECTION_ID_0,
+			None,
+			Some(Permill::from_float(20.525)),
+			bvec![0u8; 20],
+			true,
+			None,
+		));
+
+		// Minted NFT (0, 1) exists
+		assert!(RmrkCore::nfts(0, 1).is_some());
+
+		// Minted NFT (0, 1) has owner NFT (0, 0)
+		assert_eq!(
+			RmrkCore::nfts(0, 1).unwrap().owner,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)
+		);
+
+		// Minted NFT (0, 1) is pending
+		assert!(RmrkCore::nfts(0, 1).unwrap().pending);
+	});
+}
+
+/// NFT: When minting directly to a non-owned NFT *with resources*, the resources should *not* be
+/// pending
+#[test]
+fn mint_directly_to_nft_with_resources() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+
+		// ALICE mints an NFT for BOB
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			Some(BOB),
+			COLLECTION_ID_0,
+			None,
+			Some(Permill::from_float(20.525)),
+			bvec![0u8; 20],
+			true,
+			None,
+		));
+
+		// Compose a resource to add to an NFT
+		let basic_resource =
+			BasicResource { src: None, metadata: None, license: None, thumb: None };
+
+		// Construct as a BoundedVec of resources which mint_nft will accept
+		let resources_to_add = bvec![ResourceTypes::Basic(basic_resource)];
+
+		// ALICE mints NFT directly to BOB-owned NFT (0, 0), with the above resource
+		assert_ok!(RMRKCore::mint_nft_directly_to_nft(
+			Origin::signed(ALICE),
+			(0, 0),
+			COLLECTION_ID_0,
+			None,
+			Some(Permill::from_float(20.525)),
+			bvec![0u8; 20],
+			true,
+			Some(resources_to_add),
+		));
+
+		// Created resource 0 on NFT (0, 1) should exist
+		assert!(RmrkCore::resources((0, 1, 0)).is_some());
+
+		println!("{:?}", RmrkCore::resources((0, 1, 0)).unwrap());
+		// Created resource 0 on NFT (0, 1) should not be pending
+		assert!(!RmrkCore::resources((0, 1, 0)).unwrap().pending);
+	});
+}
+
 /// NFT: Mint tests with max (RMRK2.0 spec: MINT)
 #[test]
 fn mint_collection_max_logic_works() {
@@ -302,7 +416,7 @@ fn royalty_recipient_default_works() {
 		// Mint an NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			None,
+			Some(ALICE),
 			COLLECTION_ID_0,
 			None, // No royalty recipient
 			Some(Permill::from_float(20.525)),
@@ -315,7 +429,7 @@ fn royalty_recipient_default_works() {
 		// Mint another NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			None,
+			Some(ALICE),
 			COLLECTION_ID_0,
 			Some(BOB), // Royalty recipient is BOB
 			Some(Permill::from_float(20.525)),
@@ -328,7 +442,7 @@ fn royalty_recipient_default_works() {
 		// Mint another NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			None,
+			Some(ALICE),
 			COLLECTION_ID_0,
 			None, // No royalty recipient is BOB
 			None, // No royalty amount
@@ -341,7 +455,7 @@ fn royalty_recipient_default_works() {
 		// Mint another NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			None,
+			Some(ALICE),
 			COLLECTION_ID_0,
 			Some(ALICE), // Royalty recipient is ALICE
 			None,        // No royalty amount
@@ -513,7 +627,7 @@ fn send_non_transferable_fail() {
 		// Mint non-transferable NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			None,
+			Some(ALICE),
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
@@ -530,6 +644,80 @@ fn send_non_transferable_fail() {
 			),
 			Error::<Test>::NonTransferable
 		);
+	});
+}
+
+#[test]
+fn mint_non_transferrable_gem_on_to_nft_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+
+		// Mint NFT (transferrable, will be the parent of a later-minted non-transferrable NFT)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			Some(BOB),
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			true, // transferable
+			None,
+		));
+
+		// Mint non-transferable NFT *on to* Bob-owned NFT (0, 0)
+		assert_ok!(RMRKCore::mint_nft_directly_to_nft(
+			Origin::signed(ALICE),
+			(0, 0),
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			false, // non-transferable
+			None,
+		));
+
+		// NFT (0, 1) exists and is non-transferrable
+		assert!(!RMRKCore::nfts(0, 1).unwrap().transferable);
+
+		// NFT (0, 1) is owned by BOB-owned NFT (0, 0)
+		assert_eq!(
+			RMRKCore::nfts(0, 1).unwrap().owner,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)
+		);
+
+		// BOB *cannot send* non-transferrable NFT (0, 1) to CHARLIE
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(BOB),
+				0,
+				1,
+				AccountIdOrCollectionNftTuple::AccountId(CHARLIE)
+			),
+			Error::<Test>::NonTransferable
+		);
+
+		// BOB *cannot send* non-transferrable NFT (0, 1) to BOB (his own root account)
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(BOB),
+				0,
+				1,
+				AccountIdOrCollectionNftTuple::AccountId(BOB)
+			),
+			Error::<Test>::NonTransferable
+		);
+
+		// BOB *can* send NFT (0, 0) to CHARLIE
+		assert_ok!(RMRKCore::send(
+			Origin::signed(BOB),
+			0,
+			0,
+			AccountIdOrCollectionNftTuple::AccountId(CHARLIE)
+		));
+
+		// CHARLIE now rootowns NFT (0, 1)
+		assert_eq!(RMRKCore::lookup_root_owner(0, 1).unwrap().0, CHARLIE);
 	});
 }
 
@@ -1051,7 +1239,7 @@ fn add_resource_on_mint_works() {
 		// Mint NFT
 		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			None,
+			Some(ALICE),
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
@@ -1070,9 +1258,6 @@ fn add_resource_on_mint_works() {
 #[test]
 fn add_resource_on_mint_beyond_max_fails() {
 	ExtBuilder::default().build().execute_with(|| {
-		let basic_resource: BasicResource<BoundedVec<u8, UniquesStringLimit>> =
-			BasicResource { src: None, metadata: None, license: None, thumb: None };
-
 		// Create a basic collection
 		assert_ok!(basic_collection());
 
@@ -1088,16 +1273,16 @@ fn add_resource_on_mint_beyond_max_fails() {
 		];
 
 		// Mint NFT
-		RMRKCore::mint_nft(
+		assert_ok!(RMRKCore::mint_nft(
 			Origin::signed(ALICE),
-			None,
+			Some(ALICE),
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
 			bvec![0u8; 20],
 			true,
 			Some(resources_to_add),
-		)
+		));
 	});
 }
 

@@ -64,6 +64,15 @@ pub trait Nft<AccountId, BoundedString> {
 		metadata: BoundedString,
 		transferable: bool,
 	) -> Result<(CollectionId, NftId), DispatchError>;
+	fn nft_mint_directly_to_nft(
+		sender: AccountId,
+		owner: (CollectionId, NftId),
+		collection_id: CollectionId,
+		royalty_recipient: Option<AccountId>,
+		royalty_amount: Option<Permill>,
+		metadata: BoundedString,
+		transferable: bool,
+	) -> Result<(CollectionId, NftId), DispatchError>;
 	fn nft_burn(
 		collection_id: CollectionId,
 		nft_id: NftId,
