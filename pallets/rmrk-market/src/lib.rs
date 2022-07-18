@@ -37,9 +37,11 @@ pub mod pallet {
 	use crate::types::ListInfo;
 	use frame_support::pallet_prelude::*;
 	use frame_system::pallet_prelude::*;
+	use sp_runtime::Permill;
 
 	pub type InstanceInfoOf<T> = NftInfo<
 		<T as frame_system::Config>::AccountId,
+		Permill,
 		BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 	>;
 

@@ -7,17 +7,34 @@ use frame_support::pallet_prelude::MaxEncodedLen;
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
 
-use crate::primitives::*;
+#[cfg(feature = "std")]
+use serde::Serialize;
+
+use crate::{primitives::*, serialize};
 use sp_std::result::Result;
 
 /// Collection info.
-#[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+#[cfg_attr(feature = "std", derive(PartialEq, Eq, Serialize))]
+#[derive(Encode, Decode, Debug, TypeInfo, MaxEncodedLen)]
+#[cfg_attr(
+	feature = "std",
+	serde(
+		bound = r#"
+			AccountId: Serialize,
+			BoundedString: AsRef<[u8]>,
+			BoundedSymbol: AsRef<[u8]>
+		"#
+	)
+)]
 pub struct CollectionInfo<BoundedString, BoundedSymbol, AccountId> {
 	/// Current bidder and bid price.
 	pub issuer: AccountId,
+
+	#[cfg_attr(feature = "std", serde(with = "serialize::vec"))]
 	pub metadata: BoundedString,
 	pub max: Option<u32>,
+
+	#[cfg_attr(feature = "std", serde(with = "serialize::vec"))]
 	pub symbol: BoundedSymbol,
 	pub nfts_count: u32,
 }
