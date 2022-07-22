@@ -1,0 +1,81 @@
+{
+  "name": "rmrk-tests",
+  "version": "1.0.0",
+  "description": "Unique Chain RMRK Tests",
+  "main": "",
+  "devDependencies": {
+    "@polkadot/dev": "0.66.36",
+    "@polkadot/ts": "0.4.22",
+    "@polkadot/typegen": "8.7.2-13",
+    "@types/chai": "^4.3.1",
+    "@types/chai-as-promised": "^7.1.5",
+    "@types/mocha": "^9.1.1",
+    "@types/node": "^17.0.35",
+    "@typescript-eslint/eslint-plugin": "^5.26.0",
+    "@typescript-eslint/parser": "^5.26.0",
+    "chai": "^4.3.6",
+    "eslint": "^8.16.0",
+    "mocha": "^10.0.0",
+    "ts-node": "^10.8.0",
+    "typescript": "^4.7.2"
+  },
+  "mocha": {
+    "timeout": 9999999,
+    "require": "ts-node/register"
+  },
+  "scripts": {
+    "lint": "eslint --ext .ts,.js src/",
+    "fix": "eslint --ext .ts,.js src/ --fix",
+    "test": "mocha --timeout 9999999 -r ts-node/register './src/*.test.ts'",
+    "testAddTheme": "mocha --timeout 9999999 -r ts-node/register './src/addTheme.test.ts'",
+    "testCreateBase": "mocha --timeout 9999999 -r ts-node/register './src/createBase.test.ts'",
+    "testCreateCollection": "mocha --timeout 9999999 -r ts-node/register './src/createCollection.test.ts'",
+    "testDeleteCollection": "mocha --timeout 9999999 -r ts-node/register './src/deleteCollection.test.ts'",
+    "testChangeCollectionIssuer": "mocha --timeout 9999999 -r ts-node/register './src/changeCollectionIssuer.test.ts'",
+    "testLockCollection": "mocha --timeout 9999999 -r ts-node/register './src/lockCollection.test.ts'",
+    "testMintNft": "mocha --timeout 9999999 -r ts-node/register './src/mintNft.test.ts'",
+    "testBurnNft": "mocha --timeout 9999999 -r ts-node/register './src/burnNft.test.ts'",
+    "testGetOwnedNfts": "mocha --timeout 9999999 -r ts-node/register './src/getOwnedNfts.test.ts'",
+    "testSetNftProperty": "mocha --timeout 9999999 -r ts-node/register './src/setNftProperty.test.ts'",
+    "testSetCollectionProperty": "mocha --timeout 9999999 -r ts-node/register './src/setCollectionProperty.test.ts'",
+    "testAddResource": "mocha --timeout 9999999 -r ts-node/register './src/addResource.test.ts'",
+    "testRemoveResource": "mocha --timeout 9999999 -r ts-node/register './src/removeResource.test.ts'",
+    "testSetResourcePriorities": "mocha --timeout 9999999 -r ts-node/register './src/setResourcePriorities.test.ts'",
+    "testSetEquippableList": "mocha --timeout 9999999 -r ts-node/register './src/setEquippableList.test.ts'",
+    "testSendNft": "mocha --timeout 9999999 -r ts-node/register './src/sendNft.test.ts'",
+    "testAcceptNft": "mocha --timeout 9999999 -r ts-node/register './src/acceptNft.test.ts'",
+    "testRejectNft": "mocha --timeout 9999999 -r ts-node/register './src/rejectNft.test.ts'",
+    "testEquipNft": "mocha --timeout 9999999 -r ts-node/register './src/equipNft.test.ts'",
+    "polkadot-types-fetch-metadata": "curl -H 'Content-Type: application/json' -d '{\"id\":\"1\", \"jsonrpc\":\"2.0\", \"method\": \"state_getMetadata\", \"params\":[]}' http://localhost:9933 > src/interfaces/metadata.json",
+    "polkadot-types-from-defs": "ts-node ./node_modules/.bin/polkadot-types-from-defs --endpoint src/interfaces/metadata.json --input src/interfaces/ --package .",
+    "polkadot-types-from-chain": "ts-node ./node_modules/.bin/polkadot-types-from-chain --endpoint src/interfaces/metadata.json --output src/interfaces/ --package .",
+    "polkadot-types": "yarn polkadot-types-fetch-metadata && yarn polkadot-types-from-defs && yarn polkadot-types-from-chain"
+  },
+  "author": "",
+  "license": "SEE LICENSE IN ../LICENSE",
+  "homepage": "",
+  "dependencies": {
+    "@polkadot/api": "8.7.2-13",
+    "@polkadot/api-contract": "8.7.2-13",
+    "@polkadot/util-crypto": "9.4.1",
+    "bignumber.js": "^9.0.2",
+    "chai-as-promised": "^7.1.1",
+    "find-process": "^1.4.7",
+    "solc": "0.8.14-fixed",
+    "web3": "^1.7.3"
+  },
+  "standard": {
+    "globals": [
+      "it",
+      "assert",
+      "beforeEach",
+      "afterEach",
+      "describe",
+      "contract",
+      "artifacts"
+    ]
+  },
+  "resolutions": {
+    "simple-get": "^4.0.1"
+  }
+}

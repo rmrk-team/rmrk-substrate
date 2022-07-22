@@ -58,6 +58,10 @@ frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/pari
 
 # Local Dependencies
 rmrk-substrate-runtime = { version = "4.0.0-dev", path = "../runtime" }
+rmrk-rpc = { version = "0.0.1", path = "../rpc" }
+rmrk-traits = { version = "0.0.1", path = "../traits" }
+pallet-rmrk-core = { version = "0.0.1", path = "../pallets/rmrk-core" }
+pallet-rmrk-equip = { version = "0.0.1", path = "../pallets/rmrk-equip" }
 
 # CLI-specific dependencies
 try-runtime-cli = { version = "0.10.0-dev", optional = true, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
