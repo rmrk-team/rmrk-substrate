@@ -5,71 +5,25 @@
 
 #![warn(missing_docs)]
 
-use std::{sync::Arc, marker::PhantomData};
+use std::sync::Arc;
 
 use jsonrpsee::RpcModule;
-use rmrk_substrate_runtime::{opaque::Block, AccountId, Balance, Index};
+
+use rmrk_substrate_runtime::{
+	opaque::Block, AccountId, Balance, CollectionSymbolLimit, Index, KeyLimit,
+	MaxCollectionsEquippablePerPart, MaxPropertiesPerTheme, PartsLimit, UniquesStringLimit,
+	ValueLimit,
+};
+use rmrk_traits::{
+	primitives::{CollectionId, PartId},
+	BaseInfo, CollectionInfo, NftInfo, PartType, PropertyInfo, ResourceInfo, Theme, ThemeProperty,
+};
 pub use sc_rpc_api::DenyUnsafe;
 use sc_transaction_pool_api::TransactionPool;
-use sp_api::{ProvideRuntimeApi, BlockT, BlockId, ApiExt, Encode, Decode};
-use rmrk_substrate_runtime::Runtime as RmrkRuntime;
+use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderBackend, HeaderMetadata};
-use jsonrpsee::{
-	core::{Error as RpcError, RpcResult},
-	proc_macros::rpc
-};
-
-use rmrk_rpc::{RmrkApi as RmrkRuntimeApi, PropertyKey, ThemeName};
-use rmrk_traits::{primitives::*, NftChild};
-
-use pallet_rmrk_core::{CollectionInfoOf, InstanceInfoOf, ResourceInfoOf, PropertyInfoOf};
-use pallet_rmrk_equip::{BoundedThemeOf, BaseInfoOf, PartTypeOf};
-
-macro_rules! pass_method {
-	(
-		$method_name:ident(
-			$($(#[map(|$map_arg:ident| $map:expr)])? $name:ident: $ty:ty),*
-			$(,)?
-		) -> $result:ty
-	) => {
-		fn $method_name(
-			&self,
-			$(
-				$name: $ty,
-			)*
-			at: Option<<Block as BlockT>::Hash>,
-		) -> RpcResult<$result> {
-			let api = self.client.runtime_api();
-			let at = BlockId::hash(at.unwrap_or_else(|| self.client.info().best_hash));
-			let _api_version = if let Ok(Some(api_version)) =
-				api.api_version::<
-					dyn RmrkRuntimeApi<
-						Block,
-						AccountId,
-						CollectionInfo,
-						NftInfo,
-						ResourceInfo,
-						PropertyInfo,
-						BaseInfo,
-						PartType,
-						Theme
-					>
-				>(&at)
-			{
-				api_version
-			} else {
-				unreachable!("The RMRK API is always available; qed");
-			};
-
-			let result = api.$method_name(&at, $($((|$map_arg: $ty| $map))? ($name)),*);
-
-			let result = result.map_err(|e| RpcError::Custom(format!("sp_api error: {:?}", e)))?;
-
-			result.map_err(|e| RpcError::Custom(format!("runtime error: {:?}", e)))
-		}
-	};
-}
+use sp_runtime::{BoundedVec, Permill};
 
 /// Full client dependencies.
 pub struct FullDeps<C, P> {
@@ -79,220 +33,6 @@ pub struct FullDeps<C, P> {
 	pub pool: Arc<P>,
 	/// Whether to deny unsafe calls
 	pub deny_unsafe: DenyUnsafe,
-}
-
-/// RMRK RPC API instance
-pub struct RmrkApi<C, Block> {
-	client: Arc<C>,
-	_marker: PhantomData<Block>,
-}
-
-impl<C, Block> RmrkApi<C, Block> {
-	/// Make new RMRK RPC API instance
-	pub fn new(client: Arc<C>) -> Self {
-		Self {
-			client,
-			_marker: Default::default()
-		}
-	}
-}
-
-/// RMRK RPC API
-#[rpc(server, namespace = "rmrk")]
-pub trait RmrkApi<
-	BlockHash,
-	AccountId,
-	CollectionInfo,
-	NftInfo,
-	ResourceInfo,
-	PropertyInfo,
-	BaseInfo,
-	PartType,
-	Theme
->
-{
-	#[method(name = "lastCollectionIdx")]
-	/// Get the latest created collection id
-	fn last_collection_idx(&self, at: Option<BlockHash>) -> RpcResult<CollectionId>;
-
-	#[method(name = "collectionById")]
-	/// Get collection by id
-	fn collection_by_id(&self, id: CollectionId, at: Option<BlockHash>) -> RpcResult<Option<CollectionInfo>>;
-
-	#[method(name = "nftById")]
-	/// Get NFT by collection id and NFT id
-	fn nft_by_id(
-		&self,
-		collection_id: CollectionId,
-		nft_id: NftId,
-		at: Option<BlockHash>
-	) -> RpcResult<Option<NftInfo>>;
-
-	#[method(name = "accountTokens")]
-	/// Get tokens owned by an account in a collection
-	fn account_tokens(
-		&self,
-		account_id: AccountId,
-		collection_id: CollectionId,
-		at: Option<BlockHash>
-	) -> RpcResult<Vec<NftId>>;
-
-	#[method(name = "nftChildren")]
-	/// Get NFT children
-	fn nft_children(
-		&self,
-		collection_id: CollectionId,
-		nft_id: NftId,
-		at: Option<BlockHash>
-	) -> RpcResult<Vec<NftChild>>;
-
-	#[method(name = "collectionProperties")]
-	/// Get collection properties
-	fn collection_properties(
-		&self,
-		collection_id: CollectionId,
-		filter_keys: Option<Vec<String>>,
-		at: Option<BlockHash>
-	) -> RpcResult<Vec<PropertyInfo>>;
-
-	#[method(name = "nftProperties")]
-	/// Get NFT properties
-	fn nft_properties(
-		&self,
-		collection_id: CollectionId,
-		nft_id: NftId,
-		filter_keys: Option<Vec<String>>,
-		at: Option<BlockHash>
-	) -> RpcResult<Vec<PropertyInfo>>;
-
-	#[method(name = "nftResources")]
-	/// Get NFT resources
-	fn nft_resources(
-		&self,
-		collection_id: CollectionId,
-		nft_id: NftId,
-		at: Option<BlockHash>
-	) -> RpcResult<Vec<ResourceInfo>>;
-
-	#[method(name = "nftResourcePriority")]
-	/// Get NFT resource priority
-	fn nft_resource_priority(
-		&self,
-		collection_id: CollectionId,
-		nft_id: NftId,
-		resource_id: ResourceId,
-		at: Option<BlockHash>
-	) -> RpcResult<Option<u32>>;
-
-	#[method(name = "base")]
-	/// Get base info
-	fn base(&self, base_id: BaseId, at: Option<BlockHash>) -> RpcResult<Option<BaseInfo>>;
-
-	#[method(name = "baseParts")]
-	/// Get all Base's parts
-	fn base_parts(&self, base_id: BaseId, at: Option<BlockHash>) -> RpcResult<Vec<PartType>>;
-
-	#[method(name = "themeNames")]
-	/// Get Base's theme names
-	fn theme_names(&self, base_id: BaseId, at: Option<BlockHash>) -> RpcResult<Vec<ThemeName>>;
-
-	#[method(name = "themes")]
-	/// Get Theme info -- name, properties, and inherit flag
-	fn theme(
-		&self,
-		base_id: BaseId,
-		theme_name: String,
-		filter_keys: Option<Vec<String>>,
-		at: Option<BlockHash>
-	) -> RpcResult<Option<Theme>>;
-}
-
-impl<
-	C, Block, AccountId,
-	CollectionInfo,
-	NftInfo,
-	ResourceInfo,
-	PropertyInfo,
-	BaseInfo,
-	PartType,
-	Theme
-> RmrkApiServer<
-	<Block as BlockT>::Hash,
-	AccountId,
-	CollectionInfo,
-	NftInfo,
-	ResourceInfo,
-	PropertyInfo,
-	BaseInfo,
-	PartType,
-	Theme,
-> for RmrkApi<C, Block>
-where
-	C: ProvideRuntimeApi<Block>,
-	C: HeaderBackend<Block>,
-	C: Send + Sync + 'static,
-	C::Api: RmrkRuntimeApi<
-		Block, AccountId,
-		CollectionInfo,
-		NftInfo,
-		ResourceInfo,
-		PropertyInfo,
-		BaseInfo,
-		PartType,
-		Theme
-	>,
-	AccountId: Encode,
-	CollectionInfo: Decode,
-	NftInfo: Decode,
-	ResourceInfo: Decode,
-	PropertyInfo: Decode,
-	BaseInfo: Decode,
-	PartType: Decode,
-	Theme: Decode,
-	Block: BlockT
-{
-	pass_method!(last_collection_idx() -> CollectionId);
-	pass_method!(collection_by_id(id: CollectionId) -> Option<CollectionInfo>);
-	pass_method!(nft_by_id(collection_id: CollectionId, nft_id: NftId) -> Option<NftInfo>);
-	pass_method!(account_tokens(account_id: AccountId, collection_id: CollectionId) -> Vec<NftId>);
-	pass_method!(nft_children(collection_id: CollectionId, nft_id: NftId) -> Vec<NftChild>);
-	pass_method!(
-		collection_properties(
-			collection_id: CollectionId,
-
-			#[map(|keys| keys.map(string_keys_to_bytes_keys))]
-			filter_keys: Option<Vec<String>>
-		) -> Vec<PropertyInfo>
-	);
-	pass_method!(
-		nft_properties(
-			collection_id: CollectionId,
-			nft_id: NftId,
-
-			#[map(|keys| keys.map(string_keys_to_bytes_keys))]
-			filter_keys: Option<Vec<String>>
-		) -> Vec<PropertyInfo>
-	);
-	pass_method!(nft_resources(collection_id: CollectionId, nft_id: NftId) -> Vec<ResourceInfo>);
-	pass_method!(nft_resource_priority(collection_id: CollectionId, nft_id: NftId, resource_id: ResourceId) -> Option<u32>);
-	pass_method!(base(base_id: BaseId) -> Option<BaseInfo>);
-	pass_method!(base_parts(base_id: BaseId) -> Vec<PartType>);
-	pass_method!(theme_names(base_id: BaseId) -> Vec<ThemeName>);
-	pass_method!(
-		theme(
-			base_id: BaseId,
-
-			#[map(|n| n.into_bytes())]
-			theme_name: String,
-
-			#[map(|keys| keys.map(string_keys_to_bytes_keys))]
-			filter_keys: Option<Vec<String>>
-		) -> Option<Theme>
-	);
-}
-
-fn string_keys_to_bytes_keys(keys: Vec<String>) -> Vec<PropertyKey> {
-	keys.into_iter().map(|key| key.into_bytes()).collect()
 }
 
 /// Instantiate all full RPC extensions.
@@ -306,28 +46,39 @@ where
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: BlockBuilder<Block>,
-	C::Api: RmrkRuntimeApi<
+	C::Api: pallet_rmrk_rpc_runtime_api::RmrkApi<
 		Block,
 		AccountId,
-		CollectionInfoOf<RmrkRuntime>,
-		InstanceInfoOf<RmrkRuntime>,
-		ResourceInfoOf<RmrkRuntime>,
-		PropertyInfoOf<RmrkRuntime>,
-		BaseInfoOf<RmrkRuntime>,
-		PartTypeOf<RmrkRuntime>,
-		BoundedThemeOf<RmrkRuntime>,
+		CollectionInfo<
+			BoundedVec<u8, UniquesStringLimit>,
+			BoundedVec<u8, CollectionSymbolLimit>,
+			AccountId,
+		>,
+		NftInfo<AccountId, Permill, BoundedVec<u8, UniquesStringLimit>>,
+		ResourceInfo<BoundedVec<u8, UniquesStringLimit>, BoundedVec<PartId, PartsLimit>>,
+		PropertyInfo<BoundedVec<u8, KeyLimit>, BoundedVec<u8, ValueLimit>>,
+		BaseInfo<AccountId, BoundedVec<u8, UniquesStringLimit>>,
+		PartType<
+			BoundedVec<u8, UniquesStringLimit>,
+			BoundedVec<CollectionId, MaxCollectionsEquippablePerPart>,
+		>,
+		Theme<
+			BoundedVec<u8, UniquesStringLimit>,
+			BoundedVec<ThemeProperty<BoundedVec<u8, UniquesStringLimit>>, MaxPropertiesPerTheme>,
+		>,
 	>,
 	P: TransactionPool + 'static,
 {
-	use pallet_transaction_payment_rpc::{TransactionPaymentApiServer, TransactionPayment};
-	use substrate_frame_rpc_system::{SystemApiServer, System};
+	use pallet_rmrk_rpc::{Rmrk, RmrkApiServer};
+	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
+	use substrate_frame_rpc_system::{System, SystemApiServer};
 
 	let mut module = RpcModule::new(());
 	let FullDeps { client, pool, deny_unsafe } = deps;
 
 	module.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
 	module.merge(TransactionPayment::new(client.clone()).into_rpc())?;
-	module.merge(RmrkApi::new(client).into_rpc())?;
+	module.merge(Rmrk::new(client.clone()).into_rpc())?;
 
 	Ok(module)
 }
