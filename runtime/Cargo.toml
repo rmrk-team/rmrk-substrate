@@ -55,7 +55,7 @@ pallet-rmrk-core = { version = "0.0.1", default-features = false, path = "../pal
 pallet-rmrk-equip = { version = "0.0.1", default-features = false, path = "../pallets/rmrk-equip" }
 pallet-rmrk-market = { version = "0.0.1", default-features = false, path = "../pallets/rmrk-market" }
 rmrk-traits = { version = "0.0.1", default-features = false, path = "../traits" }
-rmrk-rpc = { version = "0.0.1", default-features = false, path = "../rpc" }
+pallet-rmrk-rpc-runtime-api = { version = "0.0.1", default-features = false, path = "../rpc-runtime-api" }
 
 [build-dependencies]
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.26" }
@@ -73,7 +73,7 @@ std = [
 	"pallet-rmrk-market/std",
 	"pallet-rmrk-equip/std",
 	"rmrk-traits/std",
-	"rmrk-rpc/std",
+	"pallet-rmrk-rpc-runtime-api/std",
 	"pallet-uniques/std",
 	"pallet-utility/std",
 	"pallet-aura/std",
