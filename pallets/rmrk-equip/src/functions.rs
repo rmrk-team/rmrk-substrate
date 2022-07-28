@@ -5,6 +5,8 @@
 use super::*;
 use frame_support::traits::tokens::Locker;
 
+use sp_std::collections::btree_set::BTreeSet;
+
 impl<T: Config> Pallet<T> {
 	/// Helper function for getting next base ID
 	/// Currently, BaseId is auto-incremented from zero, may be worth changing
@@ -37,6 +39,46 @@ impl<T: Config> Pallet<T> {
 		let (equipper_collection_id, equipper_nft_id) = item;
 		Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id))
 			.is_some()
+	}
+
+	pub fn iterate_part_types(base_id: BaseId) -> impl Iterator<Item = PartTypeOf<T>> {
+		Parts::<T>::iter_prefix_values(base_id)
+	}
+
+	pub fn iterate_theme_names(base_id: BaseId) -> impl Iterator<Item = StringLimitOf<T>> {
+		Themes::<T>::iter_key_prefix((base_id,)).map(|(theme_name, ..)| theme_name)
+	}
+
+	pub fn get_theme(
+		base_id: BaseId,
+		theme_name: StringLimitOf<T>,
+		filter_keys: Option<BTreeSet<StringLimitOf<T>>>,
+	) -> Result<Option<BoundedThemeOf<T>>, Error<T>> {
+		let properties: BoundedThemePropertiesOf<T> =
+			Self::query_theme_kv(base_id, &theme_name, filter_keys)?;
+
+		if properties.is_empty() {
+			Ok(None)
+		} else {
+			Ok(Some(BoundedThemeOf::<T> { name: theme_name, properties, inherit: false }))
+		}
+	}
+
+	fn query_theme_kv(
+		base_id: BaseId,
+		theme_name: &StringLimitOf<T>,
+		filter_keys: Option<BTreeSet<StringLimitOf<T>>>,
+	) -> Result<BoundedThemePropertiesOf<T>, Error<T>> {
+		BoundedVec::try_from(
+			Themes::<T>::iter_prefix((base_id, theme_name.clone()))
+				.filter(|(key, _)| match &filter_keys {
+					Some(filter_keys) => filter_keys.contains(key),
+					None => true,
+				})
+				.map(|(key, value)| ThemeProperty { key, value })
+				.collect::<Vec<_>>(),
+		)
+		.or(Err(Error::<T>::TooManyProperties))
 	}
 }
 
@@ -81,7 +123,7 @@ where
 		>,
 	) -> Result<BaseId, DispatchError> {
 		let base_id = Self::get_next_base_id()?;
-		for part in parts.clone() {
+		for part in parts {
 			match part.clone() {
 				PartType::SlotPart(p) => {
 					Parts::<T>::insert(base_id, p.id, part);
@@ -91,7 +133,7 @@ where
 				},
 			}
 		}
-		let base = BaseInfo { issuer, base_type, symbol, parts };
+		let base = BaseInfo { issuer, base_type, symbol };
 		Bases::<T>::insert(base_id, base);
 		Ok(base_id)
 	}

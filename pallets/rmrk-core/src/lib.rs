@@ -16,8 +16,8 @@ use sp_std::convert::TryInto;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, BasicResource, Collection, CollectionInfo,
-	ComposableResource, Nft, NftInfo, Priority, Property, Resource, ResourceInfo, ResourceTypes,
-	RoyaltyInfo, SlotResource,
+	ComposableResource, Nft, NftInfo, NftChild, PhantomType, Priority, Property, PropertyInfo, Resource,
+	ResourceInfo, ResourceTypes, RoyaltyInfo, SlotResource, 
 };
 use sp_std::result::Result;
 
@@ -29,12 +29,21 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+pub type CollectionInfoOf<T> = CollectionInfo<
+	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+	BoundedVec<u8, <T as Config>::CollectionSymbolLimit>,
+	<T as frame_system::Config>::AccountId
+>;
+
 pub type InstanceInfoOf<T> = NftInfo<
 	<T as frame_system::Config>::AccountId,
+	Permill,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
-pub type ResourceOf<T, P> =
-	ResourceInfo<BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>, BoundedVec<PartId, P>>;
+pub type ResourceInfoOf<T> = ResourceInfo::<
+	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+	BoundedVec<PartId, <T as Config>::PartsLimit>
+>;
 
 pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
 
@@ -52,6 +61,11 @@ pub type BoundedResourceTypeOf<T> = BoundedVec<
 		BoundedVec<PartId, <T as Config>::PartsLimit>,
 	>,
 	<T as Config>::MaxResourcesOnMint,
+>;
+
+pub type PropertyInfoOf<T> = PropertyInfo<
+	KeyLimitOf<T>,
+	ValueLimitOf<T>
 >;
 
 pub mod types;
@@ -163,7 +177,7 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, NftId>,
 			NMapKey<Blake2_128Concat, ResourceId>,
 		),
-		ResourceOf<T, T::PartsLimit>,
+		ResourceInfoOf<T>,
 		OptionQuery,
 	>;
 
@@ -218,6 +232,21 @@ pub mod pallet {
 	#[pallet::getter(fn lock)]
 	/// Lock for NFTs
 	pub type Lock<T: Config> = StorageMap<_, Twox64Concat, (CollectionId, NftId), bool, ValueQuery>;
+
+	/// This storage is not used by the chain.
+	/// It is need only for PolkadotJS types generation.
+	///
+	/// The stored types are use in the RPC interface only,
+	/// PolkadotJS won't generate TS types for them without this storage.
+	#[pallet::storage]
+	pub type DummyStorage<T: Config> = StorageValue<
+		_,
+		(
+			NftChild,
+			PhantomType<PropertyInfoOf<T>>
+		),
+		OptionQuery
+	>;
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]

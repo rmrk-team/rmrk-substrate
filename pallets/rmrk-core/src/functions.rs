@@ -12,6 +12,8 @@ use sp_runtime::{
 	ArithmeticError,
 };
 
+use sp_std::collections::btree_set::BTreeSet;
+
 // Randomness to generate NFT virtual accounts
 pub const SALT_RMRK_NFT: &[u8; 8] = b"RmrkNft/";
 
@@ -94,6 +96,12 @@ where
 			ResourceTypes::Basic(_r) => (),
 			ResourceTypes::Composable(r) => {
 				EquippableBases::<T>::insert((collection_id, nft_id, r.base), ());
+				if let Some((base, slot)) = r.slot {
+					EquippableSlots::<T>::insert(
+						(collection_id, nft_id, resource_id, base, slot),
+						(),
+					);
+				}
 			},
 			ResourceTypes::Slot(r) => {
 				EquippableSlots::<T>::insert(
@@ -154,8 +162,8 @@ where
 		nft_id: NftId,
 		resource_id: ResourceId,
 	) -> DispatchResult {
-		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		ensure!(
 			Resources::<T>::contains_key((collection_id, nft_id, resource_id)),
@@ -296,17 +304,17 @@ where
 		// NFT should be pending if minting to another account
 		let pending = owner != sender;
 
-		let mut royalty: Option<RoyaltyInfo<T::AccountId>> = None;
+		let mut royalty = None;
 
 		if let Some(amount) = royalty_amount {
 			match royalty_recipient {
 				Some(recipient) => {
-					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient, amount });
+					royalty = Some(RoyaltyInfo { recipient, amount });
 				},
 				None => {
 					// If a royalty amount is passed but no recipient, defaults to the sender
-					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient: sender, amount });
-				},
+					royalty = Some(RoyaltyInfo { recipient: owner.clone(), amount });
+				}
 			}
 		};
 
@@ -355,15 +363,15 @@ where
 		// NFT should be pending if minting either to an NFT owned by another account
 		let pending = rootowner != sender;
 
-		let mut royalty: Option<RoyaltyInfo<T::AccountId>> = None;
+		let mut royalty = None;
 
 		if let Some(amount) = royalty_amount {
 			match royalty_recipient {
 				Some(recipient) => {
-					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient, amount });
+					royalty = Some(RoyaltyInfo { recipient, amount });
 				},
 				None => {
-					royalty = Some(RoyaltyInfo::<T::AccountId> { recipient: rootowner, amount });
+					royalty = Some(RoyaltyInfo { recipient: rootowner, amount });
 				},
 			}
 		};
@@ -624,6 +632,37 @@ impl<T: Config> Pallet<T>
 where
 	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
+	pub fn iterate_nft_children(collection_id: CollectionId, nft_id: NftId) -> impl Iterator<Item=NftChild> {
+		Children::<T>::iter_key_prefix((collection_id, nft_id))
+				.into_iter()
+				.map(|(collection_id, nft_id)| NftChild {
+					collection_id,
+					nft_id
+				})
+	}
+
+	pub fn iterate_resources(collection_id: CollectionId, nft_id: NftId) -> impl Iterator<Item=ResourceInfoOf<T>> {
+		Resources::<T>::iter_prefix_values((collection_id, nft_id))
+	}
+
+	pub fn query_properties(
+		collection_id: CollectionId,
+		nft_id: Option<NftId>,
+		filter_keys: Option<BTreeSet<BoundedVec<u8, <T as pallet_uniques::Config>::KeyLimit>>>
+	) -> impl Iterator<Item=PropertyInfoOf<T>> {
+		Properties::<T>::iter_prefix((collection_id, nft_id))
+			.filter(move |(key, _)| match &filter_keys {
+				Some(filter_keys) => filter_keys.contains(key),
+				None => true
+			})
+			.map(|(key, value)| {
+				PropertyInfoOf::<T> {
+					key,
+					value
+				}
+			})
+	}
+
 	/// Encodes a RMRK NFT with randomness + `collection_id` + `nft_id` into a virtual account
 	/// then returning the `AccountId`. Note that we must be careful of the size of `AccountId`
 	/// as it must be wide enough to keep the size of the prefix as well as the `collection_id`

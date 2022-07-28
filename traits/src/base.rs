@@ -6,24 +6,41 @@ use super::{
 	part::{EquippableList, PartType},
 	theme::Theme,
 };
-use crate::primitives::{BaseId, ResourceId, SlotId};
+use crate::{
+	primitives::{BaseId, ResourceId, SlotId},
+	serialize, ThemeProperty,
+};
 use codec::{Decode, Encode};
 use frame_support::pallet_prelude::MaxEncodedLen;
 use scale_info::TypeInfo;
 use sp_runtime::{DispatchError, RuntimeDebug};
 use sp_std::vec::Vec;
 
-#[cfg_attr(feature = "std", derive(PartialEq, Eq))]
-#[derive(Encode, Decode, RuntimeDebug, TypeInfo, MaxEncodedLen)]
-pub struct BaseInfo<AccountId, BoundedString, BoundedParts> {
+#[cfg(feature = "std")]
+use serde::Serialize;
+
+#[cfg_attr(feature = "std", derive(PartialEq, Eq, Serialize))]
+#[derive(Encode, Decode, Debug, TypeInfo, MaxEncodedLen)]
+#[cfg_attr(
+	feature = "std",
+	serde(
+		bound = r#"
+			AccountId: Serialize,
+			BoundedString: AsRef<[u8]>
+		"#
+	)
+)]
+pub struct BaseInfo<AccountId, BoundedString> {
 	/// Original creator of the Base
 	pub issuer: AccountId,
+
 	/// Specifies how an NFT should be rendered, ie "svg"
+	#[cfg_attr(feature = "std", serde(with = "serialize::vec"))]
 	pub base_type: BoundedString,
+
 	/// User provided symbol during Base creation
+	#[cfg_attr(feature = "std", serde(with = "serialize::vec"))]
 	pub symbol: BoundedString,
-	/// Parts, full list of both Fixed and Slot parts
-	pub parts: BoundedParts,
 }
 
 // Abstraction over a Base system.
