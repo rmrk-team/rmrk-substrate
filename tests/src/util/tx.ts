@@ -1066,7 +1066,7 @@ export async function unequipNft(
 ) {
   const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
   const issuer = privateKey(issuerUri, Number(ss58Format));
-  const tx = api.tx.rmrkEquip.equip(item, equipper, resource, base, slot);
+  const tx = api.tx.rmrkEquip.unequip(item, equipper, base, slot);
   const events = await executeTransaction(api, issuer, tx);
 
   const unEquipResult = extractRmrkEquipTxResult(

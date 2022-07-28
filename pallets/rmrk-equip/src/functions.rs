@@ -184,6 +184,18 @@ where
 		let item_nft_id = item.1;
 		let equipper_collection_id = equipper.0;
 		let equipper_nft_id = equipper.1;
+
+		// Item must exist
+		let item_exists =
+			pallet_rmrk_core::Pallet::<T>::nft_exists((item_collection_id, item_nft_id));
+		ensure!(item_exists, Error::<T>::ItemDoesntExist);
+
+		// Equipper must exist
+		ensure!(
+			pallet_rmrk_core::Pallet::<T>::nfts(equipper_collection_id, equipper_nft_id).is_some(),
+			Error::<T>::EquipperDoesntExist
+		);
+
 		// Check item NFT lock status
 		ensure!(
 			!pallet_rmrk_core::Pallet::<T>::is_locked(item_collection_id, item_nft_id),
@@ -208,17 +220,6 @@ where
 		ensure!(
 			!Self::slot_is_equipped((equipper_collection_id, equipper_nft_id), base_id, slot_id),
 			Error::<T>::SlotAlreadyEquipped
-		);
-
-		// Item must exist
-		let item_exists =
-			pallet_rmrk_core::Pallet::<T>::nft_exists((item_collection_id, item_nft_id));
-		ensure!(item_exists, Error::<T>::ItemDoesntExist);
-
-		// Equipper must exist
-		ensure!(
-			pallet_rmrk_core::Pallet::<T>::nfts(equipper_collection_id, equipper_nft_id).is_some(),
-			Error::<T>::EquipperDoesntExist
 		);
 
 		// Caller must root-own item

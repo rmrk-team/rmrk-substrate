@@ -183,7 +183,7 @@ describe("integration test: Equip NFT", () => {
     const resourceId = 0;
 
     const tx = equipNft(api, Alice, itemNFT, invalidEquipperNFT, resourceId, baseId, slotId);
-    await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
+    await expectTxFailure(/rmrkEquip\.EquipperDoesntExist/, tx);
   });
 
   it("[negative] equip non-existing NFT", async () => {
@@ -206,7 +206,7 @@ describe("integration test: Equip NFT", () => {
     const resourceId = 0;
 
     const tx = equipNft(api, Alice, invalidItemNFT, equipperNFT, resourceId, baseId, slotId);
-    await expectTxFailure(/rmrkCore\.NoAvailableNftId/, tx);
+    await expectTxFailure(/rmrkEquip\.ItemDoesntExist/, tx);
   });
 
   it("[negative] equip NFT by a not-an-owner user", async () => {
