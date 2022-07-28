@@ -213,7 +213,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn properties)]
-	/// Metadata of an asset class.
+	/// Arbitrary properties / metadata of an asset.
 	pub(super) type Properties<T: Config> = StorageNMap<
 		_,
 		(
@@ -372,7 +372,7 @@ pub mod pallet {
 		/// Sets metadata and the royalty attribute
 		///
 		/// Parameters:
-		/// - `collection_id`: The class of the asset to be minted.
+		/// - `collection_id`: The collection of the asset to be minted.
 		/// - `nft_id`: The nft value of the asset to be minted.
 		/// - `recipient`: Receiver of the royalty
 		/// - `royalty`: Permillage reward from each trade for the Recipient
