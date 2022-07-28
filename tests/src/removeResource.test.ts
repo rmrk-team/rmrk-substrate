@@ -162,7 +162,7 @@ describe('Integration test: remove nft resource', () => {
 
         const newOwnerNFT: NftIdTuple = [collectionIdAlice, parentNftId];
 
-        await sendNft(api, "sent", Bob, collectionIdAlice, childNftId, newOwnerNFT);
+        await sendNft(api, "pending", Bob, collectionIdAlice, childNftId, newOwnerNFT);
 
         await removeNftResource(api, 'pending', Alice, collectionIdAlice, childNftId, resourceId);
         await acceptResourceRemoval(api, Bob, collectionIdAlice, childNftId, resourceId);
