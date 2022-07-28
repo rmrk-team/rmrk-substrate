@@ -1,184 +1,35 @@
-# NFT Core Pallet Design
-
-## Overview
-
-Essential functionality for nested and multi-resourced NFTs.
-
-Typical use cases are:
-* Nested NFTs include anything non-stackably-visual: bundles of NFTs, mortgage NFT with photos of the house, music albums with songs, user-created curated collections for galleries, and more.
-* A set of NFTs can be combined as a single object that can be send and sell in an auction as a whole.
-* By following some special rules (defined in BASE), some NFTs can be combined in a meaningful way that produce some special effects. E.g. glasses can be equipped to a Kanaria bird and can be rendered as a complete portrait.
-
-Ownership model for nested NFTs ( NFT owning another NFT ) is based on [this](https://github.com/rmrk-team/rmrk-substrate/issues/27) proposal using `pallet-unique` to trace hierarchy of the NFTs and virtual accounts trick. 
-
-
-
-![](https://static.swimlanes.io/15201cbf30d5a669d71beee38813e5a5.png)
-
-
-
-## Calls
-
-### **create_collection**
-Create a collection of NFTs
-```rust
-    metadata: BoundedVec<u8, T::StringLimit>, // e.g. IPFS hash
-    max: Option<u32>, // How many NFTs will ever belong to this collection. 0 for infinite.
-    symbol: BoundedVec<u8, T::StringLimit> // Ticker symbol by which to represent the token in wallets and UIs, e.g. ZOMB
-```
-
-
-### **mint_nft** 
-Minting an NFT inside a collection
-```rust
-owner: T::AccountId,
-collection_id: CollectionId,
-recipient: Option<T::AccountId>, // Receiver of the royalty
-royalty: Option<Permill>, // Reward in permills from each trade for the author
-metadata: BoundedVec<u8, T::StringLimit> // e.g. IPFS hash
-```
-
-### **burn_nft** 
-Destroy a NFT
-```rust
-    collection_id: CollectionId,
-    nft_id: NftId
-```
-
-### **destroy_collection** 
-destroy a collection
-```rust
-    collection_id: CollectionId
-```
-### **send** 
-Transfers a NFT from an Account or NFT A to another Account or NFT B
-```rust
-    collection_id: CollectionId,
-    nft_id: NftId,
-    new_owner: AccountIdOrCollectionNftTuple<T::AccountId>
-```
-
-### **accept_nft** 
-Accepts an NFT sent from another account to self or owned NFT
-```rust
-    collection_id: CollectionId,
-    nft_id: NftId,
-    new_owner: AccountIdOrCollectionNftTuple<T::AccountId>
-```
-
-### **reject_nft** 
-Rejects an NFT sent from another account to self or owned NFT
-```rust
-    collection_id: CollectionId,
-    nft_id: NftId
-```
-
-### **change_collection_issuer** 
-changing the issuer of a collection
-```rust
-    collection_id: CollectionId,
-    new_issuer: <T::Lookup as StaticLookup>::Source
-```
-
-
-
-### **set_property** 
-Set a custom value on an NFT
-```rust
-    collection_id: CollectionId,
-    maybe_nft_id: Option<NftId>,
-    key: KeyLimitOf<T>,
-    value: ValueLimitOf<T>
-```
-
-
-### **lock_collection** 
-Lock collection
-```rust
-    collection_id: CollectionId
-```
-    
-Multi resource calls.
-
-
-### **add_resource** 
-Create a resource
-```rust
-    collection_id: CollectionId,
-    nft_id: NftId,
-    resource_id: BoundedResource<T::ResourceSymbolLimit>,
-    base: Option<BaseId>,
-    src: Option<BoundedVec<u8, T::StringLimit>>,
-    metadata: Option<BoundedVec<u8, T::StringLimit>>,
-    slot: Option<SlotId>,
-    license: Option<BoundedVec<u8, T::StringLimit>>,
-    thumb: Option<BoundedVec<u8, T::StringLimit>>,
-    parts: Option<Vec<PartId>>
-```
-
-
-### **accept** 
-Accept the addition of a new resource to an existing NFT or addition of a child into a parent NFT
-```rust
-    collection_id: CollectionId,
-    nft_id: NftId,
-    resource_id: BoundedResource<T::ResourceSymbolLimit>
-```
-
-
-### **set_priority** 
-set a different order of resource priority
-```rust
-    collection_id: CollectionId,
-    nft_id: NftId,
-    priorities: Vec<Vec<u8>>
-```
-
-    
-    
-## Storages
-Current implementation [here](https://github.com/rmrk-team/rmrk-substrate/blob/main/pallets/rmrk-core/src/lib.rs#L159-L223)
-
-* NextNftId
-* CollectionIndex
-* NextResourceId
-* Collections
-* NftsByOwner
-* Nfts
-* PendingNfts
-* Priorities
-* Children
-* Resources
-* Properties
-
 ## Events
+
 Current implementation [here](https://github.com/rmrk-team/rmrk-substrate/blob/main/pallets/rmrk-core/src/lib.rs#L67-L149)
-* CollectionCreated
-* NftMinted
-* NFTBurned
-* CollectionDestroyed
-* NFTSent
-* NFTAccepted
-* NFTRejected
-* IssuerChanged
-* PropertySet
-* CollectionLocked
-* ResourceAdded
-* ResourceAccepted
-* PrioritySet
+
+- CollectionCreated
+- NftMinted
+- NFTBurned
+- CollectionDestroyed
+- NFTSent
+- NFTAccepted
+- NFTRejected
+- IssuerChanged
+- PropertySet
+- CollectionLocked
+- ResourceAdded
+- ResourceAccepted
+- PrioritySet
 
 ## Traits / Types
+
 Set of re-usable traits describing the total interface located [here](https://github.com/rmrk-team/rmrk-substrate/tree/main/traits/src)
 
 ### Primitives
+
 ```rust
 type CollectionId = u32;
 type ResourceId = u32;
 type NftId = u32;
 ```
 
-
 ### **CollectionInfo**
+
 ```rust
 pub struct CollectionInfo<BoundedString, AccountId> {
 	/// Current bidder and bid price.
@@ -189,8 +40,9 @@ pub struct CollectionInfo<BoundedString, AccountId> {
 	pub nfts_count: u32,
 }
 ```
-    
+
 ### NftInfo
+
 ```rust
 pub struct NftInfo<AccountId, BoundedString> {
 	/// The owner of the NFT, can be either an Account or a tuple (CollectionId, NftId)
@@ -207,6 +59,7 @@ pub struct NftInfo<AccountId, BoundedString> {
 ```
 
 ### AccountIdOrCollectionNftTuple
+
 ```rust
 pub enum AccountIdOrCollectionNftTuple<AccountId> {
 	AccountId(AccountId),
@@ -215,6 +68,7 @@ pub enum AccountIdOrCollectionNftTuple<AccountId> {
 ```
 
 ### ResourceInfo
+
 ```rust
 pub struct ResourceInfo<BoundedResource, BoundedString> {
 	/// id is a 5-character string of reasonable uniqueness.
@@ -254,8 +108,8 @@ pub struct ResourceInfo<BoundedResource, BoundedString> {
 }
 ```
 
-
 ### Property
+
 ```rust
 pub trait Property<KeyLimit, ValueLimit, AccountId> {
 	fn property_set(
