@@ -16,8 +16,8 @@ use sp_std::convert::TryInto;
 
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, BasicResource, Collection, CollectionInfo,
-	ComposableResource, Nft, NftInfo, NftChild, PhantomType, Priority, Property, PropertyInfo, Resource,
-	ResourceInfo, ResourceTypes, RoyaltyInfo, SlotResource, 
+	ComposableResource, Nft, NftChild, NftInfo, PhantomType, Priority, Property, PropertyInfo,
+	Resource, ResourceInfo, ResourceTypes, RoyaltyInfo, SlotResource,
 };
 use sp_std::result::Result;
 
@@ -32,7 +32,7 @@ mod tests;
 pub type CollectionInfoOf<T> = CollectionInfo<
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 	BoundedVec<u8, <T as Config>::CollectionSymbolLimit>,
-	<T as frame_system::Config>::AccountId
+	<T as frame_system::Config>::AccountId,
 >;
 
 pub type InstanceInfoOf<T> = NftInfo<
@@ -40,9 +40,9 @@ pub type InstanceInfoOf<T> = NftInfo<
 	Permill,
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 >;
-pub type ResourceInfoOf<T> = ResourceInfo::<
+pub type ResourceInfoOf<T> = ResourceInfo<
 	BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
-	BoundedVec<PartId, <T as Config>::PartsLimit>
+	BoundedVec<PartId, <T as Config>::PartsLimit>,
 >;
 
 pub type BoundedCollectionSymbolOf<T> = BoundedVec<u8, <T as Config>::CollectionSymbolLimit>;
@@ -63,10 +63,7 @@ pub type BoundedResourceTypeOf<T> = BoundedVec<
 	<T as Config>::MaxResourcesOnMint,
 >;
 
-pub type PropertyInfoOf<T> = PropertyInfo<
-	KeyLimitOf<T>,
-	ValueLimitOf<T>
->;
+pub type PropertyInfoOf<T> = PropertyInfo<KeyLimitOf<T>, ValueLimitOf<T>>;
 
 pub mod types;
 
@@ -239,14 +236,8 @@ pub mod pallet {
 	/// The stored types are use in the RPC interface only,
 	/// PolkadotJS won't generate TS types for them without this storage.
 	#[pallet::storage]
-	pub type DummyStorage<T: Config> = StorageValue<
-		_,
-		(
-			NftChild,
-			PhantomType<PropertyInfoOf<T>>
-		),
-		OptionQuery
-	>;
+	pub type DummyStorage<T: Config> =
+		StorageValue<_, (NftChild, PhantomType<PropertyInfoOf<T>>), OptionQuery>;
 
 	#[pallet::pallet]
 	#[pallet::generate_store(pub(super) trait Store)]
@@ -419,13 +410,6 @@ pub mod pallet {
 				transferable,
 			)?;
 
-			pallet_uniques::Pallet::<T>::do_mint(
-				collection_id,
-				nft_id,
-				nft_owner.clone(),
-				|_details| Ok(()),
-			)?;
-
 			// Add all at-mint resources
 			if let Some(resources) = resources {
 				for res in resources {
@@ -485,16 +469,6 @@ pub mod pallet {
 				transferable,
 			)?;
 
-			// For Uniques, we need to decode the "virtual account" ID to be the owner
-			let uniques_owner = Self::nft_to_account_id(owner.0, owner.1);
-
-			pallet_uniques::Pallet::<T>::do_mint(
-				collection_id,
-				nft_id,
-				uniques_owner,
-				|_details| Ok(()),
-			)?;
-
 			// Add all at-mint resources
 			if let Some(resources) = resources {
 				for res in resources {
@@ -523,19 +497,6 @@ pub mod pallet {
 			let sender = ensure_signed(origin)?;
 
 			let collection_id = Self::collection_create(sender.clone(), metadata, max, symbol)?;
-
-			pallet_uniques::Pallet::<T>::do_create_collection(
-				collection_id,
-				sender.clone(),
-				sender.clone(),
-				T::CollectionDeposit::get(),
-				false,
-				pallet_uniques::Event::Created {
-					collection: collection_id,
-					creator: sender.clone(),
-					owner: sender.clone(),
-				},
-			)?;
 
 			Self::deposit_event(Event::CollectionCreated { issuer: sender, collection_id });
 			Ok(())
