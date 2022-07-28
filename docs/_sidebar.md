@@ -1,6 +1,7 @@
 - Overview
 
   - [RMRK Standard](README.md)
+  - [RPC](rpc.md)
 
 - RMRK Pallets
 
