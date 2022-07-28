@@ -82,7 +82,11 @@ where
 	) -> sp_runtime::DispatchResult {
 		// Check if root user
 		ensure_root(origin)?;
+		// Ensure collection exists
+		Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
+
+		Self::deposit_event(Event::PropertySet { collection_id, maybe_nft_id, key, value });
 		Ok(())
 	}
 
@@ -95,7 +99,11 @@ where
 	) -> sp_runtime::DispatchResult {
 		// Check if root user
 		ensure_root(origin)?;
+		// Ensure collection exists
+		Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		Properties::<T>::remove((&collection_id, maybe_nft_id, &key));
+
+		Self::deposit_event(Event::PropertyRemoved { collection_id, maybe_nft_id, key });
 		Ok(())
 	}
 }

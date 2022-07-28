@@ -295,6 +295,11 @@ pub mod pallet {
 			key: KeyLimitOf<T>,
 			value: ValueLimitOf<T>,
 		},
+		PropertyRemoved {
+			collection_id: CollectionId,
+			maybe_nft_id: Option<NftId>,
+			key: KeyLimitOf<T>,
+		},
 		CollectionLocked {
 			issuer: T::AccountId,
 			collection_id: CollectionId,
