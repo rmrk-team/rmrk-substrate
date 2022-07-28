@@ -835,6 +835,12 @@ where
 		Ok(())
 	}
 
+	/// Helper function for checking if an NFT exists
+	pub fn nft_exists(item: (CollectionId, NftId)) -> bool {
+		let (item_collection_id, item_nft_id) = item;
+		Nfts::<T>::get(item_collection_id, item_nft_id).is_some()
+	}
+
 	// Check NFT is not equipped
 	pub fn check_is_not_equipped(nft: &InstanceInfoOf<T>) -> DispatchResult {
 		ensure!(!nft.equipped, Error::<T>::CannotSendEquippedItem);

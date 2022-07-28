@@ -218,8 +218,12 @@ pub mod pallet {
 		NoEquippableOnFixedPart,
 		// No "default" Theme is defined, required prior to defining other themes
 		NeedsDefaultThemeFirst,
-		// Equipped item cannot be equipped elsewhere (without first unequipping)
-		AlreadyEquipped,
+		// Item is trying to be equipped but is already equipped
+		ItemAlreadyEquipped,
+		// Slot to which an item is being equipped already has something equipped there
+		SlotAlreadyEquipped,
+		// Slot from which an item is being unequipped has nothing equipped there
+		SlotNotEquipped,
 		// Error that should not occur
 		// TODO is this being used?
 		UnknownError,
@@ -229,6 +233,10 @@ pub mod pallet {
 		// Attempting to define more Properties than capacity allows
 		// TODO confirm this is being used (after https://github.com/rmrk-team/rmrk-substrate/pull/95)
 		TooManyProperties,
+		// Cannot unequip an item that isn't equipped yet
+		ItemNotEquipped,
+		// Cannot unequip an item when caller owns neither the item nor equipper
+		UnequipperMustOwnEitherItemOrEquipper,
 	}
 
 	#[pallet::call]
@@ -265,17 +273,13 @@ pub mod pallet {
 			Ok(())
 		}
 		/// Equips a child NFT's resource to a parent's slot, if all are available.
-		/// Also can be called to unequip, which can be successful if
-		/// - Item has beeen burned
-		/// - Item is equipped and extrinsic called by equipping item owner
-		/// - Item is equipped and extrinsic called by equipper NFT owner
 		/// Equipping operations are maintained inside the Equippings storage.
 		/// Modeled after [equip interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/equip.md)
 		///
 		/// Parameters:
 		/// - origin: The caller of the function, not necessarily anything else
-		/// - item: Child NFT being equipped (or unequipped)
-		/// - equipper: Parent NFT which will equip (or unequip) the item
+		/// - item: Child NFT being equipped
+		/// - equipper: Parent NFT which will equip the item
 		/// - base: ID of the base which the item and equipper must each have a resource referencing
 		/// - slot: ID of the slot which the item and equipper must each have a resource referencing
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
@@ -289,26 +293,54 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let (collection_id, nft_id, base_id, slot_id, equipped) =
+			let (collection_id, nft_id, base_id, slot_id) =
 				Self::do_equip(sender, item, equipper, resource_id, base, slot)?;
 
-			if equipped {
-				// Send Equip event
-				Self::deposit_event(Event::SlotEquipped {
-					item_collection: collection_id,
-					item_nft: nft_id,
-					base_id,
-					slot_id,
-				});
-			} else {
-				// Send Unequip event
-				Self::deposit_event(Event::SlotUnequipped {
-					item_collection: collection_id,
-					item_nft: nft_id,
-					base_id,
-					slot_id,
-				});
-			}
+			// Send Equip event
+			Self::deposit_event(Event::SlotEquipped {
+				item_collection: collection_id,
+				item_nft: nft_id,
+				base_id,
+				slot_id,
+			});
+
+			Ok(())
+		}
+
+		/// Unequips a child NFT's resource from its parent's slot.
+		/// Can be successful if
+		/// - Item has beeen burned
+		/// - Item is equipped and extrinsic called by equipping item owner
+		/// - Item is equipped and extrinsic called by equipper NFT owner
+		/// Equipping operations are maintained inside the Equippings storage.
+		/// Modeled after [equip interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/equip.md)
+		///
+		/// Parameters:
+		/// - origin: The caller of the function, not necessarily anything else
+		/// - item: Child NFT being unequipped
+		/// - unequipper: Parent NFT which will unequip the item
+		/// - base: ID of the base which the item and equipper must each have a resource referencing
+		/// - slot: ID of the slot which the item and equipper must each have a resource referencing
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		pub fn unequip(
+			origin: OriginFor<T>,
+			item: (CollectionId, NftId),
+			unequipper: (CollectionId, NftId),
+			base: BaseId,
+			slot: SlotId,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
+
+			let (collection_id, nft_id, base_id, slot_id) =
+				Self::do_unequip(sender, item, unequipper, base, slot)?;
+
+			Self::deposit_event(Event::SlotUnequipped {
+				item_collection: collection_id,
+				item_nft: nft_id,
+				base_id,
+				slot_id,
+			});
+
 			Ok(())
 		}
 
