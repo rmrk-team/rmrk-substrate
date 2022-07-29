@@ -361,8 +361,7 @@ fn mint_directly_to_nft_with_resources() {
 		));
 
 		// Compose a resource to add to an NFT
-		let basic_resource =
-			BasicResource { src: None, metadata: None, license: None, thumb: None };
+		let basic_resource = BasicResource { metadata: None };
 
 		// Construct as a BoundedVec of resources which mint_nft will accept
 		let resources_to_add = bvec![ResourceTypes::Basic(basic_resource)];
@@ -947,8 +946,7 @@ fn burn_nft_works() {
 		assert_ok!(basic_mint());
 		// Add two resources to NFT (to test if burning also burns the resources)
 
-		let basic_resource =
-			BasicResource { src: None, metadata: None, license: None, thumb: None };
+		let basic_resource = BasicResource { metadata: None };
 
 		assert_ok!(RMRKCore::add_basic_resource(
 			Origin::signed(ALICE),
@@ -999,8 +997,7 @@ fn burn_nft_with_great_grandchildren_works() {
 			assert_ok!(basic_mint());
 		}
 
-		let basic_resource =
-			BasicResource { src: None, metadata: None, license: None, thumb: None };
+		let basic_resource = BasicResource { metadata: None };
 
 		// Add two resources to the great-grandchild (0, 3)
 		assert_ok!(RMRKCore::add_basic_resource(
@@ -1143,8 +1140,7 @@ fn burn_child_nft_removes_parents_children() {
 #[test]
 fn create_resource_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		let basic_resource =
-			BasicResource { src: None, metadata: None, license: None, thumb: None };
+		let basic_resource = BasicResource { metadata: None };
 
 		// Adding a resource to non-existent NFT should fail
 		assert_noop!(
@@ -1161,8 +1157,7 @@ fn create_resource_works() {
 		// Mint NFT
 		assert_ok!(basic_mint());
 
-		let basic_resource =
-			BasicResource { src: None, metadata: None, license: None, thumb: None };
+		let basic_resource = BasicResource { metadata: None };
 
 		// Add resource to NFT
 		assert_ok!(RMRKCore::add_basic_resource(
@@ -1182,12 +1177,9 @@ fn create_resource_works() {
 		// Create Composable resource
 		let composable_resource = ComposableResource {
 			parts: vec![0, 1].try_into().unwrap(), // BoundedVec of Parts
-			src: Some(stbd("composable-resource")),
-			base: 0, // BaseID
-			license: None,
+			base: 0,                               // BaseID
 			metadata: None,
 			slot: None,
-			thumb: None,
 		};
 
 		// Composable resource addition works
@@ -1200,12 +1192,9 @@ fn create_resource_works() {
 
 		// Create Slot resource
 		let slot_resource = SlotResource {
-			src: Some(stbd("slot-resource")),
 			base: 0, // BaseID
-			license: None,
 			metadata: None,
 			slot: 0, // SlotID
-			thumb: None,
 		};
 
 		// Slot resource addition works
@@ -1223,13 +1212,12 @@ fn create_resource_works() {
 fn add_resource_on_mint_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		let basic_resource: BasicResource<BoundedVec<u8, UniquesStringLimit>> =
-			BasicResource { src: None, metadata: None, license: None, thumb: None };
+			BasicResource { metadata: None };
 
 		// Create a basic collection
 		assert_ok!(basic_collection());
 
-		let basic_resource =
-			BasicResource { src: None, metadata: None, license: None, thumb: None };
+		let basic_resource = BasicResource { metadata: None };
 
 		// Resources to add
 		let resources_to_add = bvec![
@@ -1262,8 +1250,7 @@ fn add_resource_on_mint_beyond_max_fails() {
 		// Create a basic collection
 		assert_ok!(basic_collection());
 
-		let basic_resource =
-			BasicResource { src: None, metadata: None, license: None, thumb: None };
+		let basic_resource = BasicResource { metadata: None };
 
 		// Resources to add
 		let resources_to_add = bvec![
@@ -1305,12 +1292,7 @@ fn add_resource_pending_works() {
 			None
 		));
 
-		let basic_resource = BasicResource {
-			src: Some(stbd("res-src")),
-			metadata: None,
-			license: None,
-			thumb: None,
-		};
+		let basic_resource = BasicResource { metadata: None };
 
 		// Since BOB isn't collection issuer, he can't add resources
 		assert_noop!(
@@ -1363,8 +1345,7 @@ fn resource_removal_works() {
 		// Mint NFT
 		assert_ok!(basic_mint());
 
-		let basic_resource =
-			BasicResource { src: None, metadata: None, license: None, thumb: None };
+		let basic_resource = BasicResource { metadata: None };
 
 		// Add resource to NFT
 		assert_ok!(RMRKCore::add_basic_resource(
@@ -1428,8 +1409,7 @@ fn resource_removal_pending_works() {
 			None
 		));
 
-		let basic_resource =
-			BasicResource { src: None, metadata: None, license: None, thumb: None };
+		let basic_resource = BasicResource { metadata: None };
 
 		// Add resource to NFT
 		assert_ok!(RMRKCore::add_basic_resource(
