@@ -1,26 +1,22 @@
 [package]
-name = "rmrk-rpc"
+name = "pallet-rmrk-rpc"
 version = "0.0.1"
 license = ""
 edition = "2021"
 
 [dependencies]
-codec = { package = "parity-scale-codec", version = "2.0.0", default-features = false, features = ["derive"] }
-sp-core = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'polkadot-v0.9.26' }
-sp-std = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'polkadot-v0.9.26' }
-sp-api = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'polkadot-v0.9.26' }
-sp-runtime = { default-features = false, git = 'https://github.com/paritytech/substrate.git', branch = 'polkadot-v0.9.26' }
-serde = { version = "1.0.130", default-features = false, features = ["derive"] }
-rmrk-traits = { version = "0.0.1", default-features = false, path = "../traits" }
+codec = { package = "parity-scale-codec", version = "3.0" }
+scale-info = { version = "2.0" }
+jsonrpsee = { version = "0.14.0", features = ["server"] }
 
-[features]
-default = ["std"]
-std = [
-	"codec/std",
-	"serde/std",
-	"sp-core/std",
-	"sp-std/std",
-	"sp-api/std",
-	"sp-runtime/std",
-    "rmrk-traits/std",
-]
+# primitives
+sp-runtime = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
+sp-blockchain = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
+sp-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
+
+# client dependencies
+sc-client-api = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
+sc-rpc = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.26" }
+
+rmrk-traits = { version = "0.0.1", default-features = false, path = "../traits" }
+pallet-rmrk-rpc-runtime-api = { path = "../rpc-runtime-api" }
