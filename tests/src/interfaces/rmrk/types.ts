@@ -1,25 +1,57 @@
 // Auto-generated via `yarn polkadot-types-from-defs`, do not edit
 /* eslint-disable */
 
-import type { Bytes, Compact, Enum, Null, Option, Result, Struct, Text, U8aFixed, Vec, bool, u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
-import type { ITuple } from '@polkadot/types-codec/types';
-import type { AccountId32, Call, H256, MultiAddress, Perbill, Permill } from '@polkadot/types/interfaces/runtime';
-import type { Event } from '@polkadot/types/interfaces/system';
+import type {
+  Bytes,
+  Compact,
+  Enum,
+  Null,
+  Option,
+  Result,
+  Struct,
+  Text,
+  U8aFixed,
+  Vec,
+  bool,
+  u128,
+  u16,
+  u32,
+  u64,
+  u8,
+} from "@polkadot/types-codec";
+import type { ITuple } from "@polkadot/types-codec/types";
+import type {
+  AccountId32,
+  Call,
+  H256,
+  MultiAddress,
+  Perbill,
+  Permill,
+} from "@polkadot/types/interfaces/runtime";
+import type { Event } from "@polkadot/types/interfaces/system";
 
 /** @name FinalityGrandpaEquivocationPrecommit */
 export interface FinalityGrandpaEquivocationPrecommit extends Struct {
   readonly roundNumber: u64;
   readonly identity: SpFinalityGrandpaAppPublic;
-  readonly first: ITuple<[FinalityGrandpaPrecommit, SpFinalityGrandpaAppSignature]>;
-  readonly second: ITuple<[FinalityGrandpaPrecommit, SpFinalityGrandpaAppSignature]>;
+  readonly first: ITuple<
+    [FinalityGrandpaPrecommit, SpFinalityGrandpaAppSignature]
+  >;
+  readonly second: ITuple<
+    [FinalityGrandpaPrecommit, SpFinalityGrandpaAppSignature]
+  >;
 }
 
 /** @name FinalityGrandpaEquivocationPrevote */
 export interface FinalityGrandpaEquivocationPrevote extends Struct {
   readonly roundNumber: u64;
   readonly identity: SpFinalityGrandpaAppPublic;
-  readonly first: ITuple<[FinalityGrandpaPrevote, SpFinalityGrandpaAppSignature]>;
-  readonly second: ITuple<[FinalityGrandpaPrevote, SpFinalityGrandpaAppSignature]>;
+  readonly first: ITuple<
+    [FinalityGrandpaPrevote, SpFinalityGrandpaAppSignature]
+  >;
+  readonly second: ITuple<
+    [FinalityGrandpaPrevote, SpFinalityGrandpaAppSignature]
+  >;
 }
 
 /** @name FinalityGrandpaPrecommit */
@@ -40,14 +72,14 @@ export interface FrameSupportDispatchRawOrigin extends Enum {
   readonly isSigned: boolean;
   readonly asSigned: AccountId32;
   readonly isNone: boolean;
-  readonly type: 'Root' | 'Signed' | 'None';
+  readonly type: "Root" | "Signed" | "None";
 }
 
 /** @name FrameSupportTokensMiscBalanceStatus */
 export interface FrameSupportTokensMiscBalanceStatus extends Enum {
   readonly isFree: boolean;
   readonly isReserved: boolean;
-  readonly type: 'Free' | 'Reserved';
+  readonly type: "Free" | "Reserved";
 }
 
 /** @name FrameSupportWeightsDispatchClass */
@@ -55,7 +87,7 @@ export interface FrameSupportWeightsDispatchClass extends Enum {
   readonly isNormal: boolean;
   readonly isOperational: boolean;
   readonly isMandatory: boolean;
-  readonly type: 'Normal' | 'Operational' | 'Mandatory';
+  readonly type: "Normal" | "Operational" | "Mandatory";
 }
 
 /** @name FrameSupportWeightsDispatchInfo */
@@ -69,7 +101,7 @@ export interface FrameSupportWeightsDispatchInfo extends Struct {
 export interface FrameSupportWeightsPays extends Enum {
   readonly isYes: boolean;
   readonly isNo: boolean;
-  readonly type: 'Yes' | 'No';
+  readonly type: "Yes" | "No";
 }
 
 /** @name FrameSupportWeightsPerDispatchClassU32 */
@@ -87,7 +119,8 @@ export interface FrameSupportWeightsPerDispatchClassU64 extends Struct {
 }
 
 /** @name FrameSupportWeightsPerDispatchClassWeightsPerClass */
-export interface FrameSupportWeightsPerDispatchClassWeightsPerClass extends Struct {
+export interface FrameSupportWeightsPerDispatchClassWeightsPerClass
+  extends Struct {
   readonly normal: FrameSystemLimitsWeightsPerClass;
   readonly operational: FrameSystemLimitsWeightsPerClass;
   readonly mandatory: FrameSystemLimitsWeightsPerClass;
@@ -147,7 +180,16 @@ export interface FrameSystemCall extends Enum {
   readonly asRemarkWithEvent: {
     readonly remark: Bytes;
   } & Struct;
-  readonly type: 'FillBlock' | 'Remark' | 'SetHeapPages' | 'SetCode' | 'SetCodeWithoutChecks' | 'SetStorage' | 'KillStorage' | 'KillPrefix' | 'RemarkWithEvent';
+  readonly type:
+    | "FillBlock"
+    | "Remark"
+    | "SetHeapPages"
+    | "SetCode"
+    | "SetCodeWithoutChecks"
+    | "SetStorage"
+    | "KillStorage"
+    | "KillPrefix"
+    | "RemarkWithEvent";
 }
 
 /** @name FrameSystemError */
@@ -158,7 +200,13 @@ export interface FrameSystemError extends Enum {
   readonly isNonDefaultComposite: boolean;
   readonly isNonZeroRefCount: boolean;
   readonly isCallFiltered: boolean;
-  readonly type: 'InvalidSpecName' | 'SpecVersionNeedsToIncrease' | 'FailedToExtractRuntimeVersion' | 'NonDefaultComposite' | 'NonZeroRefCount' | 'CallFiltered';
+  readonly type:
+    | "InvalidSpecName"
+    | "SpecVersionNeedsToIncrease"
+    | "FailedToExtractRuntimeVersion"
+    | "NonDefaultComposite"
+    | "NonZeroRefCount"
+    | "CallFiltered";
 }
 
 /** @name FrameSystemEvent */
@@ -186,7 +234,13 @@ export interface FrameSystemEvent extends Enum {
     readonly sender: AccountId32;
     readonly hash_: H256;
   } & Struct;
-  readonly type: 'ExtrinsicSuccess' | 'ExtrinsicFailed' | 'CodeUpdated' | 'NewAccount' | 'KilledAccount' | 'Remarked';
+  readonly type:
+    | "ExtrinsicSuccess"
+    | "ExtrinsicFailed"
+    | "CodeUpdated"
+    | "NewAccount"
+    | "KilledAccount"
+    | "Remarked";
 }
 
 /** @name FrameSystemEventRecord */
@@ -243,7 +297,7 @@ export interface FrameSystemPhase extends Enum {
   readonly asApplyExtrinsic: u32;
   readonly isFinalization: boolean;
   readonly isInitialization: boolean;
-  readonly type: 'ApplyExtrinsic' | 'Finalization' | 'Initialization';
+  readonly type: "ApplyExtrinsic" | "Finalization" | "Initialization";
 }
 
 /** @name PalletBalancesAccountData */
@@ -295,7 +349,13 @@ export interface PalletBalancesCall extends Enum {
     readonly who: MultiAddress;
     readonly amount: u128;
   } & Struct;
-  readonly type: 'Transfer' | 'SetBalance' | 'ForceTransfer' | 'TransferKeepAlive' | 'TransferAll' | 'ForceUnreserve';
+  readonly type:
+    | "Transfer"
+    | "SetBalance"
+    | "ForceTransfer"
+    | "TransferKeepAlive"
+    | "TransferAll"
+    | "ForceUnreserve";
 }
 
 /** @name PalletBalancesError */
@@ -308,7 +368,15 @@ export interface PalletBalancesError extends Enum {
   readonly isExistingVestingSchedule: boolean;
   readonly isDeadAccount: boolean;
   readonly isTooManyReserves: boolean;
-  readonly type: 'VestingBalance' | 'LiquidityRestrictions' | 'InsufficientBalance' | 'ExistentialDeposit' | 'KeepAlive' | 'ExistingVestingSchedule' | 'DeadAccount' | 'TooManyReserves';
+  readonly type:
+    | "VestingBalance"
+    | "LiquidityRestrictions"
+    | "InsufficientBalance"
+    | "ExistentialDeposit"
+    | "KeepAlive"
+    | "ExistingVestingSchedule"
+    | "DeadAccount"
+    | "TooManyReserves";
 }
 
 /** @name PalletBalancesEvent */
@@ -367,7 +435,17 @@ export interface PalletBalancesEvent extends Enum {
     readonly who: AccountId32;
     readonly amount: u128;
   } & Struct;
-  readonly type: 'Endowed' | 'DustLost' | 'Transfer' | 'BalanceSet' | 'Reserved' | 'Unreserved' | 'ReserveRepatriated' | 'Deposit' | 'Withdraw' | 'Slashed';
+  readonly type:
+    | "Endowed"
+    | "DustLost"
+    | "Transfer"
+    | "BalanceSet"
+    | "Reserved"
+    | "Unreserved"
+    | "ReserveRepatriated"
+    | "Deposit"
+    | "Withdraw"
+    | "Slashed";
 }
 
 /** @name PalletBalancesReasons */
@@ -375,14 +453,14 @@ export interface PalletBalancesReasons extends Enum {
   readonly isFee: boolean;
   readonly isMisc: boolean;
   readonly isAll: boolean;
-  readonly type: 'Fee' | 'Misc' | 'All';
+  readonly type: "Fee" | "Misc" | "All";
 }
 
 /** @name PalletBalancesReleases */
 export interface PalletBalancesReleases extends Enum {
   readonly isV100: boolean;
   readonly isV200: boolean;
-  readonly type: 'V100' | 'V200';
+  readonly type: "V100" | "V200";
 }
 
 /** @name PalletBalancesReserveData */
@@ -408,7 +486,10 @@ export interface PalletGrandpaCall extends Enum {
     readonly delay: u32;
     readonly bestFinalizedBlockNumber: u32;
   } & Struct;
-  readonly type: 'ReportEquivocation' | 'ReportEquivocationUnsigned' | 'NoteStalled';
+  readonly type:
+    | "ReportEquivocation"
+    | "ReportEquivocationUnsigned"
+    | "NoteStalled";
 }
 
 /** @name PalletGrandpaError */
@@ -420,7 +501,14 @@ export interface PalletGrandpaError extends Enum {
   readonly isInvalidKeyOwnershipProof: boolean;
   readonly isInvalidEquivocationProof: boolean;
   readonly isDuplicateOffenceReport: boolean;
-  readonly type: 'PauseFailed' | 'ResumeFailed' | 'ChangePending' | 'TooSoon' | 'InvalidKeyOwnershipProof' | 'InvalidEquivocationProof' | 'DuplicateOffenceReport';
+  readonly type:
+    | "PauseFailed"
+    | "ResumeFailed"
+    | "ChangePending"
+    | "TooSoon"
+    | "InvalidKeyOwnershipProof"
+    | "InvalidEquivocationProof"
+    | "DuplicateOffenceReport";
 }
 
 /** @name PalletGrandpaEvent */
@@ -431,7 +519,7 @@ export interface PalletGrandpaEvent extends Enum {
   } & Struct;
   readonly isPaused: boolean;
   readonly isResumed: boolean;
-  readonly type: 'NewAuthorities' | 'Paused' | 'Resumed';
+  readonly type: "NewAuthorities" | "Paused" | "Resumed";
 }
 
 /** @name PalletGrandpaStoredPendingChange */
@@ -456,7 +544,7 @@ export interface PalletGrandpaStoredState extends Enum {
     readonly scheduledAt: u32;
     readonly delay: u32;
   } & Struct;
-  readonly type: 'Live' | 'PendingPause' | 'Paused' | 'PendingResume';
+  readonly type: "Live" | "PendingPause" | "Paused" | "PendingResume";
 }
 
 /** @name PalletRmrkCoreCall */
@@ -562,7 +650,24 @@ export interface PalletRmrkCoreCall extends Enum {
     readonly nftId: u32;
     readonly priorities: Vec<u32>;
   } & Struct;
-  readonly type: 'MintNft' | 'CreateCollection' | 'BurnNft' | 'DestroyCollection' | 'Send' | 'AcceptNft' | 'RejectNft' | 'ChangeCollectionIssuer' | 'SetProperty' | 'LockCollection' | 'AddBasicResource' | 'AddComposableResource' | 'AddSlotResource' | 'AcceptResource' | 'RemoveResource' | 'AcceptResourceRemoval' | 'SetPriority';
+  readonly type:
+    | "MintNft"
+    | "CreateCollection"
+    | "BurnNft"
+    | "DestroyCollection"
+    | "Send"
+    | "AcceptNft"
+    | "RejectNft"
+    | "ChangeCollectionIssuer"
+    | "SetProperty"
+    | "LockCollection"
+    | "AddBasicResource"
+    | "AddComposableResource"
+    | "AddSlotResource"
+    | "AcceptResource"
+    | "RemoveResource"
+    | "AcceptResourceRemoval"
+    | "SetPriority";
 }
 
 /** @name PalletRmrkCoreError */
@@ -592,7 +697,32 @@ export interface PalletRmrkCoreError extends Enum {
   readonly isResourceDoesntExist: boolean;
   readonly isResourceNotPending: boolean;
   readonly isNonTransferable: boolean;
-  readonly type: 'NoneValue' | 'StorageOverflow' | 'TooLong' | 'NoAvailableCollectionId' | 'NoAvailableResourceId' | 'MetadataNotSet' | 'RecipientNotSet' | 'NoAvailableNftId' | 'NotInRange' | 'RoyaltyNotSet' | 'CollectionUnknown' | 'NoPermission' | 'NoWitness' | 'CollectionNotEmpty' | 'CollectionFullOrLocked' | 'CannotSendToDescendentOrSelf' | 'ResourceAlreadyExists' | 'EmptyResource' | 'TooManyRecursions' | 'NftIsLocked' | 'CannotAcceptNonOwnedNft' | 'CannotRejectNonOwnedNft' | 'ResourceDoesntExist' | 'ResourceNotPending' | 'NonTransferable';
+  readonly type:
+    | "NoneValue"
+    | "StorageOverflow"
+    | "TooLong"
+    | "NoAvailableCollectionId"
+    | "NoAvailableResourceId"
+    | "MetadataNotSet"
+    | "RecipientNotSet"
+    | "NoAvailableNftId"
+    | "NotInRange"
+    | "RoyaltyNotSet"
+    | "CollectionUnknown"
+    | "NoPermission"
+    | "NoWitness"
+    | "CollectionNotEmpty"
+    | "CollectionFullOrLocked"
+    | "CannotSendToDescendentOrSelf"
+    | "ResourceAlreadyExists"
+    | "EmptyResource"
+    | "TooManyRecursions"
+    | "NftIsLocked"
+    | "CannotAcceptNonOwnedNft"
+    | "CannotRejectNonOwnedNft"
+    | "ResourceDoesntExist"
+    | "ResourceNotPending"
+    | "NonTransferable";
 }
 
 /** @name PalletRmrkCoreEvent */
@@ -682,7 +812,22 @@ export interface PalletRmrkCoreEvent extends Enum {
     readonly collectionId: u32;
     readonly nftId: u32;
   } & Struct;
-  readonly type: 'CollectionCreated' | 'NftMinted' | 'NftBurned' | 'CollectionDestroyed' | 'NftSent' | 'NftAccepted' | 'NftRejected' | 'IssuerChanged' | 'PropertySet' | 'CollectionLocked' | 'ResourceAdded' | 'ResourceAccepted' | 'ResourceRemoval' | 'ResourceRemovalAccepted' | 'PrioritySet';
+  readonly type:
+    | "CollectionCreated"
+    | "NftMinted"
+    | "NftBurned"
+    | "CollectionDestroyed"
+    | "NftSent"
+    | "NftAccepted"
+    | "NftRejected"
+    | "IssuerChanged"
+    | "PropertySet"
+    | "CollectionLocked"
+    | "ResourceAdded"
+    | "ResourceAccepted"
+    | "ResourceRemoval"
+    | "ResourceRemovalAccepted"
+    | "PrioritySet";
 }
 
 /** @name PalletRmrkEquipCall */
@@ -717,7 +862,12 @@ export interface PalletRmrkEquipCall extends Enum {
     readonly symbol: Bytes;
     readonly parts: Vec<RmrkTraitsPartPartType>;
   } & Struct;
-  readonly type: 'ChangeBaseIssuer' | 'Equip' | 'Equippable' | 'ThemeAdd' | 'CreateBase';
+  readonly type:
+    | "ChangeBaseIssuer"
+    | "Equip"
+    | "Equippable"
+    | "ThemeAdd"
+    | "CreateBase";
 }
 
 /** @name PalletRmrkEquipError */
@@ -740,7 +890,25 @@ export interface PalletRmrkEquipError extends Enum {
   readonly isUnknownError: boolean;
   readonly isExceedsMaxPartsPerBase: boolean;
   readonly isTooManyProperties: boolean;
-  readonly type: 'PermissionError' | 'ItemDoesntExist' | 'EquipperDoesntExist' | 'NoAvailableBaseId' | 'NoAvailablePartId' | 'MustBeDirectParent' | 'PartDoesntExist' | 'BaseDoesntExist' | 'CantEquipFixedPart' | 'NoResourceForThisBaseFoundOnNft' | 'CollectionNotEquippable' | 'ItemHasNoResourceToEquipThere' | 'NoEquippableOnFixedPart' | 'NeedsDefaultThemeFirst' | 'AlreadyEquipped' | 'UnknownError' | 'ExceedsMaxPartsPerBase' | 'TooManyProperties';
+  readonly type:
+    | "PermissionError"
+    | "ItemDoesntExist"
+    | "EquipperDoesntExist"
+    | "NoAvailableBaseId"
+    | "NoAvailablePartId"
+    | "MustBeDirectParent"
+    | "PartDoesntExist"
+    | "BaseDoesntExist"
+    | "CantEquipFixedPart"
+    | "NoResourceForThisBaseFoundOnNft"
+    | "CollectionNotEquippable"
+    | "ItemHasNoResourceToEquipThere"
+    | "NoEquippableOnFixedPart"
+    | "NeedsDefaultThemeFirst"
+    | "AlreadyEquipped"
+    | "UnknownError"
+    | "ExceedsMaxPartsPerBase"
+    | "TooManyProperties";
 }
 
 /** @name PalletRmrkEquipEvent */
@@ -775,7 +943,12 @@ export interface PalletRmrkEquipEvent extends Enum {
     readonly newIssuer: AccountId32;
     readonly baseId: u32;
   } & Struct;
-  readonly type: 'BaseCreated' | 'SlotEquipped' | 'SlotUnequipped' | 'EquippablesUpdated' | 'BaseIssuerChanged';
+  readonly type:
+    | "BaseCreated"
+    | "SlotEquipped"
+    | "SlotUnequipped"
+    | "EquippablesUpdated"
+    | "BaseIssuerChanged";
 }
 
 /** @name PalletRmrkMarketCall */
@@ -816,7 +989,13 @@ export interface PalletRmrkMarketCall extends Enum {
     readonly nftId: u32;
     readonly offerer: AccountId32;
   } & Struct;
-  readonly type: 'Buy' | 'List' | 'Unlist' | 'MakeOffer' | 'WithdrawOffer' | 'AcceptOffer';
+  readonly type:
+    | "Buy"
+    | "List"
+    | "Unlist"
+    | "MakeOffer"
+    | "WithdrawOffer"
+    | "AcceptOffer";
 }
 
 /** @name PalletRmrkMarketError */
@@ -836,7 +1015,22 @@ export interface PalletRmrkMarketError extends Enum {
   readonly isListingHasExpired: boolean;
   readonly isPriceDiffersFromExpected: boolean;
   readonly isNonTransferable: boolean;
-  readonly type: 'NoPermission' | 'TokenNotForSale' | 'CannotWithdrawOffer' | 'CannotUnlistToken' | 'CannotOfferOnOwnToken' | 'CannotBuyOwnToken' | 'UnknownOffer' | 'CannotListNftOwnedByNft' | 'TokenDoesNotExist' | 'OfferTooLow' | 'AlreadyOffered' | 'OfferHasExpired' | 'ListingHasExpired' | 'PriceDiffersFromExpected' | 'NonTransferable';
+  readonly type:
+    | "NoPermission"
+    | "TokenNotForSale"
+    | "CannotWithdrawOffer"
+    | "CannotUnlistToken"
+    | "CannotOfferOnOwnToken"
+    | "CannotBuyOwnToken"
+    | "UnknownOffer"
+    | "CannotListNftOwnedByNft"
+    | "TokenDoesNotExist"
+    | "OfferTooLow"
+    | "AlreadyOffered"
+    | "OfferHasExpired"
+    | "ListingHasExpired"
+    | "PriceDiffersFromExpected"
+    | "NonTransferable";
 }
 
 /** @name PalletRmrkMarketEvent */
@@ -889,7 +1083,14 @@ export interface PalletRmrkMarketEvent extends Enum {
     readonly collectionId: u32;
     readonly nftId: u32;
   } & Struct;
-  readonly type: 'TokenPriceUpdated' | 'TokenSold' | 'TokenListed' | 'TokenUnlisted' | 'OfferPlaced' | 'OfferWithdrawn' | 'OfferAccepted';
+  readonly type:
+    | "TokenPriceUpdated"
+    | "TokenSold"
+    | "TokenListed"
+    | "TokenUnlisted"
+    | "OfferPlaced"
+    | "OfferWithdrawn"
+    | "OfferAccepted";
 }
 
 /** @name PalletRmrkMarketListInfo */
@@ -926,13 +1127,13 @@ export interface PalletSudoCall extends Enum {
     readonly who: MultiAddress;
     readonly call: Call;
   } & Struct;
-  readonly type: 'Sudo' | 'SudoUncheckedWeight' | 'SetKey' | 'SudoAs';
+  readonly type: "Sudo" | "SudoUncheckedWeight" | "SetKey" | "SudoAs";
 }
 
 /** @name PalletSudoError */
 export interface PalletSudoError extends Enum {
   readonly isRequireSudo: boolean;
-  readonly type: 'RequireSudo';
+  readonly type: "RequireSudo";
 }
 
 /** @name PalletSudoEvent */
@@ -949,7 +1150,7 @@ export interface PalletSudoEvent extends Enum {
   readonly asSudoAsDone: {
     readonly sudoResult: Result<Null, SpRuntimeDispatchError>;
   } & Struct;
-  readonly type: 'Sudid' | 'KeyChanged' | 'SudoAsDone';
+  readonly type: "Sudid" | "KeyChanged" | "SudoAsDone";
 }
 
 /** @name PalletTemplateCall */
@@ -959,21 +1160,21 @@ export interface PalletTemplateCall extends Enum {
     readonly something: u32;
   } & Struct;
   readonly isCauseError: boolean;
-  readonly type: 'DoSomething' | 'CauseError';
+  readonly type: "DoSomething" | "CauseError";
 }
 
 /** @name PalletTemplateError */
 export interface PalletTemplateError extends Enum {
   readonly isNoneValue: boolean;
   readonly isStorageOverflow: boolean;
-  readonly type: 'NoneValue' | 'StorageOverflow';
+  readonly type: "NoneValue" | "StorageOverflow";
 }
 
 /** @name PalletTemplateEvent */
 export interface PalletTemplateEvent extends Enum {
   readonly isSomethingStored: boolean;
   readonly asSomethingStored: ITuple<[u32, AccountId32]>;
-  readonly type: 'SomethingStored';
+  readonly type: "SomethingStored";
 }
 
 /** @name PalletTimestampCall */
@@ -982,17 +1183,18 @@ export interface PalletTimestampCall extends Enum {
   readonly asSet: {
     readonly now: Compact<u64>;
   } & Struct;
-  readonly type: 'Set';
+  readonly type: "Set";
 }
 
 /** @name PalletTransactionPaymentChargeTransactionPayment */
-export interface PalletTransactionPaymentChargeTransactionPayment extends Compact<u128> {}
+export interface PalletTransactionPaymentChargeTransactionPayment
+  extends Compact<u128> {}
 
 /** @name PalletTransactionPaymentReleases */
 export interface PalletTransactionPaymentReleases extends Enum {
   readonly isV1Ancient: boolean;
   readonly isV2: boolean;
-  readonly type: 'V1Ancient' | 'V2';
+  readonly type: "V1Ancient" | "V2";
 }
 
 /** @name PalletUniquesCall */
@@ -1132,7 +1334,31 @@ export interface PalletUniquesCall extends Enum {
     readonly collection: u32;
     readonly maxSupply: u32;
   } & Struct;
-  readonly type: 'Create' | 'ForceCreate' | 'Destroy' | 'Mint' | 'Burn' | 'Transfer' | 'Redeposit' | 'Freeze' | 'Thaw' | 'FreezeCollection' | 'ThawCollection' | 'TransferOwnership' | 'SetTeam' | 'ApproveTransfer' | 'CancelApproval' | 'ForceItemStatus' | 'SetAttribute' | 'ClearAttribute' | 'SetMetadata' | 'ClearMetadata' | 'SetCollectionMetadata' | 'ClearCollectionMetadata' | 'SetAcceptOwnership' | 'SetCollectionMaxSupply';
+  readonly type:
+    | "Create"
+    | "ForceCreate"
+    | "Destroy"
+    | "Mint"
+    | "Burn"
+    | "Transfer"
+    | "Redeposit"
+    | "Freeze"
+    | "Thaw"
+    | "FreezeCollection"
+    | "ThawCollection"
+    | "TransferOwnership"
+    | "SetTeam"
+    | "ApproveTransfer"
+    | "CancelApproval"
+    | "ForceItemStatus"
+    | "SetAttribute"
+    | "ClearAttribute"
+    | "SetMetadata"
+    | "ClearMetadata"
+    | "SetCollectionMetadata"
+    | "ClearCollectionMetadata"
+    | "SetAcceptOwnership"
+    | "SetCollectionMaxSupply";
 }
 
 /** @name PalletUniquesCollectionDetails */
@@ -1180,7 +1406,22 @@ export interface PalletUniquesError extends Enum {
   readonly isMaxSupplyReached: boolean;
   readonly isMaxSupplyAlreadySet: boolean;
   readonly isMaxSupplyTooSmall: boolean;
-  readonly type: 'NoPermission' | 'UnknownCollection' | 'AlreadyExists' | 'WrongOwner' | 'BadWitness' | 'InUse' | 'Frozen' | 'WrongDelegate' | 'NoDelegate' | 'Unapproved' | 'Unaccepted' | 'Locked' | 'MaxSupplyReached' | 'MaxSupplyAlreadySet' | 'MaxSupplyTooSmall';
+  readonly type:
+    | "NoPermission"
+    | "UnknownCollection"
+    | "AlreadyExists"
+    | "WrongOwner"
+    | "BadWitness"
+    | "InUse"
+    | "Frozen"
+    | "WrongDelegate"
+    | "NoDelegate"
+    | "Unapproved"
+    | "Unaccepted"
+    | "Locked"
+    | "MaxSupplyReached"
+    | "MaxSupplyAlreadySet"
+    | "MaxSupplyTooSmall";
 }
 
 /** @name PalletUniquesEvent */
@@ -1317,7 +1558,31 @@ export interface PalletUniquesEvent extends Enum {
     readonly collection: u32;
     readonly maxSupply: u32;
   } & Struct;
-  readonly type: 'Created' | 'ForceCreated' | 'Destroyed' | 'Issued' | 'Transferred' | 'Burned' | 'Frozen' | 'Thawed' | 'CollectionFrozen' | 'CollectionThawed' | 'OwnerChanged' | 'TeamChanged' | 'ApprovedTransfer' | 'ApprovalCancelled' | 'ItemStatusChanged' | 'CollectionMetadataSet' | 'CollectionMetadataCleared' | 'MetadataSet' | 'MetadataCleared' | 'Redeposited' | 'AttributeSet' | 'AttributeCleared' | 'OwnershipAcceptanceChanged' | 'CollectionMaxSupplySet';
+  readonly type:
+    | "Created"
+    | "ForceCreated"
+    | "Destroyed"
+    | "Issued"
+    | "Transferred"
+    | "Burned"
+    | "Frozen"
+    | "Thawed"
+    | "CollectionFrozen"
+    | "CollectionThawed"
+    | "OwnerChanged"
+    | "TeamChanged"
+    | "ApprovedTransfer"
+    | "ApprovalCancelled"
+    | "ItemStatusChanged"
+    | "CollectionMetadataSet"
+    | "CollectionMetadataCleared"
+    | "MetadataSet"
+    | "MetadataCleared"
+    | "Redeposited"
+    | "AttributeSet"
+    | "AttributeCleared"
+    | "OwnershipAcceptanceChanged"
+    | "CollectionMaxSupplySet";
 }
 
 /** @name PalletUniquesItemDetails */
@@ -1359,13 +1624,18 @@ export interface PalletUtilityCall extends Enum {
   readonly asForceBatch: {
     readonly calls: Vec<Call>;
   } & Struct;
-  readonly type: 'Batch' | 'AsDerivative' | 'BatchAll' | 'DispatchAs' | 'ForceBatch';
+  readonly type:
+    | "Batch"
+    | "AsDerivative"
+    | "BatchAll"
+    | "DispatchAs"
+    | "ForceBatch";
 }
 
 /** @name PalletUtilityError */
 export interface PalletUtilityError extends Enum {
   readonly isTooManyCalls: boolean;
-  readonly type: 'TooManyCalls';
+  readonly type: "TooManyCalls";
 }
 
 /** @name PalletUtilityEvent */
@@ -1386,7 +1656,13 @@ export interface PalletUtilityEvent extends Enum {
   readonly asDispatchedAs: {
     readonly result: Result<Null, SpRuntimeDispatchError>;
   } & Struct;
-  readonly type: 'BatchInterrupted' | 'BatchCompleted' | 'BatchCompletedWithErrors' | 'ItemCompleted' | 'ItemFailed' | 'DispatchedAs';
+  readonly type:
+    | "BatchInterrupted"
+    | "BatchCompleted"
+    | "BatchCompletedWithErrors"
+    | "ItemCompleted"
+    | "ItemFailed"
+    | "DispatchedAs";
 }
 
 /** @name PhantomTypePhantomType */
@@ -1398,7 +1674,7 @@ export interface RmrkSubstrateRuntimeOriginCaller extends Enum {
   readonly asSystem: FrameSupportDispatchRawOrigin;
   readonly isVoid: boolean;
   readonly asVoid: SpCoreVoid;
-  readonly type: 'System' | 'Void';
+  readonly type: "System" | "Void";
 }
 
 /** @name RmrkSubstrateRuntimeRuntime */
@@ -1426,7 +1702,7 @@ export interface RmrkTraitsNftAccountIdOrCollectionNftTuple extends Enum {
   readonly asAccountId: AccountId32;
   readonly isCollectionAndNftTuple: boolean;
   readonly asCollectionAndNftTuple: ITuple<[u32, u32]>;
-  readonly type: 'AccountId' | 'CollectionAndNftTuple';
+  readonly type: "AccountId" | "CollectionAndNftTuple";
 }
 
 /** @name RmrkTraitsNftNftChild */
@@ -1457,7 +1733,7 @@ export interface RmrkTraitsPartEquippableList extends Enum {
   readonly isEmpty: boolean;
   readonly isCustom: boolean;
   readonly asCustom: Vec<u32>;
-  readonly type: 'All' | 'Empty' | 'Custom';
+  readonly type: "All" | "Empty" | "Custom";
 }
 
 /** @name RmrkTraitsPartFixedPart */
@@ -1473,7 +1749,7 @@ export interface RmrkTraitsPartPartType extends Enum {
   readonly asFixedPart: RmrkTraitsPartFixedPart;
   readonly isSlotPart: boolean;
   readonly asSlotPart: RmrkTraitsPartSlotPart;
-  readonly type: 'FixedPart' | 'SlotPart';
+  readonly type: "FixedPart" | "SlotPart";
 }
 
 /** @name RmrkTraitsPartSlotPart */
@@ -1492,20 +1768,15 @@ export interface RmrkTraitsPropertyPropertyInfo extends Struct {
 
 /** @name RmrkTraitsResourceBasicResource */
 export interface RmrkTraitsResourceBasicResource extends Struct {
-  readonly src: Option<Bytes>;
   readonly metadata: Option<Bytes>;
-  readonly license: Option<Bytes>;
-  readonly thumb: Option<Bytes>;
 }
 
 /** @name RmrkTraitsResourceComposableResource */
 export interface RmrkTraitsResourceComposableResource extends Struct {
   readonly parts: Vec<u32>;
   readonly base: u32;
-  readonly src: Option<Bytes>;
   readonly metadata: Option<Bytes>;
-  readonly license: Option<Bytes>;
-  readonly thumb: Option<Bytes>;
+  readonly slot: Option<ITuple<[u32, u32]>>;
 }
 
 /** @name RmrkTraitsResourceResourceInfo */
@@ -1524,17 +1795,14 @@ export interface RmrkTraitsResourceResourceTypes extends Enum {
   readonly asComposable: RmrkTraitsResourceComposableResource;
   readonly isSlot: boolean;
   readonly asSlot: RmrkTraitsResourceSlotResource;
-  readonly type: 'Basic' | 'Composable' | 'Slot';
+  readonly type: "Basic" | "Composable" | "Slot";
 }
 
 /** @name RmrkTraitsResourceSlotResource */
 export interface RmrkTraitsResourceSlotResource extends Struct {
   readonly base: u32;
-  readonly src: Option<Bytes>;
   readonly metadata: Option<Bytes>;
   readonly slot: u32;
-  readonly license: Option<Bytes>;
-  readonly thumb: Option<Bytes>;
 }
 
 /** @name RmrkTraitsTheme */
@@ -1551,7 +1819,8 @@ export interface RmrkTraitsThemeThemeProperty extends Struct {
 }
 
 /** @name SpConsensusAuraSr25519AppSr25519Public */
-export interface SpConsensusAuraSr25519AppSr25519Public extends SpCoreSr25519Public {}
+export interface SpConsensusAuraSr25519AppSr25519Public
+  extends SpCoreSr25519Public {}
 
 /** @name SpCoreEcdsaSignature */
 export interface SpCoreEcdsaSignature extends U8aFixed {}
@@ -1583,7 +1852,7 @@ export interface SpFinalityGrandpaEquivocation extends Enum {
   readonly asPrevote: FinalityGrandpaEquivocationPrevote;
   readonly isPrecommit: boolean;
   readonly asPrecommit: FinalityGrandpaEquivocationPrecommit;
-  readonly type: 'Prevote' | 'Precommit';
+  readonly type: "Prevote" | "Precommit";
 }
 
 /** @name SpFinalityGrandpaEquivocationProof */
@@ -1597,7 +1866,7 @@ export interface SpRuntimeArithmeticError extends Enum {
   readonly isUnderflow: boolean;
   readonly isOverflow: boolean;
   readonly isDivisionByZero: boolean;
-  readonly type: 'Underflow' | 'Overflow' | 'DivisionByZero';
+  readonly type: "Underflow" | "Overflow" | "DivisionByZero";
 }
 
 /** @name SpRuntimeDigest */
@@ -1616,7 +1885,12 @@ export interface SpRuntimeDigestDigestItem extends Enum {
   readonly isPreRuntime: boolean;
   readonly asPreRuntime: ITuple<[U8aFixed, Bytes]>;
   readonly isRuntimeEnvironmentUpdated: boolean;
-  readonly type: 'Other' | 'Consensus' | 'Seal' | 'PreRuntime' | 'RuntimeEnvironmentUpdated';
+  readonly type:
+    | "Other"
+    | "Consensus"
+    | "Seal"
+    | "PreRuntime"
+    | "RuntimeEnvironmentUpdated";
 }
 
 /** @name SpRuntimeDispatchError */
@@ -1635,7 +1909,17 @@ export interface SpRuntimeDispatchError extends Enum {
   readonly asArithmetic: SpRuntimeArithmeticError;
   readonly isTransactional: boolean;
   readonly asTransactional: SpRuntimeTransactionalError;
-  readonly type: 'Other' | 'CannotLookup' | 'BadOrigin' | 'Module' | 'ConsumerRemaining' | 'NoProviders' | 'TooManyConsumers' | 'Token' | 'Arithmetic' | 'Transactional';
+  readonly type:
+    | "Other"
+    | "CannotLookup"
+    | "BadOrigin"
+    | "Module"
+    | "ConsumerRemaining"
+    | "NoProviders"
+    | "TooManyConsumers"
+    | "Token"
+    | "Arithmetic"
+    | "Transactional";
 }
 
 /** @name SpRuntimeModuleError */
@@ -1652,7 +1936,7 @@ export interface SpRuntimeMultiSignature extends Enum {
   readonly asSr25519: SpCoreSr25519Signature;
   readonly isEcdsa: boolean;
   readonly asEcdsa: SpCoreEcdsaSignature;
-  readonly type: 'Ed25519' | 'Sr25519' | 'Ecdsa';
+  readonly type: "Ed25519" | "Sr25519" | "Ecdsa";
 }
 
 /** @name SpRuntimeTokenError */
@@ -1664,14 +1948,21 @@ export interface SpRuntimeTokenError extends Enum {
   readonly isUnknownAsset: boolean;
   readonly isFrozen: boolean;
   readonly isUnsupported: boolean;
-  readonly type: 'NoFunds' | 'WouldDie' | 'BelowMinimum' | 'CannotCreate' | 'UnknownAsset' | 'Frozen' | 'Unsupported';
+  readonly type:
+    | "NoFunds"
+    | "WouldDie"
+    | "BelowMinimum"
+    | "CannotCreate"
+    | "UnknownAsset"
+    | "Frozen"
+    | "Unsupported";
 }
 
 /** @name SpRuntimeTransactionalError */
 export interface SpRuntimeTransactionalError extends Enum {
   readonly isLimitReached: boolean;
   readonly isNoLayer: boolean;
-  readonly type: 'LimitReached' | 'NoLayer';
+  readonly type: "LimitReached" | "NoLayer";
 }
 
 /** @name SpVersionRuntimeVersion */
@@ -1686,4 +1977,4 @@ export interface SpVersionRuntimeVersion extends Struct {
   readonly stateVersion: u8;
 }
 
-export type PHANTOM_RMRK = 'rmrk';
+export type PHANTOM_RMRK = "rmrk";
