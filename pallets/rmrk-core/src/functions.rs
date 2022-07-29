@@ -45,7 +45,7 @@ where
 	}
 }
 
-impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId, T::Origin> for Pallet<T>
+impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId> for Pallet<T>
 where
 	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
@@ -74,14 +74,11 @@ where
 
 	// Internal function to set a property for downstream `Origin::root()` calls.
 	fn do_set_property(
-		origin: T::Origin,
 		collection_id: CollectionId,
 		maybe_nft_id: Option<NftId>,
 		key: KeyLimitOf<T>,
 		value: ValueLimitOf<T>,
 	) -> sp_runtime::DispatchResult {
-		// Check if root user
-		ensure_root(origin)?;
 		// Ensure collection exists
 		Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
@@ -92,15 +89,10 @@ where
 
 	// Internal function to remove a property for downstream `Origin::root()` calls.
 	fn do_remove_property(
-		origin: T::Origin,
 		collection_id: CollectionId,
 		maybe_nft_id: Option<NftId>,
 		key: KeyLimitOf<T>,
 	) -> sp_runtime::DispatchResult {
-		// Check if root user
-		ensure_root(origin)?;
-		// Ensure collection exists
-		Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		Properties::<T>::remove((&collection_id, maybe_nft_id, &key));
 
 		Self::deposit_event(Event::PropertyRemoved { collection_id, maybe_nft_id, key });

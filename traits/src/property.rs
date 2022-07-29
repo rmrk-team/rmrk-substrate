@@ -32,7 +32,7 @@ pub struct PropertyInfo<BoundedKey, BoundedValue> {
 
 /// Abstraction over a Property system.
 #[allow(clippy::upper_case_acronyms)]
-pub trait Property<KeyLimit, ValueLimit, AccountId, Origin> {
+pub trait Property<KeyLimit, ValueLimit, AccountId> {
 	fn property_set(
 		sender: AccountId,
 		collection_id: CollectionId,
@@ -43,7 +43,6 @@ pub trait Property<KeyLimit, ValueLimit, AccountId, Origin> {
 
 	/// Internal function to set a property that can be called from `Origin::root()` downstream.
 	fn do_set_property(
-		origin: Origin,
 		collection_id: CollectionId,
 		maybe_nft_id: Option<NftId>,
 		key: KeyLimit,
@@ -52,7 +51,6 @@ pub trait Property<KeyLimit, ValueLimit, AccountId, Origin> {
 
 	/// Internal function to remove a property that can be called from `Origin::root()` downstream.
 	fn do_remove_property(
-		origin: Origin,
 		collection_id: CollectionId,
 		maybe_nft_id: Option<NftId>,
 		key: KeyLimit,

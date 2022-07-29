@@ -1529,7 +1529,7 @@ fn set_property_works() {
 }
 
 #[test]
-fn set_property_with_root_works() {
+fn set_property_with_internal_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		// Define property key
 		let key = stbk("test-key");
@@ -1537,7 +1537,7 @@ fn set_property_with_root_works() {
 		let value = stb("test-value");
 		// set_property fails without a collection (CollectionUnknown)
 		assert_noop!(
-			RMRKCore::do_set_property(Origin::root(), 0, Some(0), key.clone(), value.clone()),
+			RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()),
 			Error::<Test>::CollectionUnknown
 		);
 		// Create a basic collection
@@ -1545,13 +1545,7 @@ fn set_property_with_root_works() {
 		// Mint NFT
 		assert_ok!(basic_mint());
 		// Root sets property on NFT
-		assert_ok!(RMRKCore::do_set_property(
-			Origin::root(),
-			0,
-			Some(0),
-			key.clone(),
-			value.clone()
-		));
+		assert_ok!(RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()));
 		// Successful property setting should trigger a PropertySet event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
 			collection_id: 0,
@@ -1560,39 +1554,23 @@ fn set_property_with_root_works() {
 			value: value.clone(),
 		}));
 		// Property value now exists
-		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())).unwrap(), value.clone());
-		// BOB is not Origin::root()
-		assert_noop!(
-			RMRKCore::do_set_property(Origin::signed(BOB), 0, Some(0), key.clone(), value.clone()),
-			BadOrigin
-		);
+		assert_eq!(RMRKCore::properties((0, Some(0), key)).unwrap(), value);
 	});
 }
 
 #[test]
-fn remove_property_with_root_works() {
+fn remove_property_with_internal_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		// Define property key
 		let key = stbk("test-key");
 		// Define property value
 		let value = stb("test-value");
-		// set_property fails without a collection (CollectionUnknown)
-		assert_noop!(
-			RMRKCore::do_remove_property(Origin::root(), 0, Some(0), key.clone()),
-			Error::<Test>::CollectionUnknown
-		);
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// Mint NFT
 		assert_ok!(basic_mint());
 		// Root sets property on NFT
-		assert_ok!(RMRKCore::do_set_property(
-			Origin::root(),
-			0,
-			Some(0),
-			key.clone(),
-			value.clone()
-		));
+		assert_ok!(RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()));
 		// Successful property setting should trigger a PropertySet event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
 			collection_id: 0,
@@ -1601,15 +1579,10 @@ fn remove_property_with_root_works() {
 			value: value.clone(),
 		}));
 		// Property value now exists
-		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())).unwrap(), value.clone());
-		// BOB is not Origin::root()
-		assert_noop!(
-			RMRKCore::do_remove_property(Origin::signed(BOB), 0, Some(0), key.clone()),
-			BadOrigin
-		);
+		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())).unwrap(), value);
 		// Origin::root() removes property
-		assert_ok!(RMRKCore::do_remove_property(Origin::root(), 0, Some(0), key.clone()));
-		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())), None);
+		assert_ok!(RMRKCore::do_remove_property(0, Some(0), key.clone()));
+		assert_eq!(RMRKCore::properties((0, Some(0), key)), None);
 	});
 }
 
