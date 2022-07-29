@@ -7,7 +7,6 @@
 use super::*;
 use codec::{Codec, Decode, Encode};
 use frame_support::traits::{tokens::Locker, Get};
-use frame_system::ensure_root;
 
 use sp_runtime::{
 	traits::{Saturating, TrailingZeroInput},
