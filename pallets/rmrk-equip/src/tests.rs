@@ -265,8 +265,7 @@ fn equip_works() {
 		// Create Composable resource
 		let composable_resource = ComposableResource {
 			parts: vec![101, 201].try_into().unwrap(), // BoundedVec of Parts
-
-			base: 0, // BaseID
+			base: 0,                                   // BaseID
 			metadata: None,
 			slot: None,
 		};

@@ -100,12 +100,17 @@ declare module '@polkadot/api-base/types/submittable' {
     };
     grandpa: {
       /**
-       * Note that the current authority set of the GRANDPA finality gadget has
-       * stalled. This will trigger a forced authority set change at the beginning
-       * of the next session, to be enacted `delay` blocks after that. The delay
-       * should be high enough to safely assume that the block signalling the
-       * forced change will not be re-orged (e.g. 1000 blocks). The GRANDPA voters
-       * will start the new authority set using the given finalized block as base.
+       * Note that the current authority set of the GRANDPA finality gadget has stalled.
+       * 
+       * This will trigger a forced authority set change at the beginning of the next session, to
+       * be enacted `delay` blocks after that. The `delay` should be high enough to safely assume
+       * that the block signalling the forced change will not be re-orged e.g. 1000 blocks.
+       * The block production rate (which may be slowed down because of finality lagging) should
+       * be taken into account when choosing the `delay`. The GRANDPA voters based on the new
+       * authority will start voting on top of `best_finalized_block_number` for new finalized
+       * blocks. `best_finalized_block_number` should be the highest of the latest finalized
+       * block of all validators of the new authority set.
+       * 
        * Only callable by root.
        **/
       noteStalled: AugmentedSubmittable<(delay: u32 | AnyNumber | Uint8Array, bestFinalizedBlockNumber: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32]>;
@@ -156,15 +161,15 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Create basic resource
        **/
-      addBasicResource: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, resource: RmrkTraitsResourceBasicResource | { src?: any; metadata?: any; license?: any; thumb?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, RmrkTraitsResourceBasicResource]>;
+      addBasicResource: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, resource: RmrkTraitsResourceBasicResource | { metadata?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, RmrkTraitsResourceBasicResource]>;
       /**
        * Create composable resource
        **/
-      addComposableResource: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, resource: RmrkTraitsResourceComposableResource | { parts?: any; base?: any; src?: any; metadata?: any; license?: any; thumb?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, RmrkTraitsResourceComposableResource]>;
+      addComposableResource: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, resource: RmrkTraitsResourceComposableResource | { parts?: any; base?: any; metadata?: any; slot?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, RmrkTraitsResourceComposableResource]>;
       /**
        * Create slot resource
        **/
-      addSlotResource: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, resource: RmrkTraitsResourceSlotResource | { base?: any; src?: any; metadata?: any; slot?: any; license?: any; thumb?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, RmrkTraitsResourceSlotResource]>;
+      addSlotResource: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, resource: RmrkTraitsResourceSlotResource | { base?: any; metadata?: any; slot?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, RmrkTraitsResourceSlotResource]>;
       /**
        * burn nft
        **/
@@ -195,13 +200,25 @@ declare module '@polkadot/api-base/types/submittable' {
        * Sets metadata and the royalty attribute
        * 
        * Parameters:
-       * - `collection_id`: The class of the asset to be minted.
+       * - `collection_id`: The collection of the asset to be minted.
        * - `nft_id`: The nft value of the asset to be minted.
        * - `recipient`: Receiver of the royalty
        * - `royalty`: Permillage reward from each trade for the Recipient
        * - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
        **/
       mintNft: AugmentedSubmittable<(owner: Option<AccountId32> | null | object | string | Uint8Array, collectionId: u32 | AnyNumber | Uint8Array, royaltyRecipient: Option<AccountId32> | null | object | string | Uint8Array, royalty: Option<Permill> | null | object | string | Uint8Array, metadata: Bytes | string | Uint8Array, transferable: bool | boolean | Uint8Array, resources: Option<Vec<RmrkTraitsResourceResourceTypes>> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Option<AccountId32>, u32, Option<AccountId32>, Option<Permill>, Bytes, bool, Option<Vec<RmrkTraitsResourceResourceTypes>>]>;
+      /**
+       * Mints an NFT in the specified collection directly to another NFT
+       * Sets metadata and the royalty attribute
+       * 
+       * Parameters:
+       * - `collection_id`: The class of the asset to be minted.
+       * - `nft_id`: The nft value of the asset to be minted.
+       * - `recipient`: Receiver of the royalty
+       * - `royalty`: Permillage reward from each trade for the Recipient
+       * - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
+       **/
+      mintNftDirectlyToNft: AugmentedSubmittable<(owner: ITuple<[u32, u32]> | [u32 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array], collectionId: u32 | AnyNumber | Uint8Array, royaltyRecipient: Option<AccountId32> | null | object | string | Uint8Array, royalty: Option<Permill> | null | object | string | Uint8Array, metadata: Bytes | string | Uint8Array, transferable: bool | boolean | Uint8Array, resources: Option<Vec<RmrkTraitsResourceResourceTypes>> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [ITuple<[u32, u32]>, u32, Option<AccountId32>, Option<Permill>, Bytes, bool, Option<Vec<RmrkTraitsResourceResourceTypes>>]>;
       /**
        * Rejects an NFT sent from another account to self or owned NFT
        * 
@@ -262,17 +279,13 @@ declare module '@polkadot/api-base/types/submittable' {
       createBase: AugmentedSubmittable<(baseType: Bytes | string | Uint8Array, symbol: Bytes | string | Uint8Array, parts: Vec<RmrkTraitsPartPartType> | (RmrkTraitsPartPartType | { FixedPart: any } | { SlotPart: any } | string | Uint8Array)[]) => SubmittableExtrinsic<ApiType>, [Bytes, Bytes, Vec<RmrkTraitsPartPartType>]>;
       /**
        * Equips a child NFT's resource to a parent's slot, if all are available.
-       * Also can be called to unequip, which can be successful if
-       * - Item has beeen burned
-       * - Item is equipped and extrinsic called by equipping item owner
-       * - Item is equipped and extrinsic called by equipper NFT owner
        * Equipping operations are maintained inside the Equippings storage.
        * Modeled after [equip interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/equip.md)
        * 
        * Parameters:
        * - origin: The caller of the function, not necessarily anything else
-       * - item: Child NFT being equipped (or unequipped)
-       * - equipper: Parent NFT which will equip (or unequip) the item
+       * - item: Child NFT being equipped
+       * - equipper: Parent NFT which will equip the item
        * - base: ID of the base which the item and equipper must each have a resource referencing
        * - slot: ID of the slot which the item and equipper must each have a resource referencing
        **/
@@ -304,6 +317,23 @@ declare module '@polkadot/api-base/types/submittable' {
        * - inherit: optional bool
        **/
       themeAdd: AugmentedSubmittable<(baseId: u32 | AnyNumber | Uint8Array, theme: RmrkTraitsTheme | { name?: any; properties?: any; inherit?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, RmrkTraitsTheme]>;
+      /**
+       * Unequips a child NFT's resource from its parent's slot.
+       * Can be successful if
+       * - Item has beeen burned
+       * - Item is equipped and extrinsic called by equipping item owner
+       * - Item is equipped and extrinsic called by equipper NFT owner
+       * Equipping operations are maintained inside the Equippings storage.
+       * Modeled after [equip interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/equip.md)
+       * 
+       * Parameters:
+       * - origin: The caller of the function, not necessarily anything else
+       * - item: Child NFT being unequipped
+       * - unequipper: Parent NFT which will unequip the item
+       * - base: ID of the base which the item and equipper must each have a resource referencing
+       * - slot: ID of the slot which the item and equipper must each have a resource referencing
+       **/
+      unequip: AugmentedSubmittable<(item: ITuple<[u32, u32]> | [u32 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array], unequipper: ITuple<[u32, u32]> | [u32 | AnyNumber | Uint8Array, u32 | AnyNumber | Uint8Array], base: u32 | AnyNumber | Uint8Array, slot: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [ITuple<[u32, u32]>, ITuple<[u32, u32]>, u32, u32]>;
       /**
        * Generic tx
        **/
