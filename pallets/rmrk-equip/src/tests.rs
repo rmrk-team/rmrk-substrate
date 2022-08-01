@@ -265,12 +265,9 @@ fn equip_works() {
 		// Create Composable resource
 		let composable_resource = ComposableResource {
 			parts: vec![101, 201].try_into().unwrap(), // BoundedVec of Parts
-			src: Some(stbd("ipfs://backup-src")),
-			base: 0, // BaseID
-			license: None,
+			base: 0,                                   // BaseID
 			metadata: None,
 			slot: None,
-			thumb: None,
 		};
 
 		// Add a Base 0 resource (body-1 and left-hand slot) to our character-0 nft
@@ -296,12 +293,9 @@ fn equip_works() {
 		);
 
 		let sword_slot_resource_left = SlotResource {
-			src: Some(stbd("ipfs://sword-metadata-left")),
 			base: 0, // BaseID
-			license: None,
 			metadata: None,
 			slot: 201, // SlotID
-			thumb: None,
 		};
 
 		// Add our sword left-hand resource to our sword NFT
@@ -313,12 +307,9 @@ fn equip_works() {
 		));
 
 		let flashlight_slot_resource_left = SlotResource {
-			src: Some(stbd("ipfs://flashlight-metadata-left")),
 			base: 0, // BaseID
-			license: None,
 			metadata: None,
 			slot: 201, // SlotID
-			thumb: None,
 		};
 
 		// Add our flashlight left-hand resource to our flashlight NFT
@@ -368,12 +359,9 @@ fn equip_works() {
 		assert!(RmrkCore::resources((1, 0, equipped.unwrap())).is_some());
 
 		let sword_slot_resource_right = SlotResource {
-			src: Some(stbd("ipfs://sword-metadata-right")),
 			base: 0, // BaseID
-			license: None,
 			metadata: None,
 			slot: 202, // SlotID
-			thumb: None,
 		};
 
 		// Add our sword right-hand resource to our sword NFT
@@ -625,12 +613,10 @@ fn nested_equip_works() {
 		// and part 200 is the HEADWARE slot part
 		let composable_resource_for_person_zero = ComposableResource {
 			parts: vec![100, 200].try_into().unwrap(), // BoundedVec of Parts
-			src: Some(stbd("ipfs://backup-src")),
+
 			base: 0, // BaseID
-			license: None,
 			metadata: None,
 			slot: None,
-			thumb: None,
 		};
 
 		// Add this composable resource to person-0
@@ -646,12 +632,10 @@ fn nested_equip_works() {
 		// and part 400 is the GEM slot part
 		let composable_resource_for_hat_zero = ComposableResource {
 			parts: vec![300, 400].try_into().unwrap(), // BoundedVec of Parts
-			src: Some(stbd("ipfs://backup-src")),
+
 			base: 1, // BaseID
-			license: None,
 			metadata: None,
 			slot: Some((0, 200)), // Equippable into PERSON's base and that HEADWARE slot
-			thumb: None,
 		};
 
 		// Add this composable resource to hat-0
@@ -665,12 +649,9 @@ fn nested_equip_works() {
 		// Create Slot resource for gem-0
 		// References HEADWARE base (1) and GEM slot (400)
 		let gem_slot_resource = SlotResource {
-			src: Some(stbd("gem-resource")),
 			base: 1, // BaseID
-			license: None,
 			metadata: None,
 			slot: 400, // SlotID
-			thumb: None,
 		};
 
 		// Add this Slot resource to gem-0

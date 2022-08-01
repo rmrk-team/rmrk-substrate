@@ -134,6 +134,13 @@ declare module '@polkadot/api-base/types/storage' {
        * Stores collections info
        **/
       collections: AugmentedQuery<ApiType, (arg: u32 | AnyNumber | Uint8Array) => Observable<Option<RmrkTraitsCollectionCollectionInfo>>, [u32]> & QueryableStorageEntry<ApiType, [u32]>;
+      /**
+       * This storage is not used by the chain.
+       * It is need only for PolkadotJS types generation.
+       * 
+       * The stored types are use in the RPC interface only,
+       * PolkadotJS won't generate TS types for them without this storage.
+       **/
       dummyStorage: AugmentedQuery<ApiType, () => Observable<Option<ITuple<[RmrkTraitsNftNftChild, PhantomTypePhantomType]>>>, []> & QueryableStorageEntry<ApiType, []>;
       /**
        * Stores the existence of a base for a particular NFT
@@ -166,7 +173,7 @@ declare module '@polkadot/api-base/types/storage' {
        **/
       priorities: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: u32 | AnyNumber | Uint8Array, arg3: u32 | AnyNumber | Uint8Array) => Observable<Option<u32>>, [u32, u32, u32]> & QueryableStorageEntry<ApiType, [u32, u32, u32]>;
       /**
-       * Metadata of an asset class.
+       * Arbitrary properties / metadata of an asset.
        **/
       properties: AugmentedQuery<ApiType, (arg1: u32 | AnyNumber | Uint8Array, arg2: Option<u32> | null | object | string | Uint8Array, arg3: Bytes | string | Uint8Array) => Observable<Option<Bytes>>, [u32, Option<u32>, Bytes]> & QueryableStorageEntry<ApiType, [u32, Option<u32>, Bytes]>;
       /**

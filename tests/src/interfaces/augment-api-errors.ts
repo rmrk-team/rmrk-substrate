@@ -82,6 +82,8 @@ declare module '@polkadot/api-base/types/errors' {
     rmrkCore: {
       CannotAcceptNonOwnedNft: AugmentedError<ApiType>;
       CannotRejectNonOwnedNft: AugmentedError<ApiType>;
+      CannotRejectNonPendingNft: AugmentedError<ApiType>;
+      CannotSendEquippedItem: AugmentedError<ApiType>;
       CannotSendToDescendentOrSelf: AugmentedError<ApiType>;
       CollectionFullOrLocked: AugmentedError<ApiType>;
       CollectionNotEmpty: AugmentedError<ApiType>;
@@ -120,14 +122,15 @@ declare module '@polkadot/api-base/types/errors' {
       [key: string]: AugmentedError<ApiType>;
     };
     rmrkEquip: {
-      AlreadyEquipped: AugmentedError<ApiType>;
       BaseDoesntExist: AugmentedError<ApiType>;
       CantEquipFixedPart: AugmentedError<ApiType>;
       CollectionNotEquippable: AugmentedError<ApiType>;
       EquipperDoesntExist: AugmentedError<ApiType>;
       ExceedsMaxPartsPerBase: AugmentedError<ApiType>;
+      ItemAlreadyEquipped: AugmentedError<ApiType>;
       ItemDoesntExist: AugmentedError<ApiType>;
       ItemHasNoResourceToEquipThere: AugmentedError<ApiType>;
+      ItemNotEquipped: AugmentedError<ApiType>;
       MustBeDirectParent: AugmentedError<ApiType>;
       NeedsDefaultThemeFirst: AugmentedError<ApiType>;
       NoAvailableBaseId: AugmentedError<ApiType>;
@@ -136,7 +139,10 @@ declare module '@polkadot/api-base/types/errors' {
       NoResourceForThisBaseFoundOnNft: AugmentedError<ApiType>;
       PartDoesntExist: AugmentedError<ApiType>;
       PermissionError: AugmentedError<ApiType>;
+      SlotAlreadyEquipped: AugmentedError<ApiType>;
+      SlotNotEquipped: AugmentedError<ApiType>;
       TooManyProperties: AugmentedError<ApiType>;
+      UnequipperMustOwnEitherItemOrEquipper: AugmentedError<ApiType>;
       UnknownError: AugmentedError<ApiType>;
       /**
        * Generic error
