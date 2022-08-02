@@ -280,6 +280,7 @@ where
 			},
 		)?;
 		Collections::<T>::insert(collection_id, collection);
+		Self::deposit_event(Event::CollectionCreated { issuer, collection_id });
 		Ok(collection_id)
 	}
 
@@ -320,7 +321,7 @@ where
 	}
 }
 
-impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T>
+impl<T: Config> Nft<T::AccountId, StringLimitOf<T>, BoundedResourceTypeOf<T>> for Pallet<T>
 where
 	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
@@ -334,6 +335,7 @@ where
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
 		transferable: bool,
+		resources: Option<BoundedResourceTypeOf<T>>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
@@ -380,7 +382,22 @@ where
 		})?;
 
 		// Call do_mint for pallet_uniques
-		pallet_uniques::Pallet::<T>::do_mint(collection_id, nft_id, owner, |_details| Ok(()))?;
+		pallet_uniques::Pallet::<T>::do_mint(collection_id, nft_id, owner.clone(), |_details| {
+			Ok(())
+		})?;
+
+		// Add all at-mint resources
+		if let Some(resources) = resources {
+			for res in resources {
+				Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
+			}
+		}
+
+		Self::deposit_event(Event::NftMinted {
+			owner: AccountIdOrCollectionNftTuple::AccountId(owner),
+			collection_id,
+			nft_id,
+		});
 
 		Ok((collection_id, nft_id))
 	}
@@ -393,6 +410,7 @@ where
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
 		transferable: bool,
+		resources: Option<BoundedResourceTypeOf<T>>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		let nft_id = Self::get_next_nft_id(collection_id)?;
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
@@ -446,6 +464,19 @@ where
 		pallet_uniques::Pallet::<T>::do_mint(collection_id, nft_id, uniques_owner, |_details| {
 			Ok(())
 		})?;
+
+		// Add all at-mint resources
+		if let Some(resources) = resources {
+			for res in resources {
+				Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
+			}
+		}
+
+		Self::deposit_event(Event::NftMinted {
+			owner: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(owner.0, owner.1),
+			collection_id,
+			nft_id,
+		});
 
 		Ok((collection_id, nft_id))
 	}

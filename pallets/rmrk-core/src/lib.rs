@@ -405,28 +405,16 @@ pub mod pallet {
 			};
 
 			// Mint NFT for RMRK storage
-			let (collection_id, nft_id) = Self::nft_mint(
-				sender.clone(),
-				nft_owner.clone(),
+			Self::nft_mint(
+				sender,
+				nft_owner,
 				collection_id,
 				royalty_recipient,
 				royalty,
 				metadata,
 				transferable,
+				resources,
 			)?;
-
-			// Add all at-mint resources
-			if let Some(resources) = resources {
-				for res in resources {
-					Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
-				}
-			}
-
-			Self::deposit_event(Event::NftMinted {
-				owner: AccountIdOrCollectionNftTuple::AccountId(nft_owner),
-				collection_id,
-				nft_id,
-			});
 
 			Ok(())
 		}
@@ -464,28 +452,16 @@ pub mod pallet {
 			}
 
 			// Mint NFT for RMRK storage
-			let (collection_id, nft_id) = Self::nft_mint_directly_to_nft(
-				sender.clone(),
+			Self::nft_mint_directly_to_nft(
+				sender,
 				owner,
 				collection_id,
 				royalty_recipient,
 				royalty,
 				metadata,
 				transferable,
+				resources,
 			)?;
-
-			// Add all at-mint resources
-			if let Some(resources) = resources {
-				for res in resources {
-					Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
-				}
-			}
-
-			Self::deposit_event(Event::NftMinted {
-				owner: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(owner.0, owner.1),
-				collection_id,
-				nft_id,
-			});
 
 			Ok(())
 		}
@@ -501,9 +477,8 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let collection_id = Self::collection_create(sender.clone(), metadata, max, symbol)?;
+			Self::collection_create(sender, metadata, max, symbol)?;
 
-			Self::deposit_event(Event::CollectionCreated { issuer: sender, collection_id });
 			Ok(())
 		}
 
