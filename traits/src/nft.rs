@@ -1,19 +1,17 @@
 // Copyright (C) 2021-2022 RMRK
 // This file is part of rmrk-substrate.
 // License: Apache 2.0 modified by RMRK, see LICENSE.md
+#![allow(clippy::too_many_arguments)]
 
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_runtime::{DispatchError};
+use sp_runtime::DispatchError;
 use sp_std::cmp::Eq;
 
 use frame_support::pallet_prelude::*;
 use sp_runtime::Permill;
 
-use crate::{
-	primitives::*,
-	serialize,
-};
+use crate::{primitives::*, serialize};
 use sp_std::result::Result;
 
 #[cfg(feature = "std")]
@@ -33,7 +31,7 @@ pub struct RoyaltyInfo<AccountId, RoyaltyAmount> {
 	/// Recipient (AccountId) of the royalty
 	pub recipient: AccountId,
 	/// Amount (Permill) of the royalty
-    pub amount: RoyaltyAmount,
+	pub amount: RoyaltyAmount,
 }
 
 /// Nft info.
@@ -41,13 +39,11 @@ pub struct RoyaltyInfo<AccountId, RoyaltyAmount> {
 #[derive(Encode, Decode, Debug, TypeInfo, MaxEncodedLen)]
 #[cfg_attr(
 	feature = "std",
-	serde(
-		bound = r#"
+	serde(bound = r#"
 			AccountId: Serialize,
 			RoyaltyAmount: Serialize,
 			BoundedString: AsRef<[u8]>
-		"#
-	)
+		"#)
 )]
 pub struct NftInfo<AccountId, RoyaltyAmount, BoundedString> {
 	/// The owner of the NFT, can be either an Account or a tuple (CollectionId, NftId)
@@ -71,12 +67,12 @@ pub struct NftInfo<AccountId, RoyaltyAmount, BoundedString> {
 #[derive(Encode, Decode, TypeInfo, MaxEncodedLen)]
 pub struct NftChild {
 	pub collection_id: CollectionId,
-	pub nft_id: NftId
+	pub nft_id: NftId,
 }
 
 /// Abstraction over a Nft system.
 #[allow(clippy::upper_case_acronyms)]
-pub trait Nft<AccountId, BoundedString> {
+pub trait Nft<AccountId, BoundedString, BoundedResourceVec> {
 	type MaxRecursions: Get<u32>;
 
 	fn nft_mint(
@@ -87,6 +83,7 @@ pub trait Nft<AccountId, BoundedString> {
 		royalty_amount: Option<Permill>,
 		metadata: BoundedString,
 		transferable: bool,
+		resources: Option<BoundedResourceVec>,
 	) -> Result<(CollectionId, NftId), DispatchError>;
 	fn nft_mint_directly_to_nft(
 		sender: AccountId,
@@ -96,6 +93,7 @@ pub trait Nft<AccountId, BoundedString> {
 		royalty_amount: Option<Permill>,
 		metadata: BoundedString,
 		transferable: bool,
+		resources: Option<BoundedResourceVec>,
 	) -> Result<(CollectionId, NftId), DispatchError>;
 	fn nft_burn(
 		collection_id: CollectionId,

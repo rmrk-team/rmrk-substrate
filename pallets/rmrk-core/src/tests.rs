@@ -1508,6 +1508,64 @@ fn set_property_works() {
 	});
 }
 
+#[test]
+fn set_property_with_internal_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Define property key
+		let key = stbk("test-key");
+		// Define property value
+		let value = stb("test-value");
+		// set_property fails without a collection (CollectionUnknown)
+		assert_noop!(
+			RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()),
+			Error::<Test>::CollectionUnknown
+		);
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint NFT
+		assert_ok!(basic_mint());
+		// Root sets property on NFT
+		assert_ok!(RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()));
+		// Successful property setting should trigger a PropertySet event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
+			collection_id: 0,
+			maybe_nft_id: Some(0),
+			key: key.clone(),
+			value: value.clone(),
+		}));
+		// Property value now exists
+		assert_eq!(RMRKCore::properties((0, Some(0), key)).unwrap(), value);
+	});
+}
+
+#[test]
+fn remove_property_with_internal_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Define property key
+		let key = stbk("test-key");
+		// Define property value
+		let value = stb("test-value");
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint NFT
+		assert_ok!(basic_mint());
+		// Root sets property on NFT
+		assert_ok!(RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()));
+		// Successful property setting should trigger a PropertySet event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
+			collection_id: 0,
+			maybe_nft_id: Some(0),
+			key: key.clone(),
+			value: value.clone(),
+		}));
+		// Property value now exists
+		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())).unwrap(), value);
+		// Origin::root() removes property
+		assert_ok!(RMRKCore::do_remove_property(0, Some(0), key.clone()));
+		assert_eq!(RMRKCore::properties((0, Some(0), key)), None);
+	});
+}
+
 /// Priority: Setting priority tests (RMRK2.0 spec: SETPRIORITY)
 #[test]
 fn set_priority_works() {
