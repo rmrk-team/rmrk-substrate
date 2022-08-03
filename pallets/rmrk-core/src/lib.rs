@@ -214,7 +214,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn properties)]
 	/// Arbitrary properties / metadata of an asset.
-	pub(super) type Properties<T: Config> = StorageNMap<
+	pub type Properties<T: Config> = StorageNMap<
 		_,
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
