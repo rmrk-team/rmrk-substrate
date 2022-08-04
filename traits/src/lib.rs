@@ -24,7 +24,7 @@ pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftInfo, RoyaltyInfo, NftChild
 pub use priority::Priority;
 pub use property::{Property, PropertyInfo};
 pub use resource::{
-	BasicResource, ComposableResource, Resource, ResourceInfo, ResourceTypes, SlotResource,
+	BasicResource, ComposableResource, Resource, ResourceInfo, ResourceTypes, SlotResource, ResourceWithId,
 };
 pub mod primitives {
 	pub type CollectionId = u32;

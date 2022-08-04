@@ -361,10 +361,11 @@ fn mint_directly_to_nft_with_resources() {
 		));
 
 		// Compose a resource to add to an NFT
-		let basic_resource = BasicResource { metadata: None };
+		let basic_resource = BasicResource { metadata: stbd("bafybeiakahlc6") };
 
 		// Construct as a BoundedVec of resources which mint_nft will accept
-		let resources_to_add = bvec![ResourceTypes::Basic(basic_resource)];
+		let resources_to_add =
+			bvec![ResourceWithId { id: 0, resource: ResourceTypes::Basic(basic_resource) }];
 
 		// ALICE mints NFT directly to BOB-owned NFT (0, 0), with the above resource
 		assert_ok!(RMRKCore::mint_nft_directly_to_nft(
@@ -946,16 +947,17 @@ fn burn_nft_works() {
 		assert_ok!(basic_mint());
 		// Add two resources to NFT (to test if burning also burns the resources)
 
-		let basic_resource = BasicResource { metadata: None };
+		let basic_resource = BasicResource { metadata: stbd("bafybeiakahlc6") };
 
 		assert_ok!(RMRKCore::add_basic_resource(
 			Origin::signed(ALICE),
 			0,
 			0,
 			basic_resource.clone(),
+			0
 		));
 
-		assert_ok!(RMRKCore::add_basic_resource(Origin::signed(ALICE), 0, 0, basic_resource,));
+		assert_ok!(RMRKCore::add_basic_resource(Origin::signed(ALICE), 0, 0, basic_resource, 1));
 
 		// Ensure resources are there
 		assert_eq!(Resources::<Test>::iter_prefix((COLLECTION_ID_0, NFT_ID_0)).count(), 2);
@@ -997,7 +999,7 @@ fn burn_nft_with_great_grandchildren_works() {
 			assert_ok!(basic_mint());
 		}
 
-		let basic_resource = BasicResource { metadata: None };
+		let basic_resource = BasicResource { metadata: stbd("bafybeiakahlc6") };
 
 		// Add two resources to the great-grandchild (0, 3)
 		assert_ok!(RMRKCore::add_basic_resource(
@@ -1005,6 +1007,7 @@ fn burn_nft_with_great_grandchildren_works() {
 			COLLECTION_ID_0,
 			3,
 			basic_resource.clone(),
+			0
 		));
 
 		assert_ok!(RMRKCore::add_basic_resource(
@@ -1012,6 +1015,7 @@ fn burn_nft_with_great_grandchildren_works() {
 			COLLECTION_ID_0,
 			3,
 			basic_resource,
+			1
 		));
 
 		// Ensure resources are there
@@ -1140,7 +1144,7 @@ fn burn_child_nft_removes_parents_children() {
 #[test]
 fn create_resource_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		let basic_resource = BasicResource { metadata: None };
+		let basic_resource = BasicResource { metadata: stbd("bafybeiakahlc6") };
 
 		// Adding a resource to non-existent NFT should fail
 		assert_noop!(
@@ -1149,6 +1153,7 @@ fn create_resource_works() {
 				0, // collection_id
 				0, // nft_id
 				basic_resource,
+				0,
 			),
 			Error::<Test>::CollectionUnknown
 		);
@@ -1157,7 +1162,7 @@ fn create_resource_works() {
 		// Mint NFT
 		assert_ok!(basic_mint());
 
-		let basic_resource = BasicResource { metadata: None };
+		let basic_resource = BasicResource { metadata: stbd("bafybeiakahlc6") };
 
 		// Add resource to NFT
 		assert_ok!(RMRKCore::add_basic_resource(
@@ -1165,6 +1170,7 @@ fn create_resource_works() {
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			basic_resource,
+			0,
 		));
 		// Successful resource addition should trigger ResourceAdded event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAdded {
@@ -1188,6 +1194,7 @@ fn create_resource_works() {
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			composable_resource,
+			1
 		));
 
 		// Create Slot resource
@@ -1203,6 +1210,7 @@ fn create_resource_works() {
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			slot_resource,
+			2
 		));
 	});
 }
@@ -1212,17 +1220,15 @@ fn create_resource_works() {
 fn add_resource_on_mint_works() {
 	ExtBuilder::default().build().execute_with(|| {
 		let basic_resource: BasicResource<BoundedVec<u8, UniquesStringLimit>> =
-			BasicResource { metadata: None };
+			BasicResource { metadata: stbd("bafybeiakahlc6") };
 
 		// Create a basic collection
 		assert_ok!(basic_collection());
 
-		let basic_resource = BasicResource { metadata: None };
-
 		// Resources to add
 		let resources_to_add = bvec![
-			ResourceTypes::Basic(basic_resource.clone()),
-			ResourceTypes::Basic(basic_resource),
+			ResourceWithId { id: 0, resource: ResourceTypes::Basic(basic_resource.clone()) },
+			ResourceWithId { id: 1, resource: ResourceTypes::Basic(basic_resource) },
 		];
 
 		// Mint NFT
@@ -1250,14 +1256,14 @@ fn add_resource_on_mint_beyond_max_fails() {
 		// Create a basic collection
 		assert_ok!(basic_collection());
 
-		let basic_resource = BasicResource { metadata: None };
+		let basic_resource = BasicResource { metadata: stbd("bafybeiakahlc6") };
 
 		// Resources to add
 		let resources_to_add = bvec![
-			ResourceTypes::Basic(basic_resource.clone()),
-			ResourceTypes::Basic(basic_resource.clone()),
-			ResourceTypes::Basic(basic_resource.clone()),
-			ResourceTypes::Basic(basic_resource),
+			{ ResourceWithId { resource: ResourceTypes::Basic(basic_resource.clone()), id: 0 } },
+			{ ResourceWithId { resource: ResourceTypes::Basic(basic_resource.clone()), id: 1 } },
+			{ ResourceWithId { resource: ResourceTypes::Basic(basic_resource.clone()), id: 2 } },
+			{ ResourceWithId { resource: ResourceTypes::Basic(basic_resource), id: 3 } },
 		];
 
 		// Mint NFT
@@ -1292,7 +1298,7 @@ fn add_resource_pending_works() {
 			None
 		));
 
-		let basic_resource = BasicResource { metadata: None };
+		let basic_resource = BasicResource { metadata: stbd("bafybeiakahlc6") };
 
 		// Since BOB isn't collection issuer, he can't add resources
 		assert_noop!(
@@ -1301,6 +1307,7 @@ fn add_resource_pending_works() {
 				COLLECTION_ID_0,
 				NFT_ID_0,
 				basic_resource.clone(),
+				0,
 			),
 			Error::<Test>::NoPermission
 		);
@@ -1310,7 +1317,8 @@ fn add_resource_pending_works() {
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			basic_resource
+			basic_resource,
+			0,
 		));
 
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, true);
@@ -1345,7 +1353,7 @@ fn resource_removal_works() {
 		// Mint NFT
 		assert_ok!(basic_mint());
 
-		let basic_resource = BasicResource { metadata: None };
+		let basic_resource = BasicResource { metadata: stbd("bafybeiakahlc6") };
 
 		// Add resource to NFT
 		assert_ok!(RMRKCore::add_basic_resource(
@@ -1353,6 +1361,7 @@ fn resource_removal_works() {
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			basic_resource,
+			0
 		));
 		// Resource res-1 doesn't exist
 		assert_noop!(
@@ -1409,7 +1418,7 @@ fn resource_removal_pending_works() {
 			None
 		));
 
-		let basic_resource = BasicResource { metadata: None };
+		let basic_resource = BasicResource { metadata: stbd("bafybeiakahlc6") };
 
 		// Add resource to NFT
 		assert_ok!(RMRKCore::add_basic_resource(
@@ -1417,6 +1426,7 @@ fn resource_removal_pending_works() {
 			COLLECTION_ID_0,
 			NFT_ID_0,
 			basic_resource,
+			0
 		));
 
 		assert_ok!(RMRKCore::accept_resource(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0, 0,));

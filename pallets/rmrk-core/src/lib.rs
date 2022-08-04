@@ -17,7 +17,7 @@ use sp_std::convert::TryInto;
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, BasicResource, Collection, CollectionInfo,
 	ComposableResource, Nft, NftChild, NftInfo, PhantomType, Priority, Property, PropertyInfo,
-	Resource, ResourceInfo, ResourceTypes, RoyaltyInfo, SlotResource,
+	Resource, ResourceInfo, ResourceTypes, ResourceWithId, RoyaltyInfo, SlotResource,
 };
 use sp_std::result::Result;
 
@@ -57,6 +57,14 @@ pub type ValueLimitOf<T> = BoundedVec<u8, <T as pallet_uniques::Config>::ValueLi
 
 pub type BoundedResourceTypeOf<T> = BoundedVec<
 	ResourceTypes<
+		BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+		BoundedVec<PartId, <T as Config>::PartsLimit>,
+	>,
+	<T as Config>::MaxResourcesOnMint,
+>;
+
+pub type BoundedResourceInfoTypeOf<T> = BoundedVec<
+	ResourceWithId<
 		BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 		BoundedVec<PartId, <T as Config>::PartsLimit>,
 	>,
@@ -382,7 +390,7 @@ pub mod pallet {
 			royalty: Option<Permill>,
 			metadata: BoundedVec<u8, T::StringLimit>,
 			transferable: bool,
-			resources: Option<BoundedResourceTypeOf<T>>,
+			resources: Option<BoundedResourceInfoTypeOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 			if let Some(collection_issuer) =
@@ -420,7 +428,14 @@ pub mod pallet {
 			// Add all at-mint resources
 			if let Some(resources) = resources {
 				for res in resources {
-					Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
+					Self::resource_add(
+						sender.clone(),
+						collection_id,
+						nft_id,
+						res.resource,
+						true,
+						res.id,
+					)?;
 				}
 			}
 
@@ -452,7 +467,7 @@ pub mod pallet {
 			royalty: Option<Permill>,
 			metadata: BoundedVec<u8, T::StringLimit>,
 			transferable: bool,
-			resources: Option<BoundedResourceTypeOf<T>>,
+			resources: Option<BoundedResourceInfoTypeOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin.clone())?;
 
@@ -489,7 +504,14 @@ pub mod pallet {
 			// Add all at-mint resources
 			if let Some(resources) = resources {
 				for res in resources {
-					Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
+					Self::resource_add(
+						sender.clone(),
+						collection_id,
+						nft_id,
+						res.resource,
+						true,
+						res.id,
+					)?;
 				}
 			}
 
@@ -752,15 +774,17 @@ pub mod pallet {
 			collection_id: CollectionId,
 			nft_id: NftId,
 			resource: BasicResource<StringLimitOf<T>>,
+			resource_id: ResourceId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let resource_id = Self::resource_add(
+			Self::resource_add(
 				sender,
 				collection_id,
 				nft_id,
 				ResourceTypes::Basic(resource),
 				false,
+				resource_id,
 			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
@@ -775,15 +799,17 @@ pub mod pallet {
 			collection_id: CollectionId,
 			nft_id: NftId,
 			resource: ComposableResource<StringLimitOf<T>, BoundedVec<PartId, T::PartsLimit>>,
+			resource_id: ResourceId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let resource_id = Self::resource_add(
+			Self::resource_add(
 				sender,
 				collection_id,
 				nft_id,
 				ResourceTypes::Composable(resource),
 				false,
+				resource_id,
 			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
@@ -798,15 +824,17 @@ pub mod pallet {
 			collection_id: CollectionId,
 			nft_id: NftId,
 			resource: SlotResource<StringLimitOf<T>>,
+			resource_id: ResourceId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let resource_id = Self::resource_add(
+			Self::resource_add(
 				sender,
 				collection_id,
 				nft_id,
 				ResourceTypes::Slot(resource),
 				false,
+				resource_id,
 			)?;
 
 			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });

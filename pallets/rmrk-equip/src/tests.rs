@@ -276,6 +276,7 @@ fn equip_works() {
 			0, // collection_id
 			0, // nft id
 			composable_resource,
+			0,
 		));
 
 		// Attempt to equip sword should fail as the sword doesn't have a resource that is
@@ -303,7 +304,8 @@ fn equip_works() {
 			Origin::signed(ALICE),
 			1, // collection id
 			0, // nft id
-			sword_slot_resource_left
+			sword_slot_resource_left,
+			0,
 		));
 
 		let flashlight_slot_resource_left = SlotResource {
@@ -317,7 +319,8 @@ fn equip_works() {
 			Origin::signed(ALICE),
 			1, // collection id
 			1, // nft id
-			flashlight_slot_resource_left
+			flashlight_slot_resource_left,
+			0,
 		));
 
 		// Equipping sword should now work
@@ -370,6 +373,7 @@ fn equip_works() {
 			1, // collection id
 			0, // nft id
 			sword_slot_resource_right,
+			1,
 		));
 
 		// Equipping to right-hand should fail (already equipped in left hand)
@@ -625,6 +629,7 @@ fn nested_equip_works() {
 			0, // collection_id
 			0, // nft id
 			composable_resource_for_person_zero,
+			0,
 		));
 
 		// Create Composable resource for hat-0
@@ -644,6 +649,7 @@ fn nested_equip_works() {
 			1, // collection_id
 			0, // nft id
 			composable_resource_for_hat_zero,
+			0,
 		));
 
 		// Create Slot resource for gem-0
@@ -659,7 +665,8 @@ fn nested_equip_works() {
 			Origin::signed(ALICE),
 			2, // collection id
 			0, // nft id
-			gem_slot_resource
+			gem_slot_resource,
+			0,
 		));
 
 		for i in pallet_rmrk_core::EquippableSlots::<Test>::iter_prefix((0, 0)) {
