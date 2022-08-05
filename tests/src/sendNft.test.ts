@@ -33,7 +33,7 @@ describe("integration test: send NFT", () => {
 
     const nftId = await mintNft(
       api,
-      0,
+      300,
       alice,
       originalOwnerUri,
       collectionId,
@@ -75,7 +75,7 @@ describe("integration test: send NFT", () => {
 
     const nftId = await mintNft(
       api,
-      0,
+      310,
       alice,
       originalOwnerUri,
       collectionId,
@@ -100,7 +100,7 @@ describe("integration test: send NFT", () => {
 
     const parentNftId = await mintNft(
       api,
-      0,
+      320,
       alice,
       originalOwnerUri,
       collectionId,
@@ -135,7 +135,7 @@ describe("integration test: send NFT", () => {
 
     const parentNftId = await mintNft(
       api,
-      0,
+      330,
       alice,
       originalOwnerUri,
       collectionId,
@@ -175,7 +175,7 @@ describe("integration test: send NFT", () => {
 
     const parentNftId = await mintNft(
       api,
-      0,
+      340,
       author,
       originalOwnerUri,
       collectionId,
@@ -183,7 +183,7 @@ describe("integration test: send NFT", () => {
     );
     const childNftId = await mintNft(
       api,
-      1,
+      341,
       author,
       originalOwnerUri,
       collectionId,
@@ -220,7 +220,7 @@ describe("integration test: send NFT", () => {
     const parentNftId = maxNftId;
     const childNftId = await mintNft(
       api,
-      0,
+      350,
       alice,
       originalOwnerUri,
       collectionId,
@@ -258,7 +258,7 @@ describe("integration test: send NFT", () => {
 
     const parentNftId = await mintNft(
       api,
-      0,
+      360,
       alice,
       ownerAlice,
       aliceCollectionId,
@@ -266,7 +266,7 @@ describe("integration test: send NFT", () => {
     );
     const childNftId = await mintNft(
       api,
-      1,
+      361,
       bob,
       ownerBob,
       bobCollectionId,
@@ -291,7 +291,7 @@ describe("integration test: send NFT", () => {
 
     const nftId = await mintNft(
       api,
-      0,
+      370,
       alice,
       nftOwner,
       collectionId,
@@ -320,7 +320,7 @@ describe("integration test: send NFT", () => {
 
     const parentNftId = await mintNft(
       api,
-      0,
+      380,
       alice,
       originalOwnerUri,
       collectionId,
@@ -328,7 +328,7 @@ describe("integration test: send NFT", () => {
     );
     const childNftId = await mintNft(
       api,
-      1,
+      381,
       alice,
       originalOwnerUri,
       collectionId,
@@ -374,7 +374,7 @@ describe("integration test: send NFT", () => {
 
     const parentNftId = await mintNft(
       api,
-      0,
+      390,
       alice,
       originalOwnerUri,
       collectionId,
@@ -382,7 +382,7 @@ describe("integration test: send NFT", () => {
     );
     const childNftId = await mintNft(
       api,
-      1,
+      391,
       alice,
       originalOwnerUri,
       collectionId,
@@ -390,7 +390,7 @@ describe("integration test: send NFT", () => {
     );
     const grandsonNftId = await mintNft(
       api,
-      0,
+      392,
       alice,
       originalOwnerUri,
       collectionId,
@@ -455,7 +455,7 @@ describe("integration test: send NFT", () => {
 
     const parentNftId = await mintNft(
       api,
-      0,
+      395,
       alice,
       originalOwner,
       collectionId,
@@ -463,7 +463,7 @@ describe("integration test: send NFT", () => {
     );
     const childNftId = await mintNft(
       api,
-      1,
+      396,
       alice,
       originalOwner,
       collectionId,
@@ -499,7 +499,7 @@ describe("integration test: send NFT", () => {
 
     const parentNftId = await mintNft(
       api,
-      0,
+      397,
       alice,
       originalOwner,
       collectionId,
@@ -507,7 +507,7 @@ describe("integration test: send NFT", () => {
     );
     const childNftId = await mintNft(
       api,
-      1,
+      398,
       alice,
       originalOwner,
       collectionId,
