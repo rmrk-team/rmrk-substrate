@@ -264,7 +264,9 @@ export async function mintNft(
   recipientUri: string | null = null,
   royalty: number | null = null,
   transferable: boolean = true,
-  resources: { basic?: any; composable?: any; slot?: any }[] | null = null
+  resources:
+    | { resource: { basic?: any; composable?: any; slot?: any }; id: number }[]
+    | null = null
 ): Promise<number> {
   let nftId = 0;
   const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
@@ -378,16 +380,16 @@ export async function mintNft(
         let typedNftResource = null;
 
         if (
-          resource.basic &&
+          resource.resource.basic &&
           Object.prototype.hasOwnProperty.call(nftResource, "Basic")
         ) {
-          typedResource = resource.basic!;
+          typedResource = resource.resource.basic!;
           typedNftResource = nftResource["Basic" as NftResourceKey]!;
         } else if (
-          resource.composable &&
+          resource.resource.composable &&
           Object.prototype.hasOwnProperty.call(nftResource, "Composable")
         ) {
-          typedResource = resource.composable!;
+          typedResource = resource.resource.composable!;
           typedNftResource = nftResource[
             "Composable" as NftResourceKey
           ]! as any;
@@ -401,10 +403,10 @@ export async function mintNft(
             continue;
           }
         } else if (
-          resource.slot &&
+          resource.resource.slot &&
           Object.prototype.hasOwnProperty.call(nftResource, "Slot")
         ) {
-          typedResource = resource.slot!;
+          typedResource = resource.resource.slot!;
           typedNftResource = nftResource["Slot" as NftResourceKey]! as any;
           if (
             (typedResource.slot != typedNftResource.slot &&

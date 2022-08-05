@@ -28,7 +28,7 @@ describe("integration test: set NFT property", () => {
     const collectionId = await createTestCollection(alice);
     const nftId = await mintNft(
       api,
-      0,
+      300,
       alice,
       ownerAlice,
       collectionId,
@@ -83,7 +83,7 @@ describe("integration test: set NFT property", () => {
     const collectionId = await createTestCollection(alice);
     const nftId = await mintNft(
       api,
-      0,
+      301,
       alice,
       ownerAlice,
       collectionId,
@@ -108,7 +108,7 @@ describe("integration test: set NFT property", () => {
     const collectionId = await createTestCollection(alice);
     const parentNftId = await mintNft(
       api,
-      0,
+      302,
       alice,
       ownerAlice,
       collectionId,
@@ -116,7 +116,7 @@ describe("integration test: set NFT property", () => {
     );
     const childNftId = await mintNft(
       api,
-      0,
+      303,
       alice,
       ownerAlice,
       collectionId,
@@ -151,7 +151,7 @@ describe("integration test: set NFT property", () => {
     );
     const childNftId = await mintNft(
       api,
-      0,
+      304,
       alice,
       ownerAlice,
       collectionId,

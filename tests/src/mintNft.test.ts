@@ -34,7 +34,7 @@ describe("integration test: mint new NFT", () => {
 
     await mintNft(
       api,
-      0,
+      200,
       alice,
       owner,
       collectionId,
@@ -63,7 +63,7 @@ describe("integration test: mint new NFT", () => {
 
     await mintNft(
       api,
-      0,
+      201,
       alice,
       owner,
       collectionId,
@@ -92,7 +92,7 @@ describe("integration test: mint new NFT", () => {
 
     await mintNft(
       api,
-      0,
+      210,
       alice,
       owner,
       collectionId,
@@ -110,26 +110,39 @@ describe("integration test: mint new NFT", () => {
     const nftMetadata = "NFT-with-resources-test-metadata";
     const resources = [
       {
-        basic: {
-          metadata: "basic-resource-nft-minting",
+        id: 101,
+        resource: {
+          basic: {
+            metadata: "basic-resource-nft-minting",
+          },
         },
       },
       {
-        slot: {
-          metadata: "slot-resource-nft-minting",
-          slot: 9,
+        id: 102,
+        resource: {
+          slot: {
+            metadata: "slot-resource-nft-minting",
+            slot: 9,
+          },
+        },
+      },
+
+      {
+        id: 103,
+        resource: {
+          composable: {
+            metadata: "composable-resource-nft-minting",
+            parts: [0, 5, 2],
+          },
         },
       },
       {
-        composable: {
-          metadata: "composable-resource-nft-minting",
-          parts: [0, 5, 2],
-        },
-      },
-      {
-        slot: {
-          metadata: "slot-resource-nft-minting-2",
-          base: 5,
+        id: 104,
+        resource: {
+          slot: {
+            metadata: "slot-resource-nft-minting-2",
+            base: 5,
+          },
         },
       },
     ];
@@ -144,7 +157,7 @@ describe("integration test: mint new NFT", () => {
 
     await mintNft(
       api,
-      0,
+      211,
       alice,
       owner,
       collectionId,
@@ -164,7 +177,7 @@ describe("integration test: mint new NFT", () => {
 
     const tx = mintNft(
       api,
-      0,
+      220,
       alice,
       owner,
       maxCollectionId,
@@ -195,7 +208,7 @@ describe("integration test: mint new NFT", () => {
 
     const tx = mintNft(
       api,
-      0,
+      230,
       bob,
       owner,
       collectionId,
