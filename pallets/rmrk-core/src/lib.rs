@@ -110,25 +110,8 @@ pub mod pallet {
 	}
 
 	#[pallet::storage]
-	#[pallet::getter(fn next_nft_id)]
-	pub type NextNftId<T: Config> = StorageMap<_, Twox64Concat, CollectionId, NftId, ValueQuery>;
-
-	#[pallet::storage]
 	#[pallet::getter(fn collection_index)]
 	pub type CollectionIndex<T: Config> = StorageValue<_, CollectionId, ValueQuery>;
-
-	/// Next available Resource ID.
-	#[pallet::storage]
-	#[pallet::getter(fn next_resource_id)]
-	pub type NextResourceId<T: Config> = StorageDoubleMap<
-		_,
-		Twox64Concat,
-		CollectionId,
-		Twox64Concat,
-		NftId,
-		ResourceId,
-		ValueQuery,
-	>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn collections)]

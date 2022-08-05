@@ -113,14 +113,12 @@ where
 		adding_on_mint: bool,
 		resource_id: ResourceId,
 	) -> Result<ResourceId, DispatchError> {
-		// TODO: implement resource replace by id
 		ensure!(
 			Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
 			Error::<T>::ResourceAlreadyExists
 		);
 
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-		// let resource_id = Self::get_next_resource_id(collection_id, nft_id)?;
 
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
@@ -902,25 +900,6 @@ where
 				found_child
 			},
 		}
-	}
-
-	pub fn get_next_nft_id(collection_id: CollectionId) -> Result<NftId, Error<T>> {
-		NextNftId::<T>::try_mutate(collection_id, |id| {
-			let current_id = *id;
-			*id = id.checked_add(1).ok_or(Error::<T>::NoAvailableNftId)?;
-			Ok(current_id)
-		})
-	}
-
-	pub fn get_next_resource_id(
-		collection_id: CollectionId,
-		nft_id: NftId,
-	) -> Result<ResourceId, Error<T>> {
-		NextResourceId::<T>::try_mutate(collection_id, nft_id, |id| {
-			let current_id = *id;
-			*id = id.checked_add(1).ok_or(Error::<T>::NoAvailableResourceId)?;
-			Ok(current_id)
-		})
 	}
 
 	pub fn set_lock(nft: (CollectionId, NftId), lock_status: bool) -> bool {
