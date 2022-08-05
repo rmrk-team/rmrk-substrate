@@ -343,7 +343,7 @@ where
 		transferable: bool,
 		resources: Option<BoundedResourceInfoTypeOf<T>>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
-		ensure!(Nfts::<T>::get(collection_id, nft_id).is_none(), Error::<T>::NftAlreadyExists);
+		ensure!(!Self::nft_exists((collection_id, nft_id)), Error::<T>::NftAlreadyExists);
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
 		// Prevent minting when nfts_count is greater than the collection max.
@@ -426,7 +426,7 @@ where
 		transferable: bool,
 		resources: Option<BoundedResourceInfoTypeOf<T>>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
-		ensure!(Nfts::<T>::get(collection_id, nft_id).is_none(), Error::<T>::NftAlreadyExists);
+		ensure!(!Self::nft_exists((collection_id, nft_id)), Error::<T>::NftAlreadyExists);
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
 		// Prevent minting when nfts_count is greater than the collection max.

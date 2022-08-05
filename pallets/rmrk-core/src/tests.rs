@@ -275,6 +275,21 @@ fn mint_nft_works() {
 			),
 			Error::<Test>::CollectionUnknown
 		);
+		// Throw NftAlreadyExists when attempting to mint with the same id
+		assert_noop!(
+			RMRKCore::mint_nft(
+				Origin::signed(ALICE),
+				None,
+				1,
+				COLLECTION_ID_0,
+				Some(ALICE),
+				Some(Permill::from_float(20.525)),
+				bvec![0u8; 20],
+				true,
+				None,
+			),
+			Error::<Test>::NftAlreadyExists
+		);
 	});
 }
 
