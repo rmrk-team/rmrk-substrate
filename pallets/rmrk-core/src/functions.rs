@@ -294,18 +294,19 @@ where
 	fn nft_mint(
 		sender: T::AccountId,
 		owner: T::AccountId,
+		nft_id: NftId,
 		collection_id: CollectionId,
 		royalty_recipient: Option<T::AccountId>,
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
 		transferable: bool,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
-		let nft_id = Self::get_next_nft_id(collection_id)?;
+		ensure!(Nfts::<T>::get(collection_id, nft_id).is_none(), Error::<T>::NftAlreadyExists);
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
-		// Prevent minting when next NFT id is greater than the collection max.
+		// Prevent minting when nfts_count is greater than the collection max.
 		if let Some(max) = collection.max {
-			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
+			ensure!(collection.nfts_count < max, Error::<T>::CollectionFullOrLocked);
 		}
 
 		// NFT should be pending if minting to another account
@@ -350,18 +351,19 @@ where
 	fn nft_mint_directly_to_nft(
 		sender: T::AccountId,
 		owner: (CollectionId, NftId),
+		nft_id: NftId,
 		collection_id: CollectionId,
 		royalty_recipient: Option<T::AccountId>,
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
 		transferable: bool,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
-		let nft_id = Self::get_next_nft_id(collection_id)?;
+		ensure!(Nfts::<T>::get(collection_id, nft_id).is_none(), Error::<T>::NftAlreadyExists);
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
-		// Prevent minting when next NFT id is greater than the collection max.
+		// Prevent minting when nfts_count is greater than the collection max.
 		if let Some(max) = collection.max {
-			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
+			ensure!(collection.nfts_count < max, Error::<T>::CollectionFullOrLocked);
 		}
 
 		// Calculate the rootowner of the intended owner of the minted NFT

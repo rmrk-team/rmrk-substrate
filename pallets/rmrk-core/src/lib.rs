@@ -17,7 +17,7 @@ use sp_std::convert::TryInto;
 use rmrk_traits::{
 	primitives::*, AccountIdOrCollectionNftTuple, BasicResource, Collection, CollectionInfo,
 	ComposableResource, Nft, NftChild, NftInfo, PhantomType, Priority, Property, PropertyInfo,
-	Resource, ResourceInfo, ResourceTypes, ResourceWithId, RoyaltyInfo, SlotResource,
+	Resource, ResourceInfo, ResourceInfoMin, ResourceTypes, RoyaltyInfo, SlotResource,
 };
 use sp_std::result::Result;
 
@@ -64,7 +64,7 @@ pub type BoundedResourceTypeOf<T> = BoundedVec<
 >;
 
 pub type BoundedResourceInfoTypeOf<T> = BoundedVec<
-	ResourceWithId<
+	ResourceInfoMin<
 		BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
 		BoundedVec<PartId, <T as Config>::PartsLimit>,
 	>,
@@ -351,6 +351,7 @@ pub mod pallet {
 		CollectionFullOrLocked,
 		CannotSendToDescendentOrSelf,
 		ResourceAlreadyExists,
+		NftAlreadyExists,
 		EmptyResource,
 		TooManyRecursions,
 		NftIsLocked,
@@ -385,6 +386,7 @@ pub mod pallet {
 		pub fn mint_nft(
 			origin: OriginFor<T>,
 			owner: Option<T::AccountId>,
+			nft_id: NftId,
 			collection_id: CollectionId,
 			royalty_recipient: Option<T::AccountId>,
 			royalty: Option<Permill>,
@@ -411,6 +413,7 @@ pub mod pallet {
 			let (collection_id, nft_id) = Self::nft_mint(
 				sender.clone(),
 				nft_owner.clone(),
+				nft_id,
 				collection_id,
 				royalty_recipient,
 				royalty,
@@ -462,6 +465,7 @@ pub mod pallet {
 		pub fn mint_nft_directly_to_nft(
 			origin: OriginFor<T>,
 			owner: (CollectionId, NftId),
+			nft_id: NftId,
 			collection_id: CollectionId,
 			royalty_recipient: Option<T::AccountId>,
 			royalty: Option<Permill>,
@@ -484,6 +488,7 @@ pub mod pallet {
 			let (collection_id, nft_id) = Self::nft_mint_directly_to_nft(
 				sender.clone(),
 				owner,
+				nft_id,
 				collection_id,
 				royalty_recipient,
 				royalty,

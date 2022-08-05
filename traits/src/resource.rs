@@ -116,7 +116,7 @@ pub struct ResourceInfo<BoundedString, BoundedParts> {
 			BoundedParts: AsRef<[PartId]>
 		"#)
 )]
-pub struct ResourceWithId<BoundedString, BoundedParts> {
+pub struct ResourceInfoMin<BoundedString, BoundedParts> {
 	pub id: ResourceId,
 	pub resource: ResourceTypes<BoundedString, BoundedParts>,
 }

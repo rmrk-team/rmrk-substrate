@@ -175,6 +175,7 @@ fn equip_works() {
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			Some(ALICE),                        // owner
+			0,                                  // nft id
 			0,                                  // collection ID
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
@@ -187,6 +188,7 @@ fn equip_works() {
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			Some(ALICE),                        // owner
+			1,                                  // nft id
 			0,                                  // collection ID
 			Some(ALICE),                        // recipient
 			Some(Permill::from_float(1.525)),   // royalties
@@ -199,6 +201,7 @@ fn equip_works() {
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			Some(ALICE),                      // owner
+			0,                                // nft id
 			1,                                // collection ID
 			Some(ALICE),                      // recipient
 			Some(Permill::from_float(1.525)), // royalties
@@ -211,6 +214,7 @@ fn equip_works() {
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			Some(ALICE),                       // owner
+			1,                                 // nft id
 			1,                                 // collection ID
 			Some(ALICE),                       // recipient
 			Some(Permill::from_float(1.525)),  // royalties
@@ -564,6 +568,7 @@ fn nested_equip_works() {
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			None,                             // owner
+			0,                                // nft id
 			0,                                // collection ID
 			Some(ALICE),                      // recipient
 			Some(Permill::from_float(1.525)), // royalties
@@ -576,6 +581,7 @@ fn nested_equip_works() {
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			None,                             // owner
+			0,                                // nft id
 			1,                                // collection ID
 			Some(ALICE),                      // recipient
 			Some(Permill::from_float(1.525)), // royalties
@@ -588,6 +594,7 @@ fn nested_equip_works() {
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			None,                             // owner
+			0,                                // nft id
 			2,                                // collection ID
 			Some(ALICE),                      // recipient
 			Some(Permill::from_float(1.525)), // royalties
