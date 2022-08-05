@@ -6,7 +6,8 @@
 
 use super::*;
 use codec::{Codec, Decode, Encode};
-use frame_support::traits::tokens::Locker;
+use frame_support::traits::{tokens::Locker, Get};
+
 use sp_runtime::{
 	traits::{Saturating, TrailingZeroInput},
 	ArithmeticError,
@@ -67,6 +68,33 @@ where
 			ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
 		}
 		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
+		Ok(())
+	}
+
+	// Internal function to set a property for downstream `Origin::root()` calls.
+	fn do_set_property(
+		collection_id: CollectionId,
+		maybe_nft_id: Option<NftId>,
+		key: KeyLimitOf<T>,
+		value: ValueLimitOf<T>,
+	) -> sp_runtime::DispatchResult {
+		// Ensure collection exists
+		Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
+
+		Self::deposit_event(Event::PropertySet { collection_id, maybe_nft_id, key, value });
+		Ok(())
+	}
+
+	// Internal function to remove a property for downstream `Origin::root()` calls.
+	fn do_remove_property(
+		collection_id: CollectionId,
+		maybe_nft_id: Option<NftId>,
+		key: KeyLimitOf<T>,
+	) -> sp_runtime::DispatchResult {
+		Properties::<T>::remove((&collection_id, maybe_nft_id, &key));
+
+		Self::deposit_event(Event::PropertyRemoved { collection_id, maybe_nft_id, key });
 		Ok(())
 	}
 }
@@ -236,7 +264,8 @@ where
 		max: Option<u32>,
 		symbol: BoundedCollectionSymbolOf<T>,
 	) -> Result<CollectionId, DispatchError> {
-		let collection = CollectionInfo { issuer, metadata, max, symbol, nfts_count: 0 };
+		let collection =
+			CollectionInfo { issuer: issuer.clone(), metadata, max, symbol, nfts_count: 0 };
 		let collection_id =
 			<CollectionIndex<T>>::try_mutate(|n| -> Result<CollectionId, DispatchError> {
 				let id = *n;
@@ -244,7 +273,21 @@ where
 				*n += 1;
 				Ok(id)
 			})?;
+		// Call the pallet_uniques function to create collection
+		pallet_uniques::Pallet::<T>::do_create_collection(
+			collection_id,
+			issuer.clone(),
+			issuer.clone(),
+			T::CollectionDeposit::get(),
+			false,
+			pallet_uniques::Event::Created {
+				collection: collection_id,
+				creator: issuer.clone(),
+				owner: issuer.clone(),
+			},
+		)?;
 		Collections::<T>::insert(collection_id, collection);
+		Self::deposit_event(Event::CollectionCreated { issuer, collection_id });
 		Ok(collection_id)
 	}
 
@@ -285,7 +328,7 @@ where
 	}
 }
 
-impl<T: Config> Nft<T::AccountId, StringLimitOf<T>> for Pallet<T>
+impl<T: Config> Nft<T::AccountId, StringLimitOf<T>, BoundedResourceTypeOf<T>> for Pallet<T>
 where
 	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
@@ -300,6 +343,7 @@ where
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
 		transferable: bool,
+		resources: Option<BoundedResourceTypeOf<T>>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		ensure!(Nfts::<T>::get(collection_id, nft_id).is_none(), Error::<T>::NftAlreadyExists);
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
@@ -327,7 +371,7 @@ where
 		};
 
 		let nft = NftInfo {
-			owner: AccountIdOrCollectionNftTuple::AccountId(owner),
+			owner: AccountIdOrCollectionNftTuple::AccountId(owner.clone()),
 			royalty,
 			metadata,
 			equipped: false,
@@ -345,6 +389,24 @@ where
 			Ok(())
 		})?;
 
+		// Call do_mint for pallet_uniques
+		pallet_uniques::Pallet::<T>::do_mint(collection_id, nft_id, owner.clone(), |_details| {
+			Ok(())
+		})?;
+
+		// Add all at-mint resources
+		if let Some(resources) = resources {
+			for res in resources {
+				Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
+			}
+		}
+
+		Self::deposit_event(Event::NftMinted {
+			owner: AccountIdOrCollectionNftTuple::AccountId(owner),
+			collection_id,
+			nft_id,
+		});
+
 		Ok((collection_id, nft_id))
 	}
 
@@ -357,6 +419,7 @@ where
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
 		transferable: bool,
+		resources: Option<BoundedResourceTypeOf<T>>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		ensure!(Nfts::<T>::get(collection_id, nft_id).is_none(), Error::<T>::NftAlreadyExists);
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
@@ -403,6 +466,26 @@ where
 			collection.nfts_count = nfts_count;
 			Ok(())
 		})?;
+
+		// For Uniques, we need to decode the "virtual account" ID to be the owner
+		let uniques_owner = Self::nft_to_account_id(owner.0, owner.1);
+
+		pallet_uniques::Pallet::<T>::do_mint(collection_id, nft_id, uniques_owner, |_details| {
+			Ok(())
+		})?;
+
+		// Add all at-mint resources
+		if let Some(resources) = resources {
+			for res in resources {
+				Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
+			}
+		}
+
+		Self::deposit_event(Event::NftMinted {
+			owner: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(owner.0, owner.1),
+			collection_id,
+			nft_id,
+		});
 
 		Ok((collection_id, nft_id))
 	}
@@ -460,8 +543,6 @@ where
 		// Get NFT info
 		let mut sending_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-
-		// TODO: Check NFT lock status
 
 		// Check NFT is transferable
 		Self::check_is_transferable(&sending_nft)?;
