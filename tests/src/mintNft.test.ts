@@ -34,6 +34,7 @@ describe("integration test: mint new NFT", () => {
 
     await mintNft(
       api,
+      0,
       alice,
       owner,
       collectionId,
@@ -62,6 +63,7 @@ describe("integration test: mint new NFT", () => {
 
     await mintNft(
       api,
+      0,
       alice,
       owner,
       collectionId,
@@ -90,6 +92,7 @@ describe("integration test: mint new NFT", () => {
 
     await mintNft(
       api,
+      0,
       alice,
       owner,
       collectionId,
@@ -141,6 +144,7 @@ describe("integration test: mint new NFT", () => {
 
     await mintNft(
       api,
+      0,
       alice,
       owner,
       collectionId,
@@ -160,6 +164,7 @@ describe("integration test: mint new NFT", () => {
 
     const tx = mintNft(
       api,
+      0,
       alice,
       owner,
       maxCollectionId,
@@ -190,6 +195,7 @@ describe("integration test: mint new NFT", () => {
 
     const tx = mintNft(
       api,
+      0,
       bob,
       owner,
       collectionId,
