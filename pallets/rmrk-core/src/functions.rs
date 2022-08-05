@@ -328,7 +328,7 @@ where
 	}
 }
 
-impl<T: Config> Nft<T::AccountId, StringLimitOf<T>, BoundedResourceTypeOf<T>> for Pallet<T>
+impl<T: Config> Nft<T::AccountId, StringLimitOf<T>, BoundedResourceInfoTypeOf<T>> for Pallet<T>
 where
 	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
@@ -343,7 +343,7 @@ where
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
 		transferable: bool,
-		resources: Option<BoundedResourceTypeOf<T>>,
+		resources: Option<BoundedResourceInfoTypeOf<T>>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		ensure!(Nfts::<T>::get(collection_id, nft_id).is_none(), Error::<T>::NftAlreadyExists);
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
@@ -397,7 +397,14 @@ where
 		// Add all at-mint resources
 		if let Some(resources) = resources {
 			for res in resources {
-				Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
+				Self::resource_add(
+					sender.clone(),
+					collection_id,
+					nft_id,
+					res.resource,
+					true,
+					res.id,
+				)?;
 			}
 		}
 
@@ -419,7 +426,7 @@ where
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
 		transferable: bool,
-		resources: Option<BoundedResourceTypeOf<T>>,
+		resources: Option<BoundedResourceInfoTypeOf<T>>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
 		ensure!(Nfts::<T>::get(collection_id, nft_id).is_none(), Error::<T>::NftAlreadyExists);
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
@@ -477,7 +484,14 @@ where
 		// Add all at-mint resources
 		if let Some(resources) = resources {
 			for res in resources {
-				Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
+				Self::resource_add(
+					sender.clone(),
+					collection_id,
+					nft_id,
+					res.resource,
+					true,
+					res.id,
+				)?;
 			}
 		}
 

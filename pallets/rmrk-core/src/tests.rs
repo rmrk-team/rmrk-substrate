@@ -1555,7 +1555,7 @@ fn set_property_with_internal_works() {
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// Mint NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
 		// Root sets property on NFT
 		assert_ok!(RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()));
 		// Successful property setting should trigger a PropertySet event
@@ -1580,7 +1580,7 @@ fn remove_property_with_internal_works() {
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// Mint NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
 		// Root sets property on NFT
 		assert_ok!(RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()));
 		// Successful property setting should trigger a PropertySet event
