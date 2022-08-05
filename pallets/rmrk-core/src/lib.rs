@@ -214,7 +214,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn properties)]
 	/// Arbitrary properties / metadata of an asset.
-	pub(super) type Properties<T: Config> = StorageNMap<
+	pub type Properties<T: Config> = StorageNMap<
 		_,
 		(
 			NMapKey<Blake2_128Concat, CollectionId>,
@@ -294,6 +294,11 @@ pub mod pallet {
 			maybe_nft_id: Option<NftId>,
 			key: KeyLimitOf<T>,
 			value: ValueLimitOf<T>,
+		},
+		PropertyRemoved {
+			collection_id: CollectionId,
+			maybe_nft_id: Option<NftId>,
+			key: KeyLimitOf<T>,
 		},
 		CollectionLocked {
 			issuer: T::AccountId,
@@ -400,35 +405,16 @@ pub mod pallet {
 			};
 
 			// Mint NFT for RMRK storage
-			let (collection_id, nft_id) = Self::nft_mint(
-				sender.clone(),
-				nft_owner.clone(),
+			Self::nft_mint(
+				sender,
+				nft_owner,
 				collection_id,
 				royalty_recipient,
 				royalty,
 				metadata,
 				transferable,
+				resources,
 			)?;
-
-			pallet_uniques::Pallet::<T>::do_mint(
-				collection_id,
-				nft_id,
-				nft_owner.clone(),
-				|_details| Ok(()),
-			)?;
-
-			// Add all at-mint resources
-			if let Some(resources) = resources {
-				for res in resources {
-					Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
-				}
-			}
-
-			Self::deposit_event(Event::NftMinted {
-				owner: AccountIdOrCollectionNftTuple::AccountId(nft_owner),
-				collection_id,
-				nft_id,
-			});
 
 			Ok(())
 		}
@@ -466,38 +452,16 @@ pub mod pallet {
 			}
 
 			// Mint NFT for RMRK storage
-			let (collection_id, nft_id) = Self::nft_mint_directly_to_nft(
-				sender.clone(),
+			Self::nft_mint_directly_to_nft(
+				sender,
 				owner,
 				collection_id,
 				royalty_recipient,
 				royalty,
 				metadata,
 				transferable,
+				resources,
 			)?;
-
-			// For Uniques, we need to decode the "virtual account" ID to be the owner
-			let uniques_owner = Self::nft_to_account_id(owner.0, owner.1);
-
-			pallet_uniques::Pallet::<T>::do_mint(
-				collection_id,
-				nft_id,
-				uniques_owner,
-				|_details| Ok(()),
-			)?;
-
-			// Add all at-mint resources
-			if let Some(resources) = resources {
-				for res in resources {
-					Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
-				}
-			}
-
-			Self::deposit_event(Event::NftMinted {
-				owner: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(owner.0, owner.1),
-				collection_id,
-				nft_id,
-			});
 
 			Ok(())
 		}
@@ -513,22 +477,8 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let collection_id = Self::collection_create(sender.clone(), metadata, max, symbol)?;
+			Self::collection_create(sender, metadata, max, symbol)?;
 
-			pallet_uniques::Pallet::<T>::do_create_collection(
-				collection_id,
-				sender.clone(),
-				sender.clone(),
-				T::CollectionDeposit::get(),
-				false,
-				pallet_uniques::Event::Created {
-					collection: collection_id,
-					creator: sender.clone(),
-					owner: sender.clone(),
-				},
-			)?;
-
-			Self::deposit_event(Event::CollectionCreated { issuer: sender, collection_id });
 			Ok(())
 		}
 
