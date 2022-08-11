@@ -90,6 +90,7 @@ declare module '@polkadot/api-base/types/errors' {
       CollectionUnknown: AugmentedError<ApiType>;
       EmptyResource: AugmentedError<ApiType>;
       MetadataNotSet: AugmentedError<ApiType>;
+      NftAlreadyExists: AugmentedError<ApiType>;
       NftIsLocked: AugmentedError<ApiType>;
       NoAvailableCollectionId: AugmentedError<ApiType>;
       NoAvailableNftId: AugmentedError<ApiType>;
