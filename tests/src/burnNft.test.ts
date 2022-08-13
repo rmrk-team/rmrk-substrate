@@ -1,10 +1,10 @@
 import { getApiConnection } from "./substrate/substrate-api";
 import { expectTxFailure } from "./util/helpers";
-import { NftIdTuple, getChildren } from './util/fetch';
+import { NftIdTuple, getChildren } from "./util/fetch";
 import { burnNft, createCollection, sendNft, mintNft } from "./util/tx";
 
-import chai from 'chai';
-import chaiAsPromised from 'chai-as-promised';
+import chai from "chai";
+import chaiAsPromised from "chai-as-promised";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -28,6 +28,7 @@ describe("integration test: burn nft", () => {
     ).then(async (collectionId) => {
       const nftId = await mintNft(
         api,
+        0,
         Alice,
         Alice,
         collectionId,
@@ -48,6 +49,7 @@ describe("integration test: burn nft", () => {
 
     const parentNftId = await mintNft(
       api,
+      0,
       Alice,
       Alice,
       collectionId,
@@ -56,6 +58,7 @@ describe("integration test: burn nft", () => {
 
     const childNftId = await mintNft(
       api,
+      1,
       Alice,
       Alice,
       collectionId,
@@ -67,21 +70,26 @@ describe("integration test: burn nft", () => {
     await sendNft(api, "sent", Alice, collectionId, childNftId, newOwnerNFT);
 
     const childrenBefore = await getChildren(api, collectionId, parentNftId);
-    expect(childrenBefore.length === 1, 'Error: parent NFT should have children')
-      .to.be.true;
+    expect(
+      childrenBefore.length === 1,
+      "Error: parent NFT should have children"
+    ).to.be.true;
 
     let child = childrenBefore[0];
-    expect(child.collectionId.eq(collectionId), 'Error: invalid child collection Id')
-      .to.be.true;
+    expect(
+      child.collectionId.eq(collectionId),
+      "Error: invalid child collection Id"
+    ).to.be.true;
 
-    expect(child.nftId.eq(childNftId), 'Error: invalid child NFT Id')
-      .to.be.true;
+    expect(child.nftId.eq(childNftId), "Error: invalid child NFT Id").to.be
+      .true;
 
     await burnNft(api, Alice, collectionId, parentNftId);
 
     const childrenAfter = await getChildren(api, collectionId, parentNftId);
 
-    expect(childrenAfter.length === 0, 'Error: children should be burned').to.be.true;
+    expect(childrenAfter.length === 0, "Error: children should be burned").to.be
+      .true;
   });
 
   it("burn child nft", async () => {
@@ -95,6 +103,7 @@ describe("integration test: burn nft", () => {
 
     const parentNftId = await mintNft(
       api,
+      0,
       Alice,
       Alice,
       collectionId,
@@ -103,6 +112,7 @@ describe("integration test: burn nft", () => {
 
     const childNftId = await mintNft(
       api,
+      1,
       Alice,
       Alice,
       collectionId,
@@ -114,21 +124,26 @@ describe("integration test: burn nft", () => {
     await sendNft(api, "sent", Alice, collectionId, childNftId, newOwnerNFT);
 
     const childrenBefore = await getChildren(api, collectionId, parentNftId);
-    expect(childrenBefore.length === 1, 'Error: parent NFT should have children')
-      .to.be.true;
+    expect(
+      childrenBefore.length === 1,
+      "Error: parent NFT should have children"
+    ).to.be.true;
 
     let child = childrenBefore[0];
-    expect(child.collectionId.eq(collectionId), 'Error: invalid child collection Id')
-      .to.be.true;
+    expect(
+      child.collectionId.eq(collectionId),
+      "Error: invalid child collection Id"
+    ).to.be.true;
 
-    expect(child.nftId.eq(childNftId), 'Error: invalid child NFT Id')
-      .to.be.true;
+    expect(child.nftId.eq(childNftId), "Error: invalid child NFT Id").to.be
+      .true;
 
     await burnNft(api, Alice, collectionId, childNftId);
 
     const childrenAfter = await getChildren(api, collectionId, parentNftId);
 
-    expect(childrenAfter.length === 0, 'Error: children should be burned').to.be.true;
+    expect(childrenAfter.length === 0, "Error: children should be burned").to.be
+      .true;
   });
 
   it("[negative] burn non-existing NFT", async () => {
@@ -154,6 +169,7 @@ describe("integration test: burn nft", () => {
     ).then(async (collectionId) => {
       const nftId = await mintNft(
         api,
+        0,
         Alice,
         Alice,
         collectionId,

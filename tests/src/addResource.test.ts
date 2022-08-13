@@ -36,6 +36,7 @@ describe("integration test: add NFT resource", () => {
 
     const nftAlice = await mintNft(
       api,
+      0,
       Alice,
       Alice,
       collectionIdAlice,
@@ -44,6 +45,7 @@ describe("integration test: add NFT resource", () => {
 
     await addNftBasicResource(
       api,
+      0,
       Alice,
       "added",
       collectionIdAlice,
@@ -63,6 +65,7 @@ describe("integration test: add NFT resource", () => {
 
     const parentNftId = await mintNft(
       api,
+      1,
       Alice,
       Alice,
       collectionIdAlice,
@@ -70,6 +73,7 @@ describe("integration test: add NFT resource", () => {
     );
     const childNftId = await mintNft(
       api,
+      2,
       Alice,
       Alice,
       collectionIdAlice,
@@ -89,6 +93,7 @@ describe("integration test: add NFT resource", () => {
 
     await addNftBasicResource(
       api,
+      1,
       Alice,
       "added",
       collectionIdAlice,
@@ -108,6 +113,7 @@ describe("integration test: add NFT resource", () => {
 
     const nftAlice = await mintNft(
       api,
+      0,
       Alice,
       Alice,
       collectionIdAlice,
@@ -155,6 +161,7 @@ describe("integration test: add NFT resource", () => {
 
     const firstBasicResourceId = await addNftBasicResource(
       api,
+      0,
       Alice,
       "added",
       collectionIdAlice,
@@ -164,6 +171,7 @@ describe("integration test: add NFT resource", () => {
 
     const secondBasicResourceId = await addNftBasicResource(
       api,
+      1,
       Alice,
       "added",
       collectionIdAlice,
@@ -173,6 +181,7 @@ describe("integration test: add NFT resource", () => {
 
     const composableResourceId = await addNftComposableResource(
       api,
+      2,
       Alice,
       "added",
       collectionIdAlice,
@@ -185,6 +194,7 @@ describe("integration test: add NFT resource", () => {
 
     const slotResourceId = await addNftSlotResource(
       api,
+      3,
       Alice,
       "added",
       collectionIdAlice,
@@ -253,6 +263,7 @@ describe("integration test: add NFT resource", () => {
 
     const tx = addNftBasicResource(
       api,
+      0,
       Alice,
       "added",
       collectionIdAlice,
@@ -274,6 +285,7 @@ describe("integration test: add NFT resource", () => {
 
     const nftAlice = await mintNft(
       api,
+      0,
       Alice,
       Alice,
       collectionIdAlice,
@@ -282,6 +294,7 @@ describe("integration test: add NFT resource", () => {
 
     const tx = addNftBasicResource(
       api,
+      0,
       Bob,
       "added",
       collectionIdAlice,
@@ -303,6 +316,7 @@ describe("integration test: add NFT resource", () => {
 
     const parentNftId = await mintNft(
       api,
+      0,
       Alice,
       Alice,
       collectionIdAlice,
@@ -310,6 +324,7 @@ describe("integration test: add NFT resource", () => {
     );
     const childNftId = await mintNft(
       api,
+      1,
       Alice,
       Alice,
       collectionIdAlice,
@@ -329,6 +344,7 @@ describe("integration test: add NFT resource", () => {
 
     const tx = addNftBasicResource(
       api,
+      0,
       Bob,
       "added",
       collectionIdAlice,
@@ -350,6 +366,7 @@ describe("integration test: add NFT resource", () => {
 
     const nftAlice = await mintNft(
       api,
+      0,
       Bob,
       Alice,
       collectionIdBob,
@@ -358,6 +375,7 @@ describe("integration test: add NFT resource", () => {
 
     const resourceId = await addNftBasicResource(
       api,
+      0,
       Bob,
       "pending",
       collectionIdBob,
@@ -379,6 +397,7 @@ describe("integration test: add NFT resource", () => {
 
     const nftAlice = await mintNft(
       api,
+      0,
       Bob,
       Alice,
       collectionIdBob,
@@ -406,6 +425,7 @@ describe("integration test: add NFT resource", () => {
 
     const nftAlice = await mintNft(
       api,
+      0,
       Bob,
       Alice,
       collectionIdBob,
@@ -414,6 +434,7 @@ describe("integration test: add NFT resource", () => {
 
     const resourceId = await addNftBasicResource(
       api,
+      0,
       Bob,
       "pending",
       collectionIdBob,
@@ -443,6 +464,7 @@ describe("integration test: add NFT resource", () => {
 
     const nftAlice = await mintNft(
       api,
+      0,
       Bob,
       Alice,
       collectionIdBob,
@@ -451,6 +473,7 @@ describe("integration test: add NFT resource", () => {
 
     const wrongNft = await mintNft(
       api,
+      1,
       Bob,
       Alice,
       collectionIdBob,
@@ -459,6 +482,7 @@ describe("integration test: add NFT resource", () => {
 
     const resourceId = await addNftBasicResource(
       api,
+      0,
       Bob,
       "pending",
       collectionIdBob,

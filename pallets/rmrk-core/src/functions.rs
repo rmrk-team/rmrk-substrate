@@ -111,9 +111,14 @@ where
 		nft_id: NftId,
 		resource: ResourceTypes<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>>,
 		adding_on_mint: bool,
+		resource_id: ResourceId,
 	) -> Result<ResourceId, DispatchError> {
+		ensure!(
+			Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
+			Error::<T>::ResourceAlreadyExists
+		);
+
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-		let resource_id = Self::get_next_resource_id(collection_id, nft_id)?;
 
 		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
@@ -321,7 +326,7 @@ where
 	}
 }
 
-impl<T: Config> Nft<T::AccountId, StringLimitOf<T>, BoundedResourceTypeOf<T>> for Pallet<T>
+impl<T: Config> Nft<T::AccountId, StringLimitOf<T>, BoundedResourceInfoTypeOf<T>> for Pallet<T>
 where
 	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
@@ -330,19 +335,20 @@ where
 	fn nft_mint(
 		sender: T::AccountId,
 		owner: T::AccountId,
+		nft_id: NftId,
 		collection_id: CollectionId,
 		royalty_recipient: Option<T::AccountId>,
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
 		transferable: bool,
-		resources: Option<BoundedResourceTypeOf<T>>,
+		resources: Option<BoundedResourceInfoTypeOf<T>>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
-		let nft_id = Self::get_next_nft_id(collection_id)?;
+		ensure!(!Self::nft_exists((collection_id, nft_id)), Error::<T>::NftAlreadyExists);
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
-		// Prevent minting when next NFT id is greater than the collection max.
+		// Prevent minting when nfts_count is greater than the collection max.
 		if let Some(max) = collection.max {
-			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
+			ensure!(collection.nfts_count < max, Error::<T>::CollectionFullOrLocked);
 		}
 
 		// NFT should be pending if minting to another account
@@ -389,7 +395,14 @@ where
 		// Add all at-mint resources
 		if let Some(resources) = resources {
 			for res in resources {
-				Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
+				Self::resource_add(
+					sender.clone(),
+					collection_id,
+					nft_id,
+					res.resource,
+					true,
+					res.id,
+				)?;
 			}
 		}
 
@@ -405,19 +418,20 @@ where
 	fn nft_mint_directly_to_nft(
 		sender: T::AccountId,
 		owner: (CollectionId, NftId),
+		nft_id: NftId,
 		collection_id: CollectionId,
 		royalty_recipient: Option<T::AccountId>,
 		royalty_amount: Option<Permill>,
 		metadata: StringLimitOf<T>,
 		transferable: bool,
-		resources: Option<BoundedResourceTypeOf<T>>,
+		resources: Option<BoundedResourceInfoTypeOf<T>>,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
-		let nft_id = Self::get_next_nft_id(collection_id)?;
+		ensure!(!Self::nft_exists((collection_id, nft_id)), Error::<T>::NftAlreadyExists);
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
-		// Prevent minting when next NFT id is greater than the collection max.
+		// Prevent minting when nfts_count is greater than the collection max.
 		if let Some(max) = collection.max {
-			ensure!(nft_id < max, Error::<T>::CollectionFullOrLocked);
+			ensure!(collection.nfts_count < max, Error::<T>::CollectionFullOrLocked);
 		}
 
 		// Calculate the rootowner of the intended owner of the minted NFT
@@ -468,7 +482,14 @@ where
 		// Add all at-mint resources
 		if let Some(resources) = resources {
 			for res in resources {
-				Self::resource_add(sender.clone(), collection_id, nft_id, res, true)?;
+				Self::resource_add(
+					sender.clone(),
+					collection_id,
+					nft_id,
+					res.resource,
+					true,
+					res.id,
+				)?;
 			}
 		}
 
@@ -879,25 +900,6 @@ where
 				found_child
 			},
 		}
-	}
-
-	pub fn get_next_nft_id(collection_id: CollectionId) -> Result<NftId, Error<T>> {
-		NextNftId::<T>::try_mutate(collection_id, |id| {
-			let current_id = *id;
-			*id = id.checked_add(1).ok_or(Error::<T>::NoAvailableNftId)?;
-			Ok(current_id)
-		})
-	}
-
-	pub fn get_next_resource_id(
-		collection_id: CollectionId,
-		nft_id: NftId,
-	) -> Result<ResourceId, Error<T>> {
-		NextResourceId::<T>::try_mutate(collection_id, nft_id, |id| {
-			let current_id = *id;
-			*id = id.checked_add(1).ok_or(Error::<T>::NoAvailableResourceId)?;
-			Ok(current_id)
-		})
 	}
 
 	pub fn set_lock(nft: (CollectionId, NftId), lock_status: bool) -> bool {
