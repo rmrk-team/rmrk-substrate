@@ -86,6 +86,7 @@ declare module '@polkadot/api-base/types/events' {
       NFTRejected: AugmentedEvent<ApiType, [sender: AccountId32, collectionId: u32, nftId: u32], { sender: AccountId32, collectionId: u32, nftId: u32 }>;
       NFTSent: AugmentedEvent<ApiType, [sender: AccountId32, recipient: RmrkTraitsNftAccountIdOrCollectionNftTuple, collectionId: u32, nftId: u32, approvalRequired: bool], { sender: AccountId32, recipient: RmrkTraitsNftAccountIdOrCollectionNftTuple, collectionId: u32, nftId: u32, approvalRequired: bool }>;
       PrioritySet: AugmentedEvent<ApiType, [collectionId: u32, nftId: u32], { collectionId: u32, nftId: u32 }>;
+      PropertyRemoved: AugmentedEvent<ApiType, [collectionId: u32, maybeNftId: Option<u32>, key: Bytes], { collectionId: u32, maybeNftId: Option<u32>, key: Bytes }>;
       PropertySet: AugmentedEvent<ApiType, [collectionId: u32, maybeNftId: Option<u32>, key: Bytes, value: Bytes], { collectionId: u32, maybeNftId: Option<u32>, key: Bytes, value: Bytes }>;
       ResourceAccepted: AugmentedEvent<ApiType, [nftId: u32, resourceId: u32], { nftId: u32, resourceId: u32 }>;
       ResourceAdded: AugmentedEvent<ApiType, [nftId: u32, resourceId: u32], { nftId: u32, resourceId: u32 }>;

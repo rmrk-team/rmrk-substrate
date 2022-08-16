@@ -18,8 +18,8 @@ use crate::{primitives::*, serialize};
 #[cfg_attr(feature = "std", serde(bound = "BoundedString: AsRef<[u8]>"))]
 pub struct BasicResource<BoundedString> {
 	/// Reference to IPFS location of metadata
-	#[cfg_attr(feature = "std", serde(with = "serialize::opt_vec"))]
-	pub metadata: Option<BoundedString>,
+	#[cfg_attr(feature = "std", serde(with = "serialize::vec"))]
+	pub metadata: BoundedString,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
@@ -94,9 +94,6 @@ pub enum ResourceTypes<BoundedString, BoundedParts> {
 		"#)
 )]
 pub struct ResourceInfo<BoundedString, BoundedParts> {
-	/// id is a 5-character string of reasonable uniqueness.
-	/// The combination of base ID and resource id should be unique across the entire RMRK
-	/// ecosystem which
 	pub id: ResourceId,
 
 	/// Resource
@@ -110,6 +107,20 @@ pub struct ResourceInfo<BoundedString, BoundedParts> {
 	pub pending_removal: bool,
 }
 
+#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+#[cfg_attr(feature = "std", derive(Serialize))]
+#[cfg_attr(
+	feature = "std",
+	serde(bound = r#"
+			BoundedString: AsRef<[u8]>,
+			BoundedParts: AsRef<[PartId]>
+		"#)
+)]
+pub struct ResourceInfoMin<BoundedString, BoundedParts> {
+	pub id: ResourceId,
+	pub resource: ResourceTypes<BoundedString, BoundedParts>,
+}
+
 /// Abstraction over a Resource system.
 pub trait Resource<BoundedString, AccountId, BoundedPart> {
 	fn resource_add(
@@ -118,6 +129,7 @@ pub trait Resource<BoundedString, AccountId, BoundedPart> {
 		nft_id: NftId,
 		resource: ResourceTypes<BoundedString, BoundedPart>,
 		adding_on_mint: bool,
+		resource_id: ResourceId,
 	) -> Result<ResourceId, DispatchError>;
 	fn accept(
 		sender: AccountId,

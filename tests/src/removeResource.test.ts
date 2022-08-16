@@ -40,6 +40,7 @@ describe("Integration test: remove nft resource", () => {
 
     const nftAlice = await mintNft(
       api,
+      0,
       Alice,
       Alice,
       collectionIdAlice,
@@ -48,6 +49,7 @@ describe("Integration test: remove nft resource", () => {
 
     const resourceId = await addNftBasicResource(
       api,
+      0,
       Alice,
       "added",
       collectionIdAlice,
@@ -76,6 +78,7 @@ describe("Integration test: remove nft resource", () => {
 
     const parentNftId = await mintNft(
       api,
+      0,
       Alice,
       Alice,
       collectionIdAlice,
@@ -83,6 +86,7 @@ describe("Integration test: remove nft resource", () => {
     );
     const childNftId = await mintNft(
       api,
+      1,
       Alice,
       Alice,
       collectionIdAlice,
@@ -91,6 +95,7 @@ describe("Integration test: remove nft resource", () => {
 
     const resourceId = await addNftBasicResource(
       api,
+      0,
       Alice,
       "added",
       collectionIdAlice,
@@ -130,6 +135,7 @@ describe("Integration test: remove nft resource", () => {
 
     const nftBob = await mintNft(
       api,
+      0,
       Alice,
       Bob,
       collectionIdAlice,
@@ -138,6 +144,7 @@ describe("Integration test: remove nft resource", () => {
 
     const resourceId = await addNftBasicResource(
       api,
+      0,
       Alice,
       "pending",
       collectionIdAlice,
@@ -173,6 +180,7 @@ describe("Integration test: remove nft resource", () => {
 
     const parentNftId = await mintNft(
       api,
+      0,
       Alice,
       Bob,
       collectionIdAlice,
@@ -180,6 +188,7 @@ describe("Integration test: remove nft resource", () => {
     );
     const childNftId = await mintNft(
       api,
+      1,
       Alice,
       Bob,
       collectionIdAlice,
@@ -188,6 +197,7 @@ describe("Integration test: remove nft resource", () => {
 
     const resourceId = await addNftBasicResource(
       api,
+      0,
       Alice,
       "pending",
       collectionIdAlice,
@@ -234,6 +244,7 @@ describe("Integration test: remove nft resource", () => {
 
     const nftAlice = await mintNft(
       api,
+      0,
       Alice,
       Alice,
       collectionIdAlice,
@@ -242,6 +253,7 @@ describe("Integration test: remove nft resource", () => {
 
     const resourceId = await addNftBasicResource(
       api,
+      0,
       Alice,
       "added",
       collectionIdAlice,
@@ -271,6 +283,7 @@ describe("Integration test: remove nft resource", () => {
 
     const nftAlice = await mintNft(
       api,
+      0,
       Alice,
       Alice,
       collectionIdAlice,
@@ -279,6 +292,7 @@ describe("Integration test: remove nft resource", () => {
 
     const resourceId = await addNftBasicResource(
       api,
+      0,
       Alice,
       "added",
       collectionIdAlice,
@@ -308,6 +322,7 @@ describe("Integration test: remove nft resource", () => {
 
     const nftAlice = await mintNft(
       api,
+      0,
       Alice,
       Alice,
       collectionIdAlice,
@@ -336,6 +351,7 @@ describe("Integration test: remove nft resource", () => {
 
     const nftBob = await mintNft(
       api,
+      0,
       Alice,
       Bob,
       collectionIdAlice,
@@ -344,6 +360,7 @@ describe("Integration test: remove nft resource", () => {
 
     const resourceId = await addNftBasicResource(
       api,
+      0,
       Alice,
       "pending",
       collectionIdAlice,
@@ -372,6 +389,7 @@ describe("Integration test: remove nft resource", () => {
 
     const nftBob = await mintNft(
       api,
+      0,
       Alice,
       Bob,
       collectionIdAlice,
@@ -393,6 +411,7 @@ describe("Integration test: remove nft resource", () => {
 
     const nftAlice = await mintNft(
       api,
+      0,
       Alice,
       Alice,
       collectionIdAlice,
@@ -401,6 +420,7 @@ describe("Integration test: remove nft resource", () => {
 
     const resourceId = await addNftBasicResource(
       api,
+      0,
       Alice,
       "added",
       collectionIdAlice,

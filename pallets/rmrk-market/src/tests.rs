@@ -37,10 +37,11 @@ fn basic_collection() -> DispatchResult {
 }
 
 /// Shortcut for a basic mint (Alice owner, Collection ID 0, Royalty 1.525)
-fn basic_mint() -> DispatchResult {
+fn basic_mint(id: u32) -> DispatchResult {
 	RmrkCore::mint_nft(
 		Origin::signed(ALICE),
 		Some(ALICE),
+		id,
 		COLLECTION_ID_0,
 		Some(ALICE),
 		Some(Permill::from_float(1.525)),
@@ -58,9 +59,9 @@ fn list_works() {
 		// Collection nfts_count should be 0 prior to minting
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		// Mint an NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
 		// Mint another NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(1));
 		// Minting an NFT should cause nfts_count to increase to 1
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 2);
 		// BOB shouldn't be able to list ALICE's NFT
@@ -129,6 +130,7 @@ fn list_non_transferable_fail() {
 		assert_ok!(RmrkCore::mint_nft(
 			Origin::signed(ALICE),
 			Some(ALICE),
+			NFT_ID_0,
 			COLLECTION_ID_0,
 			Some(ALICE),
 			Some(Permill::from_float(1.525)),
@@ -151,7 +153,7 @@ fn buy_works() {
 		// Collection nfts_count should be 0 prior to minting
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		// Mint an NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
 		// Minting an NFT should cause nfts_count to increase to 1
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
 		// ALICE lists the NFT successfully
@@ -202,7 +204,7 @@ fn buy_wont_work_after_list_expires() {
 		// Collection nfts_count should be 0 prior to minting
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		// Mint an NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
 		// Minting an NFT should cause nfts_count to increase to 1
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
 		// ALICE lists the NFT successfully
@@ -238,7 +240,7 @@ fn send_wont_work_if_sent_after_list() {
 		// Collection nfts_count should be 0 prior to minting
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		// Mint an NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
 		// Minting an NFT should cause nfts_count to increase to 1
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
 		// ALICE lists the NFT successfully
@@ -296,8 +298,8 @@ fn send_to_nft_wont_work_after_list() {
 		// Collection nfts_count should be 0 prior to minting
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		// Mint an two NFTs
-		assert_ok!(basic_mint());
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
+		assert_ok!(basic_mint(1));
 		// Minting an NFT should cause nfts_count to increase to 1
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 2);
 		// ALICE lists the NFT successfully
@@ -381,8 +383,8 @@ fn accept_offer_wont_work_if_traded_to_nft_after_list() {
 		// Collection nfts_count should be 0 prior to minting
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		// Mint an two NFTs
-		assert_ok!(basic_mint());
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
+		assert_ok!(basic_mint(1));
 		// Minting an NFT should cause nfts_count to increase to 1
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 2);
 		// BOB successfully places offer
@@ -434,9 +436,9 @@ fn unlist_works() {
 		// Collection nfts_count should be 0 prior to minting
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		// Mint an NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
 		// Mint another NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(1));
 		// Minting an NFT should cause nfts_count to increase to 1
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 2);
 		// BOB shouldn't be able to list ALICE's NFT
@@ -510,7 +512,7 @@ fn offer_works() {
 			Error::<Test>::TokenDoesNotExist
 		);
 		// Mint an NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
 		// Minting an NFT should cause nfts_count to increase to 1
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
 		// ALICE cannot offer on own NFT
@@ -583,7 +585,7 @@ fn offer_withdrawn_works() {
 			Error::<Test>::TokenDoesNotExist
 		);
 		// Mint an NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
 		// Minting an NFT should cause nfts_count to increase to 1
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
 		// ALICE cannot offer on own NFT
@@ -668,7 +670,7 @@ fn accept_offer_works() {
 			Error::<Test>::TokenDoesNotExist
 		);
 		// Mint an NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
 		// Minting an NFT should cause nfts_count to increase to 1
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
 		// ALICE cannot offer on own NFT
@@ -741,7 +743,7 @@ fn accept_expired_offer_wont_works() {
 			Error::<Test>::TokenDoesNotExist
 		);
 		// Mint an NFT
-		assert_ok!(basic_mint());
+		assert_ok!(basic_mint(0));
 		// Minting an NFT should cause nfts_count to increase to 1
 		assert_eq!(RmrkCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 1);
 		// ALICE cannot offer on own NFT

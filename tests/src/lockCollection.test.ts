@@ -53,6 +53,7 @@ describe("integration test: lock collection", () => {
       for (let i = 0; i < 5; i++) {
         await mintNft(
           api,
+          i,
           Alice,
           Alice,
           collectionId,
@@ -76,6 +77,7 @@ describe("integration test: lock collection", () => {
       await lockCollection(api, Alice, collectionId);
       const tx = mintNft(
         api,
+        0,
         Alice,
         Alice,
         collectionId,
@@ -92,6 +94,7 @@ describe("integration test: lock collection", () => {
       async (collectionId) => {
         await mintNft(
           api,
+          0,
           Alice,
           Alice,
           collectionId,
@@ -101,6 +104,7 @@ describe("integration test: lock collection", () => {
         );
         const tx = mintNft(
           api,
+          1,
           Alice,
           Alice,
           collectionId,
