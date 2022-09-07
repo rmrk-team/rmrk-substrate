@@ -996,9 +996,9 @@ export async function acceptNftResource(
     "ResourceAccepted",
     (data) => {
       return {
-        collectionId: parseInt(data[0].toString(), 10),
-        nftId: parseInt(data[1].toString(), 10),
-        resourceId: parseInt(data[2].toString(), 10),
+        nftId: parseInt(data[0].toString(), 10),
+        resourceId: parseInt(data[1].toString(), 10),
+        collectionId: parseInt(data[2].toString(), 10),
       };
     }
   );

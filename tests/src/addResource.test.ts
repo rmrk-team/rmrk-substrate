@@ -492,7 +492,7 @@ describe("integration test: add NFT resource", () => {
 
     const tx = acceptNftResource(
       api,
-      Bob,
+      Alice,
       collectionIdBob,
       wrongNft,
       resourceId

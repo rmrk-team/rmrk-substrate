@@ -146,7 +146,7 @@ where
 			};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
-		Self::deposit_event(Event::ResourceAdded { collection_id, nft_id, resource_id });
+		Self::deposit_event(Event::ResourceAdded { nft_id, resource_id, collection_id });
 
 		Ok(resource_id)
 	}
@@ -157,6 +157,10 @@ where
 		nft_id: NftId,
 		resource_id: ResourceId,
 	) -> DispatchResult {
+		ensure!(
+			Resources::<T>::get((collection_id, nft_id, resource_id)).is_some(),
+			Error::<T>::ResourceDoesntExist
+		);
 		Resources::<T>::try_mutate_exists(
 			(collection_id, nft_id, resource_id),
 			|resource| -> DispatchResult {
@@ -168,7 +172,7 @@ where
 			},
 		)?;
 
-		Self::deposit_event(Event::ResourceAccepted { collection_id, nft_id, resource_id });
+		Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id, collection_id });
 
 		Ok(())
 	}
@@ -199,7 +203,7 @@ where
 			Resources::<T>::remove((collection_id, nft_id, resource_id));
 		}
 
-		Self::deposit_event(Event::ResourceRemoval { collection_id, nft_id, resource_id });
+		Self::deposit_event(Event::ResourceRemoval { nft_id, resource_id, collection_id });
 
 		Ok(())
 	}
@@ -226,7 +230,7 @@ where
 			},
 		)?;
 
-		Self::deposit_event(Event::ResourceRemovalAccepted { collection_id, nft_id, resource_id });
+		Self::deposit_event(Event::ResourceRemovalAccepted { nft_id, resource_id, collection_id });
 
 		Ok(())
 	}
@@ -538,7 +542,7 @@ where
 		// Call pallet uniques to ensure NFT is burned
 		pallet_uniques::Pallet::<T>::do_burn(collection_id, nft_id, |_, _| Ok(()))?;
 
-		Self::deposit_event(Event::NFTBurned { owner, collection_id, nft_id });
+		Self::deposit_event(Event::NFTBurned { owner, nft_id, collection_id });
 
 		Ok((collection_id, nft_id))
 	}

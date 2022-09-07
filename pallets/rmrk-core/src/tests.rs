@@ -1005,8 +1005,8 @@ fn burn_nft_works() {
 		// Successful burn creates NFTBurned event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTBurned {
 			owner: ALICE,
-			collection_id: 0,
 			nft_id: 0,
+			collection_id: 0,
 		}));
 		// NFT count of collection is now 0
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
@@ -1208,9 +1208,9 @@ fn create_resource_works() {
 		));
 		// Successful resource addition should trigger ResourceAdded event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAdded {
-			collection_id: 0,
 			nft_id: 0,
 			resource_id: 0, // resource_id
+			collection_id: 0,
 		}));
 		// Since ALICE rootowns NFT, pending status of resource should be false
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
@@ -1369,9 +1369,9 @@ fn add_resource_pending_works() {
 		assert_ok!(RMRKCore::accept_resource(Origin::signed(BOB), 0, 0, 0));
 		// Valid resource acceptance should trigger a ResourceAccepted event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAccepted {
-			collection_id: 0,
 			nft_id: 0,
 			resource_id: 0, // resource_id
+			collection_id: 0,
 		}));
 		// Resource should now have false pending status
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
@@ -1431,9 +1431,9 @@ fn resource_removal_works() {
 		));
 		// Successful resource removal should trigger ResourceRemoval event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceRemoval {
-			collection_id: 0,
 			nft_id: 0,
 			resource_id: 0, // resource_id
+			collection_id: 0,
 		}));
 		// Since ALICE rootowns NFT, resource should be removed
 		assert_eq!(RMRKCore::resources((0, 0, 0)), None);
@@ -1509,9 +1509,9 @@ fn resource_removal_pending_works() {
 		assert_ok!(RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, 0));
 		// Successful resource removal acceptance should trigger ResourceRemovalAccepted event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceRemovalAccepted {
-			collection_id: 0,
 			nft_id: 0,
 			resource_id: 0, // resource_id
+			collection_id: 0,
 		}));
 		// Resource removed
 		assert_eq!(RMRKCore::resources((0, 0, 0)), None);

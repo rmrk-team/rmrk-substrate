@@ -254,8 +254,8 @@ pub mod pallet {
 		},
 		NFTBurned {
 			owner: T::AccountId,
-			collection_id: CollectionId,
 			nft_id: NftId,
+			collection_id: CollectionId,
 		},
 		CollectionDestroyed {
 			issuer: T::AccountId,
@@ -300,24 +300,24 @@ pub mod pallet {
 			collection_id: CollectionId,
 		},
 		ResourceAdded {
-			collection_id: CollectionId,
 			nft_id: NftId,
 			resource_id: ResourceId,
+			collection_id: CollectionId,
 		},
 		ResourceAccepted {
-			collection_id: CollectionId,
 			nft_id: NftId,
 			resource_id: ResourceId,
+			collection_id: CollectionId,
 		},
 		ResourceRemoval {
-			collection_id: CollectionId,
 			nft_id: NftId,
 			resource_id: ResourceId,
+			collection_id: CollectionId,
 		},
 		ResourceRemovalAccepted {
-			collection_id: CollectionId,
 			nft_id: NftId,
 			resource_id: ResourceId,
+			collection_id: CollectionId,
 		},
 		PrioritySet {
 			collection_id: CollectionId,
