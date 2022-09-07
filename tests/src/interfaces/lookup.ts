@@ -312,6 +312,7 @@ export default {
       },
       NFTBurned: {
         owner: 'AccountId32',
+        collectionId: 'u32',
         nftId: 'u32',
       },
       CollectionDestroyed: {
@@ -357,18 +358,22 @@ export default {
         collectionId: 'u32',
       },
       ResourceAdded: {
+        collectionId: 'u32',
         nftId: 'u32',
         resourceId: 'u32',
       },
       ResourceAccepted: {
+        collectionId: 'u32',
         nftId: 'u32',
         resourceId: 'u32',
       },
       ResourceRemoval: {
+        collectionId: 'u32',
         nftId: 'u32',
         resourceId: 'u32',
       },
       ResourceRemovalAccepted: {
+        collectionId: 'u32',
         nftId: 'u32',
         resourceId: 'u32',
       },

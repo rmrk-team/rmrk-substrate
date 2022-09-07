@@ -6,7 +6,11 @@
 
 use super::*;
 use codec::{Codec, Decode, Encode};
-use frame_support::traits::{tokens::Locker, Get};
+use frame_support::{
+	pallet_prelude::*,
+	traits::{tokens::Locker, Get},
+};
+use frame_system::Origin;
 
 use sp_runtime::{
 	traits::{Saturating, TrailingZeroInput},
@@ -24,15 +28,11 @@ where
 	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	fn priority_set(
-		sender: T::AccountId,
+		_sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
 		priorities: BoundedVec<ResourceId, T::MaxPriorities>,
 	) -> DispatchResult {
-		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-		ensure!(sender == root_owner, Error::<T>::NoPermission);
-		// Check NFT lock status
-		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 		Priorities::<T>::remove_prefix((collection_id, nft_id), None);
 		let mut priority_index = 0;
 		for resource_id in priorities {
@@ -106,24 +106,17 @@ where
 	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	fn resource_add(
-		sender: T::AccountId,
+		_sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource: ResourceTypes<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>>,
-		adding_on_mint: bool,
+		pending: bool,
 		resource_id: ResourceId,
 	) -> Result<ResourceId, DispatchError> {
 		ensure!(
 			Resources::<T>::get((collection_id, nft_id, resource_id)).is_none(),
 			Error::<T>::ResourceAlreadyExists
 		);
-
-		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-
-		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
-		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-		// Check NFT lock status
-		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 
 		match resource.clone() {
 			ResourceTypes::Basic(_r) => (),
@@ -144,15 +137,6 @@ where
 			},
 		}
 
-		// Resource should be in a pending state if the rootowner of the resource is not the sender
-		// of the transaction, unless the resource is being added on mint.  This prevents the
-		// situation where an NFT being minted *directly to* a non-owned NFT *with resources* will
-		// have those resources be *pending*.  While the minted NFT itself will be pending, it is
-		// inefficent and unnecessary to have the resources also be pending.  Otherwise, in such a
-		// case, the owner would have to accept not only the NFT but also all originally-added
-		// resources.
-		let pending = (root_owner != sender) && !adding_on_mint;
-
 		let res: ResourceInfo<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> =
 			ResourceInfo::<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>> {
 				id: resource_id,
@@ -162,50 +146,46 @@ where
 			};
 		Resources::<T>::insert((collection_id, nft_id, resource_id), res);
 
+		Self::deposit_event(Event::ResourceAdded { collection_id, nft_id, resource_id });
+
 		Ok(resource_id)
 	}
 
 	fn accept(
-		sender: T::AccountId,
+		_sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource_id: ResourceId,
 	) -> DispatchResult {
-		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-		ensure!(root_owner == sender, Error::<T>::NoPermission);
-		// Check NFT lock status
-		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 		Resources::<T>::try_mutate_exists(
 			(collection_id, nft_id, resource_id),
 			|resource| -> DispatchResult {
-				if let Some(res) = resource {
+				if let Some(res) = resource.into_mut() {
+					ensure!(res.pending, Error::<T>::ResourceNotPending);
 					res.pending = false;
 				}
 				Ok(())
 			},
 		)?;
 
-		Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
+		Self::deposit_event(Event::ResourceAccepted { collection_id, nft_id, resource_id });
+
 		Ok(())
 	}
 
 	fn resource_remove(
-		sender: T::AccountId,
+		_sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource_id: ResourceId,
+		pending_resource: bool,
 	) -> DispatchResult {
-		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 		ensure!(
 			Resources::<T>::contains_key((collection_id, nft_id, resource_id)),
 			Error::<T>::ResourceDoesntExist
 		);
 
-		if root_owner == sender {
-			Resources::<T>::remove((collection_id, nft_id, resource_id));
-		} else {
+		if pending_resource {
 			Resources::<T>::try_mutate_exists(
 				(collection_id, nft_id, resource_id),
 				|resource| -> DispatchResult {
@@ -215,19 +195,21 @@ where
 					Ok(())
 				},
 			)?;
+		} else {
+			Resources::<T>::remove((collection_id, nft_id, resource_id));
 		}
+
+		Self::deposit_event(Event::ResourceRemoval { collection_id, nft_id, resource_id });
 
 		Ok(())
 	}
 
 	fn accept_removal(
-		sender: T::AccountId,
+		_sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource_id: ResourceId,
 	) -> DispatchResult {
-		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-		ensure!(root_owner == sender, Error::<T>::NoPermission);
 		ensure!(
 			Resources::<T>::contains_key((collection_id, nft_id, &resource_id)),
 			Error::<T>::ResourceDoesntExist
@@ -243,6 +225,8 @@ where
 				Ok(())
 			},
 		)?;
+
+		Self::deposit_event(Event::ResourceRemovalAccepted { collection_id, nft_id, resource_id });
 
 		Ok(())
 	}
@@ -289,10 +273,23 @@ where
 		Ok(collection_id)
 	}
 
-	fn collection_burn(_issuer: T::AccountId, collection_id: CollectionId) -> DispatchResult {
+	fn collection_burn(issuer: T::AccountId, collection_id: CollectionId) -> DispatchResult {
 		let collection = Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 		ensure!(collection.nfts_count == 0, Error::<T>::CollectionNotEmpty);
+		// Get DestroyWitness for Uniques pallet
+		let witness = pallet_uniques::Pallet::<T>::get_destroy_witness(&collection_id)
+			.ok_or(Error::<T>::NoWitness)?;
+		ensure!(witness.items == 0u32, Error::<T>::CollectionNotEmpty);
+		// Remove from RMRK storage
 		Collections::<T>::remove(collection_id);
+
+		pallet_uniques::Pallet::<T>::do_destroy_collection(
+			collection_id,
+			witness,
+			issuer.clone().into(),
+		)?;
+
+		Self::deposit_event(Event::CollectionDestroyed { issuer, collection_id });
 		Ok(())
 	}
 
@@ -318,10 +315,12 @@ where
 	) -> Result<CollectionId, DispatchError> {
 		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
 			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
-			ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 			collection.max = Some(collection.nfts_count);
 			Ok(())
 		})?;
+
+		Self::deposit_event(Event::CollectionLocked { issuer: sender, collection_id });
+
 		Ok(collection_id)
 	}
 }
@@ -487,7 +486,7 @@ where
 					collection_id,
 					nft_id,
 					res.resource,
-					true,
+					false,
 					res.id,
 				)?;
 			}
@@ -503,6 +502,7 @@ where
 	}
 
 	fn nft_burn(
+		owner: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
 		max_recursions: u32,
@@ -525,7 +525,7 @@ where
 		for ((child_collection_id, child_nft_id), _) in
 			Children::<T>::drain_prefix((collection_id, nft_id))
 		{
-			Self::nft_burn(child_collection_id, child_nft_id, max_recursions - 1)?;
+			Self::nft_burn(owner.clone(), child_collection_id, child_nft_id, max_recursions - 1)?;
 		}
 
 		// decrement nfts counter
@@ -534,6 +534,11 @@ where
 			collection.nfts_count.saturating_dec();
 			Ok(())
 		})?;
+
+		// Call pallet uniques to ensure NFT is burned
+		pallet_uniques::Pallet::<T>::do_burn(collection_id, nft_id, |_, _| Ok(()))?;
+
+		Self::deposit_event(Event::NFTBurned { owner, collection_id, nft_id });
 
 		Ok((collection_id, nft_id))
 	}
@@ -594,7 +599,7 @@ where
 			},
 		};
 
-		sending_nft.owner = new_owner;
+		sending_nft.owner = new_owner.clone();
 		// Nfts::<T>::insert(collection_id, nft_id, sending_nft);
 
 		if approval_required {
@@ -625,6 +630,21 @@ where
 			Pallet::<T>::add_child(new_owner_cid_nid, (collection_id, nft_id));
 		}
 
+		pallet_uniques::Pallet::<T>::do_transfer(
+			collection_id,
+			nft_id,
+			new_owner_account.clone(),
+			|_class_details, _details| Ok(()),
+		)?;
+
+		Self::deposit_event(Event::NFTSent {
+			sender,
+			recipient: new_owner,
+			collection_id,
+			nft_id,
+			approval_required,
+		});
+
 		Ok((new_owner_account, approval_required))
 	}
 
@@ -644,7 +664,7 @@ where
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
 		// Prepare acceptance
-		let new_owner_account = match new_owner {
+		let new_owner_account = match new_owner.clone() {
 			AccountIdOrCollectionNftTuple::AccountId(id) => id,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
 				// Check if NFT target exists
@@ -676,6 +696,20 @@ where
 			}
 			Ok(())
 		})?;
+
+		pallet_uniques::Pallet::<T>::do_transfer(
+			collection_id,
+			nft_id,
+			new_owner_account.clone(),
+			|_class_details, _details| Ok(()),
+		)?;
+
+		Self::deposit_event(Event::NFTAccepted {
+			sender,
+			recipient: new_owner,
+			collection_id,
+			nft_id,
+		});
 
 		Ok((new_owner_account, collection_id, nft_id))
 	}
@@ -715,7 +749,7 @@ where
 		let mut rejecting_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
-		Self::nft_burn(collection_id, nft_id, max_recursions)?;
+		Self::nft_burn(sender.clone(), collection_id, nft_id, max_recursions)?;
 
 		Ok((sender, collection_id, nft_id))
 	}

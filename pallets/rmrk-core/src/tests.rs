@@ -1005,6 +1005,7 @@ fn burn_nft_works() {
 		// Successful burn creates NFTBurned event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTBurned {
 			owner: ALICE,
+			collection_id: 0,
 			nft_id: 0,
 		}));
 		// NFT count of collection is now 0
@@ -1207,6 +1208,7 @@ fn create_resource_works() {
 		));
 		// Successful resource addition should trigger ResourceAdded event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAdded {
+			collection_id: 0,
 			nft_id: 0,
 			resource_id: 0, // resource_id
 		}));
@@ -1367,6 +1369,7 @@ fn add_resource_pending_works() {
 		assert_ok!(RMRKCore::accept_resource(Origin::signed(BOB), 0, 0, 0));
 		// Valid resource acceptance should trigger a ResourceAccepted event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAccepted {
+			collection_id: 0,
 			nft_id: 0,
 			resource_id: 0, // resource_id
 		}));
@@ -1428,6 +1431,7 @@ fn resource_removal_works() {
 		));
 		// Successful resource removal should trigger ResourceRemoval event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceRemoval {
+			collection_id: 0,
 			nft_id: 0,
 			resource_id: 0, // resource_id
 		}));
@@ -1505,6 +1509,7 @@ fn resource_removal_pending_works() {
 		assert_ok!(RMRKCore::accept_resource_removal(Origin::signed(BOB), 0, 0, 0));
 		// Successful resource removal acceptance should trigger ResourceRemovalAccepted event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceRemovalAccepted {
+			collection_id: 0,
 			nft_id: 0,
 			resource_id: 0, // resource_id
 		}));
