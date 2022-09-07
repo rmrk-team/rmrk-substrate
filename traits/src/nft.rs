@@ -98,6 +98,7 @@ pub trait Nft<AccountId, BoundedString, BoundedResourceVec> {
 		resources: Option<BoundedResourceVec>,
 	) -> Result<(CollectionId, NftId), DispatchError>;
 	fn nft_burn(
+		owner: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
 		max_burns: u32,
