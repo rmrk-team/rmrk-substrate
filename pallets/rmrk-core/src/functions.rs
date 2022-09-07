@@ -403,7 +403,7 @@ where
 					collection_id,
 					nft_id,
 					res.resource,
-					true,
+					false,
 					res.id,
 				)?;
 			}
