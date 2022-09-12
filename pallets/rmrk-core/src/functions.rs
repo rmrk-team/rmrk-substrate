@@ -319,7 +319,7 @@ where
 		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
 			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
 			ensure!(collection.issuer == sender, Error::<T>::NoPermission);
-			collection.max = Some(collection.nfts_count);
+			collection.max = Some(0);
 			Ok(())
 		})?;
 		Ok(collection_id)
