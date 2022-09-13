@@ -66,7 +66,7 @@ pub trait Base<
 	fn base_change_issuer(
 		base_id: BaseId,
 		new_issuer: AccountId,
-	) -> Result<(AccountId, CollectionId), DispatchError>;
+	) -> Result<(AccountId, BaseId), DispatchError>;
 	fn do_equip(
 		issuer: AccountId, // Maybe don't need?
 		item: (CollectionId, NftId),

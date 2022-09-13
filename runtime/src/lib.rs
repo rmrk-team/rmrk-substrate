@@ -45,7 +45,10 @@ pub use sp_runtime::{Perbill, Permill};
 
 use pallet_rmrk_core::{CollectionInfoOf, InstanceInfoOf, PropertyInfoOf, ResourceInfoOf};
 use pallet_rmrk_equip::{BaseInfoOf, BoundedThemeOf, PartTypeOf};
-use rmrk_traits::{primitives::*, NftChild};
+use rmrk_traits::{
+	primitives::{BaseId, CollectionId, NftId, ResourceId},
+	NftChild,
+};
 
 /// Import the template pallet.
 pub use pallet_template;
@@ -351,6 +354,9 @@ parameter_types! {
 	pub const NestingBudget: u32 = 20;
 }
 
+#[cfg(feature = "runtime-benchmarks")]
+use pallet_rmrk_core::RmrkBenchmark;
+
 impl pallet_rmrk_core::Config for Runtime {
 	type Event = Event;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
@@ -360,6 +366,9 @@ impl pallet_rmrk_core::Config for Runtime {
 	type CollectionSymbolLimit = CollectionSymbolLimit;
 	type MaxResourcesOnMint = MaxResourcesOnMint;
 	type NestingBudget = NestingBudget;
+	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = RmrkBenchmark;
 }
 
 parameter_types! {
@@ -504,9 +513,9 @@ impl_runtime_apis! {
 		BoundedThemeOf<Runtime>
 	> for Runtime
 	{
-		fn last_collection_idx() -> pallet_rmrk_rpc_runtime_api::Result<CollectionId> {
-			Ok(RmrkCore::collection_index())
-		}
+		// fn last_collection_idx() -> pallet_rmrk_rpc_runtime_api::Result<CollectionId> {
+		// 	Ok(RmrkCore::collection_index())
+		// }
 
 		fn collection_by_id(id: CollectionId) -> pallet_rmrk_rpc_runtime_api::Result<Option<CollectionInfoOf<Runtime>>> {
 			Ok(RmrkCore::collections(id))
@@ -520,7 +529,7 @@ impl_runtime_apis! {
 			Ok(Uniques::owned_in_collection(&collection_id, &account_id).collect())
 		}
 
-		fn nft_children(collection_id: CollectionId, nft_id: NftId) -> pallet_rmrk_rpc_runtime_api::Result<Vec<NftChild>> {
+		fn nft_children(collection_id: CollectionId, nft_id: NftId) -> pallet_rmrk_rpc_runtime_api::Result<Vec<NftChild<CollectionId, NftId>>> {
 			let children = RmrkCore::iterate_nft_children(collection_id, nft_id).collect();
 
 			Ok(children)
@@ -744,6 +753,7 @@ impl_runtime_apis! {
 			list_benchmark!(list, extra, pallet_balances, Balances);
 			list_benchmark!(list, extra, pallet_timestamp, Timestamp);
 			list_benchmark!(list, extra, pallet_template, TemplateModule);
+			list_benchmark!(list, extra, pallet_rmrk_core, RmrkCore);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -782,6 +792,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_balances, Balances);
 			add_benchmark!(params, batches, pallet_timestamp, Timestamp);
 			add_benchmark!(params, batches, pallet_template, TemplateModule);
+			add_benchmark!(params, batches, pallet_rmrk_core, RmrkCore);
 
 			Ok(batches)
 		}

@@ -15,8 +15,9 @@ use sp_runtime::traits::StaticLookup;
 pub use pallet::*;
 
 use rmrk_traits::{
-	base::EquippableOperation, primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo,
-	EquippableList, PartType, Theme, ThemeProperty,
+	base::EquippableOperation,
+	primitives::{BaseId, PartId, ResourceId, SlotId},
+	AccountIdOrCollectionNftTuple, Base, BaseInfo, EquippableList, PartType, Theme, ThemeProperty,
 };
 
 use sp_std::vec::Vec;
@@ -29,9 +30,6 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-// #[cfg(feature = "runtime-benchmarks")]
-// mod benchmarking;
-
 // Re-export pallet items so that they can be accessed from the crate namespace.
 pub use pallet::*;
 
@@ -43,7 +41,10 @@ pub type BaseInfoOf<T> = BaseInfo<<T as frame_system::Config>::AccountId, String
 
 pub type PartTypeOf<T> = PartType<
 	StringLimitOf<T>,
-	BoundedVec<CollectionId, <T as Config>::MaxCollectionsEquippablePerPart>,
+	BoundedVec<
+		<T as pallet_uniques::Config>::CollectionId,
+		<T as Config>::MaxCollectionsEquippablePerPart,
+	>,
 >;
 
 pub type ThemePropertyOf<T> = ThemeProperty<StringLimitOf<T>>;
@@ -91,7 +92,7 @@ pub mod pallet {
 		BaseId,
 		Twox64Concat,
 		PartId,
-		PartType<StringLimitOf<T>, BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
+		PartType<StringLimitOf<T>, BoundedVec<T::CollectionId, T::MaxCollectionsEquippablePerPart>>,
 	>;
 
 	#[pallet::storage]
@@ -110,9 +111,9 @@ pub mod pallet {
 	pub type Equippings<T: Config> = StorageNMap<
 		_,
 		(
-			NMapKey<Blake2_128Concat, (CollectionId, NftId)>, // Equipper
-			NMapKey<Blake2_128Concat, BaseId>,                // Base ID
-			NMapKey<Blake2_128Concat, SlotId>,                // Slot ID
+			NMapKey<Blake2_128Concat, (T::CollectionId, T::ItemId)>, // Equipper
+			NMapKey<Blake2_128Concat, BaseId>,                       // Base ID
+			NMapKey<Blake2_128Concat, SlotId>,                       // Slot ID
 		),
 		ResourceId, // Equipped Resource
 		OptionQuery,
@@ -146,15 +147,15 @@ pub mod pallet {
 		},
 		// A Resource was equipped to a base+slot
 		SlotEquipped {
-			item_collection: CollectionId,
-			item_nft: NftId,
+			item_collection: T::CollectionId,
+			item_nft: T::ItemId,
 			base_id: BaseId,
 			slot_id: SlotId,
 		},
 		// A Resource was unequipped
 		SlotUnequipped {
-			item_collection: CollectionId,
-			item_nft: NftId,
+			item_collection: T::CollectionId,
+			item_nft: T::ItemId,
 			base_id: BaseId,
 			slot_id: SlotId,
 		},
@@ -231,10 +232,7 @@ pub mod pallet {
 	}
 
 	#[pallet::call]
-	impl<T: Config> Pallet<T>
-	where
-		T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
-	{
+	impl<T: Config> Pallet<T> {
 		/// Change the issuer of a Base
 		///
 		/// Parameters:
@@ -276,8 +274,8 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn equip(
 			origin: OriginFor<T>,
-			item: (CollectionId, NftId),
-			equipper: (CollectionId, NftId),
+			item: (T::CollectionId, T::ItemId),
+			equipper: (T::CollectionId, T::ItemId),
 			resource_id: ResourceId,
 			base: BaseId,
 			slot: SlotId,
@@ -315,8 +313,8 @@ pub mod pallet {
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn unequip(
 			origin: OriginFor<T>,
-			item: (CollectionId, NftId),
-			unequipper: (CollectionId, NftId),
+			item: (T::CollectionId, T::ItemId),
+			unequipper: (T::CollectionId, T::ItemId),
 			base: BaseId,
 			slot: SlotId,
 		) -> DispatchResult {
@@ -349,7 +347,7 @@ pub mod pallet {
 			base_id: BaseId,
 			slot_id: SlotId,
 			equippables: EquippableList<
-				BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+				BoundedVec<T::CollectionId, T::MaxCollectionsEquippablePerPart>,
 			>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
@@ -377,7 +375,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_id: BaseId,
 			slot_id: SlotId,
-			equippable: CollectionId,
+			equippable: T::CollectionId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -404,7 +402,7 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			base_id: BaseId,
 			slot_id: SlotId,
-			equippable: CollectionId,
+			equippable: T::CollectionId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -473,7 +471,7 @@ pub mod pallet {
 			parts: BoundedVec<
 				PartType<
 					StringLimitOf<T>,
-					BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+					BoundedVec<T::CollectionId, T::MaxCollectionsEquippablePerPart>,
 				>,
 				T::PartsLimit,
 			>,

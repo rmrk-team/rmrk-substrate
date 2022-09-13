@@ -1,6 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use rmrk_traits::{primitives::*, NftChild};
+use rmrk_traits::{
+	primitives::{BaseId, CollectionId, NftId, ResourceId},
+	NftChild,
+};
 use sp_api::{Decode, Encode};
 use sp_runtime::DispatchError;
 use sp_std::vec::Vec;
@@ -35,7 +38,7 @@ sp_api::decl_runtime_apis! {
 		Theme: Decode,
 	{
 		/// Get the latest created collection id
-		fn last_collection_idx() -> Result<CollectionId>;
+		// fn last_collection_idx() -> Result<CollectionId>;
 
 		/// Get collection by id
 		fn collection_by_id(id: CollectionId) -> Result<Option<CollectionInfo>>;
@@ -47,7 +50,7 @@ sp_api::decl_runtime_apis! {
 		fn account_tokens(account_id: AccountId, collection_id: CollectionId) -> Result<Vec<NftId>>;
 
 		/// Get NFT children
-		fn nft_children(collection_id: CollectionId, nft_id: NftId) -> Result<Vec<NftChild>>;
+		fn nft_children(collection_id: CollectionId, nft_id: NftId) -> Result<Vec<NftChild<CollectionId, NftId>>>;
 
 		/// Get collection properties
 		fn collection_properties(collection_id: CollectionId, filter_keys: Option<Vec<PropertyKey>>) -> Result<Vec<PropertyInfo>>;

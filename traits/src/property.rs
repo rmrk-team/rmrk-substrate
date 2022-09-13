@@ -9,7 +9,7 @@ use sp_runtime::DispatchResult;
 #[cfg(feature = "std")]
 use serde::Serialize;
 
-use crate::{primitives::*, serialize};
+use crate::serialize;
 
 #[cfg_attr(feature = "std", derive(Serialize))]
 #[derive(Encode, Decode, PartialEq, TypeInfo)]
@@ -32,7 +32,7 @@ pub struct PropertyInfo<BoundedKey, BoundedValue> {
 
 /// Abstraction over a Property system.
 #[allow(clippy::upper_case_acronyms)]
-pub trait Property<KeyLimit, ValueLimit, AccountId> {
+pub trait Property<KeyLimit, ValueLimit, AccountId, CollectionId, NftId> {
 	fn property_set(
 		sender: AccountId,
 		collection_id: CollectionId,
