@@ -15,8 +15,8 @@ use sp_runtime::traits::StaticLookup;
 pub use pallet::*;
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, BasicResource,
-	ComposableResource, EquippableList, PartType, ResourceTypes, SlotResource, Theme, ThemeProperty,
+	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo,
+	EquippableList, PartType, Theme, ThemeProperty,
 };
 
 use sp_std::vec::Vec;
@@ -426,7 +426,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let part_length: u32 = parts.len().try_into().unwrap();
+			let _part_length: u32 = parts.len().try_into().unwrap();
 			let base_id = Self::base_create(sender.clone(), base_type, symbol, parts)?;
 
 			Self::deposit_event(Event::BaseCreated { issuer: sender, base_id });

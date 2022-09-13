@@ -3,18 +3,17 @@
 // License: Apache 2.0 modified by RMRK, see LICENSE.md
 
 use super::{
-	part::{EquippableList, PartType},
+	part::EquippableList,
 	theme::Theme,
 };
 use crate::{
 	primitives::{BaseId, ResourceId, SlotId},
-	serialize, ThemeProperty,
+	serialize,
 };
 use codec::{Decode, Encode};
 use frame_support::pallet_prelude::MaxEncodedLen;
 use scale_info::TypeInfo;
-use sp_runtime::{DispatchError, RuntimeDebug};
-use sp_std::vec::Vec;
+use sp_runtime::{DispatchError};
 
 #[cfg(feature = "std")]
 use serde::Serialize;

@@ -4,7 +4,6 @@
 
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_runtime::RuntimeDebug;
 
 #[cfg(feature = "std")]
 use serde::Serialize;
