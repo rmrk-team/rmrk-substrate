@@ -5,25 +5,10 @@
 use super::*;
 use crate::mock::*;
 use frame_support::{assert_noop, assert_ok};
-use mock::{Event as MockEvent, *};
+use mock::{Event as MockEvent};
 
 use sp_runtime::Permill;
-use sp_std::{convert::TryInto, vec::Vec};
-
-/// Turns a string into a BoundedVec
-fn stb(s: &str) -> BoundedVec<u8, ValueLimit> {
-	s.as_bytes().to_vec().try_into().unwrap()
-}
-
-/// Turns a string into a BoundedVec
-fn stbk(s: &str) -> BoundedVec<u8, KeyLimit> {
-	s.as_bytes().to_vec().try_into().unwrap()
-}
-
-/// Turns a string into a Vec
-fn stv(s: &str) -> Vec<u8> {
-	s.as_bytes().to_vec()
-}
+use sp_std::convert::TryInto;
 
 macro_rules! bvec {
 	($( $x:tt )*) => {
