@@ -2,10 +2,7 @@
 // This file is part of rmrk-substrate.
 // License: Apache 2.0 modified by RMRK, see LICENSE.md
 
-use super::{
-	part::EquippableList,
-	theme::Theme,
-};
+use super::{part::EquippableList, theme::Theme};
 use crate::{
 	primitives::{BaseId, ResourceId, SlotId},
 	serialize,
@@ -13,7 +10,7 @@ use crate::{
 use codec::{Decode, Encode};
 use frame_support::pallet_prelude::MaxEncodedLen;
 use scale_info::TypeInfo;
-use sp_runtime::{DispatchError};
+use sp_runtime::DispatchError;
 
 #[cfg(feature = "std")]
 use serde::Serialize;
@@ -22,12 +19,10 @@ use serde::Serialize;
 #[derive(Encode, Decode, Debug, TypeInfo, MaxEncodedLen)]
 #[cfg_attr(
 	feature = "std",
-	serde(
-		bound = r#"
+	serde(bound = r#"
 			AccountId: Serialize,
 			BoundedString: AsRef<[u8]>
-		"#
-	)
+		"#)
 )]
 pub struct BaseInfo<AccountId, BoundedString> {
 	/// Original creator of the Base

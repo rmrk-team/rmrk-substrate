@@ -33,7 +33,8 @@ where
 		ensure!(sender == root_owner, Error::<T>::NoPermission);
 		// Check NFT lock status
 		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
-		let _multi_removal_results =Priorities::<T>::clear_prefix((collection_id, nft_id), T::MaxPriorities::get(),  None);
+		let _multi_removal_results =
+			Priorities::<T>::clear_prefix((collection_id, nft_id), T::MaxPriorities::get(), None);
 		let mut priority_index = 0;
 		for resource_id in priorities {
 			Priorities::<T>::insert((collection_id, nft_id, resource_id), priority_index);
@@ -520,7 +521,11 @@ where
 
 		Nfts::<T>::remove(collection_id, nft_id);
 
-		let _multi_removal_results = Resources::<T>::clear_prefix((collection_id, nft_id), T::MaxResourcesOnMint::get(), None);
+		let _multi_removal_results = Resources::<T>::clear_prefix(
+			(collection_id, nft_id),
+			T::MaxResourcesOnMint::get(),
+			None,
+		);
 
 		for ((child_collection_id, child_nft_id), _) in
 			Children::<T>::drain_prefix((collection_id, nft_id))
