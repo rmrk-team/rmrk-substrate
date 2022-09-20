@@ -256,10 +256,6 @@ pub mod pallet {
 
 			// Lock NFT to prevent transfers or interactions with the NFT
 			pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), true);
-			// Check if a prior listing is in storage from previous owner and update if found
-			if Self::is_nft_listed(collection_id, nft_id) {
-				ListedNfts::<T>::remove(collection_id, nft_id);
-			}
 
 			// Add new ListInfo with listed_by, amount, Option<BlockNumber>
 			ListedNfts::<T>::insert(
