@@ -280,18 +280,22 @@ pub mod pallet {
 			collection_id: CollectionId,
 		},
 		ResourceAdded {
+			collection_id: CollectionId,
 			nft_id: NftId,
 			resource_id: ResourceId,
 		},
 		ResourceAccepted {
+			collection_id: CollectionId,
 			nft_id: NftId,
 			resource_id: ResourceId,
 		},
 		ResourceRemoval {
+			collection_id: CollectionId,
 			nft_id: NftId,
 			resource_id: ResourceId,
 		},
 		ResourceRemovalAccepted {
+			collection_id: CollectionId,
 			nft_id: NftId,
 			resource_id: ResourceId,
 		},
@@ -743,7 +747,7 @@ pub mod pallet {
 				false,
 			)?;
 
-			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
+			Self::deposit_event(Event::ResourceAdded { collection_id, nft_id, resource_id });
 			Ok(())
 		}
 
@@ -766,7 +770,7 @@ pub mod pallet {
 				false,
 			)?;
 
-			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
+			Self::deposit_event(Event::ResourceAdded { collection_id, nft_id, resource_id });
 			Ok(())
 		}
 
@@ -789,7 +793,7 @@ pub mod pallet {
 				false,
 			)?;
 
-			Self::deposit_event(Event::ResourceAdded { nft_id, resource_id });
+			Self::deposit_event(Event::ResourceAdded { collection_id, nft_id, resource_id });
 			Ok(())
 		}
 
@@ -822,7 +826,7 @@ pub mod pallet {
 				},
 			)?;
 
-			Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
+			Self::deposit_event(Event::ResourceAccepted { collection_id, nft_id, resource_id });
 			Ok(())
 		}
 
@@ -839,7 +843,7 @@ pub mod pallet {
 
 			Self::resource_remove(sender, collection_id, nft_id, resource_id)?;
 
-			Self::deposit_event(Event::ResourceRemoval { nft_id, resource_id });
+			Self::deposit_event(Event::ResourceRemoval { collection_id, nft_id, resource_id });
 			Ok(())
 		}
 
@@ -856,7 +860,7 @@ pub mod pallet {
 
 			Self::accept_removal(sender, collection_id, nft_id, resource_id)?;
 
-			Self::deposit_event(Event::ResourceRemovalAccepted { nft_id, resource_id });
+			Self::deposit_event(Event::ResourceRemovalAccepted { collection_id, nft_id, resource_id });
 			Ok(())
 		}
 

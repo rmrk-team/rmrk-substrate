@@ -144,7 +144,7 @@ where
 			},
 		)?;
 
-		Self::deposit_event(Event::ResourceAccepted { nft_id, resource_id });
+		Self::deposit_event(Event::ResourceAccepted { collection_id, nft_id, resource_id });
 		Ok(())
 	}
 
