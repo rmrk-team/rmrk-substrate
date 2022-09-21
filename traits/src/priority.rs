@@ -5,7 +5,6 @@
 use sp_runtime::DispatchResult;
 
 use crate::primitives::*;
-use sp_std::vec::Vec;
 
 /// Abstraction over a Priority system.
 #[allow(clippy::upper_case_acronyms)]

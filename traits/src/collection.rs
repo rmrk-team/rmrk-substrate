@@ -5,7 +5,7 @@
 use codec::{Decode, Encode};
 use frame_support::pallet_prelude::MaxEncodedLen;
 use scale_info::TypeInfo;
-use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
+use sp_runtime::{DispatchError, DispatchResult};
 
 #[cfg(feature = "std")]
 use serde::Serialize;
@@ -18,13 +18,11 @@ use sp_std::result::Result;
 #[derive(Encode, Decode, Debug, TypeInfo, MaxEncodedLen)]
 #[cfg_attr(
 	feature = "std",
-	serde(
-		bound = r#"
+	serde(bound = r#"
 			AccountId: Serialize,
 			BoundedString: AsRef<[u8]>,
 			BoundedSymbol: AsRef<[u8]>
-		"#
-	)
+		"#)
 )]
 pub struct CollectionInfo<BoundedString, BoundedSymbol, AccountId> {
 	/// Current bidder and bid price.

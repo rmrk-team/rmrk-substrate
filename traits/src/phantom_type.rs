@@ -9,9 +9,8 @@ impl<T: TypeInfo + 'static> TypeInfo for PhantomType<T> {
 
 	fn type_info() -> scale_info::Type {
 		use scale_info::{
-			Type, Path,
 			build::{FieldsBuilder, UnnamedFields},
-			type_params,
+			type_params, Path, Type,
 		};
 		Type::builder()
 			.path(Path::new("phantom_type", "PhantomType"))
