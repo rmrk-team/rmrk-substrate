@@ -4,7 +4,7 @@
 
 use super::*;
 
-use rmrk_traits::{FixedPart, SlotPart, ThemeProperty};
+use rmrk_traits::{FixedPart, SlotPart, ThemeProperty, ComposableResource, SlotResource};
 
 use frame_support::{assert_noop, assert_ok};
 use mock::{Event as MockEvent, *};
@@ -106,7 +106,7 @@ fn change_base_issuer_works() {
 #[should_panic]
 fn exceeding_parts_bound_panics() {
 	// PartsLimit bound is 50 per mock.rs, 60 should panic on unwrap
-	let parts_bounded_vec: BoundedVec<PartId, PartsLimit> = bvec![
+	let _parts_bounded_vec: BoundedVec<PartId, PartsLimit> = bvec![
 		1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9,
 		10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 1, 2, 3, 4, 5, 6, 7, 8,
 		9, 10,
@@ -976,7 +976,7 @@ fn theme_add_too_many_properties_fails() {
 
 		// We only run this to avoid having to define default_theme's type above
 		// Otherwise it will fail to compile
-		RmrkEquip::theme_add(
+		let _add_theme_result = RmrkEquip::theme_add(
 			Origin::signed(ALICE),
 			0, // BaseID
 			default_theme,

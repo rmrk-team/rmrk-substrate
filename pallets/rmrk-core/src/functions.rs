@@ -33,7 +33,12 @@ where
 		nft_id: NftId,
 		priorities: BoundedVec<ResourceId, T::MaxPriorities>,
 	) -> DispatchResult {
-		Priorities::<T>::remove_prefix((collection_id, nft_id), None);
+		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		ensure!(sender == root_owner, Error::<T>::NoPermission);
+		// Check NFT lock status
+		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
+		let _multi_removal_results =
+			Priorities::<T>::clear_prefix((collection_id, nft_id), T::MaxPriorities::get(), None);
 		let mut priority_index = 0;
 		for resource_id in priorities {
 			Priorities::<T>::insert((collection_id, nft_id, resource_id), priority_index);
@@ -524,7 +529,11 @@ where
 
 		Nfts::<T>::remove(collection_id, nft_id);
 
-		Resources::<T>::remove_prefix((collection_id, nft_id), None);
+		let _multi_removal_results = Resources::<T>::clear_prefix(
+			(collection_id, nft_id),
+			T::MaxResourcesOnMint::get(),
+			None,
+		);
 
 		for ((child_collection_id, child_nft_id), _) in
 			Children::<T>::drain_prefix((collection_id, nft_id))
@@ -664,7 +673,7 @@ where
 		ensure!(sender == root_owner, Error::<T>::NoPermission);
 
 		// Get NFT info
-		let mut sending_nft =
+		let _sending_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
 		// Prepare acceptance
@@ -750,7 +759,7 @@ where
 		}
 
 		// Get NFT info
-		let mut rejecting_nft =
+		let _rejecting_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
 		Self::nft_burn(sender.clone(), collection_id, nft_id, max_recursions)?;

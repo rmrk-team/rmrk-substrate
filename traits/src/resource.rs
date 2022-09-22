@@ -7,9 +7,9 @@
 use codec::{Decode, Encode};
 use frame_support::pallet_prelude::MaxEncodedLen;
 use scale_info::TypeInfo;
-use serde::{Deserialize, Serialize};
+use serde::Serialize;
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
-use sp_std::{cmp::Eq, result::Result, vec::Vec};
+use sp_std::{cmp::Eq, result::Result};
 
 use crate::{primitives::*, serialize};
 
