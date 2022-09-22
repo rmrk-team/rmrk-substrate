@@ -128,7 +128,7 @@ pub trait Resource<BoundedString, AccountId, BoundedPart> {
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource: ResourceTypes<BoundedString, BoundedPart>,
-		adding_on_mint: bool,
+		pending: bool,
 		resource_id: ResourceId,
 	) -> Result<ResourceId, DispatchError>;
 	fn accept(
@@ -142,6 +142,7 @@ pub trait Resource<BoundedString, AccountId, BoundedPart> {
 		collection_id: CollectionId,
 		nft_id: NftId,
 		resource_id: ResourceId,
+		pending_resource: bool,
 	) -> DispatchResult;
 	fn accept_removal(
 		sender: AccountId,
