@@ -731,7 +731,7 @@ pub mod pallet {
 				pallet_uniques::Error::<T>::Locked
 			);
 
-			let pending = (root_owner != sender);
+			let pending = root_owner != sender;
 
 			Self::resource_add(
 				sender,

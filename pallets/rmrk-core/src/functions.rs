@@ -10,7 +10,6 @@ use frame_support::{
 	pallet_prelude::*,
 	traits::{tokens::Locker, Get},
 };
-use frame_system::Origin;
 
 use sp_runtime::{
 	traits::{Saturating, TrailingZeroInput},
@@ -33,10 +32,6 @@ where
 		nft_id: NftId,
 		priorities: BoundedVec<ResourceId, T::MaxPriorities>,
 	) -> DispatchResult {
-		let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-		ensure!(sender == root_owner, Error::<T>::NoPermission);
-		// Check NFT lock status
-		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 		let _multi_removal_results =
 			Priorities::<T>::clear_prefix((collection_id, nft_id), T::MaxPriorities::get(), None);
 		let mut priority_index = 0;
