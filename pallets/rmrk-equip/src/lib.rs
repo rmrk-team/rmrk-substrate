@@ -236,7 +236,7 @@ pub mod pallet {
 		/// - `origin`: sender of the transaction
 		/// - `base_id`: base_id to change issuer of
 		/// - `new_issuer`: Base's new issuer
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn change_base_issuer(
 			origin: OriginFor<T>,
 			base_id: BaseId,
@@ -268,7 +268,7 @@ pub mod pallet {
 		/// - equipper: Parent NFT which will equip the item
 		/// - base: ID of the base which the item and equipper must each have a resource referencing
 		/// - slot: ID of the slot which the item and equipper must each have a resource referencing
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn equip(
 			origin: OriginFor<T>,
 			item: (CollectionId, NftId),
@@ -307,7 +307,7 @@ pub mod pallet {
 		/// - unequipper: Parent NFT which will unequip the item
 		/// - base: ID of the base which the item and equipper must each have a resource referencing
 		/// - slot: ID of the slot which the item and equipper must each have a resource referencing
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn unequip(
 			origin: OriginFor<T>,
 			item: (CollectionId, NftId),
@@ -338,7 +338,7 @@ pub mod pallet {
 		/// - base_id: The Base containing the Slot Part to be updated
 		/// - part_id: The Slot Part whose Equippable List is being updated
 		/// - equippables: The list of equippables that will override the current Equippaables list
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn equippable(
 			origin: OriginFor<T>,
 			base_id: BaseId,
@@ -368,7 +368,7 @@ pub mod pallet {
 		///   - key: arbitrary BoundedString, defined by client
 		///   - value: arbitrary BoundedString, defined by client
 		///   - inherit: optional bool
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn theme_add(
 			origin: OriginFor<T>,
 			base_id: BaseId,
@@ -397,7 +397,7 @@ pub mod pallet {
 		/// - symbol: arbitrary client-chosen symbol, e.g. "kanaria_superbird"
 		/// - parts: array of Fixed and Slot parts composing the base, confined in length by
 		///   PartsLimit
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn create_base(
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,

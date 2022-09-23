@@ -203,7 +203,7 @@ pub mod pallet {
 		/// 	- `collection_id` - Collection id of the RMRK NFT
 		/// 	- `nft_id` - NFT id of the RMRK NFT
 		/// 	- `amount` - Optional price at which buyer purchased at
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn buy(
 			origin: OriginFor<T>,
@@ -227,7 +227,7 @@ pub mod pallet {
 		/// 	- `nft_id` - NFT id of the RMRK NFT
 		/// 	- `amount` - Price of the RMRK NFT
 		/// 	- `expires` - Optional BlockNumber for when the listing expires
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn list(
 			origin: OriginFor<T>,
@@ -279,7 +279,7 @@ pub mod pallet {
 		/// - `origin` - Account owner of the listed RMRK NFT
 		/// - `collection_id` - Collection id of the RMRK NFT
 		/// - `nft_id` - NFT id of the RMRK NFT
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn unlist(
 			origin: OriginFor<T>,
@@ -312,7 +312,7 @@ pub mod pallet {
 		/// - `nft_id` - NFT id of the RMRK NFT
 		/// - `amount` - Price of the RMRK NFT
 		/// - `expiration` - Expiration of the offer
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn make_offer(
 			origin: OriginFor<T>,
@@ -364,7 +364,7 @@ pub mod pallet {
 		/// - `origin` - Account that wants to withdraw their offer
 		/// - `collection_id` - Collection id of the RMRK NFT
 		/// - `nft_id` - NFT id of the RMRK NFT
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn withdraw_offer(
 			origin: OriginFor<T>,
@@ -406,7 +406,7 @@ pub mod pallet {
 		// - `collection_id` - Collection id of the RMRK NFT
 		// - `nft_id` - NFT id of the RMRK NFT
 		// - `offerer` - Account that made the offer
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn accept_offer(
 			origin: OriginFor<T>,
