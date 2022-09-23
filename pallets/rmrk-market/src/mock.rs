@@ -46,7 +46,7 @@ construct_runtime!(
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: Weight = 1024;
+	pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 }
 
@@ -164,7 +164,6 @@ pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const UNITS: Balance = 100_000_000_000;
 pub const RMRK: Balance = 1;
 pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::CollectionId = 0;
-pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::CollectionId = 1;
 pub const NFT_ID_0: <Test as pallet_uniques::Config>::ItemId = 0;
 pub const NFT_ID_1: <Test as pallet_uniques::Config>::ItemId = 1;
 pub const NOT_EXISTING_NFT_ID: <Test as pallet_uniques::Config>::ItemId = 999;

@@ -10,17 +10,12 @@ use sp_runtime::Permill;
 use super::*;
 use mock::{Event as MockEvent, *};
 use pallet_uniques as UNQ;
-use sp_std::{convert::TryInto, vec::Vec};
+use sp_std::convert::TryInto;
 
 type RMRKCore = Pallet<Test>;
 
 /// Turns a string into a BoundedVec
 fn stb(s: &str) -> BoundedVec<u8, ValueLimit> {
-	s.as_bytes().to_vec().try_into().unwrap()
-}
-
-/// Turns a string into a BoundedResource
-fn stbr(s: &str) -> BoundedResource<ResourceSymbolLimit> {
 	s.as_bytes().to_vec().try_into().unwrap()
 }
 
@@ -32,11 +27,6 @@ fn stbk(s: &str) -> BoundedVec<u8, KeyLimit> {
 /// Turns a string into a BoundedVec
 fn stbd(s: &str) -> StringLimitOf<Test> {
 	s.as_bytes().to_vec().try_into().unwrap()
-}
-
-/// Turns a string into a Vec
-fn stv(s: &str) -> Vec<u8> {
-	s.as_bytes().to_vec()
 }
 
 macro_rules! bvec {
