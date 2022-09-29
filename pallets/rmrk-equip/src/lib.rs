@@ -15,8 +15,9 @@ use sp_runtime::traits::StaticLookup;
 pub use pallet::*;
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, BasicResource,
-	ComposableResource, EquippableList, PartType, ResourceTypes, SlotResource, Theme, ThemeProperty,
+	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo,
+	EquippableList, PartType, Theme,
+	ThemeProperty,
 };
 
 use sp_std::vec::Vec;
@@ -43,23 +44,15 @@ pub type BaseInfoOf<T> = BaseInfo<<T as frame_system::Config>::AccountId, String
 
 pub type PartTypeOf<T> = PartType<
 	StringLimitOf<T>,
-	BoundedVec<
-		CollectionId,
-		<T as Config>::MaxCollectionsEquippablePerPart
-	>
+	BoundedVec<CollectionId, <T as Config>::MaxCollectionsEquippablePerPart>,
 >;
 
 pub type ThemePropertyOf<T> = ThemeProperty<StringLimitOf<T>>;
 
-pub type BoundedThemePropertiesOf<T> = BoundedVec<
-	ThemePropertyOf<T>,
-	<T as Config>::MaxPropertiesPerTheme,
->;
+pub type BoundedThemePropertiesOf<T> =
+	BoundedVec<ThemePropertyOf<T>, <T as Config>::MaxPropertiesPerTheme>;
 
-pub type BoundedThemeOf<T> = Theme<
-	StringLimitOf<T>,
-	BoundedThemePropertiesOf<T>,
->;
+pub type BoundedThemeOf<T> = Theme<StringLimitOf<T>, BoundedThemePropertiesOf<T>>;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -85,15 +78,8 @@ pub mod pallet {
 	/// Stores Bases info (issuer, base_type, symbol, parts)
 	/// TODO https://github.com/rmrk-team/rmrk-substrate/issues/98
 	/// Delete Parts from Bases info, as it's kept in Parts storage
-	pub type Bases<T: Config> = StorageMap<
-		_,
-		Twox64Concat,
-		BaseId,
-		BaseInfo<
-			T::AccountId,
-			StringLimitOf<T>,
-		>,
-	>;
+	pub type Bases<T: Config> =
+		StorageMap<_, Twox64Concat, BaseId, BaseInfo<T::AccountId, StringLimitOf<T>>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn parts)]
@@ -426,7 +412,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let part_length: u32 = parts.len().try_into().unwrap();
+			let _part_length: u32 = parts.len().try_into().unwrap();
 			let base_id = Self::base_create(sender.clone(), base_type, symbol, parts)?;
 
 			Self::deposit_event(Event::BaseCreated { issuer: sender, base_id });
