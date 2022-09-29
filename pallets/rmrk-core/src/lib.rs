@@ -377,7 +377,7 @@ pub mod pallet {
 		/// - `recipient`: Receiver of the royalty
 		/// - `royalty`: Permillage reward from each trade for the Recipient
 		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn mint_nft(
 			origin: OriginFor<T>,
@@ -430,7 +430,7 @@ pub mod pallet {
 		/// - `recipient`: Receiver of the royalty
 		/// - `royalty`: Permillage reward from each trade for the Recipient
 		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn mint_nft_directly_to_nft(
 			origin: OriginFor<T>,
@@ -471,7 +471,7 @@ pub mod pallet {
 		}
 
 		/// Create a collection
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn create_collection(
 			origin: OriginFor<T>,
@@ -487,7 +487,7 @@ pub mod pallet {
 		}
 
 		/// burn nft
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn burn_nft(
 			origin: OriginFor<T>,
@@ -506,7 +506,7 @@ pub mod pallet {
 		}
 
 		/// destroy collection
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn destroy_collection(
 			origin: OriginFor<T>,
@@ -526,7 +526,7 @@ pub mod pallet {
 		/// - `collection_id`: collection id of the nft to be transferred
 		/// - `nft_id`: nft id of the nft to be transferred
 		/// - `new_owner`: new owner of the nft which can be either an account or a NFT
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn send(
 			origin: OriginFor<T>,
@@ -549,7 +549,7 @@ pub mod pallet {
 		/// - `nft_id`: nft id of the nft to be accepted
 		/// - `new_owner`: either origin's account ID or origin-owned NFT, whichever the NFT was
 		///   sent to
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn accept_nft(
 			origin: OriginFor<T>,
@@ -584,7 +584,7 @@ pub mod pallet {
 		/// - `origin`: sender of the transaction
 		/// - `collection_id`: collection id of the nft to be accepted
 		/// - `nft_id`: nft id of the nft to be accepted
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn reject_nft(
 			origin: OriginFor<T>,
@@ -607,7 +607,7 @@ pub mod pallet {
 		/// - `origin`: sender of the transaction
 		/// - `collection_id`: collection id of the nft to change issuer of
 		/// - `new_issuer`: Collection's new issuer
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn change_collection_issuer(
 			origin: OriginFor<T>,
@@ -639,7 +639,7 @@ pub mod pallet {
 		}
 
 		/// set a custom value on an NFT
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn set_property(
 			origin: OriginFor<T>,
@@ -656,7 +656,7 @@ pub mod pallet {
 			Ok(())
 		}
 		/// lock collection
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn lock_collection(
 			origin: OriginFor<T>,
@@ -673,7 +673,7 @@ pub mod pallet {
 		}
 
 		/// Create basic resource
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn add_basic_resource(
 			origin: OriginFor<T>,
@@ -709,7 +709,7 @@ pub mod pallet {
 		}
 
 		/// Create composable resource
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn add_composable_resource(
 			origin: OriginFor<T>,
@@ -746,7 +746,7 @@ pub mod pallet {
 		}
 
 		/// Create slot resource
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn add_slot_resource(
 			origin: OriginFor<T>,
@@ -782,7 +782,7 @@ pub mod pallet {
 		}
 
 		/// accept the addition of a new resource to an existing NFT
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn accept_resource(
 			origin: OriginFor<T>,
@@ -802,7 +802,7 @@ pub mod pallet {
 		}
 
 		/// remove resource
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn remove_resource(
 			origin: OriginFor<T>,
@@ -825,7 +825,7 @@ pub mod pallet {
 		}
 
 		/// accept the removal of a resource of an existing NFT
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn accept_resource_removal(
 			origin: OriginFor<T>,
@@ -844,7 +844,7 @@ pub mod pallet {
 		}
 
 		/// set a different order of resource priority
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn set_priority(
 			origin: OriginFor<T>,
