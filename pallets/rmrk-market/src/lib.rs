@@ -35,7 +35,7 @@ pub use pallet::*;
 pub mod pallet {
 	use super::*;
 	use crate::types::ListInfo;
-	use frame_support::pallet_prelude::*;
+	use frame_support::{pallet_prelude::*, traits::tokens::nonfungibles::Inspect};
 	use frame_system::pallet_prelude::*;
 	use sp_runtime::Permill;
 
@@ -253,6 +253,12 @@ pub mod pallet {
 
 			// Check NFT is transferable
 			pallet_rmrk_core::Pallet::<T>::check_is_transferable(&nft)?;
+
+			// Check if NFT is frozen
+			ensure!(
+				pallet_uniques::Pallet::<T>::can_transfer(&collection_id, &nft_id),
+				pallet_uniques::Error::<T>::Frozen
+			);
 
 			// Lock NFT to prevent transfers or interactions with the NFT
 			pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), true);
