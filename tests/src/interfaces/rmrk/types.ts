@@ -630,6 +630,7 @@ export interface PalletRmrkCoreEvent extends Enum {
   readonly asNftBurned: {
     readonly owner: AccountId32;
     readonly nftId: u32;
+    readonly collectionId: u32;
   } & Struct;
   readonly isCollectionDestroyed: boolean;
   readonly asCollectionDestroyed: {
@@ -685,21 +686,25 @@ export interface PalletRmrkCoreEvent extends Enum {
   readonly asResourceAdded: {
     readonly nftId: u32;
     readonly resourceId: u32;
+    readonly collectionId: u32;
   } & Struct;
   readonly isResourceAccepted: boolean;
   readonly asResourceAccepted: {
     readonly nftId: u32;
     readonly resourceId: u32;
+    readonly collectionId: u32;
   } & Struct;
   readonly isResourceRemoval: boolean;
   readonly asResourceRemoval: {
     readonly nftId: u32;
     readonly resourceId: u32;
+    readonly collectionId: u32;
   } & Struct;
   readonly isResourceRemovalAccepted: boolean;
   readonly asResourceRemovalAccepted: {
     readonly nftId: u32;
     readonly resourceId: u32;
+    readonly collectionId: u32;
   } & Struct;
   readonly isPrioritySet: boolean;
   readonly asPrioritySet: {

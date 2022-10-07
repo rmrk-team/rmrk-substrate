@@ -7,7 +7,7 @@ use crate as pallet_rmrk_core;
 
 use frame_support::{
 	parameter_types,
-	traits::{AsEnsureOriginWithArg, ConstU32, Everything, Locker},
+	traits::{AsEnsureOriginWithArg, ConstU32, Everything},
 	weights::Weight,
 };
 use frame_system::EnsureRoot;
@@ -98,7 +98,7 @@ impl pallet_uniques::Config for Test {
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: Weight = 1024;
+	pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
@@ -155,9 +155,6 @@ pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::CollectionId = 0;
 // pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::CollectionId = 1;
 pub const NFT_ID_0: <Test as pallet_uniques::Config>::ItemId = 0;
 pub const NOT_EXISTING_CLASS_ID: <Test as pallet_uniques::Config>::CollectionId = 999;
-pub const RESOURCE_ZERO: ResourceId = 0;
-pub const RESOURCE_ONE: ResourceId = 1;
-pub const RESOURCE_TWO: ResourceId = 2;
 pub const MAX_BURNS: u32 = 4;
 
 pub struct ExtBuilder;
