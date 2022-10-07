@@ -10,17 +10,12 @@ use sp_runtime::Permill;
 use super::*;
 use mock::{Event as MockEvent, *};
 use pallet_uniques as UNQ;
-use sp_std::{convert::TryInto, vec::Vec};
+use sp_std::convert::TryInto;
 
 type RMRKCore = Pallet<Test>;
 
 /// Turns a string into a BoundedVec
 fn stb(s: &str) -> BoundedVec<u8, ValueLimit> {
-	s.as_bytes().to_vec().try_into().unwrap()
-}
-
-/// Turns a string into a BoundedResource
-fn stbr(s: &str) -> BoundedResource<ResourceSymbolLimit> {
 	s.as_bytes().to_vec().try_into().unwrap()
 }
 
@@ -32,11 +27,6 @@ fn stbk(s: &str) -> BoundedVec<u8, KeyLimit> {
 /// Turns a string into a BoundedVec
 fn stbd(s: &str) -> StringLimitOf<Test> {
 	s.as_bytes().to_vec().try_into().unwrap()
-}
-
-/// Turns a string into a Vec
-fn stv(s: &str) -> Vec<u8> {
-	s.as_bytes().to_vec()
 }
 
 macro_rules! bvec {
@@ -1006,6 +996,7 @@ fn burn_nft_works() {
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTBurned {
 			owner: ALICE,
 			nft_id: 0,
+			collection_id: 0,
 		}));
 		// NFT count of collection is now 0
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
@@ -1209,6 +1200,7 @@ fn create_resource_works() {
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAdded {
 			nft_id: 0,
 			resource_id: 0, // resource_id
+			collection_id: 0,
 		}));
 		// Since ALICE rootowns NFT, pending status of resource should be false
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
@@ -1369,6 +1361,7 @@ fn add_resource_pending_works() {
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceAccepted {
 			nft_id: 0,
 			resource_id: 0, // resource_id
+			collection_id: 0,
 		}));
 		// Resource should now have false pending status
 		assert_eq!(RMRKCore::resources((0, 0, 0)).unwrap().pending, false);
@@ -1430,6 +1423,7 @@ fn resource_removal_works() {
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceRemoval {
 			nft_id: 0,
 			resource_id: 0, // resource_id
+			collection_id: 0,
 		}));
 		// Since ALICE rootowns NFT, resource should be removed
 		assert_eq!(RMRKCore::resources((0, 0, 0)), None);
@@ -1507,6 +1501,7 @@ fn resource_removal_pending_works() {
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceRemovalAccepted {
 			nft_id: 0,
 			resource_id: 0, // resource_id
+			collection_id: 0,
 		}));
 		// Resource removed
 		assert_eq!(RMRKCore::resources((0, 0, 0)), None);

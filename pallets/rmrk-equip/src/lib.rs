@@ -15,8 +15,9 @@ use sp_runtime::traits::StaticLookup;
 pub use pallet::*;
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, BasicResource,
-	ComposableResource, EquippableList, PartType, ResourceTypes, SlotResource, Theme, ThemeProperty,
+	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo,
+	EquippableList, PartType, Theme,
+	ThemeProperty,
 };
 
 use sp_std::vec::Vec;
@@ -43,23 +44,15 @@ pub type BaseInfoOf<T> = BaseInfo<<T as frame_system::Config>::AccountId, String
 
 pub type PartTypeOf<T> = PartType<
 	StringLimitOf<T>,
-	BoundedVec<
-		CollectionId,
-		<T as Config>::MaxCollectionsEquippablePerPart
-	>
+	BoundedVec<CollectionId, <T as Config>::MaxCollectionsEquippablePerPart>,
 >;
 
 pub type ThemePropertyOf<T> = ThemeProperty<StringLimitOf<T>>;
 
-pub type BoundedThemePropertiesOf<T> = BoundedVec<
-	ThemePropertyOf<T>,
-	<T as Config>::MaxPropertiesPerTheme,
->;
+pub type BoundedThemePropertiesOf<T> =
+	BoundedVec<ThemePropertyOf<T>, <T as Config>::MaxPropertiesPerTheme>;
 
-pub type BoundedThemeOf<T> = Theme<
-	StringLimitOf<T>,
-	BoundedThemePropertiesOf<T>,
->;
+pub type BoundedThemeOf<T> = Theme<StringLimitOf<T>, BoundedThemePropertiesOf<T>>;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -85,15 +78,8 @@ pub mod pallet {
 	/// Stores Bases info (issuer, base_type, symbol, parts)
 	/// TODO https://github.com/rmrk-team/rmrk-substrate/issues/98
 	/// Delete Parts from Bases info, as it's kept in Parts storage
-	pub type Bases<T: Config> = StorageMap<
-		_,
-		Twox64Concat,
-		BaseId,
-		BaseInfo<
-			T::AccountId,
-			StringLimitOf<T>,
-		>,
-	>;
+	pub type Bases<T: Config> =
+		StorageMap<_, Twox64Concat, BaseId, BaseInfo<T::AccountId, StringLimitOf<T>>>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn parts)]
@@ -250,7 +236,7 @@ pub mod pallet {
 		/// - `origin`: sender of the transaction
 		/// - `base_id`: base_id to change issuer of
 		/// - `new_issuer`: Base's new issuer
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn change_base_issuer(
 			origin: OriginFor<T>,
 			base_id: BaseId,
@@ -282,7 +268,7 @@ pub mod pallet {
 		/// - equipper: Parent NFT which will equip the item
 		/// - base: ID of the base which the item and equipper must each have a resource referencing
 		/// - slot: ID of the slot which the item and equipper must each have a resource referencing
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn equip(
 			origin: OriginFor<T>,
 			item: (CollectionId, NftId),
@@ -321,7 +307,7 @@ pub mod pallet {
 		/// - unequipper: Parent NFT which will unequip the item
 		/// - base: ID of the base which the item and equipper must each have a resource referencing
 		/// - slot: ID of the slot which the item and equipper must each have a resource referencing
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn unequip(
 			origin: OriginFor<T>,
 			item: (CollectionId, NftId),
@@ -352,7 +338,7 @@ pub mod pallet {
 		/// - base_id: The Base containing the Slot Part to be updated
 		/// - part_id: The Slot Part whose Equippable List is being updated
 		/// - equippables: The list of equippables that will override the current Equippaables list
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn equippable(
 			origin: OriginFor<T>,
 			base_id: BaseId,
@@ -382,7 +368,7 @@ pub mod pallet {
 		///   - key: arbitrary BoundedString, defined by client
 		///   - value: arbitrary BoundedString, defined by client
 		///   - inherit: optional bool
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn theme_add(
 			origin: OriginFor<T>,
 			base_id: BaseId,
@@ -411,7 +397,7 @@ pub mod pallet {
 		/// - symbol: arbitrary client-chosen symbol, e.g. "kanaria_superbird"
 		/// - parts: array of Fixed and Slot parts composing the base, confined in length by
 		///   PartsLimit
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1))]
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		pub fn create_base(
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,
@@ -426,7 +412,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let part_length: u32 = parts.len().try_into().unwrap();
+			let _part_length: u32 = parts.len().try_into().unwrap();
 			let base_id = Self::base_create(sender.clone(), base_type, symbol, parts)?;
 
 			Self::deposit_event(Event::BaseCreated { issuer: sender, base_id });

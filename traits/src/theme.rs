@@ -4,7 +4,6 @@
 
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_runtime::RuntimeDebug;
 
 #[cfg(feature = "std")]
 use serde::Serialize;
@@ -15,12 +14,10 @@ use crate::serialize;
 #[derive(Encode, Decode, Debug, TypeInfo, Clone, PartialEq)]
 #[cfg_attr(
 	feature = "std",
-	serde(
-		bound = r#"
+	serde(bound = r#"
 			BoundedString: AsRef<[u8]>,
 			BoundedThemeProperties: AsRef<[ThemeProperty<BoundedString>]>,
-		"#
-	)
+		"#)
 )]
 pub struct Theme<BoundedString, BoundedThemeProperties> {
 	/// Name of the theme
@@ -37,10 +34,7 @@ pub struct Theme<BoundedString, BoundedThemeProperties> {
 
 #[cfg_attr(feature = "std", derive(Eq, Serialize))]
 #[derive(Encode, Decode, Debug, TypeInfo, Clone, PartialEq)]
-#[cfg_attr(
-	feature = "std",
-	serde(bound = "BoundedString: AsRef<[u8]>")
-)]
+#[cfg_attr(feature = "std", serde(bound = "BoundedString: AsRef<[u8]>"))]
 pub struct ThemeProperty<BoundedString> {
 	/// Key of the property
 	#[cfg_attr(feature = "std", serde(with = "serialize::vec"))]
