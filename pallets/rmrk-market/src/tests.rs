@@ -5,7 +5,7 @@
 use super::*;
 use crate::mock::*;
 use frame_support::{assert_noop, assert_ok};
-use mock::{Event as MockEvent};
+use mock::Event as MockEvent;
 
 use sp_runtime::Permill;
 use sp_std::convert::TryInto;
@@ -126,6 +126,36 @@ fn list_non_transferable_fail() {
 		assert_noop!(
 			RmrkMarket::list(Origin::signed(ALICE), COLLECTION_ID_0, 0, 10u128, None,),
 			pallet_rmrk_core::Error::<Test>::NonTransferable
+		);
+	});
+}
+
+#[test]
+fn list_frozen_fail() {
+	new_test_ext().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint non-transferable NFT
+		assert_ok!(RmrkCore::mint_nft(
+			Origin::signed(ALICE),
+			Some(ALICE),
+			NFT_ID_0,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			true, // transferable
+			None,
+		));
+		// freeze NFT
+		assert_ok!(pallet_uniques::Pallet::<Test>::freeze(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0
+		));
+		assert_noop!(
+			RmrkMarket::list(Origin::signed(ALICE), COLLECTION_ID_0, 0, 10u128, None,),
+			pallet_uniques::Error::<Test>::Frozen
 		);
 	});
 }
