@@ -188,7 +188,6 @@ where
 			Resources::<T>::contains_key((collection_id, nft_id, resource_id)),
 			Error::<T>::ResourceDoesntExist
 		);
-
 		if pending_resource {
 			Resources::<T>::try_mutate_exists(
 				(collection_id, nft_id, resource_id),
@@ -200,7 +199,17 @@ where
 				},
 			)?;
 		} else {
-			Resources::<T>::remove((collection_id, nft_id, resource_id));
+			match Resources::<T>::get((collection_id, nft_id, &resource_id)) {
+				None => (),
+				Some(res) => {
+					Self::do_remove_resource_from_bases_and_equippable_slots(
+						res,
+						collection_id,
+						nft_id,
+						resource_id,
+					);
+				},
+			}
 		}
 
 		Self::deposit_event(Event::ResourceRemoval { nft_id, resource_id, collection_id });
@@ -218,17 +227,18 @@ where
 			Resources::<T>::contains_key((collection_id, nft_id, &resource_id)),
 			Error::<T>::ResourceDoesntExist
 		);
-
-		Resources::<T>::try_mutate_exists(
-			(collection_id, nft_id, resource_id),
-			|resource| -> DispatchResult {
-				if let Some(res) = resource {
-					ensure!(res.pending_removal, Error::<T>::ResourceNotPending);
-					*resource = None;
-				}
-				Ok(())
+		match Resources::<T>::get((collection_id, nft_id, &resource_id)) {
+			None => (),
+			Some(res) => {
+				ensure!(res.pending_removal, Error::<T>::ResourceNotPending);
+				Self::do_remove_resource_from_bases_and_equippable_slots(
+					res,
+					collection_id,
+					nft_id,
+					resource_id,
+				);
 			},
-		)?;
+		}
 
 		Self::deposit_event(Event::ResourceRemovalAccepted { nft_id, resource_id, collection_id });
 
@@ -968,5 +978,29 @@ where
 	pub fn check_is_not_equipped(nft: &InstanceInfoOf<T>) -> DispatchResult {
 		ensure!(!nft.equipped, Error::<T>::CannotSendEquippedItem);
 		Ok(())
+	}
+
+	pub fn do_remove_resource_from_bases_and_equippable_slots(
+		res: ResourceInfoOf<T>,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		resource_id: ResourceId,
+	) -> () {
+		match res.resource {
+			ResourceTypes::Basic(_r) => {
+				Resources::<T>::remove((collection_id, nft_id, resource_id));
+			},
+			ResourceTypes::Slot(r) => {
+				EquippableSlots::<T>::remove((collection_id, nft_id, resource_id, r.base, r.slot));
+				Resources::<T>::remove((collection_id, nft_id, resource_id));
+			},
+			ResourceTypes::Composable(r) => {
+				EquippableBases::<T>::remove((collection_id, nft_id, r.base));
+				if let Some((base, slot)) = r.slot {
+					EquippableSlots::<T>::remove((collection_id, nft_id, resource_id, base, slot));
+				};
+				Resources::<T>::remove((collection_id, nft_id, resource_id));
+			},
+		}
 	}
 }
