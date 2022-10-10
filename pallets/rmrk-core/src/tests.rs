@@ -1427,6 +1427,43 @@ fn resource_removal_works() {
 		}));
 		// Since ALICE rootowns NFT, resource should be removed
 		assert_eq!(RMRKCore::resources((0, 0, 0)), None);
+
+		let base_id = 11;
+		let slot_id = 22;
+		let resource_id = 10;
+
+		// Create Composable resource
+		let composable_resource = ComposableResource {
+			parts: vec![0, 1].try_into().unwrap(), // BoundedVec of Parts
+			base: base_id,                               // base_id
+			metadata: None,
+			slot: Some((base_id, slot_id)),
+		};
+
+		// Add composable resource to NFT
+		assert_ok!(RMRKCore::add_composable_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			composable_resource,
+			resource_id
+		));
+
+		// Values should now exist in EquippableBases and EquippableSlots
+		assert!(EquippableBases::<Test>::get((COLLECTION_ID_0,NFT_ID_0, base_id)).is_some());
+		assert!(EquippableSlots::<Test>::get((COLLECTION_ID_0,NFT_ID_0, resource_id, base_id, slot_id)).is_some());
+		
+		// Remove resource
+		assert_ok!(RMRKCore::remove_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			resource_id, 
+		));
+
+		assert!(EquippableBases::<Test>::get((COLLECTION_ID_0,NFT_ID_0, base_id)).is_none());
+		assert!(EquippableSlots::<Test>::get((COLLECTION_ID_0,NFT_ID_0, resource_id, base_id, slot_id)).is_none());
+
 	});
 }
 
