@@ -349,6 +349,20 @@ fn mint_directly_to_nft() {
 
 		// Minted NFT (0, 1) is pending
 		assert!(RmrkCore::nfts(0, 1).unwrap().pending);
+
+		// BOB accepts NFT (0, 1)
+		assert_ok!(RMRKCore::accept_nft(
+			Origin::signed(BOB),
+			COLLECTION_ID_0,
+			1,
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0)
+		));
+
+		// Ensure NFT (0, 1) is part of Children for NFT (0, 0)
+		assert_eq!(
+			Children::<Test>::contains_key((COLLECTION_ID_0, NFT_ID_0), (COLLECTION_ID_0, 1)),
+			true
+		);
 	});
 }
 
@@ -1435,7 +1449,7 @@ fn resource_removal_works() {
 		// Create Composable resource
 		let composable_resource = ComposableResource {
 			parts: vec![0, 1].try_into().unwrap(), // BoundedVec of Parts
-			base: base_id,                               // base_id
+			base: base_id,                         // base_id
 			metadata: None,
 			slot: Some((base_id, slot_id)),
 		};
@@ -1450,20 +1464,33 @@ fn resource_removal_works() {
 		));
 
 		// Values should now exist in EquippableBases and EquippableSlots
-		assert!(EquippableBases::<Test>::get((COLLECTION_ID_0,NFT_ID_0, base_id)).is_some());
-		assert!(EquippableSlots::<Test>::get((COLLECTION_ID_0,NFT_ID_0, resource_id, base_id, slot_id)).is_some());
-		
+		assert!(EquippableBases::<Test>::get((COLLECTION_ID_0, NFT_ID_0, base_id)).is_some());
+		assert!(EquippableSlots::<Test>::get((
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			resource_id,
+			base_id,
+			slot_id
+		))
+		.is_some());
+
 		// Remove resource
 		assert_ok!(RMRKCore::remove_resource(
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			resource_id, 
+			resource_id,
 		));
 
-		assert!(EquippableBases::<Test>::get((COLLECTION_ID_0,NFT_ID_0, base_id)).is_none());
-		assert!(EquippableSlots::<Test>::get((COLLECTION_ID_0,NFT_ID_0, resource_id, base_id, slot_id)).is_none());
-
+		assert!(EquippableBases::<Test>::get((COLLECTION_ID_0, NFT_ID_0, base_id)).is_none());
+		assert!(EquippableSlots::<Test>::get((
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			resource_id,
+			base_id,
+			slot_id
+		))
+		.is_none());
 	});
 }
 
