@@ -717,6 +717,13 @@ where
 			Ok(())
 		})?;
 
+		pallet_uniques::Pallet::<T>::do_transfer(
+			collection_id,
+			nft_id,
+			new_owner_account.clone(),
+			|_class_details, _details| Ok(()),
+		)?;
+
 		Self::deposit_event(Event::NFTAccepted {
 			sender,
 			recipient: new_owner,
