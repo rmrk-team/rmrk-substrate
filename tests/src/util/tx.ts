@@ -551,7 +551,7 @@ export async function acceptNft(
 
   let nftBeforeOpt = await getNft(api, collectionId, nftId);
 
-  const tx = api.tx.rmrkCore.acceptNft(collectionId, nftId);
+  const tx = api.tx.rmrkCore.acceptNft(collectionId, nftId, newOwnerObj);
   const events = await executeTransaction(api, issuer, tx);
 
   const acceptResult = extractRmrkCoreTxResult(
