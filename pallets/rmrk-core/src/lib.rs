@@ -555,26 +555,13 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
+			_new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let (new_owner_account, collection_id, nft_id) =
-				Self::nft_accept(sender.clone(), collection_id, nft_id, new_owner.clone())?;
+			let (_owner_account, _collection_id, _nft_id) =
+				Self::nft_accept(sender.clone(), collection_id, nft_id, _new_owner)?;
 
-			pallet_uniques::Pallet::<T>::do_transfer(
-				collection_id,
-				nft_id,
-				new_owner_account,
-				|_class_details, _details| Ok(()),
-			)?;
-
-			Self::deposit_event(Event::NFTAccepted {
-				sender,
-				recipient: new_owner.clone(),
-				collection_id,
-				nft_id,
-			});
 			Ok(())
 		}
 
