@@ -145,8 +145,8 @@ fn lock_collection_works() {
 		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS));
 		// Should now have only three NFTS in collection
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 3);
-		// Still we should be unable to mint another NFT
-		assert_ok!(basic_mint(5));
+		// After burning, we should still be unable to mint another NFT
+		assert_noop!(basic_mint(5), Error::<Test>::CollectionFullOrLocked);
 	});
 }
 
