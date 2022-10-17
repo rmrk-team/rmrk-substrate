@@ -329,7 +329,7 @@ where
 	) -> Result<CollectionId, DispatchError> {
 		Collections::<T>::try_mutate_exists(collection_id, |collection| -> DispatchResult {
 			let collection = collection.as_mut().ok_or(Error::<T>::CollectionUnknown)?;
-			collection.max = Some(collection.nfts_count);
+			collection.max = Some(0);
 			Ok(())
 		})?;
 

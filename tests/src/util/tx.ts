@@ -900,7 +900,7 @@ export async function lockCollection(
 
   await getCollection(api, collectionId).then((collectionOption) => {
     const collection = collectionOption.unwrap();
-    expect(collection.max.unwrap().toNumber()).to.be.equal(max);
+    expect(collection.max.unwrap().toNumber()).to.be.equal(0);
   });
 }
 
