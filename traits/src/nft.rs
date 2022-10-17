@@ -113,7 +113,7 @@ pub trait Nft<AccountId, BoundedString, BoundedResourceVec> {
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		_new_owner: AccountIdOrCollectionNftTuple<AccountId>,
+		new_owner: AccountIdOrCollectionNftTuple<AccountId>,
 	) -> Result<(AccountId, CollectionId, NftId), DispatchError>;
 	fn nft_reject(
 		sender: AccountId,

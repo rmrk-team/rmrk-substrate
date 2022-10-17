@@ -670,24 +670,15 @@ where
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		_new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
+		new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 	) -> Result<(T::AccountId, CollectionId, NftId), DispatchError> {
-		let owner = match pallet_uniques::Pallet::<T>::owner(collection_id, nft_id) {
-			Some(new_owner) => new_owner,
-			None => return Err(Error::<T>::NoAvailableNftId.into()),
-		};
-		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
-
-		// Check ownership
-		ensure!(sender == root_owner, Error::<T>::NoPermission);
-
 		// Check NFT exists
 		ensure!(Pallet::<T>::nft_exists((collection_id, nft_id)), Error::<T>::NoAvailableNftId);
 
-		let owner_account = match Pallet::<T>::decode_nft_account_id::<T::AccountId>(owner.clone())
-		{
-			Some((cid, nid)) => AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid),
-			None => AccountIdOrCollectionNftTuple::AccountId(owner.clone()),
+		let owner_account = match new_owner.clone() {
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =>
+				Pallet::<T>::nft_to_account_id(cid, nid),
+			AccountIdOrCollectionNftTuple::AccountId(owner_account) => owner_account,
 		};
 
 		Nfts::<T>::try_mutate(collection_id, nft_id, |nft| -> DispatchResult {
@@ -699,12 +690,12 @@ where
 
 		Self::deposit_event(Event::NFTAccepted {
 			sender,
-			recipient: owner_account,
+			recipient: new_owner,
 			collection_id,
 			nft_id,
 		});
 
-		Ok((owner, collection_id, nft_id))
+		Ok((owner_account, collection_id, nft_id))
 	}
 
 	fn nft_reject(

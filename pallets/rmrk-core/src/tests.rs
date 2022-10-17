@@ -526,6 +526,16 @@ fn send_nft_to_minted_nft_works() {
 			nft_id: 1,
 			approval_required: true,
 		}));
+		// Bob fails to accept NFT (0,1) for Bob
+		assert_noop!(
+			RMRKCore::accept_nft(
+				Origin::signed(BOB),
+				0,
+				1,
+				AccountIdOrCollectionNftTuple::AccountId(BOB),
+			),
+			Error::<Test>::CannotAcceptToNewOwner
+		);
 		// Bob accepts NFT (0,1) for Bob-owned NFT (0,0)
 		assert_ok!(RMRKCore::accept_nft(
 			Origin::signed(BOB),
@@ -555,6 +565,8 @@ fn send_nft_to_minted_nft_works() {
 			nft_id: 2,
 			approval_required: true,
 		}));
+		// Owner should be the same derived AccountId for NFT (0,2) and nft_to_account_id(0,1)
+		assert_eq!(UNQ::Pallet::<Test>::owner(0, 2), Some(RMRKCore::nft_to_account_id(0, 1)),);
 		// Bob accepts NFT (0,2) for Bob-owned NFT (0,1)
 		assert_ok!(RMRKCore::accept_nft(
 			Origin::signed(BOB),
@@ -1435,7 +1447,7 @@ fn resource_removal_works() {
 		// Create Composable resource
 		let composable_resource = ComposableResource {
 			parts: vec![0, 1].try_into().unwrap(), // BoundedVec of Parts
-			base: base_id,                               // base_id
+			base: base_id,                         // base_id
 			metadata: None,
 			slot: Some((base_id, slot_id)),
 		};
@@ -1450,20 +1462,33 @@ fn resource_removal_works() {
 		));
 
 		// Values should now exist in EquippableBases and EquippableSlots
-		assert!(EquippableBases::<Test>::get((COLLECTION_ID_0,NFT_ID_0, base_id)).is_some());
-		assert!(EquippableSlots::<Test>::get((COLLECTION_ID_0,NFT_ID_0, resource_id, base_id, slot_id)).is_some());
-		
+		assert!(EquippableBases::<Test>::get((COLLECTION_ID_0, NFT_ID_0, base_id)).is_some());
+		assert!(EquippableSlots::<Test>::get((
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			resource_id,
+			base_id,
+			slot_id
+		))
+		.is_some());
+
 		// Remove resource
 		assert_ok!(RMRKCore::remove_resource(
 			Origin::signed(ALICE),
 			COLLECTION_ID_0,
 			NFT_ID_0,
-			resource_id, 
+			resource_id,
 		));
 
-		assert!(EquippableBases::<Test>::get((COLLECTION_ID_0,NFT_ID_0, base_id)).is_none());
-		assert!(EquippableSlots::<Test>::get((COLLECTION_ID_0,NFT_ID_0, resource_id, base_id, slot_id)).is_none());
-
+		assert!(EquippableBases::<Test>::get((COLLECTION_ID_0, NFT_ID_0, base_id)).is_none());
+		assert!(EquippableSlots::<Test>::get((
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			resource_id,
+			base_id,
+			slot_id
+		))
+		.is_none());
 	});
 }
 
