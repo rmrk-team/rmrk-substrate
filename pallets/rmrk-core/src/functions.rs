@@ -475,6 +475,9 @@ where
 			transferable,
 		};
 
+		// For Uniques, we need to decode the "virtual account" ID to be the owner
+		let uniques_owner = Self::nft_to_account_id(owner.0, owner.1);
+
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 
 		// increment nfts counter
@@ -485,8 +488,7 @@ where
 			Ok(())
 		})?;
 
-		// For Uniques, we need to decode the "virtual account" ID to be the owner
-		let uniques_owner = Self::nft_to_account_id(owner.0, owner.1);
+		Pallet::<T>::add_child((owner.0, owner.1), (collection_id, nft_id));
 
 		pallet_uniques::Pallet::<T>::do_mint(collection_id, nft_id, uniques_owner, |_details| {
 			Ok(())
