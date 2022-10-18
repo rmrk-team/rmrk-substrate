@@ -15,8 +15,7 @@ use sp_runtime::traits::StaticLookup;
 pub use pallet::*;
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo,
-	EquippableList, PartType, Theme,
+	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, EquippableList, PartType, Theme,
 	ThemeProperty,
 };
 
@@ -62,7 +61,7 @@ pub mod pallet {
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_rmrk_core::Config {
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// Maximum allowed Parts (either Fixed or Slot) per Base
 		#[pallet::constant]

@@ -34,6 +34,49 @@ export interface FinalityGrandpaPrevote extends Struct {
   readonly targetNumber: u32;
 }
 
+/** @name FrameSupportDispatchDispatchClass */
+export interface FrameSupportDispatchDispatchClass extends Enum {
+  readonly isNormal: boolean;
+  readonly isOperational: boolean;
+  readonly isMandatory: boolean;
+  readonly type: 'Normal' | 'Operational' | 'Mandatory';
+}
+
+/** @name FrameSupportDispatchDispatchInfo */
+export interface FrameSupportDispatchDispatchInfo extends Struct {
+  readonly weight: SpWeightsWeightV2Weight;
+  readonly class: FrameSupportDispatchDispatchClass;
+  readonly paysFee: FrameSupportDispatchPays;
+}
+
+/** @name FrameSupportDispatchPays */
+export interface FrameSupportDispatchPays extends Enum {
+  readonly isYes: boolean;
+  readonly isNo: boolean;
+  readonly type: 'Yes' | 'No';
+}
+
+/** @name FrameSupportDispatchPerDispatchClassU32 */
+export interface FrameSupportDispatchPerDispatchClassU32 extends Struct {
+  readonly normal: u32;
+  readonly operational: u32;
+  readonly mandatory: u32;
+}
+
+/** @name FrameSupportDispatchPerDispatchClassWeight */
+export interface FrameSupportDispatchPerDispatchClassWeight extends Struct {
+  readonly normal: SpWeightsWeightV2Weight;
+  readonly operational: SpWeightsWeightV2Weight;
+  readonly mandatory: SpWeightsWeightV2Weight;
+}
+
+/** @name FrameSupportDispatchPerDispatchClassWeightsPerClass */
+export interface FrameSupportDispatchPerDispatchClassWeightsPerClass extends Struct {
+  readonly normal: FrameSystemLimitsWeightsPerClass;
+  readonly operational: FrameSystemLimitsWeightsPerClass;
+  readonly mandatory: FrameSystemLimitsWeightsPerClass;
+}
+
 /** @name FrameSupportDispatchRawOrigin */
 export interface FrameSupportDispatchRawOrigin extends Enum {
   readonly isRoot: boolean;
@@ -48,55 +91,6 @@ export interface FrameSupportTokensMiscBalanceStatus extends Enum {
   readonly isFree: boolean;
   readonly isReserved: boolean;
   readonly type: 'Free' | 'Reserved';
-}
-
-/** @name FrameSupportWeightsDispatchClass */
-export interface FrameSupportWeightsDispatchClass extends Enum {
-  readonly isNormal: boolean;
-  readonly isOperational: boolean;
-  readonly isMandatory: boolean;
-  readonly type: 'Normal' | 'Operational' | 'Mandatory';
-}
-
-/** @name FrameSupportWeightsDispatchInfo */
-export interface FrameSupportWeightsDispatchInfo extends Struct {
-  readonly weight: u64;
-  readonly class: FrameSupportWeightsDispatchClass;
-  readonly paysFee: FrameSupportWeightsPays;
-}
-
-/** @name FrameSupportWeightsPays */
-export interface FrameSupportWeightsPays extends Enum {
-  readonly isYes: boolean;
-  readonly isNo: boolean;
-  readonly type: 'Yes' | 'No';
-}
-
-/** @name FrameSupportWeightsPerDispatchClassU32 */
-export interface FrameSupportWeightsPerDispatchClassU32 extends Struct {
-  readonly normal: u32;
-  readonly operational: u32;
-  readonly mandatory: u32;
-}
-
-/** @name FrameSupportWeightsPerDispatchClassU64 */
-export interface FrameSupportWeightsPerDispatchClassU64 extends Struct {
-  readonly normal: u64;
-  readonly operational: u64;
-  readonly mandatory: u64;
-}
-
-/** @name FrameSupportWeightsPerDispatchClassWeightsPerClass */
-export interface FrameSupportWeightsPerDispatchClassWeightsPerClass extends Struct {
-  readonly normal: FrameSystemLimitsWeightsPerClass;
-  readonly operational: FrameSystemLimitsWeightsPerClass;
-  readonly mandatory: FrameSystemLimitsWeightsPerClass;
-}
-
-/** @name FrameSupportWeightsRuntimeDbWeight */
-export interface FrameSupportWeightsRuntimeDbWeight extends Struct {
-  readonly read: u64;
-  readonly write: u64;
 }
 
 /** @name FrameSystemAccountInfo */
@@ -165,12 +159,12 @@ export interface FrameSystemError extends Enum {
 export interface FrameSystemEvent extends Enum {
   readonly isExtrinsicSuccess: boolean;
   readonly asExtrinsicSuccess: {
-    readonly dispatchInfo: FrameSupportWeightsDispatchInfo;
+    readonly dispatchInfo: FrameSupportDispatchDispatchInfo;
   } & Struct;
   readonly isExtrinsicFailed: boolean;
   readonly asExtrinsicFailed: {
     readonly dispatchError: SpRuntimeDispatchError;
-    readonly dispatchInfo: FrameSupportWeightsDispatchInfo;
+    readonly dispatchInfo: FrameSupportDispatchDispatchInfo;
   } & Struct;
   readonly isCodeUpdated: boolean;
   readonly isNewAccount: boolean;
@@ -219,22 +213,22 @@ export interface FrameSystemLastRuntimeUpgradeInfo extends Struct {
 
 /** @name FrameSystemLimitsBlockLength */
 export interface FrameSystemLimitsBlockLength extends Struct {
-  readonly max: FrameSupportWeightsPerDispatchClassU32;
+  readonly max: FrameSupportDispatchPerDispatchClassU32;
 }
 
 /** @name FrameSystemLimitsBlockWeights */
 export interface FrameSystemLimitsBlockWeights extends Struct {
-  readonly baseBlock: u64;
-  readonly maxBlock: u64;
-  readonly perClass: FrameSupportWeightsPerDispatchClassWeightsPerClass;
+  readonly baseBlock: SpWeightsWeightV2Weight;
+  readonly maxBlock: SpWeightsWeightV2Weight;
+  readonly perClass: FrameSupportDispatchPerDispatchClassWeightsPerClass;
 }
 
 /** @name FrameSystemLimitsWeightsPerClass */
 export interface FrameSystemLimitsWeightsPerClass extends Struct {
-  readonly baseExtrinsic: u64;
-  readonly maxExtrinsic: Option<u64>;
-  readonly maxTotal: Option<u64>;
-  readonly reserved: Option<u64>;
+  readonly baseExtrinsic: SpWeightsWeightV2Weight;
+  readonly maxExtrinsic: Option<SpWeightsWeightV2Weight>;
+  readonly maxTotal: Option<SpWeightsWeightV2Weight>;
+  readonly reserved: Option<SpWeightsWeightV2Weight>;
 }
 
 /** @name FrameSystemPhase */
@@ -610,7 +604,8 @@ export interface PalletRmrkCoreError extends Enum {
   readonly isResourceNotPending: boolean;
   readonly isNonTransferable: boolean;
   readonly isCannotSendEquippedItem: boolean;
-  readonly type: 'NoneValue' | 'StorageOverflow' | 'TooLong' | 'NoAvailableCollectionId' | 'NoAvailableResourceId' | 'MetadataNotSet' | 'RecipientNotSet' | 'NoAvailableNftId' | 'NotInRange' | 'RoyaltyNotSet' | 'CollectionUnknown' | 'NoPermission' | 'NoWitness' | 'CollectionNotEmpty' | 'CollectionFullOrLocked' | 'CannotSendToDescendentOrSelf' | 'ResourceAlreadyExists' | 'NftAlreadyExists' | 'EmptyResource' | 'TooManyRecursions' | 'NftIsLocked' | 'CannotAcceptNonOwnedNft' | 'CannotRejectNonOwnedNft' | 'CannotRejectNonPendingNft' | 'ResourceDoesntExist' | 'ResourceNotPending' | 'NonTransferable' | 'CannotSendEquippedItem';
+  readonly isCannotAcceptToNewOwner: boolean;
+  readonly type: 'NoneValue' | 'StorageOverflow' | 'TooLong' | 'NoAvailableCollectionId' | 'NoAvailableResourceId' | 'MetadataNotSet' | 'RecipientNotSet' | 'NoAvailableNftId' | 'NotInRange' | 'RoyaltyNotSet' | 'CollectionUnknown' | 'NoPermission' | 'NoWitness' | 'CollectionNotEmpty' | 'CollectionFullOrLocked' | 'CannotSendToDescendentOrSelf' | 'ResourceAlreadyExists' | 'NftAlreadyExists' | 'EmptyResource' | 'TooManyRecursions' | 'NftIsLocked' | 'CannotAcceptNonOwnedNft' | 'CannotRejectNonOwnedNft' | 'CannotRejectNonPendingNft' | 'ResourceDoesntExist' | 'ResourceNotPending' | 'NonTransferable' | 'CannotSendEquippedItem' | 'CannotAcceptToNewOwner';
 }
 
 /** @name PalletRmrkCoreEvent */
@@ -955,7 +950,7 @@ export interface PalletSudoCall extends Enum {
   readonly isSudoUncheckedWeight: boolean;
   readonly asSudoUncheckedWeight: {
     readonly call: Call;
-    readonly weight: u64;
+    readonly weight: SpWeightsWeightV2Weight;
   } & Struct;
   readonly isSetKey: boolean;
   readonly asSetKey: {
@@ -1183,7 +1178,20 @@ export interface PalletUniquesCall extends Enum {
     readonly collection: u32;
     readonly maxSupply: u32;
   } & Struct;
-  readonly type: 'Create' | 'ForceCreate' | 'Destroy' | 'Mint' | 'Burn' | 'Transfer' | 'Redeposit' | 'Freeze' | 'Thaw' | 'FreezeCollection' | 'ThawCollection' | 'TransferOwnership' | 'SetTeam' | 'ApproveTransfer' | 'CancelApproval' | 'ForceItemStatus' | 'SetAttribute' | 'ClearAttribute' | 'SetMetadata' | 'ClearMetadata' | 'SetCollectionMetadata' | 'ClearCollectionMetadata' | 'SetAcceptOwnership' | 'SetCollectionMaxSupply';
+  readonly isSetPrice: boolean;
+  readonly asSetPrice: {
+    readonly collection: u32;
+    readonly item: u32;
+    readonly price: Option<u128>;
+    readonly whitelistedBuyer: Option<MultiAddress>;
+  } & Struct;
+  readonly isBuyItem: boolean;
+  readonly asBuyItem: {
+    readonly collection: u32;
+    readonly item: u32;
+    readonly bidPrice: u128;
+  } & Struct;
+  readonly type: 'Create' | 'ForceCreate' | 'Destroy' | 'Mint' | 'Burn' | 'Transfer' | 'Redeposit' | 'Freeze' | 'Thaw' | 'FreezeCollection' | 'ThawCollection' | 'TransferOwnership' | 'SetTeam' | 'ApproveTransfer' | 'CancelApproval' | 'ForceItemStatus' | 'SetAttribute' | 'ClearAttribute' | 'SetMetadata' | 'ClearMetadata' | 'SetCollectionMetadata' | 'ClearCollectionMetadata' | 'SetAcceptOwnership' | 'SetCollectionMaxSupply' | 'SetPrice' | 'BuyItem';
 }
 
 /** @name PalletUniquesCollectionDetails */
@@ -1231,7 +1239,10 @@ export interface PalletUniquesError extends Enum {
   readonly isMaxSupplyReached: boolean;
   readonly isMaxSupplyAlreadySet: boolean;
   readonly isMaxSupplyTooSmall: boolean;
-  readonly type: 'NoPermission' | 'UnknownCollection' | 'AlreadyExists' | 'WrongOwner' | 'BadWitness' | 'InUse' | 'Frozen' | 'WrongDelegate' | 'NoDelegate' | 'Unapproved' | 'Unaccepted' | 'Locked' | 'MaxSupplyReached' | 'MaxSupplyAlreadySet' | 'MaxSupplyTooSmall';
+  readonly isUnknownItem: boolean;
+  readonly isNotForSale: boolean;
+  readonly isBidTooLow: boolean;
+  readonly type: 'NoPermission' | 'UnknownCollection' | 'AlreadyExists' | 'WrongOwner' | 'BadWitness' | 'InUse' | 'Frozen' | 'WrongDelegate' | 'NoDelegate' | 'Unapproved' | 'Unaccepted' | 'Locked' | 'MaxSupplyReached' | 'MaxSupplyAlreadySet' | 'MaxSupplyTooSmall' | 'UnknownItem' | 'NotForSale' | 'BidTooLow';
 }
 
 /** @name PalletUniquesEvent */
@@ -1368,7 +1379,27 @@ export interface PalletUniquesEvent extends Enum {
     readonly collection: u32;
     readonly maxSupply: u32;
   } & Struct;
-  readonly type: 'Created' | 'ForceCreated' | 'Destroyed' | 'Issued' | 'Transferred' | 'Burned' | 'Frozen' | 'Thawed' | 'CollectionFrozen' | 'CollectionThawed' | 'OwnerChanged' | 'TeamChanged' | 'ApprovedTransfer' | 'ApprovalCancelled' | 'ItemStatusChanged' | 'CollectionMetadataSet' | 'CollectionMetadataCleared' | 'MetadataSet' | 'MetadataCleared' | 'Redeposited' | 'AttributeSet' | 'AttributeCleared' | 'OwnershipAcceptanceChanged' | 'CollectionMaxSupplySet';
+  readonly isItemPriceSet: boolean;
+  readonly asItemPriceSet: {
+    readonly collection: u32;
+    readonly item: u32;
+    readonly price: u128;
+    readonly whitelistedBuyer: Option<AccountId32>;
+  } & Struct;
+  readonly isItemPriceRemoved: boolean;
+  readonly asItemPriceRemoved: {
+    readonly collection: u32;
+    readonly item: u32;
+  } & Struct;
+  readonly isItemBought: boolean;
+  readonly asItemBought: {
+    readonly collection: u32;
+    readonly item: u32;
+    readonly price: u128;
+    readonly seller: AccountId32;
+    readonly buyer: AccountId32;
+  } & Struct;
+  readonly type: 'Created' | 'ForceCreated' | 'Destroyed' | 'Issued' | 'Transferred' | 'Burned' | 'Frozen' | 'Thawed' | 'CollectionFrozen' | 'CollectionThawed' | 'OwnerChanged' | 'TeamChanged' | 'ApprovedTransfer' | 'ApprovalCancelled' | 'ItemStatusChanged' | 'CollectionMetadataSet' | 'CollectionMetadataCleared' | 'MetadataSet' | 'MetadataCleared' | 'Redeposited' | 'AttributeSet' | 'AttributeCleared' | 'OwnershipAcceptanceChanged' | 'CollectionMaxSupplySet' | 'ItemPriceSet' | 'ItemPriceRemoved' | 'ItemBought';
 }
 
 /** @name PalletUniquesItemDetails */
@@ -1441,7 +1472,7 @@ export interface PalletUtilityEvent extends Enum {
 }
 
 /** @name PhantomTypePhantomType */
-export interface PhantomTypePhantomType extends Vec<Lookup177> {}
+export interface PhantomTypePhantomType extends Vec<Lookup178> {}
 
 /** @name RmrkSubstrateRuntimeOriginCaller */
 export interface RmrkSubstrateRuntimeOriginCaller extends Enum {
@@ -1733,6 +1764,17 @@ export interface SpVersionRuntimeVersion extends Struct {
   readonly apis: Vec<ITuple<[U8aFixed, u32]>>;
   readonly transactionVersion: u32;
   readonly stateVersion: u8;
+}
+
+/** @name SpWeightsRuntimeDbWeight */
+export interface SpWeightsRuntimeDbWeight extends Struct {
+  readonly read: u64;
+  readonly write: u64;
+}
+
+/** @name SpWeightsWeightV2Weight */
+export interface SpWeightsWeightV2Weight extends Struct {
+  readonly refTime: u64;
 }
 
 export type PHANTOM_RMRK = 'rmrk';

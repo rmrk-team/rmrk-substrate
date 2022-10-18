@@ -10,7 +10,9 @@ use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
 	create_runtime_str, generic, impl_opaque_keys,
-	traits::{AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, Verify},
+	traits::{
+		AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, One, Verify,
+	},
 	transaction_validity::{TransactionSource, TransactionValidity},
 	ApplyExtrinsicResult, DispatchError, MultiSignature,
 };
@@ -38,7 +40,7 @@ use frame_system::EnsureSigned;
 pub use frame_system::Call as SystemCall;
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_timestamp::Call as TimestampCall;
-use pallet_transaction_payment::CurrencyAdapter;
+use pallet_transaction_payment::{ConstFeeMultiplier, CurrencyAdapter, Multiplier};
 #[cfg(any(feature = "std", test))]
 pub use sp_runtime::BuildStorage;
 pub use sp_runtime::{Perbill, Permill};
@@ -174,27 +176,27 @@ parameter_types! {
 }
 
 pub struct BaseFilter;
-impl Contains<Call> for BaseFilter {
-	fn contains(call: &Call) -> bool {
+impl Contains<RuntimeCall> for BaseFilter {
+	fn contains(call: &RuntimeCall) -> bool {
 		// Disable direct calls to pallet_uniques
 		!matches!(
 			call,
-			Call::Uniques(pallet_uniques::Call::approve_transfer { .. }) |
-				Call::Uniques(pallet_uniques::Call::burn { .. }) |
-				Call::Uniques(pallet_uniques::Call::cancel_approval { .. }) |
-				Call::Uniques(pallet_uniques::Call::clear_collection_metadata { .. }) |
-				Call::Uniques(pallet_uniques::Call::clear_metadata { .. }) |
-				Call::Uniques(pallet_uniques::Call::create { .. }) |
-				Call::Uniques(pallet_uniques::Call::destroy { .. }) |
-				Call::Uniques(pallet_uniques::Call::force_item_status { .. }) |
-				Call::Uniques(pallet_uniques::Call::force_create { .. }) |
-				Call::Uniques(pallet_uniques::Call::freeze_collection { .. }) |
-				Call::Uniques(pallet_uniques::Call::mint { .. }) |
-				Call::Uniques(pallet_uniques::Call::redeposit { .. }) |
-				Call::Uniques(pallet_uniques::Call::set_collection_metadata { .. }) |
-				Call::Uniques(pallet_uniques::Call::thaw_collection { .. }) |
-				Call::Uniques(pallet_uniques::Call::transfer { .. }) |
-				Call::Uniques(pallet_uniques::Call::transfer_ownership { .. })
+			RuntimeCall::Uniques(pallet_uniques::Call::approve_transfer { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::burn { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::cancel_approval { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::clear_collection_metadata { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::clear_metadata { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::create { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::destroy { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::force_item_status { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::force_create { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::freeze_collection { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::mint { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::redeposit { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::set_collection_metadata { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::thaw_collection { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::transfer { .. }) |
+				RuntimeCall::Uniques(pallet_uniques::Call::transfer_ownership { .. })
 		)
 	}
 }
@@ -209,9 +211,9 @@ impl frame_system::Config for Runtime {
 	/// The maximum length of a block (in bytes).
 	type BlockLength = BlockLength;
 	/// The ubiquitous origin type.
-	type Origin = Origin;
+	type RuntimeOrigin = RuntimeOrigin;
 	/// The aggregated dispatch type that is available for extrinsics.
-	type Call = Call;
+	type RuntimeCall = RuntimeCall;
 	/// The index type for storing how many extrinsics an account has signed.
 	type Index = Index;
 	/// The index type for blocks.
@@ -227,7 +229,7 @@ impl frame_system::Config for Runtime {
 	/// The header type.
 	type Header = generic::Header<BlockNumber, BlakeTwo256>;
 	/// The ubiquitous event type.
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	/// Maximum number of block number to block hash mappings to keep (oldest pruned first).
 	type BlockHashCount = BlockHashCount;
 	/// The weight of database operations that the runtime can invoke.
@@ -266,8 +268,7 @@ impl pallet_aura::Config for Runtime {
 }
 
 impl pallet_grandpa::Config for Runtime {
-	type Event = Event;
-	type Call = Call;
+	type RuntimeEvent = RuntimeEvent;
 
 	type KeyOwnerProofSystem = ();
 
@@ -311,7 +312,7 @@ impl pallet_balances::Config for Runtime {
 	/// The type for recording an account's balance.
 	type Balance = Balance;
 	/// The ubiquitous event type.
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type DustRemoval = ();
 	type ExistentialDeposit = frame_support::traits::ConstU128<EXISTENTIAL_DEPOSIT>;
 	type AccountStore = System;
@@ -321,25 +322,26 @@ impl pallet_balances::Config for Runtime {
 parameter_types! {
 	pub const TransactionByteFee: Balance = 1;
 	pub OperationalFeeMultiplier: u8 = 5;
+	pub FeeMultiplier: Multiplier = Multiplier::one();
 }
 
 impl pallet_transaction_payment::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
 	type OperationalFeeMultiplier = OperationalFeeMultiplier;
 	type WeightToFee = IdentityFee<Balance>;
 	type LengthToFee = IdentityFee<Balance>;
-	type FeeMultiplierUpdate = ();
+	type FeeMultiplierUpdate = ConstFeeMultiplier<FeeMultiplier>;
 }
 
 impl pallet_sudo::Config for Runtime {
-	type Event = Event;
-	type Call = Call;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
 }
 
 /// Configure the pallet-template in pallets/template.
 impl pallet_template::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 }
 
 parameter_types! {
@@ -352,7 +354,7 @@ parameter_types! {
 }
 
 impl pallet_rmrk_core::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
 	type MaxRecursions = MaxRecursions;
 	type ResourceSymbolLimit = ResourceSymbolLimit;
@@ -367,7 +369,7 @@ parameter_types! {
 }
 
 impl pallet_rmrk_market::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
 	type Currency = Balances;
 	type MinimumOfferAmount = MinimumOfferAmount;
@@ -387,13 +389,13 @@ parameter_types! {
 }
 
 impl pallet_rmrk_equip::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
 	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
 }
 
 impl pallet_uniques::Config for Runtime {
-	type Event = Event;
+	type RuntimeEvent = RuntimeEvent;
 	type CollectionId = u32;
 	type ItemId = u32;
 	type Currency = Balances;
@@ -412,8 +414,8 @@ impl pallet_uniques::Config for Runtime {
 }
 
 impl pallet_utility::Config for Runtime {
-	type Event = Event;
-	type Call = Call;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
 	type PalletsOrigin = OriginCaller;
 	type WeightInfo = ();
 }
@@ -460,9 +462,10 @@ pub type SignedExtra = (
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
-pub type UncheckedExtrinsic = generic::UncheckedExtrinsic<Address, Call, Signature, SignedExtra>;
+pub type UncheckedExtrinsic =
+	generic::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
 /// The payload being signed in transactions.
-pub type SignedPayload = generic::SignedPayload<Call, SignedExtra>;
+pub type SignedPayload = generic::SignedPayload<RuntimeCall, SignedExtra>;
 /// Executive: handles dispatch to the various modules.
 pub type Executive = frame_executive::Executive<
 	Runtime,
