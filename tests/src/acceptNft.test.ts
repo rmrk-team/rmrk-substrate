@@ -169,6 +169,63 @@ describe("integration test: accept NFT", () => {
     expect(isChild).to.be.false;
   });
 
+  it("[negative] accept NFT", async () => {
+    const ownerAlice = alice;
+    const ownerBob = bob;
+
+    const aliceCollectionId = await createTestCollection(alice);
+    const bobCollectionId = await createTestCollection(bob);
+
+    const parentNftId = await mintNft(
+        api,
+        0,
+        alice,
+        ownerAlice,
+        aliceCollectionId,
+        "parent-nft-metadata"
+    );
+    const childNftId = await mintNft(
+        api,
+        0,
+        bob,
+        ownerBob,
+        bobCollectionId,
+        "child-nft-metadata"
+    );
+
+    const parentNftId2 = await mintNft(
+        api,
+        1,
+        alice,
+        ownerAlice,
+        aliceCollectionId,
+        "parent-nft-metadata2"
+    );
+
+    const newOwnerNFT: NftIdTuple = [aliceCollectionId, parentNftId];
+    const notNewOwnerNFT: NftIdTuple = [aliceCollectionId, parentNftId2];
+
+    await sendNft(
+        api,
+        "pending",
+        ownerBob,
+        bobCollectionId,
+        childNftId,
+        newOwnerNFT
+    );
+    const tx = acceptNft(api, alice, bobCollectionId, childNftId, notNewOwnerNFT);
+
+    await expectTxFailure(/rmrkCore\.CannotAcceptToNewOwner/, tx);
+
+    const isChild = await isNftChildOfAnother(
+        api,
+        bobCollectionId,
+        childNftId,
+        notNewOwnerNFT
+    );
+    expect(isChild).to.be.false;
+  });
+
   after(() => {
     api.disconnect();
   });

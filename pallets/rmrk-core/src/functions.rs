@@ -620,12 +620,12 @@ where
 		};
 
 		sending_nft.owner = new_owner.clone();
-		// Nfts::<T>::insert(collection_id, nft_id, sending_nft);
 
 		if approval_required {
 			Nfts::<T>::try_mutate_exists(collection_id, nft_id, |nft| -> DispatchResult {
 				if let Some(nft) = nft {
 					nft.pending = true;
+					nft.owner = new_owner.clone();
 				}
 				Ok(())
 			})?;
@@ -674,40 +674,13 @@ where
 		nft_id: NftId,
 		new_owner: AccountIdOrCollectionNftTuple<T::AccountId>,
 	) -> Result<(T::AccountId, CollectionId, NftId), DispatchError> {
-		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		// Check NFT exists
+		ensure!(Pallet::<T>::nft_exists((collection_id, nft_id)), Error::<T>::NoAvailableNftId);
 
-		// Check ownership
-		ensure!(sender == root_owner, Error::<T>::NoPermission);
-
-		// Get NFT info
-		let _sending_nft =
-			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
-
-		// Prepare acceptance
-		let new_owner_account = match new_owner.clone() {
-			AccountIdOrCollectionNftTuple::AccountId(id) => id,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
-				// Check if NFT target exists
-				ensure!(Nfts::<T>::contains_key(cid, nid), Error::<T>::NoAvailableNftId);
-
-				// Check if sending to self
-				ensure!(
-					(collection_id, nft_id) != (cid, nid),
-					Error::<T>::CannotSendToDescendentOrSelf
-				);
-
-				// Check if collection_id & nft_id are descendent of cid & nid
-				ensure!(
-					!Pallet::<T>::is_x_descendent_of_y(cid, nid, collection_id, nft_id),
-					Error::<T>::CannotSendToDescendentOrSelf
-				);
-
-				let (recipient_root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(cid, nid)?;
-				ensure!(recipient_root_owner == root_owner, Error::<T>::CannotAcceptNonOwnedNft);
-
-				// Convert to virtual account
-				Pallet::<T>::nft_to_account_id::<T::AccountId>(cid, nid)
-			},
+		let owner_account = match new_owner.clone() {
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =>
+				Pallet::<T>::nft_to_account_id(cid, nid),
+			AccountIdOrCollectionNftTuple::AccountId(owner_account) => owner_account,
 		};
 
 		Nfts::<T>::try_mutate(collection_id, nft_id, |nft| -> DispatchResult {
@@ -717,13 +690,6 @@ where
 			Ok(())
 		})?;
 
-		pallet_uniques::Pallet::<T>::do_transfer(
-			collection_id,
-			nft_id,
-			new_owner_account.clone(),
-			|_class_details, _details| Ok(()),
-		)?;
-
 		Self::deposit_event(Event::NFTAccepted {
 			sender,
 			recipient: new_owner,
@@ -731,7 +697,7 @@ where
 			nft_id,
 		});
 
-		Ok((new_owner_account, collection_id, nft_id))
+		Ok((owner_account, collection_id, nft_id))
 	}
 
 	fn nft_reject(

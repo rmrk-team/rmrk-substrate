@@ -361,6 +361,7 @@ pub mod pallet {
 		// Must unequip an item before sending (this only applies to the
 		// rmrk-equip pallet but the send operation lives in rmrk-core)
 		CannotSendEquippedItem,
+		CannotAcceptToNewOwner,
 	}
 
 	#[pallet::call]
@@ -559,22 +560,26 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let (new_owner_account, collection_id, nft_id) =
-				Self::nft_accept(sender.clone(), collection_id, nft_id, new_owner.clone())?;
+			let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			// Check ownership
+			ensure!(sender == root_owner, Error::<T>::NoPermission);
 
-			pallet_uniques::Pallet::<T>::do_transfer(
-				collection_id,
-				nft_id,
-				new_owner_account,
-				|_class_details, _details| Ok(()),
-			)?;
+			let _owner = match pallet_uniques::Pallet::<T>::owner(collection_id, nft_id) {
+				Some(owner) => {
+					let owner_account =
+						match Pallet::<T>::decode_nft_account_id::<T::AccountId>(owner.clone()) {
+							Some((cid, nid)) =>
+								AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid),
+							None => AccountIdOrCollectionNftTuple::AccountId(owner),
+						};
+					ensure!(new_owner == owner_account, Error::<T>::CannotAcceptToNewOwner)
+				},
+				None => return Err(Error::<T>::NoAvailableNftId.into()),
+			};
 
-			Self::deposit_event(Event::NFTAccepted {
-				sender,
-				recipient: new_owner.clone(),
-				collection_id,
-				nft_id,
-			});
+			let (_owner_account, _collection_id, _nft_id) =
+				Self::nft_accept(sender.clone(), collection_id, nft_id, new_owner)?;
+
 			Ok(())
 		}
 

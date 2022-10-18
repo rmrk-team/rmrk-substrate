@@ -540,6 +540,16 @@ fn send_nft_to_minted_nft_works() {
 			nft_id: 1,
 			approval_required: true,
 		}));
+		// Bob fails to accept NFT (0,1) for Bob
+		assert_noop!(
+			RMRKCore::accept_nft(
+				Origin::signed(BOB),
+				0,
+				1,
+				AccountIdOrCollectionNftTuple::AccountId(BOB),
+			),
+			Error::<Test>::CannotAcceptToNewOwner
+		);
 		// Bob accepts NFT (0,1) for Bob-owned NFT (0,0)
 		assert_ok!(RMRKCore::accept_nft(
 			Origin::signed(BOB),
@@ -569,6 +579,8 @@ fn send_nft_to_minted_nft_works() {
 			nft_id: 2,
 			approval_required: true,
 		}));
+		// Owner should be the same derived AccountId for NFT (0,2) and nft_to_account_id(0,1)
+		assert_eq!(UNQ::Pallet::<Test>::owner(0, 2), Some(RMRKCore::nft_to_account_id(0, 1)),);
 		// Bob accepts NFT (0,2) for Bob-owned NFT (0,1)
 		assert_ok!(RMRKCore::accept_nft(
 			Origin::signed(BOB),
