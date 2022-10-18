@@ -185,11 +185,6 @@ where
 		let equipper_collection_id = equipper.0;
 		let equipper_nft_id = equipper.1;
 
-		// Item must exist
-		let item_exists =
-			pallet_rmrk_core::Pallet::<T>::nft_exists((item_collection_id, item_nft_id));
-		ensure!(item_exists, Error::<T>::ItemDoesntExist);
-
 		// Equipper must exist
 		ensure!(
 			pallet_rmrk_core::Pallet::<T>::nfts(equipper_collection_id, equipper_nft_id).is_some(),
@@ -207,13 +202,18 @@ where
 			pallet_uniques::Error::<T>::Locked
 		);
 
-		// If the item's equipped property is true, it is already equipped
-		ensure!(
-			!pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id)
-				.unwrap()
-				.equipped,
-			Error::<T>::ItemAlreadyEquipped
-		);
+		match pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id) {
+			None => {
+				// Item must exist
+				return Err(Error::<T>::ItemDoesntExist.into())
+			},
+			Some(nft) => {
+				// Item must not already be equipped
+				if nft.equipped {
+					return Err(Error::<T>::ItemAlreadyEquipped.into())
+				}
+			},
+		}
 
 		// If the Equippings storage contains the Base/Slot for the Collection+NFT ID, the item is
 		// already equipped
@@ -235,9 +235,15 @@ where
 		ensure!(equipper_owner.0 == issuer, Error::<T>::PermissionError);
 
 		// Equipper must be direct parent of item
-		let equipper_owner = pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id)
-			.unwrap()
-			.owner;
+		let equipper_owner =
+			match pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id) {
+				None => {
+					// Item must exist (shouldn't happen here, already checked above)
+					return Err(Error::<T>::ItemDoesntExist.into())
+				},
+				Some(nft) => nft.owner,
+			};
+
 		ensure!(
 			equipper_owner ==
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(
@@ -273,44 +279,48 @@ where
 			Error::<T>::ItemHasNoResourceToEquipThere
 		);
 
-		// Part must exist
-		ensure!(Self::parts(base_id, slot_id).is_some(), Error::<T>::PartDoesntExist);
-
 		// Check the PartType stored for this Base + Slot
-		match Self::parts(base_id, slot_id).unwrap() {
-			PartType::FixedPart(_) => {
-				// Part must be SlotPart type
-				Err(Error::<T>::CantEquipFixedPart.into())
-			},
-			PartType::SlotPart(slot_part) => {
-				// Collection must be in item's equippable list
-				match slot_part.equippable {
-					EquippableList::Empty => return Err(Error::<T>::CollectionNotEquippable.into()),
-					EquippableList::All => (),
-					EquippableList::Custom(eq) =>
-						if !eq.contains(&item_collection_id) {
-							return Err(Error::<T>::CollectionNotEquippable.into())
-						},
-				}
-
-				// Equip item (add to Equippings)
-				Equippings::<T>::insert(
-					((equipper_collection_id, equipper_nft_id), base_id, slot_id),
-					resource_id,
-				);
-
-				// Update item's equipped property
-				pallet_rmrk_core::Nfts::<T>::try_mutate_exists(
-					item_collection_id,
-					item_nft_id,
-					|nft| -> DispatchResult {
-						if let Some(nft) = nft {
-							nft.equipped = true;
-						}
-						Ok(())
+		match Self::parts(base_id, slot_id) {
+			// Part must exist
+			None => return Err(Error::<T>::PartDoesntExist.into()),
+			Some(part) => {
+				match part {
+					PartType::FixedPart(_) => {
+						// Part must be SlotPart type
+						Err(Error::<T>::CantEquipFixedPart.into())
 					},
-				)?;
-				Ok((item_collection_id, item_nft_id, base_id, slot_id))
+					PartType::SlotPart(slot_part) => {
+						// Collection must be in item's equippable list
+						match slot_part.equippable {
+							EquippableList::Empty =>
+								return Err(Error::<T>::CollectionNotEquippable.into()),
+							EquippableList::All => (),
+							EquippableList::Custom(eq) =>
+								if !eq.contains(&item_collection_id) {
+									return Err(Error::<T>::CollectionNotEquippable.into())
+								},
+						}
+
+						// Equip item (add to Equippings)
+						Equippings::<T>::insert(
+							((equipper_collection_id, equipper_nft_id), base_id, slot_id),
+							resource_id,
+						);
+
+						// Update item's equipped property
+						pallet_rmrk_core::Nfts::<T>::try_mutate_exists(
+							item_collection_id,
+							item_nft_id,
+							|nft| -> DispatchResult {
+								if let Some(nft) = nft {
+									nft.equipped = true;
+								}
+								Ok(())
+							},
+						)?;
+						Ok((item_collection_id, item_nft_id, base_id, slot_id))
+					},
+				}
 			},
 		}
 	}
@@ -432,26 +442,33 @@ where
 		part_id: PartId,
 		equippables: EquippableList<BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
 	) -> Result<(BaseId, SlotId), DispatchError> {
-		// Base must exist
-		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);
-
 		// Caller must be issuer of base
-		ensure!(Bases::<T>::get(base_id).unwrap().issuer == issuer, Error::<T>::PermissionError);
-
-		// Part must exist
-		ensure!(Parts::<T>::get(base_id, part_id).is_some(), Error::<T>::PartDoesntExist);
-
-		match Parts::<T>::get(base_id, part_id).unwrap() {
-			PartType::FixedPart(_) => {
-				// Fixed part has no equippables
-				Err(Error::<T>::NoEquippableOnFixedPart.into())
+		match Bases::<T>::get(base_id) {
+			// Base must exist
+			None => return Err(Error::<T>::BaseDoesntExist.into()),
+			Some(base) => {
+				// Issuer must be Base issuer
+				ensure!(base.issuer == issuer, Error::<T>::PermissionError)
 			},
-			PartType::SlotPart(mut slot_part) => {
-				// Update equippable value
-				slot_part.equippable = equippables;
-				// Overwrite Parts entry for this base_id.part_id
-				Parts::<T>::insert(base_id, part_id, PartType::SlotPart(slot_part));
-				Ok((base_id, part_id))
+		}
+
+		match Parts::<T>::get(base_id, part_id) {
+			// Part must exist
+			None => return Err(Error::<T>::PartDoesntExist.into()),
+			Some(part) => {
+				match part {
+					PartType::FixedPart(_) => {
+						// Fixed part has no equippables
+						Err(Error::<T>::NoEquippableOnFixedPart.into())
+					},
+					PartType::SlotPart(mut slot_part) => {
+						// Update equippable value
+						slot_part.equippable = equippables;
+						// Overwrite Parts entry for this base_id.part_id
+						Parts::<T>::insert(base_id, part_id, PartType::SlotPart(slot_part));
+						Ok((base_id, part_id))
+					},
+				}
 			},
 		}
 	}
@@ -478,15 +495,21 @@ where
 			BoundedVec<ThemeProperty<BoundedVec<u8, T::StringLimit>>, T::MaxPropertiesPerTheme>,
 		>,
 	) -> Result<(), DispatchError> {
-		// Base must exist
-		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);
-
-		// Sender must be issuer of the base
-		ensure!(Bases::<T>::get(base_id).unwrap().issuer == issuer, Error::<T>::PermissionError);
+		match Bases::<T>::get(base_id) {
+			// Base must exist
+			None => return Err(Error::<T>::BaseDoesntExist.into()),
+			Some(base) => {
+				// Sender must be issuer of the base
+				ensure!(base.issuer == issuer, Error::<T>::PermissionError);
+			},
+		}
 
 		// The string "default" as a BoundedVec
 		let default_as_bv: BoundedVec<u8, T::StringLimit> =
-			"default".as_bytes().to_vec().try_into().unwrap();
+			match "default".as_bytes().to_vec().try_into() {
+				Err(_e) => return Err(Error::<T>::UnexpectedVecConversionError.into()),
+				Ok(val) => val,
+			};
 
 		// Check for existence of default theme (default theme cannot be empty)
 		let def_count = Themes::<T>::iter_prefix_values((base_id, default_as_bv.clone())).count();
