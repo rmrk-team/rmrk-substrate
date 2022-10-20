@@ -228,14 +228,14 @@ where
 		ensure!(item_owner.0 == issuer, Error::<T>::PermissionError);
 
 		// Caller must root-own equipper
-		let equipper_owner = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(
+		let (equipper_root_owner, _) = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(
 			equipper_collection_id,
 			equipper_nft_id,
 		)?;
-		ensure!(equipper_owner.0 == issuer, Error::<T>::PermissionError);
+		ensure!(equipper_root_owner == issuer, Error::<T>::PermissionError);
 
 		// Equipper must be direct parent of item
-		let equipper_owner =
+		let equipper_direct_owner =
 			match pallet_rmrk_core::Pallet::<T>::nfts(item_collection_id, item_nft_id) {
 				None => {
 					// Item must exist (shouldn't happen here, already checked above)
@@ -245,7 +245,7 @@ where
 			};
 
 		ensure!(
-			equipper_owner ==
+			equipper_direct_owner ==
 				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(
 					equipper_collection_id,
 					equipper_nft_id
