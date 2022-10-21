@@ -3,7 +3,7 @@
 // License: Apache 2.0 modified by RMRK, see LICENSE.md
 
 use super::*;
-use frame_support::{bounded_vec, traits::tokens::Locker};
+use frame_support::traits::tokens::Locker;
 
 use sp_std::collections::btree_set::BTreeSet;
 
@@ -453,20 +453,16 @@ where
 				// Update equippable value
 				match ty {
 					EquippableType::Add(equippable) => {
-						let mut equippables = match slot_part.equippable {
-							EquippableList::Custom(ref e) => e.clone(),
-							_ => bounded_vec![],
-						};
-						let _ = equippables.try_push(equippable);
-						slot_part.equippable = EquippableList::Custom(equippables);
+						if let EquippableList::Custom(mut equippables) = slot_part.equippable {
+							let _ = equippables.try_push(equippable);
+							slot_part.equippable = EquippableList::Custom(equippables);
+						}
 					},
 					EquippableType::Remove(equippable) => {
-						let mut equippables = match slot_part.equippable {
-							EquippableList::Custom(ref e) => e.clone(),
-							_ => bounded_vec![],
-						};
-						equippables.retain(|e| *e != equippable);
-						slot_part.equippable = EquippableList::Custom(equippables);
+						if let EquippableList::Custom(mut equippables) = slot_part.equippable {
+							equippables.retain(|e| *e != equippable);
+							slot_part.equippable = EquippableList::Custom(equippables);
+						}
 					},
 					EquippableType::Override(equippables) => {
 						slot_part.equippable = equippables;
