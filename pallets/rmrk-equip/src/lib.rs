@@ -15,9 +15,8 @@ use sp_runtime::traits::StaticLookup;
 pub use pallet::*;
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo,
-	EquippableList, PartType, Theme,
-	ThemeProperty,
+	base::EquippableType, primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo,
+	EquippableList, PartType, Theme, ThemeProperty,
 };
 
 use sp_std::vec::Vec;
@@ -349,7 +348,58 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let (base_id, slot_id) = Self::do_equippable(sender, base_id, slot_id, equippables)?;
+			let (base_id, slot_id) = Self::do_equippable(
+				sender,
+				base_id,
+				slot_id,
+				EquippableType::Override(equippables),
+			)?;
+
+			Self::deposit_event(Event::EquippablesUpdated { base_id, slot_id });
+			Ok(())
+		}
+
+		/// Adds a new collection that is allowed to be equipped to a Base's specified Slot Part.
+		///
+		/// Parameters:
+		/// - origin: The caller of the function, must be issuer of the base
+		/// - base_id: The Base containing the Slot Part to be updated
+		/// - part_id: The Slot Part whose Equippable List is being updated
+		/// - equippable: The equippable that will be added to the current Equippaables list
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn equippable_add(
+			origin: OriginFor<T>,
+			base_id: BaseId,
+			slot_id: SlotId,
+			equippable: CollectionId,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
+
+			let (base_id, slot_id) =
+				Self::do_equippable(sender, base_id, slot_id, EquippableType::Add(equippable))?;
+
+			Self::deposit_event(Event::EquippablesUpdated { base_id, slot_id });
+			Ok(())
+		}
+
+		/// Remove a collection from the equippables list.
+		///
+		/// Parameters:
+		/// - origin: The caller of the function, must be issuer of the base
+		/// - base_id: The Base containing the Slot Part to be updated
+		/// - part_id: The Slot Part whose Equippable List is being updated
+		/// - equippable: The equippable that will be removed from the current Equippaables list
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		pub fn equippable_remove(
+			origin: OriginFor<T>,
+			base_id: BaseId,
+			slot_id: SlotId,
+			equippable: CollectionId,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
+
+			let (base_id, slot_id) =
+				Self::do_equippable(sender, base_id, slot_id, EquippableType::Remove(equippable))?;
 
 			Self::deposit_event(Event::EquippablesUpdated { base_id, slot_id });
 			Ok(())

@@ -4,7 +4,7 @@
 
 use super::*;
 
-use rmrk_traits::{FixedPart, SlotPart, ThemeProperty, ComposableResource, SlotResource};
+use rmrk_traits::{ComposableResource, FixedPart, SlotPart, SlotResource, ThemeProperty};
 
 use frame_support::{assert_noop, assert_ok};
 use mock::{Event as MockEvent, *};
@@ -842,6 +842,11 @@ fn equippable_works() {
 
 		// Question: Should be check existence of collections being equipped?
 	});
+}
+
+#[test]
+fn add_equippable_works() {
+	ExtBuilder::default().build().execute_with(|| {})
 }
 
 /// Base: Basic theme_add tests

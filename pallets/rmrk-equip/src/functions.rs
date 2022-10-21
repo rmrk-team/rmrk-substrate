@@ -3,7 +3,7 @@
 // License: Apache 2.0 modified by RMRK, see LICENSE.md
 
 use super::*;
-use frame_support::traits::tokens::Locker;
+use frame_support::{bounded_vec, traits::tokens::Locker};
 
 use sp_std::collections::btree_set::BTreeSet;
 
@@ -430,7 +430,10 @@ where
 		issuer: T::AccountId,
 		base_id: BaseId,
 		part_id: PartId,
-		equippables: EquippableList<BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
+		ty: EquippableType<
+			CollectionId,
+			BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+		>,
 	) -> Result<(BaseId, SlotId), DispatchError> {
 		// Base must exist
 		ensure!(Bases::<T>::get(base_id).is_some(), Error::<T>::BaseDoesntExist);
@@ -448,7 +451,27 @@ where
 			},
 			PartType::SlotPart(mut slot_part) => {
 				// Update equippable value
-				slot_part.equippable = equippables;
+				match ty {
+					EquippableType::Add(equippable) => {
+						let mut equippables = match slot_part.equippable {
+							EquippableList::Custom(ref e) => e.clone(),
+							_ => bounded_vec![],
+						};
+						let _ = equippables.try_push(equippable);
+						slot_part.equippable = EquippableList::Custom(equippables);
+					},
+					EquippableType::Remove(equippable) => {
+						let mut equippables = match slot_part.equippable {
+							EquippableList::Custom(ref e) => e.clone(),
+							_ => bounded_vec![],
+						};
+						equippables.retain(|e| *e != equippable);
+						slot_part.equippable = EquippableList::Custom(equippables);
+					},
+					EquippableType::Override(equippables) => {
+						slot_part.equippable = equippables;
+					},
+				};
 				// Overwrite Parts entry for this base_id.part_id
 				Parts::<T>::insert(base_id, part_id, PartType::SlotPart(slot_part));
 				Ok((base_id, part_id))
