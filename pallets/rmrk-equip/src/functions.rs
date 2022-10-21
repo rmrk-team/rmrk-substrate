@@ -430,7 +430,7 @@ where
 		issuer: T::AccountId,
 		base_id: BaseId,
 		part_id: PartId,
-		ty: EquippableType<
+		operation: EquippableOperation<
 			CollectionId,
 			BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
 		>,
@@ -451,20 +451,20 @@ where
 			},
 			PartType::SlotPart(mut slot_part) => {
 				// Update equippable value
-				match ty {
-					EquippableType::Add(equippable) => {
+				match operation {
+					EquippableOperation::Add(equippable) => {
 						if let EquippableList::Custom(mut equippables) = slot_part.equippable {
 							let _ = equippables.try_push(equippable);
 							slot_part.equippable = EquippableList::Custom(equippables);
 						}
 					},
-					EquippableType::Remove(equippable) => {
+					EquippableOperation::Remove(equippable) => {
 						if let EquippableList::Custom(mut equippables) = slot_part.equippable {
 							equippables.retain(|e| *e != equippable);
 							slot_part.equippable = EquippableList::Custom(equippables);
 						}
 					},
-					EquippableType::Override(equippables) => {
+					EquippableOperation::Override(equippables) => {
 						slot_part.equippable = equippables;
 					},
 				};

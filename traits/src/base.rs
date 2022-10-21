@@ -37,7 +37,7 @@ pub struct BaseInfo<AccountId, BoundedString> {
 	pub symbol: BoundedString,
 }
 
-pub enum EquippableType<CollectionId, BoundedCollectionList> {
+pub enum EquippableOperation<CollectionId, BoundedCollectionList> {
 	/// Adds a new collection that is allowed to be equipped.
 	Add(CollectionId),
 	/// Removes a collection from the list of equippables.
@@ -86,7 +86,7 @@ pub trait Base<
 		issuer: AccountId,
 		base_id: BaseId,
 		slot: SlotId,
-		ty: EquippableType<CollectionId, BoundedCollectionList>,
+		operation: EquippableOperation<CollectionId, BoundedCollectionList>,
 	) -> Result<(BaseId, SlotId), DispatchError>;
 	fn add_theme(
 		issuer: AccountId,

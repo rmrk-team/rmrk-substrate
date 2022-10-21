@@ -15,7 +15,7 @@ use sp_runtime::traits::StaticLookup;
 pub use pallet::*;
 
 use rmrk_traits::{
-	base::EquippableType, primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo,
+	base::EquippableOperation, primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo,
 	EquippableList, PartType, Theme, ThemeProperty,
 };
 
@@ -352,7 +352,7 @@ pub mod pallet {
 				sender,
 				base_id,
 				slot_id,
-				EquippableType::Override(equippables),
+				EquippableOperation::Override(equippables),
 			)?;
 
 			Self::deposit_event(Event::EquippablesUpdated { base_id, slot_id });
@@ -375,8 +375,12 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let (base_id, slot_id) =
-				Self::do_equippable(sender, base_id, slot_id, EquippableType::Add(equippable))?;
+			let (base_id, slot_id) = Self::do_equippable(
+				sender,
+				base_id,
+				slot_id,
+				EquippableOperation::Add(equippable),
+			)?;
 
 			Self::deposit_event(Event::EquippablesUpdated { base_id, slot_id });
 			Ok(())
@@ -398,8 +402,12 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let (base_id, slot_id) =
-				Self::do_equippable(sender, base_id, slot_id, EquippableType::Remove(equippable))?;
+			let (base_id, slot_id) = Self::do_equippable(
+				sender,
+				base_id,
+				slot_id,
+				EquippableOperation::Remove(equippable),
+			)?;
 
 			Self::deposit_event(Event::EquippablesUpdated { base_id, slot_id });
 			Ok(())
