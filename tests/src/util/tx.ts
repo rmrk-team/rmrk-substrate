@@ -810,6 +810,107 @@ export async function setEquippableList(
   }
 }
 
+export async function addToEquippableList(
+  api: ApiPromise,
+  issuerUri: string,
+  baseId: number,
+  slotId: number,
+  equippable: number
+) {
+  const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+  const issuer = privateKey(issuerUri, Number(ss58Format));
+
+  const tx = api.tx.rmrkEquip.equippableAdd(baseId, slotId, equippable);
+  const events = await executeTransaction(api, issuer, tx);
+
+  const equipListResult = extractRmrkEquipTxResult(
+    events,
+    "EquippablesUpdated",
+    (data) => {
+      return {
+        baseId: parseInt(data[0].toString(), 10),
+        slotId: parseInt(data[1].toString(), 10),
+      };
+    }
+  );
+
+  expect(equipListResult.success, "Error: unable to update equippable list").to
+    .be.true;
+  const updateEvent = equipListResult.successData!;
+
+  expect(updateEvent.baseId).to.be.equal(
+    baseId,
+    "Error: invalid base ID from update equippable event"
+  );
+
+  expect(updateEvent.slotId).to.be.equal(
+    slotId,
+    "Error: invalid base ID from update equippable event"
+  );
+
+  const fetchedEquippableList = await getEquippableList(api, baseId, slotId);
+  expect(fetchedEquippableList, "Error: unable to fetch equippable list").to.be
+    .not.null;
+  if (fetchedEquippableList) {
+    // @ts-ignore
+    expect(fetchedEquippableList.Custom).to.be.deep.contain(
+      equippable,
+      "Error: equippable wasn't added"
+    );
+  }
+}
+
+export async function removeFromEquippableList(
+  api: ApiPromise,
+  issuerUri: string,
+  baseId: number,
+  slotId: number,
+  equippable: number
+) {
+  const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+  const issuer = privateKey(issuerUri, Number(ss58Format));
+
+  const tx = api.tx.rmrkEquip.equippableRemove(baseId, slotId, equippable);
+  const events = await executeTransaction(api, issuer, tx);
+
+  const equipListResult = extractRmrkEquipTxResult(
+    events,
+    "EquippablesUpdated",
+    (data) => {
+      return {
+        baseId: parseInt(data[0].toString(), 10),
+        slotId: parseInt(data[1].toString(), 10),
+      };
+    }
+  );
+
+  expect(equipListResult.success, "Error: unable to update equippable list").to
+    .be.true;
+  const updateEvent = equipListResult.successData!;
+
+  expect(updateEvent.baseId).to.be.equal(
+    baseId,
+    "Error: invalid base ID from update equippable event"
+  );
+
+  expect(updateEvent.slotId).to.be.equal(
+    slotId,
+    "Error: invalid base ID from update equippable event"
+  );
+
+  const fetchedEquippableList = await getEquippableList(api, baseId, slotId);
+
+  expect(fetchedEquippableList, "Error: unable to fetch equippable list").to.be
+    .not.null;
+  if (fetchedEquippableList) {
+    // @ts-ignore
+    expect(fetchedEquippableList.Custom).to.not.contain(
+      equippable,
+      "Error: equippable wasn't removed"
+    );
+  }
+}
+
 export async function addTheme(
   api: ApiPromise,
   issuerUri: string,
