@@ -851,8 +851,10 @@ export async function addToEquippableList(
   const fetchedEquippableList = await getEquippableList(api, baseId, slotId);
   expect(fetchedEquippableList, "Error: unable to fetch equippable list").to.be
     .not.null;
+
+  if(fetchedEquippableList === "All" || fetchedEquippableList === "Empty") 
+    throw "Error: equippable wasn't added";
   if (fetchedEquippableList) {
-    // @ts-ignore
     expect(fetchedEquippableList.Custom).to.be.deep.contain(
       equippable,
       "Error: equippable wasn't added"
@@ -902,8 +904,8 @@ export async function removeFromEquippableList(
 
   expect(fetchedEquippableList, "Error: unable to fetch equippable list").to.be
     .not.null;
-  if (fetchedEquippableList) {
-    // @ts-ignore
+
+  if(fetchedEquippableList && !(fetchedEquippableList === "All") && !(fetchedEquippableList === "Empty")) {
     expect(fetchedEquippableList.Custom).to.not.contain(
       equippable,
       "Error: equippable wasn't removed"
