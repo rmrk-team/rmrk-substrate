@@ -850,7 +850,6 @@ where
 	///
 	/// Output:
 	/// - `Result<(T::AcccountId, (CollectionId, NftId)), Error<T>>`
-	#[allow(clippy::type_complexity)]
 	pub fn lookup_root_owner(
 		collection_id: CollectionId,
 		nft_id: NftId,

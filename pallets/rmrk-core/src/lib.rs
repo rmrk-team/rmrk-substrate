@@ -108,7 +108,7 @@ pub mod pallet {
 		#[pallet::constant]
 		type MaxPriorities: Get<u32>;
 
-		/// The maximum nesting allowed in the pallets extrinsics.
+		/// The maximum nesting allowed in the pallet extrinsics.
 		#[pallet::constant]
 		type NestingBudget: Get<u32>;
 
