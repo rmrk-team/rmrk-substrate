@@ -620,7 +620,8 @@ fn send_nft_to_minted_nft_works() {
 			Error::<Test>::CannotSendToDescendentOrSelf
 		);
 		// BOB now root-owns NFT (0, 1) [child] (originally was ALICE)
-		if let Ok((root_owner, _)) = RMRKCore::lookup_root_owner(0, 1) {
+		let budget = budget::Value::new(<Test as Config>::NestingBudget::get());
+		if let Ok((root_owner, _)) = RMRKCore::lookup_root_owner(0, 1, &budget) {
 			assert_eq!(root_owner, BOB);
 		}
 		// Sending NFT that is not root-owned should fail
@@ -764,7 +765,85 @@ fn mint_non_transferrable_gem_on_to_nft_works() {
 		));
 
 		// CHARLIE now rootowns NFT (0, 1)
-		assert_eq!(RMRKCore::lookup_root_owner(0, 1).unwrap().0, CHARLIE);
+		let budget = budget::Value::new(<Test as Config>::NestingBudget::get());
+		assert_eq!(RMRKCore::lookup_root_owner(0, 1, &budget).unwrap().0, CHARLIE);
+	});
+}
+
+#[test]
+fn lookup_root_owner_nesting_budget_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a collection with a minting limit of 50.
+		assert_ok!(RMRKCore::create_collection(
+			Origin::signed(ALICE),
+			bvec![0u8; 20],
+			Some(50),
+			bvec![0u8; 15],
+		));
+
+		// Mint NFT (transferrable, will be the parent of a later-minted non-transferrable NFT)
+		assert_ok!(RMRKCore::mint_nft(
+			Origin::signed(ALICE),
+			Some(BOB),
+			NFT_ID_0,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			true,
+			None,
+		));
+
+		// Mint a bunch of nfts(over the `NestingBudget`).
+		for i in 1..=<Test as Config>::NestingBudget::get() + 1 {
+			assert_ok!(RMRKCore::mint_nft_directly_to_nft(
+				Origin::signed(ALICE),
+				(COLLECTION_ID_0, i - 1),
+				i,
+				COLLECTION_ID_0,
+				None,
+				None,
+				bvec![0u8; 20],
+				true,
+				None,
+			));
+		}
+
+		// This should fail because the `mint_nft_directly_to_nft` function searches for the root
+		// owner, and it is nested too deep.
+		assert_noop!(
+			RMRKCore::mint_nft_directly_to_nft(
+				Origin::signed(ALICE),
+				(COLLECTION_ID_0, <Test as Config>::NestingBudget::get() + 1),
+				<Test as Config>::NestingBudget::get() + 2,
+				COLLECTION_ID_0,
+				None,
+				None,
+				bvec![0u8; 20],
+				true,
+				None,
+			),
+			Error::<Test>::TooManyRecursions
+		);
+
+		let budget = budget::Value::new(<Test as Config>::NestingBudget::get());
+		// This should also fail since we nested too many nfts.
+		assert_noop!(
+			RMRKCore::lookup_root_owner(
+				COLLECTION_ID_0,
+				<Test as Config>::NestingBudget::get() + 1,
+				&budget
+			),
+			Error::<Test>::TooManyRecursions
+		);
+
+		// If we increase the nesting budget `lookup_root_owner` should work.
+		let budget = budget::Value::new(<Test as Config>::NestingBudget::get() + 5);
+		assert_ok!(RMRKCore::lookup_root_owner(
+			COLLECTION_ID_0,
+			<Test as Config>::NestingBudget::get() + 1,
+			&budget
+		));
 	});
 }
 

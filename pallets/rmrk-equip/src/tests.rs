@@ -4,7 +4,7 @@
 
 use super::*;
 
-use rmrk_traits::{FixedPart, SlotPart, ThemeProperty, ComposableResource, SlotResource};
+use rmrk_traits::{ComposableResource, FixedPart, SlotPart, SlotResource, ThemeProperty};
 
 use frame_support::{assert_noop, assert_ok};
 use mock::{Event as MockEvent, *};

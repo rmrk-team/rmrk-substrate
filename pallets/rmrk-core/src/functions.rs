@@ -16,6 +16,7 @@ use sp_runtime::{
 	ArithmeticError,
 };
 
+use rmrk_traits::budget::Budget;
 use sp_std::collections::btree_set::BTreeSet;
 
 // Randomness to generate NFT virtual accounts
@@ -64,7 +65,8 @@ where
 				!Pallet::<T>::is_locked(collection_id, *nft_id),
 				pallet_uniques::Error::<T>::Locked
 			);
-			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id)?;
+			let budget = budget::Value::new(T::NestingBudget::get());
+			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id, &budget)?;
 			ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
 		}
 		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
@@ -448,7 +450,8 @@ where
 		}
 
 		// Calculate the rootowner of the intended owner of the minted NFT
-		let (rootowner, _) = Self::lookup_root_owner(owner.0, owner.1)?;
+		let budget = budget::Value::new(T::NestingBudget::get());
+		let (rootowner, _) = Self::lookup_root_owner(owner.0, owner.1, &budget)?;
 
 		// NFT should be pending if minting either to an NFT owned by another account
 		let pending = rootowner != sender;
@@ -574,7 +577,9 @@ where
 		// Check if parent returns None which indicates the NFT is not available
 		ensure!(parent.is_some(), Error::<T>::NoAvailableNftId); // <- is this error wrong?
 
-		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		let budget = budget::Value::new(T::NestingBudget::get());
+		let (root_owner, _root_nft) =
+			Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 		// Check ownership
 		ensure!(sender == root_owner, Error::<T>::NoPermission);
 		// Get NFT info
@@ -609,7 +614,9 @@ where
 					!Pallet::<T>::is_x_descendent_of_y(cid, nid, collection_id, nft_id),
 					Error::<T>::CannotSendToDescendentOrSelf
 				);
-				let (recipient_root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(cid, nid)?;
+				let budget = budget::Value::new(T::NestingBudget::get());
+				let (recipient_root_owner, _root_nft) =
+					Pallet::<T>::lookup_root_owner(cid, nid, &budget)?;
 				if recipient_root_owner == root_owner {
 					approval_required = false;
 				}
@@ -707,7 +714,9 @@ where
 		max_recursions: u32,
 	) -> Result<(T::AccountId, CollectionId, NftId), DispatchError> {
 		// Look up root owner in Uniques to ensure permissions
-		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		let budget = budget::Value::new(T::NestingBudget::get());
+		let (root_owner, _root_nft) =
+			Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 
 		let nft = Nfts::<T>::get(collection_id, nft_id);
 
@@ -845,6 +854,7 @@ where
 	pub fn lookup_root_owner(
 		collection_id: CollectionId,
 		nft_id: NftId,
+		budget: &dyn Budget,
 	) -> Result<(T::AccountId, (CollectionId, NftId)), Error<T>> {
 		let parent = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
 		// Check if parent returns None which indicates the NFT is not available
@@ -852,7 +862,12 @@ where
 		let owner = parent.unwrap();
 		match Self::decode_nft_account_id::<T::AccountId>(owner.clone()) {
 			None => Ok((owner, (collection_id, nft_id))),
-			Some((cid, nid)) => Pallet::<T>::lookup_root_owner(cid, nid),
+			Some((cid, nid)) => {
+				if !budget.consume() {
+					return Err(Error::<T>::TooManyRecursions)
+				}
+				Pallet::<T>::lookup_root_owner(cid, nid, budget)
+			},
 		}
 	}
 
