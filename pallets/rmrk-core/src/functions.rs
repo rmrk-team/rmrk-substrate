@@ -524,10 +524,8 @@ where
 		owner: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		max_recursions: u32,
+		budget: &dyn Budget,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
-		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
-
 		// Remove self from parent's Children storage
 		if let Some(nft) = Self::nfts(collection_id, nft_id) {
 			if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(parent_col, parent_nft) =
@@ -548,7 +546,8 @@ where
 		for ((child_collection_id, child_nft_id), _) in
 			Children::<T>::drain_prefix((collection_id, nft_id))
 		{
-			Self::nft_burn(owner.clone(), child_collection_id, child_nft_id, max_recursions - 1)?;
+			ensure!(budget.consume() != false, Error::<T>::TooManyRecursions);
+			Self::nft_burn(owner.clone(), child_collection_id, child_nft_id, budget)?;
 		}
 
 		// decrement nfts counter
@@ -711,7 +710,6 @@ where
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		max_recursions: u32,
 	) -> Result<(T::AccountId, CollectionId, NftId), DispatchError> {
 		// Look up root owner in Uniques to ensure permissions
 		let budget = budget::Value::new(T::NestingBudget::get());
@@ -744,7 +742,7 @@ where
 		let _rejecting_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
-		Self::nft_burn(sender.clone(), collection_id, nft_id, max_recursions)?;
+		Self::nft_burn(sender.clone(), collection_id, nft_id, &budget)?;
 
 		Ok((sender, collection_id, nft_id))
 	}

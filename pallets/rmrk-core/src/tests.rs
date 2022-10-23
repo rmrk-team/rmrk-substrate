@@ -142,7 +142,7 @@ fn lock_collection_works() {
 		// Attempt to mint in a locked collection should fail
 		assert_noop!(basic_mint(5), Error::<Test>::CollectionFullOrLocked);
 		// Burn an NFT
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS));
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		// Should now have only three NFTS in collection
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 3);
 		// After burning, we should still be unable to mint another NFT
@@ -164,7 +164,7 @@ fn destroy_collection_works() {
 			Error::<Test>::CollectionNotEmpty
 		);
 		// Burn the single NFT in collection
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS));
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		// Empty collection can be destroyed
 		assert_ok!(RMRKCore::destroy_collection(Origin::signed(ALICE), COLLECTION_ID_0));
 		// Destroy event is triggered by successful destroy_collection
@@ -429,7 +429,7 @@ fn mint_collection_max_logic_works() {
 		// Minting beyond collection max (5) should fail
 		assert_noop!(basic_mint(5), Error::<Test>::CollectionFullOrLocked);
 		// Burn one NFT
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, 0, MAX_BURNS));
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, 0));
 		// Minting is allowed
 		assert_ok!(basic_mint(5));
 	});
@@ -773,11 +773,11 @@ fn mint_non_transferrable_gem_on_to_nft_works() {
 #[test]
 fn lookup_root_owner_nesting_budget_works() {
 	ExtBuilder::default().build().execute_with(|| {
-		// Create a collection with a minting limit of 50.
+		// Create a collection with a minting limit of 10.
 		assert_ok!(RMRKCore::create_collection(
 			Origin::signed(ALICE),
 			bvec![0u8; 20],
-			Some(50),
+			Some(10),
 			bvec![0u8; 15],
 		));
 
@@ -1092,11 +1092,11 @@ fn burn_nft_works() {
 
 		// BOB should not be able to burn ALICE's NFT
 		assert_noop!(
-			RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS),
+			RMRKCore::burn_nft(Origin::signed(BOB), COLLECTION_ID_0, NFT_ID_0),
 			Error::<Test>::NoPermission
 		);
 		// ALICE burns her NFT
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS));
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		// Successful burn creates NFTBurned event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::NFTBurned {
 			owner: ALICE,
@@ -1107,7 +1107,7 @@ fn burn_nft_works() {
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
 		// ALICE can't burn an NFT twice
 		assert_noop!(
-			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS),
+			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0),
 			Error::<Test>::NoAvailableNftId
 		);
 		// Burned NFT no longer exists
@@ -1174,7 +1174,7 @@ fn burn_nft_with_great_grandchildren_works() {
 		// Great-grandchild NFT (0, 3) exists
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_some(), true);
 		// Burn great-grandparent NFT (0, 0)
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS));
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0));
 		// Great-grandchild NFT (0, 3) is dead :'-(
 		assert!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_none());
 		// Great-grandchild resources are gone
@@ -1228,7 +1228,7 @@ fn burn_nft_beyond_max_recursions_fails_gracefully() {
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 4).is_some(), true);
 		// Burn great-grandparent NFT (0, 0)
 		assert_noop!(
-			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0, MAX_BURNS),
+			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0),
 			Error::<Test>::TooManyRecursions
 		);
 		// All NFTs still exist
@@ -1263,7 +1263,7 @@ fn burn_child_nft_removes_parents_children() {
 		// NFT (0, 0) should have 1 Children storage member
 		assert_eq!(Children::<Test>::iter_prefix((0, 0)).count(), 1);
 		// Burn NFT (0, 1)
-		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), 0, 1, MAX_BURNS),);
+		assert_ok!(RMRKCore::burn_nft(Origin::signed(ALICE), 0, 1),);
 		// NFT (0, 0) should have 0 Children storage members
 		assert_eq!(Children::<Test>::iter_prefix((0, 0)).count(), 0);
 	});

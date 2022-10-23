@@ -49,7 +49,7 @@ parameter_types! {
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 50;
 	pub const MaxPriorities: u32 = 3;
-	pub const NestingBudget: u32 = 20;
+	pub const NestingBudget: u32 = 3;
 	pub const CollectionSymbolLimit: u32 = 100;
 	pub const MaxResourcesOnMint: u32 = 3;
 }
@@ -157,7 +157,6 @@ pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::CollectionId = 0;
 // pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::CollectionId = 1;
 pub const NFT_ID_0: <Test as pallet_uniques::Config>::ItemId = 0;
 pub const NOT_EXISTING_CLASS_ID: <Test as pallet_uniques::Config>::CollectionId = 999;
-pub const MAX_BURNS: u32 = 4;
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {

@@ -500,7 +500,6 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			max_burns: u32,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 			let budget = budget::Value::new(T::NestingBudget::get());
@@ -508,7 +507,7 @@ pub mod pallet {
 			// Check ownership
 			ensure!(sender == root_owner, Error::<T>::NoPermission);
 			let (_collection_id, _nft_id) =
-				Self::nft_burn(root_owner, collection_id, nft_id, max_burns)?;
+				Self::nft_burn(root_owner, collection_id, nft_id, &budget)?;
 
 			Ok(())
 		}
@@ -607,9 +606,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let max_recursions = T::MaxRecursions::get();
-			let (sender, collection_id, nft_id) =
-				Self::nft_reject(sender, collection_id, nft_id, max_recursions)?;
+			let (sender, collection_id, nft_id) = Self::nft_reject(sender, collection_id, nft_id)?;
 
 			Self::deposit_event(Event::NFTRejected { sender, collection_id, nft_id });
 			Ok(())

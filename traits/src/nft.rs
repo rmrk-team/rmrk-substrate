@@ -11,7 +11,7 @@ use sp_std::cmp::Eq;
 use frame_support::pallet_prelude::*;
 use sp_runtime::Permill;
 
-use crate::{primitives::*, serialize};
+use crate::{budget::Budget, primitives::*, serialize};
 use sp_std::result::Result;
 
 #[cfg(feature = "std")]
@@ -101,7 +101,7 @@ pub trait Nft<AccountId, BoundedString, BoundedResourceVec> {
 		owner: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		max_burns: u32,
+		budget: &dyn Budget,
 	) -> Result<(CollectionId, NftId), DispatchError>;
 	fn nft_send(
 		sender: AccountId,
@@ -119,6 +119,5 @@ pub trait Nft<AccountId, BoundedString, BoundedResourceVec> {
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		max_recursions: u32,
 	) -> Result<(AccountId, CollectionId, NftId), DispatchError>;
 }
