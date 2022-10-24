@@ -62,9 +62,9 @@ impl pallet_rmrk_core::Config for Test {
 	type ResourceSymbolLimit = ResourceSymbolLimit;
 	type PartsLimit = PartsLimit;
 	type MaxPriorities = MaxPriorities;
-	type NestingBudget = NestingBudget;
 	type CollectionSymbolLimit = CollectionSymbolLimit;
 	type MaxResourcesOnMint = MaxResourcesOnMint;
+	type NestingBudget = NestingBudget;
 }
 
 parameter_types! {
