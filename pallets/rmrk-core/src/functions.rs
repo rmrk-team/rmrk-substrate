@@ -345,8 +345,6 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>, BoundedResourceInfoTypeOf<T>
 where
 	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
-	type MaxRecursions = T::MaxRecursions;
-
 	fn nft_mint(
 		sender: T::AccountId,
 		owner: T::AccountId,

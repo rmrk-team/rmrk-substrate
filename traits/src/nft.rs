@@ -73,8 +73,6 @@ pub struct NftChild {
 /// Abstraction over a Nft system.
 #[allow(clippy::upper_case_acronyms)]
 pub trait Nft<AccountId, BoundedString, BoundedResourceVec> {
-	type MaxRecursions: Get<u32>;
-
 	fn nft_mint(
 		sender: AccountId,
 		owner: AccountId,

@@ -94,7 +94,6 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
-		type MaxRecursions: Get<u32>;
 
 		/// The maximum resource symbol length
 		#[pallet::constant]
