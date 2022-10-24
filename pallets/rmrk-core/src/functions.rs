@@ -860,9 +860,7 @@ where
 		match Self::decode_nft_account_id::<T::AccountId>(owner.clone()) {
 			None => Ok((owner, (collection_id, nft_id))),
 			Some((cid, nid)) => {
-				if !budget.consume() {
-					return Err(Error::<T>::TooManyRecursions)
-				}
+				ensure!(budget.consume() != false, Error::<T>::TooManyRecursions);
 				Pallet::<T>::lookup_root_owner(cid, nid, budget)
 			},
 		}

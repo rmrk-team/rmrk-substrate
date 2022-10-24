@@ -3,7 +3,8 @@
 // License: Apache 2.0 modified by RMRK, see LICENSE.md
 
 use super::*;
-use frame_support::traits::tokens::Locker;
+use frame_support::traits::{tokens::Locker, Get};
+use rmrk_traits::budget;
 
 use sp_std::collections::btree_set::BTreeSet;
 
@@ -222,15 +223,18 @@ where
 			Error::<T>::SlotAlreadyEquipped
 		);
 
-		// Caller must root-own item
+		// Caller must root-own item	
+		let budget = budget::Value::new(T::NestingBudget::get());
 		let item_owner =
-			pallet_rmrk_core::Pallet::<T>::lookup_root_owner(item_collection_id, item_nft_id)?;
+			pallet_rmrk_core::Pallet::<T>::lookup_root_owner(item_collection_id, item_nft_id, &budget)?;
 		ensure!(item_owner.0 == issuer, Error::<T>::PermissionError);
 
 		// Caller must root-own equipper
+		let budget = budget::Value::new(T::NestingBudget::get());
 		let equipper_owner = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(
 			equipper_collection_id,
 			equipper_nft_id,
+			&budget,
 		)?;
 		ensure!(equipper_owner.0 == issuer, Error::<T>::PermissionError);
 
@@ -383,11 +387,13 @@ where
 			return Ok((item_collection_id, item_nft_id, base_id, slot_id))
 		}
 
+		let budget = budget::Value::new(T::NestingBudget::get());
 		let item_owner =
-			pallet_rmrk_core::Pallet::<T>::lookup_root_owner(item_collection_id, item_nft_id)?;
+			pallet_rmrk_core::Pallet::<T>::lookup_root_owner(item_collection_id, item_nft_id, &budget)?;
 		let equipper_owner = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(
 			equipper_collection_id,
 			equipper_nft_id,
+			&budget,
 		)?;
 
 		let issuer_owns_either_equipper_or_item =
