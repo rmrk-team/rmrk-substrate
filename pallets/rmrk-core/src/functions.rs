@@ -852,7 +852,7 @@ where
 		collection_id: CollectionId,
 		nft_id: NftId,
 		budget: &dyn Budget,
-	) -> Result<(T::AccountId, (CollectionId, NftId)), Error<T>> {
+	) -> Result<(T::AccountId, (CollectionId, NftId)), DispatchError> {
 		let parent = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
 		// Check if parent returns None which indicates the NFT is not available
 		parent.as_ref().ok_or(Error::<T>::NoAvailableNftId)?;

@@ -223,10 +223,13 @@ where
 			Error::<T>::SlotAlreadyEquipped
 		);
 
-		// Caller must root-own item	
+		// Caller must root-own item
 		let budget = budget::Value::new(T::NestingBudget::get());
-		let item_owner =
-			pallet_rmrk_core::Pallet::<T>::lookup_root_owner(item_collection_id, item_nft_id, &budget)?;
+		let item_owner = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(
+			item_collection_id,
+			item_nft_id,
+			&budget,
+		)?;
 		ensure!(item_owner.0 == issuer, Error::<T>::PermissionError);
 
 		// Caller must root-own equipper
@@ -388,8 +391,11 @@ where
 		}
 
 		let budget = budget::Value::new(T::NestingBudget::get());
-		let item_owner =
-			pallet_rmrk_core::Pallet::<T>::lookup_root_owner(item_collection_id, item_nft_id, &budget)?;
+		let item_owner = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(
+			item_collection_id,
+			item_nft_id,
+			&budget,
+		)?;
 		let equipper_owner = pallet_rmrk_core::Pallet::<T>::lookup_root_owner(
 			equipper_collection_id,
 			equipper_nft_id,

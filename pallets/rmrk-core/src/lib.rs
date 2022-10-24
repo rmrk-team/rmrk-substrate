@@ -332,7 +332,6 @@ pub mod pallet {
 
 	// Errors inform users that something went wrong.
 	#[pallet::error]
-	#[derive(PartialEq)]
 	pub enum Error<T> {
 		/// Error names should be descriptive.
 		NoneValue,
@@ -355,6 +354,7 @@ pub mod pallet {
 		ResourceAlreadyExists,
 		NftAlreadyExists,
 		EmptyResource,
+		/// The recursion limit has been reached.
 		TooManyRecursions,
 		NftIsLocked,
 		CannotAcceptNonOwnedNft,
