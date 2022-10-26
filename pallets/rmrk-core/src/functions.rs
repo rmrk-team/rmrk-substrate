@@ -846,12 +846,14 @@ where
 		collection_id: CollectionId,
 		nft_id: NftId,
 	) -> Result<(T::AccountId, (CollectionId, NftId)), Error<T>> {
-		let parent = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
 		// Check if parent returns None which indicates the NFT is not available
-		parent.as_ref().ok_or(Error::<T>::NoAvailableNftId)?;
-		let owner = parent.unwrap();
-		match Self::decode_nft_account_id::<T::AccountId>(owner.clone()) {
-			None => Ok((owner, (collection_id, nft_id))),
+		let parent = match pallet_uniques::Pallet::<T>::owner(collection_id, nft_id) {
+			None => return Err(Error::<T>::NoAvailableNftId),
+			Some(parent) => parent,
+		};
+
+		match Self::decode_nft_account_id::<T::AccountId>(parent.clone()) {
+			None => Ok((parent, (collection_id, nft_id))),
 			Some((cid, nid)) => Pallet::<T>::lookup_root_owner(cid, nid),
 		}
 	}
@@ -898,13 +900,13 @@ where
 	) -> bool {
 		let mut found_child = false;
 
-		let parent = pallet_uniques::Pallet::<T>::owner(child_collection_id, child_nft_id);
 		// Check if parent returns None which indicates the NFT is not available
-		if parent.is_none() {
-			return found_child
-		}
-		let owner = parent.as_ref().unwrap();
-		match Self::decode_nft_account_id::<T::AccountId>(owner.clone()) {
+		let parent = match pallet_uniques::Pallet::<T>::owner(child_collection_id, child_nft_id) {
+			Some(parent) => parent,
+			None => return found_child,
+		};
+
+		match Self::decode_nft_account_id::<T::AccountId>(parent) {
 			None => found_child,
 			Some((cid, nid)) => {
 				if (cid, nid) == (parent_collection_id, parent_nft_id) {
