@@ -304,6 +304,11 @@ pub mod pallet {
 			resource_id: ResourceId,
 			collection_id: CollectionId,
 		},
+		ResourceReplaced {
+			nft_id: NftId,
+			resource_id: ResourceId,
+			collection_id: CollectionId,
+		},
 		ResourceAccepted {
 			nft_id: NftId,
 			resource_id: ResourceId,
@@ -782,6 +787,23 @@ pub mod pallet {
 				pending,
 				resource_id,
 			)?;
+
+			Ok(())
+		}
+
+		/// Replace resource by id
+		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[transactional]
+		pub fn replace_resource(
+			origin: OriginFor<T>,
+			collection_id: CollectionId,
+			nft_id: NftId,
+			resource: ResourceTypes<StringLimitOf<T>, BoundedVec<PartId, T::PartsLimit>>,
+			resource_id: ResourceId,
+		) -> DispatchResult {
+			let sender = ensure_signed(origin)?;
+
+			Self::resource_replace(sender, collection_id, nft_id, resource, resource_id)?;
 
 			Ok(())
 		}

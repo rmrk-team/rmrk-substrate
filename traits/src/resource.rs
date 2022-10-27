@@ -144,6 +144,13 @@ pub trait Resource<BoundedString, AccountId, BoundedPart> {
 		resource_id: ResourceId,
 		pending_resource: bool,
 	) -> DispatchResult;
+	fn resource_replace(
+		sender: AccountId,
+		collection_id: CollectionId,
+		nft_id: NftId,
+		resource: ResourceTypes<BoundedString, BoundedPart>,
+		resource_id: ResourceId,
+	) -> DispatchResult;
 	fn accept_removal(
 		sender: AccountId,
 		collection_id: CollectionId,
