@@ -237,7 +237,7 @@ where
 				}
 				Ok(())
 			},
-		);
+		)?;
 
 		Self::deposit_event(Event::ResourceReplaced { nft_id, resource_id, collection_id });
 

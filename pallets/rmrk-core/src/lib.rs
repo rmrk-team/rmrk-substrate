@@ -802,7 +802,6 @@ pub mod pallet {
 			resource_id: ResourceId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
-
 			Self::resource_replace(sender, collection_id, nft_id, resource, resource_id)?;
 
 			Ok(())
