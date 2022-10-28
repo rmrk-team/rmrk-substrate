@@ -222,6 +222,10 @@ pub mod pallet {
 		ItemNotEquipped,
 		// Cannot unequip an item when caller owns neither the item nor equipper
 		UnequipperMustOwnEitherItemOrEquipper,
+		// Failure to unwrap as integer value
+		UnexpectedTryFromIntError,
+		// Converting string to vec error
+		UnexpectedVecConversionError,
 	}
 
 	#[pallet::call]
@@ -434,7 +438,11 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let number_of_properties: u32 = theme.properties.len().try_into().unwrap();
+			let number_of_properties: u32 = match theme.properties.len().try_into() {
+				Ok(num) => num,
+				Err(_e) => return Err(Error::<T>::UnexpectedTryFromIntError.into()),
+			};
+
 			ensure!(
 				number_of_properties <= T::MaxPropertiesPerTheme::get(),
 				Error::<T>::TooManyProperties
@@ -469,8 +477,6 @@ pub mod pallet {
 			>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
-
-			let _part_length: u32 = parts.len().try_into().unwrap();
 			let base_id = Self::base_create(sender.clone(), base_type, symbol, parts)?;
 
 			Self::deposit_event(Event::BaseCreated { issuer: sender, base_id });
