@@ -1506,6 +1506,43 @@ fn resource_removal_works() {
 	});
 }
 
+#[test]
+fn resource_replace_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint NFT
+		assert_ok!(basic_mint(0));
+
+		let basic_resource = BasicResource { metadata: stbd("bafybeiakahlc6") };
+
+		// Add resource to NFT
+		assert_ok!(RMRKCore::add_basic_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			basic_resource,
+			0
+		));
+
+		// Replace resource
+		assert_ok!(RMRKCore::replace_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			ResourceTypes::Basic(BasicResource { metadata: stbd("new_meta") }), // new_resource
+			0,                                                                  // resource_id
+		));
+
+		// Successful resource removal should trigger ResourceRemoval event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceReplaced {
+			nft_id: 0,
+			resource_id: 0, // resource_id
+			collection_id: 0,
+		}));
+	});
+}
+
 /// Resource: Resource removal with pending and accept
 #[test]
 fn resource_removal_pending_works() {
