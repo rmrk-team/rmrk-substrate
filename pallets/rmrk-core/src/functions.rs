@@ -852,18 +852,16 @@ where
 		budget: &dyn Budget,
 	) -> Result<(T::AccountId, (CollectionId, NftId)), DispatchError> {
 		// Check if parent returns None which indicates the NFT is not available
-		ensure!(
-			pallet_uniques::Pallet::<T>::owner(collection_id, nft_id).is_some(),
-			Error::<T>::NoAvailableNftId
-		);
-		let parent = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id).unwrap();
-
-		match Self::decode_nft_account_id::<T::AccountId>(parent.clone()) {
-			None => Ok((parent, (collection_id, nft_id))),
-			Some((cid, nid)) => {
-				ensure!(budget.consume() != false, Error::<T>::TooManyRecursions);
-				Pallet::<T>::lookup_root_owner(cid, nid, budget)
-			},
+		if let Some(parent) = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id) {
+			match Self::decode_nft_account_id::<T::AccountId>(parent.clone()) {
+				None => Ok((parent, (collection_id, nft_id))),
+				Some((cid, nid)) => {
+					ensure!(budget.consume() != false, Error::<T>::TooManyRecursions);
+					Pallet::<T>::lookup_root_owner(cid, nid, budget)
+				},
+			}
+		} else {
+			Err(Error::<T>::NoAvailableNftId.into())
 		}
 	}
 
