@@ -181,6 +181,8 @@ pub mod pallet {
 		EquipperDoesntExist,
 		// BaseID exceeds max value
 		NoAvailableBaseId,
+		// The `MaxCollectionsEquippablePerPart` limit was reached.
+		TooManyEquippables,
 		// PartId exceeds max value
 		NoAvailablePartId,
 		// Equipper is not direct parent of item, cannot equip

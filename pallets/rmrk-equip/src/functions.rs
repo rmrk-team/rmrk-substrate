@@ -470,7 +470,7 @@ where
 								if let EquippableList::Custom(mut equippables) =
 									slot_part.equippable
 								{
-									let _ = equippables.try_push(equippable);
+									let _ = equippables.try_push(equippable).map_err(|_| Error::<T>::TooManyEquippables)?;
 									slot_part.equippable = EquippableList::Custom(equippables);
 								}
 							},

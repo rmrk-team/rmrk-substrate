@@ -908,6 +908,27 @@ fn equippable_add_works() {
 		};
 		assert_eq!(RmrkEquip::parts(0, 202).unwrap(), PartType::SlotPart(should_be));
 
+		// equippable limit is 10.
+		for _i in 2..9 {
+			assert_ok!(RmrkEquip::equippable_add(
+				Origin::signed(ALICE),
+				0,   // base ID
+				202, // slot ID
+				5,   // equippable collection
+			));
+		}
+
+		// This should fail since the limit is reached.
+		assert_noop!(
+			RmrkEquip::equippable_add(
+				Origin::signed(ALICE),
+				0, // base ID
+				202, // slot ID
+				5,   // equippable collection
+			),
+			Error::<Test>::TooManyEquippables
+		);
+
 		// Should not be able to change equippable on non-existent base
 		assert_noop!(
 			RmrkEquip::equippable_add(
