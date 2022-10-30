@@ -55,8 +55,8 @@ pub struct NftInfo<AccountId, RoyaltyAmount, BoundedString> {
 	#[cfg_attr(feature = "std", serde(with = "serialize::vec"))]
 	pub metadata: BoundedString,
 
-	/// Equipped state
-	pub equipped: bool,
+	/// Contains an optional `ResourceId` and the `SlotId` for the equipped nft.
+	pub equipped: Option<(ResourceId, SlotId)>,
 	/// Pending state (if sent to NFT)
 	pub pending: bool,
 	/// transferability ( non-transferable is "souldbound" )

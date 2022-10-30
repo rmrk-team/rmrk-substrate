@@ -15,8 +15,7 @@ use sp_runtime::traits::StaticLookup;
 pub use pallet::*;
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo,
-	EquippableList, PartType, Theme,
+	primitives::*, AccountIdOrCollectionNftTuple, Base, BaseInfo, EquippableList, PartType, Theme,
 	ThemeProperty,
 };
 
