@@ -116,7 +116,7 @@ async function checkEquipStatus(
 
   const itemNftData = itemNftDataOpt.unwrap();
   expect(
-    itemNftData.equipped.isTrue,
+    itemNftData.equipped.isSome,
     `Error: item NFT should be ${expectedStatus}`
   ).to.be.equal(expectedStatus === "equipped");
 }
