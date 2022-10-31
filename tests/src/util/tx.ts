@@ -962,8 +962,7 @@ export async function burnNft(
 ) {
   const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
   const issuer = privateKey(issuerUri, Number(ss58Format));
-  const maxBurns = 10;
-  const tx = api.tx.rmrkCore.burnNft(collectionId, nftId, maxBurns);
+  const tx = api.tx.rmrkCore.burnNft(collectionId, nftId);
   const events = await executeTransaction(api, issuer, tx);
   const burnResult = extractRmrkCoreTxResult(events, "NFTBurned", (data) => {
     return parseInt(data[1].toString(), 10);

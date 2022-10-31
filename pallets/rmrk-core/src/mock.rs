@@ -45,10 +45,10 @@ frame_support::construct_runtime!(
 parameter_types! {
 	pub ClassBondAmount: Balance = 100;
 	pub MaxMetadataLength: u32 = 256;
-	pub const MaxRecursions: u32 = 4;
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 50;
 	pub const MaxPriorities: u32 = 3;
+	pub const NestingBudget: u32 = 3;
 	pub const CollectionSymbolLimit: u32 = 100;
 	pub const MaxResourcesOnMint: u32 = 3;
 }
@@ -57,12 +57,12 @@ impl pallet_rmrk_core::Config for Test {
 	// type Currency = Balances;
 	type Event = Event;
 	type ProtocolOrigin = EnsureRoot<AccountId>;
-	type MaxRecursions = MaxRecursions;
 	type ResourceSymbolLimit = ResourceSymbolLimit;
 	type PartsLimit = PartsLimit;
 	type MaxPriorities = MaxPriorities;
 	type CollectionSymbolLimit = CollectionSymbolLimit;
 	type MaxResourcesOnMint = MaxResourcesOnMint;
+	type NestingBudget = NestingBudget;
 }
 
 parameter_types! {
@@ -155,7 +155,6 @@ pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::CollectionId = 0;
 // pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::CollectionId = 1;
 pub const NFT_ID_0: <Test as pallet_uniques::Config>::ItemId = 0;
 pub const NOT_EXISTING_CLASS_ID: <Test as pallet_uniques::Config>::CollectionId = 999;
-pub const MAX_BURNS: u32 = 4;
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {

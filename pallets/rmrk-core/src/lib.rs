@@ -18,9 +18,10 @@ use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
 use sp_std::convert::TryInto;
 
 use rmrk_traits::{
-	primitives::*, AccountIdOrCollectionNftTuple, BasicResource, Collection, CollectionInfo,
-	ComposableResource, Nft, NftChild, NftInfo, PhantomType, Priority, Property, PropertyInfo,
-	Resource, ResourceInfo, ResourceInfoMin, ResourceTypes, RoyaltyInfo, SlotResource,
+	budget, primitives::*, AccountIdOrCollectionNftTuple, BasicResource, Collection,
+	CollectionInfo, ComposableResource, Nft, NftChild, NftInfo, PhantomType, Priority, Property,
+	PropertyInfo, Resource, ResourceInfo, ResourceInfoMin, ResourceTypes, RoyaltyInfo,
+	SlotResource,
 };
 use sp_std::result::Result;
 
@@ -93,7 +94,6 @@ pub mod pallet {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
 		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
-		type MaxRecursions: Get<u32>;
 
 		/// The maximum resource symbol length
 		#[pallet::constant]
@@ -106,6 +106,10 @@ pub mod pallet {
 		/// The maximum number of resources that can be included in a setpriority extrinsic
 		#[pallet::constant]
 		type MaxPriorities: Get<u32>;
+
+		/// The maximum nesting allowed in the pallet extrinsics.
+		#[pallet::constant]
+		type NestingBudget: Get<u32>;
 
 		type CollectionSymbolLimit: Get<u32>;
 
@@ -349,6 +353,7 @@ pub mod pallet {
 		ResourceAlreadyExists,
 		NftAlreadyExists,
 		EmptyResource,
+		/// The recursion limit has been reached.
 		TooManyRecursions,
 		NftIsLocked,
 		CannotAcceptNonOwnedNft,
@@ -494,14 +499,14 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			collection_id: CollectionId,
 			nft_id: NftId,
-			max_burns: u32,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
-			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			let budget = budget::Value::new(T::NestingBudget::get());
+			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 			// Check ownership
 			ensure!(sender == root_owner, Error::<T>::NoPermission);
 			let (_collection_id, _nft_id) =
-				Self::nft_burn(root_owner, collection_id, nft_id, max_burns)?;
+				Self::nft_burn(root_owner, collection_id, nft_id, &budget)?;
 
 			Ok(())
 		}
@@ -560,7 +565,9 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			let budget = budget::Value::new(T::NestingBudget::get());
+			let (root_owner, _root_nft) =
+				Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 			// Check ownership
 			ensure!(sender == root_owner, Error::<T>::NoPermission);
 
@@ -598,9 +605,7 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let max_recursions = T::MaxRecursions::get();
-			let (sender, collection_id, nft_id) =
-				Self::nft_reject(sender, collection_id, nft_id, max_recursions)?;
+			let (sender, collection_id, nft_id) = Self::nft_reject(sender, collection_id, nft_id)?;
 
 			Self::deposit_event(Event::NFTRejected { sender, collection_id, nft_id });
 			Ok(())
@@ -692,7 +697,8 @@ pub mod pallet {
 				Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
 			ensure!(collection.issuer == sender, Error::<T>::NoPermission);
-			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			let budget = budget::Value::new(T::NestingBudget::get());
+			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 			// Check NFT lock status
 			ensure!(
 				!Pallet::<T>::is_locked(collection_id, nft_id),
@@ -729,7 +735,8 @@ pub mod pallet {
 				Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
 			ensure!(collection.issuer == sender, Error::<T>::NoPermission);
-			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			let budget = budget::Value::new(T::NestingBudget::get());
+			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 			// Check NFT lock status
 			ensure!(
 				!Pallet::<T>::is_locked(collection_id, nft_id),
@@ -765,7 +772,8 @@ pub mod pallet {
 				Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
 
 			ensure!(collection.issuer == sender, Error::<T>::NoPermission);
-			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			let budget = budget::Value::new(T::NestingBudget::get());
+			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 			// Check NFT lock status
 			ensure!(
 				!Pallet::<T>::is_locked(collection_id, nft_id),
@@ -796,7 +804,8 @@ pub mod pallet {
 			resource_id: ResourceId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
-			let (owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			let budget = budget::Value::new(T::NestingBudget::get());
+			let (owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 			ensure!(owner == sender, Error::<T>::NoPermission);
 			// Check NFT lock status
 			ensure!(!Self::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
@@ -818,7 +827,8 @@ pub mod pallet {
 			let sender = ensure_signed(origin)?;
 			let collection =
 				Self::collections(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			let budget = budget::Value::new(T::NestingBudget::get());
+			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 			ensure!(collection.issuer == sender, Error::<T>::NoPermission);
 
 			// Pending resource if sender is not root owner
@@ -840,7 +850,8 @@ pub mod pallet {
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			let budget = budget::Value::new(T::NestingBudget::get());
+			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 			ensure!(root_owner == sender, Error::<T>::NoPermission);
 
 			Self::accept_removal(sender, collection_id, nft_id, resource_id)?;
@@ -858,7 +869,8 @@ pub mod pallet {
 			priorities: BoundedVec<ResourceId, T::MaxPriorities>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
-			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+			let budget = budget::Value::new(T::NestingBudget::get());
+			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 			ensure!(sender == root_owner, Error::<T>::NoPermission);
 			// Check NFT lock status
 			ensure!(!Self::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
