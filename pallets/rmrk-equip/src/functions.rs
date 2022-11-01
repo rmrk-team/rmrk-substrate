@@ -452,7 +452,10 @@ where
 		issuer: T::AccountId,
 		base_id: BaseId,
 		part_id: PartId,
-		equippables: EquippableList<BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>>,
+		operation: EquippableOperation<
+			CollectionId,
+			BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+		>,
 	) -> Result<(BaseId, SlotId), DispatchError> {
 		// Caller must be issuer of base
 		match Bases::<T>::get(base_id) {
@@ -474,8 +477,26 @@ where
 						Err(Error::<T>::NoEquippableOnFixedPart.into())
 					},
 					PartType::SlotPart(mut slot_part) => {
-						// Update equippable value
-						slot_part.equippable = equippables;
+						match operation {
+							EquippableOperation::Add(equippable) => {
+								if let EquippableList::Custom(mut equippables) =
+									slot_part.equippable
+								{
+									let _ = equippables.try_push(equippable).map_err(|_| Error::<T>::TooManyEquippables)?;
+									slot_part.equippable = EquippableList::Custom(equippables);
+								}
+							},
+							EquippableOperation::Remove(equippable) =>
+								if let EquippableList::Custom(mut equippables) =
+									slot_part.equippable
+								{
+									equippables.retain(|e| *e != equippable);
+									slot_part.equippable = EquippableList::Custom(equippables);
+								},
+							EquippableOperation::Override(equippables) => {
+								slot_part.equippable = equippables;
+							},
+						};
 						// Overwrite Parts entry for this base_id.part_id
 						Parts::<T>::insert(base_id, part_id, PartType::SlotPart(slot_part));
 						Ok((base_id, part_id))
