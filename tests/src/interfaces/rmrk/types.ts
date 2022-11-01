@@ -1494,9 +1494,9 @@ export interface RmrkTraitsNftNftInfo extends Struct {
   readonly equipped: Option<
     ITuple<[
       RmrkTraitsResourceResourceTypes, 
-      Option<ITuple<[u32, u32]>>
+      u32
     ]>
-  >; 
+  >;
   readonly pending: bool;
   readonly transferable: bool;
 }
