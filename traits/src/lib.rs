@@ -5,6 +5,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
 pub mod base;
+pub mod budget;
 pub mod collection;
 pub mod nft;
 pub mod part;

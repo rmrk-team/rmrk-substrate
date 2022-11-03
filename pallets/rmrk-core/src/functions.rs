@@ -16,6 +16,7 @@ use sp_runtime::{
 	ArithmeticError,
 };
 
+use rmrk_traits::budget::Budget;
 use sp_std::collections::btree_set::BTreeSet;
 
 // Randomness to generate NFT virtual accounts
@@ -64,7 +65,8 @@ where
 				!Pallet::<T>::is_locked(collection_id, *nft_id),
 				pallet_uniques::Error::<T>::Locked
 			);
-			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id)?;
+			let budget = budget::Value::new(T::NestingBudget::get());
+			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id, &budget)?;
 			ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
 		}
 		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
@@ -343,8 +345,6 @@ impl<T: Config> Nft<T::AccountId, StringLimitOf<T>, BoundedResourceInfoTypeOf<T>
 where
 	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
-	type MaxRecursions = T::MaxRecursions;
-
 	fn nft_mint(
 		sender: T::AccountId,
 		owner: T::AccountId,
@@ -448,7 +448,8 @@ where
 		}
 
 		// Calculate the rootowner of the intended owner of the minted NFT
-		let (rootowner, _) = Self::lookup_root_owner(owner.0, owner.1)?;
+		let budget = budget::Value::new(T::NestingBudget::get());
+		let (rootowner, _) = Self::lookup_root_owner(owner.0, owner.1, &budget)?;
 
 		// NFT should be pending if minting either to an NFT owned by another account
 		let pending = rootowner != sender;
@@ -521,10 +522,8 @@ where
 		owner: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		max_recursions: u32,
+		budget: &dyn Budget,
 	) -> sp_std::result::Result<(CollectionId, NftId), DispatchError> {
-		ensure!(max_recursions > 0, Error::<T>::TooManyRecursions);
-
 		// Remove self from parent's Children storage
 		if let Some(nft) = Self::nfts(collection_id, nft_id) {
 			if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(parent_col, parent_nft) =
@@ -545,7 +544,8 @@ where
 		for ((child_collection_id, child_nft_id), _) in
 			Children::<T>::drain_prefix((collection_id, nft_id))
 		{
-			Self::nft_burn(owner.clone(), child_collection_id, child_nft_id, max_recursions - 1)?;
+			ensure!(budget.consume() != false, Error::<T>::TooManyRecursions);
+			Self::nft_burn(owner.clone(), child_collection_id, child_nft_id, budget)?;
 		}
 
 		// decrement nfts counter
@@ -574,7 +574,9 @@ where
 		// Check if parent returns None which indicates the NFT is not available
 		ensure!(parent.is_some(), Error::<T>::NoAvailableNftId); // <- is this error wrong?
 
-		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		let budget = budget::Value::new(T::NestingBudget::get());
+		let (root_owner, _root_nft) =
+			Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 		// Check ownership
 		ensure!(sender == root_owner, Error::<T>::NoPermission);
 		// Get NFT info
@@ -609,7 +611,9 @@ where
 					!Pallet::<T>::is_x_descendent_of_y(cid, nid, collection_id, nft_id),
 					Error::<T>::CannotSendToDescendentOrSelf
 				);
-				let (recipient_root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(cid, nid)?;
+				let budget = budget::Value::new(T::NestingBudget::get());
+				let (recipient_root_owner, _root_nft) =
+					Pallet::<T>::lookup_root_owner(cid, nid, &budget)?;
 				if recipient_root_owner == root_owner {
 					approval_required = false;
 				}
@@ -704,10 +708,11 @@ where
 		sender: T::AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		max_recursions: u32,
 	) -> Result<(T::AccountId, CollectionId, NftId), DispatchError> {
 		// Look up root owner in Uniques to ensure permissions
-		let (root_owner, _root_nft) = Pallet::<T>::lookup_root_owner(collection_id, nft_id)?;
+		let budget = budget::Value::new(T::NestingBudget::get());
+		let (root_owner, _root_nft) =
+			Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 
 		let nft = Nfts::<T>::get(collection_id, nft_id);
 
@@ -735,7 +740,7 @@ where
 		let _rejecting_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
-		Self::nft_burn(sender.clone(), collection_id, nft_id, max_recursions)?;
+		Self::nft_burn(sender.clone(), collection_id, nft_id, &budget)?;
 
 		Ok((sender, collection_id, nft_id))
 	}
@@ -841,20 +846,22 @@ where
 	///
 	/// Output:
 	/// - `Result<(T::AcccountId, (CollectionId, NftId)), Error<T>>`
-	#[allow(clippy::type_complexity)]
 	pub fn lookup_root_owner(
 		collection_id: CollectionId,
 		nft_id: NftId,
-	) -> Result<(T::AccountId, (CollectionId, NftId)), Error<T>> {
+		budget: &dyn Budget,
+	) -> Result<(T::AccountId, (CollectionId, NftId)), DispatchError> {
 		// Check if parent returns None which indicates the NFT is not available
-		let parent = match pallet_uniques::Pallet::<T>::owner(collection_id, nft_id) {
-			None => return Err(Error::<T>::NoAvailableNftId),
-			Some(parent) => parent,
-		};
-
-		match Self::decode_nft_account_id::<T::AccountId>(parent.clone()) {
-			None => Ok((parent, (collection_id, nft_id))),
-			Some((cid, nid)) => Pallet::<T>::lookup_root_owner(cid, nid),
+		if let Some(parent) = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id) {
+			match Self::decode_nft_account_id::<T::AccountId>(parent.clone()) {
+				None => Ok((parent, (collection_id, nft_id))),
+				Some((cid, nid)) => {
+					ensure!(budget.consume() != false, Error::<T>::TooManyRecursions);
+					Pallet::<T>::lookup_root_owner(cid, nid, budget)
+				},
+			}
+		} else {
+			Err(Error::<T>::NoAvailableNftId.into())
 		}
 	}
 
