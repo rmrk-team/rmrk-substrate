@@ -21,6 +21,7 @@ describe("integration test: burn nft", () => {
   it("burn nft", async () => {
     await createCollection(
       api,
+      20,
       Alice,
       "test-metadata",
       null,
@@ -41,6 +42,7 @@ describe("integration test: burn nft", () => {
   it("burn nft with children", async () => {
     const collectionId = await createCollection(
       api,
+      21,
       Alice,
       "test-metadata",
       null,
@@ -95,6 +97,7 @@ describe("integration test: burn nft", () => {
   it("burn child nft", async () => {
     const collectionId = await createCollection(
       api,
+      22,
       Alice,
       "test-metadata",
       null,
@@ -149,6 +152,7 @@ describe("integration test: burn nft", () => {
   it("[negative] burn non-existing NFT", async () => {
     await createCollection(
       api,
+      23,
       Alice,
       "test-metadata",
       null,
@@ -162,6 +166,7 @@ describe("integration test: burn nft", () => {
   it("[negative] burn not an owner NFT user", async () => {
     await createCollection(
       api,
+      24,
       Alice,
       "test-metadata",
       null,

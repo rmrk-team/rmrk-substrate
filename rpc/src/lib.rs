@@ -85,10 +85,6 @@ pub trait RmrkApi<
 	Theme,
 >
 {
-	// #[method(name = "lastCollectionIdx")]
-	/// Get the latest created collection id
-	// fn last_collection_idx(&self, at: Option<BlockHash>) -> RpcResult<CollectionId>;
-
 	#[method(name = "collectionById")]
 	/// Get collection by id
 	fn collection_by_id(
@@ -232,7 +228,6 @@ where
 	Theme: Decode,
 	Block: BlockT,
 {
-	// pass_method!(last_collection_idx() -> CollectionId);
 	pass_method!(collection_by_id(id: CollectionId) -> Option<CollectionInfo>);
 	pass_method!(nft_by_id(collection_id: CollectionId, nft_id: NftId) -> Option<NftInfo>);
 	pass_method!(account_tokens(account_id: AccountId, collection_id: CollectionId) -> Vec<NftId>);

@@ -419,10 +419,6 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        **/
       collectionProperties: AugmentedRpc<(collectionId: u32 | AnyNumber | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<RmrkTraitsPropertyPropertyInfo>>>;
       /**
-       * Get the latest created collection id
-       **/
-      lastCollectionIdx: AugmentedRpc<(at?: Hash | string | Uint8Array) => Observable<u32>>;
-      /**
        * Get NFT by collection id and NFT id
        **/
       nftById: AugmentedRpc<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Option<RmrkTraitsNftNftInfo>>>;

@@ -150,10 +150,6 @@ pub mod pallet {
 		type Helper: BenchmarkHelper<Self::CollectionId, Self::ItemId>;
 	}
 
-	// #[pallet::storage]
-	// #[pallet::getter(fn collection_index)]
-	// pub type CollectionIndex<T: Config> = StorageValue<_, T::CollectionId, ValueQuery>;
-
 	#[pallet::storage]
 	#[pallet::getter(fn collections)]
 	/// Stores collections info
@@ -294,7 +290,6 @@ pub mod pallet {
 			issuer: T::AccountId,
 			collection_id: T::CollectionId,
 		},
-		// NftMinted(T::AccountId, T::CollectionId,  T::ItemId),
 		NftMinted {
 			owner: AccountIdOrCollectionNftTuple<T::AccountId, T::CollectionId, T::ItemId>,
 			collection_id: T::CollectionId,

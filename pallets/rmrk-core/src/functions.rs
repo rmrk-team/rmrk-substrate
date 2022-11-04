@@ -271,13 +271,6 @@ impl<T: Config>
 	) -> Result<(), DispatchError> {
 		let collection =
 			CollectionInfo { issuer: issuer.clone(), metadata, max, symbol, nfts_count: 0 };
-		// let collection_id =
-		// 	<CollectionIndex<T>>::try_mutate(|n| -> Result<T::CollectionId, DispatchError> {
-		// 		let id = *n;
-		// 		// ensure!(id != T::CollectionId::max_value(), Error::<T>::NoAvailableCollectionId);
-		// 		*n += 1;
-		// 		Ok(id)
-		// 	})?;
 
 		// Call the pallet_uniques function to create collection
 		pallet_uniques::Pallet::<T>::do_create_collection(
@@ -486,6 +479,9 @@ impl<T: Config>
 
 		Nfts::<T>::insert(collection_id, nft_id, nft);
 
+		// For Uniques, we need to decode the "virtual account" ID to be the owner
+		let uniques_owner = Self::nft_to_account_id(owner.0, owner.1);
+
 		// increment nfts counter
 		let nfts_count = collection.nfts_count.checked_add(1).ok_or(ArithmeticError::Overflow)?;
 		Collections::<T>::try_mutate(collection_id, |collection| -> DispatchResult {
@@ -495,9 +491,6 @@ impl<T: Config>
 		})?;
 
 		Pallet::<T>::add_child((owner.0, owner.1), (collection_id, nft_id));
-
-		// For Uniques, we need to decode the "virtual account" ID to be the owner
-		let uniques_owner = Self::nft_to_account_id(owner.0, owner.1);
 
 		pallet_uniques::Pallet::<T>::do_mint(collection_id, nft_id, uniques_owner, |_details| {
 			Ok(())

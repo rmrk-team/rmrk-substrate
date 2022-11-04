@@ -37,9 +37,6 @@ sp_api::decl_runtime_apis! {
 		PartType: Decode,
 		Theme: Decode,
 	{
-		/// Get the latest created collection id
-		// fn last_collection_idx() -> Result<CollectionId>;
-
 		/// Get collection by id
 		fn collection_by_id(id: CollectionId) -> Result<Option<CollectionInfo>>;
 

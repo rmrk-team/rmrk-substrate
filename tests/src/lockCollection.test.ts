@@ -15,6 +15,7 @@ describe("integration test: lock collection", () => {
   it("lock collection", async () => {
     await createCollection(
       api,
+      90,
       Alice,
       "test-metadata",
       null,
@@ -32,6 +33,7 @@ describe("integration test: lock collection", () => {
   it("[negative] lock not an owner NFT collection issuer", async () => {
     await createCollection(
       api,
+      91,
       Alice,
       "test-metadata",
       null,
@@ -45,6 +47,7 @@ describe("integration test: lock collection", () => {
   it("lock collection with minting", async () => {
     await createCollection(
       api,
+      92,
       Alice,
       "test-metadata",
       Max,
@@ -69,6 +72,7 @@ describe("integration test: lock collection", () => {
   it("[negative] unable to mint NFT inside a locked collection", async () => {
     await createCollection(
       api,
+      93,
       Alice,
       "test-metadata",
       Max,
@@ -90,31 +94,36 @@ describe("integration test: lock collection", () => {
   });
 
   it("[negative] unable to mint NFT inside a full collection", async () => {
-    await createCollection(api, Alice, "test-metadata", 1, "test-symbol").then(
-      async (collectionId) => {
-        await mintNft(
-          api,
-          0,
-          Alice,
-          Alice,
-          collectionId,
-          "test-metadata",
-          null,
-          null
-        );
-        const tx = mintNft(
-          api,
-          1,
-          Alice,
-          Alice,
-          collectionId,
-          "test-metadata",
-          null,
-          null
-        );
-        await expectTxFailure(/rmrkCore\.CollectionFullOrLocked/, tx);
-      }
-    );
+    await createCollection(
+      api,
+      94,
+      Alice,
+      "test-metadata",
+      1,
+      "test-symbol"
+    ).then(async (collectionId) => {
+      await mintNft(
+        api,
+        0,
+        Alice,
+        Alice,
+        collectionId,
+        "test-metadata",
+        null,
+        null
+      );
+      const tx = mintNft(
+        api,
+        1,
+        Alice,
+        Alice,
+        collectionId,
+        "test-metadata",
+        null,
+        null
+      );
+      await expectTxFailure(/rmrkCore\.CollectionFullOrLocked/, tx);
+    });
   });
 
   after(() => {
