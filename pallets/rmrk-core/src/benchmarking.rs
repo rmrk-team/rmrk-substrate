@@ -241,10 +241,9 @@ benchmarks! {
 		let owner: T::AccountId = whitelisted_caller();
 		let collection_index = 1;
 		let collection_id = create_test_collection::<T>(owner.clone(), collection_index);
-		let recursion_max = 1;
 		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 42);
 
-	}: _(RawOrigin::Signed(owner.clone()), collection_id, nft_id, recursion_max)
+	}: _(RawOrigin::Signed(owner.clone()), collection_id, nft_id)
 	verify {
 		assert_last_event::<T>(Event::NFTBurned { owner, collection_id, nft_id }.into());
 	}
