@@ -1,6 +1,12 @@
-import { getApiConnection } from './substrate/substrate-api';
-import { expectTxFailure } from './util/helpers';
-import { createCollection, createBase, setEquippableList, addToEquippableList, removeFromEquippableList } from "./util/tx";
+import { getApiConnection } from "./substrate/substrate-api";
+import { expectTxFailure } from "./util/helpers";
+import {
+  createCollection,
+  createBase,
+  setEquippableList,
+  addToEquippableList,
+  removeFromEquippableList,
+} from "./util/tx";
 
 describe("integration test: set slot's Equippable List", () => {
   let api: any;
@@ -50,12 +56,19 @@ describe("integration test: set slot's Equippable List", () => {
       ]
     );
 
-        await setEquippableList(api, alice, baseId, slotId, "All");
-        await setEquippableList(api, alice, baseId, slotId, "Empty");
-        await setEquippableList(api, alice, baseId, slotId, { "Custom": collectionIds });
-        await removeFromEquippableList(api, alice, baseId, slotId, collectionIds[0]);
-        await addToEquippableList(api, alice, baseId, slotId, collectionIds[0]);
+    await setEquippableList(api, alice, baseId, slotId, "All");
+    await setEquippableList(api, alice, baseId, slotId, "Empty");
+    await setEquippableList(api, alice, baseId, slotId, {
+      Custom: collectionIds,
     });
+    await removeFromEquippableList(
+      api,
+      alice,
+      baseId,
+      slotId,
+      collectionIds[0]
+    );
+    await addToEquippableList(api, alice, baseId, slotId, collectionIds[0]);
   });
 
   it("[negative] unable to set equippable list of a slot of non-existing base", async () => {
