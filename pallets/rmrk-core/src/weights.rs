@@ -55,14 +55,13 @@ pub trait WeightInfo {
 	fn set_priority(n: u32) -> Weight;
 }
 
-/// Weight functions for `pallet_rmrk_core`.
 pub struct SubstrateWeight<T>(PhantomData<T>);
 impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques Class (r:1 w:1)
 	// Storage: RmrkCore Collections (r:0 w:1)
 	// Storage: Uniques ClassAccount (r:0 w:1)
 	fn create_collection() -> Weight {
-		Weight::from_ref_time(37_000_000 as u64)
+		Weight::from_ref_time(39_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(1 as u64))
 			.saturating_add(T::DbWeight::get().writes(3 as u64))
 	}
@@ -73,7 +72,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques CollectionMaxSupply (r:1 w:0)
 	// Storage: Uniques Account (r:0 w:1)
 	fn mint_nft() -> Weight {
-		Weight::from_ref_time(55_000_000 as u64)
+		Weight::from_ref_time(56_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(5 as u64))
 			.saturating_add(T::DbWeight::get().writes(5 as u64))
 	}
@@ -85,7 +84,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: RmrkCore Children (r:0 w:1)
 	// Storage: Uniques Account (r:0 w:1)
 	fn mint_nft_directly_to_nft() -> Weight {
-		Weight::from_ref_time(60_000_000 as u64)
+		Weight::from_ref_time(62_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(6 as u64))
 			.saturating_add(T::DbWeight::get().writes(6 as u64))
 	}
@@ -96,7 +95,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques ClassMetadataOf (r:0 w:1)
 	// Storage: Uniques CollectionMaxSupply (r:0 w:1)
 	fn destroy_collection() -> Weight {
-		Weight::from_ref_time(59_000_000 as u64)
+		Weight::from_ref_time(64_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(3 as u64))
 			.saturating_add(T::DbWeight::get().writes(5 as u64))
 	}
@@ -119,7 +118,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques Account (r:0 w:2)
 	// Storage: Uniques ItemPriceOf (r:0 w:1)
 	fn send_to_nft() -> Weight {
-		Weight::from_ref_time(65_000_000 as u64)
+		Weight::from_ref_time(62_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(6 as u64))
 			.saturating_add(T::DbWeight::get().writes(6 as u64))
 	}
@@ -131,14 +130,14 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques Account (r:0 w:3)
 	// Storage: Uniques ItemPriceOf (r:0 w:3)
 	fn burn_nft() -> Weight {
-		Weight::from_ref_time(174_000_000 as u64)
+		Weight::from_ref_time(177_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(13 as u64))
 			.saturating_add(T::DbWeight::get().writes(16 as u64))
 	}
 	// Storage: Uniques Asset (r:2 w:0)
 	// Storage: RmrkCore Nfts (r:1 w:1)
 	fn accept_nft() -> Weight {
-		Weight::from_ref_time(33_000_000 as u64)
+		Weight::from_ref_time(34_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(3 as u64))
 			.saturating_add(T::DbWeight::get().writes(1 as u64))
 	}
@@ -150,7 +149,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques Account (r:0 w:1)
 	// Storage: Uniques ItemPriceOf (r:0 w:1)
 	fn reject_nft() -> Weight {
-		Weight::from_ref_time(83_000_000 as u64)
+		Weight::from_ref_time(84_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(7 as u64))
 			.saturating_add(T::DbWeight::get().writes(7 as u64))
 	}
@@ -160,7 +159,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: System Account (r:1 w:1)
 	// Storage: Uniques ClassAccount (r:0 w:2)
 	fn change_collection_issuer() -> Weight {
-		Weight::from_ref_time(54_000_000 as u64)
+		Weight::from_ref_time(56_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(4 as u64))
 			.saturating_add(T::DbWeight::get().writes(6 as u64))
 	}
@@ -169,7 +168,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques Asset (r:1 w:0)
 	// Storage: RmrkCore Properties (r:0 w:1)
 	fn set_property() -> Weight {
-		Weight::from_ref_time(29_000_000 as u64)
+		Weight::from_ref_time(28_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(3 as u64))
 			.saturating_add(T::DbWeight::get().writes(1 as u64))
 	}
@@ -204,7 +203,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: RmrkCore Resources (r:1 w:1)
 	// Storage: RmrkCore EquippableSlots (r:0 w:1)
 	fn add_slot_resource() -> Weight {
-		Weight::from_ref_time(34_000_000 as u64)
+		Weight::from_ref_time(36_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(4 as u64))
 			.saturating_add(T::DbWeight::get().writes(2 as u64))
 	}
@@ -212,7 +211,7 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: RmrkCore Lock (r:1 w:0)
 	// Storage: RmrkCore Resources (r:1 w:1)
 	fn accept_resource() -> Weight {
-		Weight::from_ref_time(31_000_000 as u64)
+		Weight::from_ref_time(30_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(3 as u64))
 			.saturating_add(T::DbWeight::get().writes(1 as u64))
 	}
@@ -220,14 +219,14 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques Asset (r:1 w:0)
 	// Storage: RmrkCore Resources (r:1 w:1)
 	fn remove_resource() -> Weight {
-		Weight::from_ref_time(31_000_000 as u64)
+		Weight::from_ref_time(32_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(3 as u64))
 			.saturating_add(T::DbWeight::get().writes(1 as u64))
 	}
 	// Storage: Uniques Asset (r:1 w:0)
 	// Storage: RmrkCore Resources (r:1 w:1)
 	fn accept_resource_removal() -> Weight {
-		Weight::from_ref_time(31_000_000 as u64)
+		Weight::from_ref_time(30_000_000 as u64)
 			.saturating_add(T::DbWeight::get().reads(2 as u64))
 			.saturating_add(T::DbWeight::get().writes(1 as u64))
 	}
@@ -236,9 +235,9 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: RmrkCore Priorities (r:0 w:1)
 	/// The range of component `n` is `[1, 25]`.
 	fn set_priority(n: u32, ) -> Weight {
-		Weight::from_ref_time(22_522_000 as u64)
-			// Standard Error: 4_000
-			.saturating_add(Weight::from_ref_time(2_383_000 as u64).saturating_mul(n as u64))
+		Weight::from_ref_time(22_338_000 as u64)
+			// Standard Error: 5_000
+			.saturating_add(Weight::from_ref_time(2_426_000 as u64).saturating_mul(n as u64))
 			.saturating_add(T::DbWeight::get().reads(2 as u64))
 			.saturating_add(T::DbWeight::get().writes((1 as u64).saturating_mul(n as u64)))
 	}
