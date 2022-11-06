@@ -8,7 +8,10 @@ use sp_api::{ApiExt, BlockId, BlockT, Decode, Encode, ProvideRuntimeApi};
 use sp_blockchain::HeaderBackend;
 
 use pallet_rmrk_rpc_runtime_api::{PropertyKey, RmrkApi as RmrkRuntimeApi, ThemeName};
-use rmrk_traits::{primitives::*, NftChild};
+use rmrk_traits::{
+	primitives::{BaseId, CollectionId, NftId, ResourceId},
+	NftChild,
+};
 
 macro_rules! pass_method {
 	(
@@ -82,10 +85,6 @@ pub trait RmrkApi<
 	Theme,
 >
 {
-	#[method(name = "lastCollectionIdx")]
-	/// Get the latest created collection id
-	fn last_collection_idx(&self, at: Option<BlockHash>) -> RpcResult<CollectionId>;
-
 	#[method(name = "collectionById")]
 	/// Get collection by id
 	fn collection_by_id(
@@ -119,7 +118,7 @@ pub trait RmrkApi<
 		collection_id: CollectionId,
 		nft_id: NftId,
 		at: Option<BlockHash>,
-	) -> RpcResult<Vec<NftChild>>;
+	) -> RpcResult<Vec<NftChild<CollectionId, NftId>>>;
 
 	#[method(name = "collectionProperties")]
 	/// Get collection properties
@@ -229,11 +228,10 @@ where
 	Theme: Decode,
 	Block: BlockT,
 {
-	pass_method!(last_collection_idx() -> CollectionId);
 	pass_method!(collection_by_id(id: CollectionId) -> Option<CollectionInfo>);
 	pass_method!(nft_by_id(collection_id: CollectionId, nft_id: NftId) -> Option<NftInfo>);
 	pass_method!(account_tokens(account_id: AccountId, collection_id: CollectionId) -> Vec<NftId>);
-	pass_method!(nft_children(collection_id: CollectionId, nft_id: NftId) -> Vec<NftChild>);
+	pass_method!(nft_children(collection_id: CollectionId, nft_id: NftId) -> Vec<NftChild<CollectionId, NftId>>);
 	pass_method!(
 		collection_properties(
 			collection_id: CollectionId,

@@ -15,7 +15,7 @@ use rmrk_substrate_runtime::{
 	ValueLimit,
 };
 use rmrk_traits::{
-	primitives::{CollectionId, PartId},
+	primitives::{CollectionId, NftId, PartId},
 	BaseInfo, CollectionInfo, NftInfo, PartType, PropertyInfo, ResourceInfo, Theme, ThemeProperty,
 };
 pub use sc_rpc_api::DenyUnsafe;
@@ -54,7 +54,7 @@ where
 			BoundedVec<u8, CollectionSymbolLimit>,
 			AccountId,
 		>,
-		NftInfo<AccountId, Permill, BoundedVec<u8, UniquesStringLimit>>,
+		NftInfo<AccountId, Permill, BoundedVec<u8, UniquesStringLimit>, CollectionId, NftId>,
 		ResourceInfo<BoundedVec<u8, UniquesStringLimit>, BoundedVec<PartId, PartsLimit>>,
 		PropertyInfo<BoundedVec<u8, KeyLimit>, BoundedVec<u8, ValueLimit>>,
 		BaseInfo<AccountId, BoundedVec<u8, UniquesStringLimit>>,

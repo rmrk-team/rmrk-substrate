@@ -158,6 +158,7 @@ fn equip_works() {
 		// Create collection 0
 		assert_ok!(RmrkCore::create_collection(
 			Origin::signed(ALICE),
+			COLLECTION_ID_0,
 			stb("ipfs://col0-metadata"), // metadata
 			Some(5),                     // max
 			sbvec!["COL0"]               // symbol
@@ -166,6 +167,7 @@ fn equip_works() {
 		// Create collection 1
 		assert_ok!(RmrkCore::create_collection(
 			Origin::signed(ALICE),
+			COLLECTION_ID_1,
 			stb("ipfs://col1-metadata"), // metadata
 			Some(5),                     // max
 			sbvec!["COL1"]               // symbol
@@ -543,6 +545,7 @@ fn nested_equip_works() {
 		// Create PERSON collection (0)
 		assert_ok!(RmrkCore::create_collection(
 			Origin::signed(ALICE),
+			COLLECTION_ID_0,
 			stb("person-collection"), // metadata
 			Some(5),                  // max
 			sbvec!["COL0"]            // symbol
@@ -551,6 +554,7 @@ fn nested_equip_works() {
 		// Create HEADWARE collection (1)
 		assert_ok!(RmrkCore::create_collection(
 			Origin::signed(ALICE),
+			COLLECTION_ID_1,
 			stb("headware-collection"), // metadata
 			Some(5),                    // max
 			sbvec!["COL1"]              // symbol
@@ -559,6 +563,7 @@ fn nested_equip_works() {
 		// Create GEM collection (2)
 		assert_ok!(RmrkCore::create_collection(
 			Origin::signed(ALICE),
+			COLLECTION_ID_2,
 			stb("gem-collection"), // metadata
 			Some(5),               // max
 			sbvec!["COL2"]         // symbol
@@ -921,7 +926,7 @@ fn equippable_add_works() {
 		assert_noop!(
 			RmrkEquip::equippable_add(
 				Origin::signed(ALICE),
-				0, // base ID
+				0,   // base ID
 				202, // slot ID
 				5,   // equippable collection
 			),

@@ -28,6 +28,7 @@ describe("integration test: add NFT resource", () => {
   it("add resource", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      10,
       Alice,
       "test-metadata",
       null,
@@ -57,6 +58,7 @@ describe("integration test: add NFT resource", () => {
   it("add a resource to the nested NFT", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      11,
       Alice,
       "test-metadata",
       null,
@@ -105,6 +107,7 @@ describe("integration test: add NFT resource", () => {
   it("add multiple resources", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      12,
       Alice,
       "test-metadata",
       null,
@@ -255,6 +258,7 @@ describe("integration test: add NFT resource", () => {
   it("[negative]: unable to add a resource to the non-existing NFT", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      13,
       Alice,
       "test-metadata",
       null,
@@ -277,6 +281,7 @@ describe("integration test: add NFT resource", () => {
   it("[negative]: unable to add a resource by a not-an-owner user", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      14,
       Alice,
       "test-metadata",
       null,
@@ -308,6 +313,7 @@ describe("integration test: add NFT resource", () => {
   it("[negative]: unable to add a resource to the nested NFT if it isnt root owned by the caller", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      15,
       Alice,
       "test-metadata",
       null,
@@ -358,6 +364,7 @@ describe("integration test: add NFT resource", () => {
   it("accept resource", async () => {
     const collectionIdBob = await createCollection(
       api,
+      16,
       Bob,
       "test-metadata",
       null,
@@ -389,6 +396,7 @@ describe("integration test: add NFT resource", () => {
   it("[negative]: unable to accept a non-existing resource", async () => {
     const collectionIdBob = await createCollection(
       api,
+      17,
       Bob,
       "test-metadata",
       null,
@@ -417,6 +425,7 @@ describe("integration test: add NFT resource", () => {
   it("[negative]: unable to accept a resource by a not-an-NFT-owner user", async () => {
     const collectionIdBob = await createCollection(
       api,
+      18,
       Bob,
       "test-metadata",
       null,
@@ -456,6 +465,7 @@ describe("integration test: add NFT resource", () => {
   it("[negative]: unable to accept a resource to a non-target NFT", async () => {
     const collectionIdBob = await createCollection(
       api,
+      19,
       Bob,
       "test-metadata",
       null,

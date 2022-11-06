@@ -14,6 +14,7 @@ describe("integration test: delete collection", () => {
   it("delete NFT collection", async () => {
     await createCollection(
       api,
+      60,
       Alice,
       "test-metadata",
       null,
@@ -31,6 +32,7 @@ describe("integration test: delete collection", () => {
   it("[negative] delete not an owner NFT collection", async () => {
     await createCollection(
       api,
+      61,
       Alice,
       "test-metadata",
       null,

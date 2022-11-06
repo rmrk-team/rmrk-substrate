@@ -10,7 +10,7 @@ use sp_runtime::{DispatchError, DispatchResult};
 #[cfg(feature = "std")]
 use serde::Serialize;
 
-use crate::{primitives::*, serialize};
+use crate::serialize;
 use sp_std::result::Result;
 
 /// Collection info.
@@ -39,14 +39,15 @@ pub struct CollectionInfo<BoundedString, BoundedSymbol, AccountId> {
 
 /// Abstraction over a Collection system.
 #[allow(clippy::upper_case_acronyms)]
-pub trait Collection<BoundedString, BoundedSymbol, AccountId> {
+pub trait Collection<BoundedString, BoundedSymbol, AccountId, CollectionId> {
 	fn issuer(collection_id: CollectionId) -> Option<AccountId>;
 	fn collection_create(
 		issuer: AccountId,
+		collection_id: CollectionId,
 		metadata: BoundedString,
 		max: Option<u32>,
 		symbol: BoundedSymbol,
-	) -> Result<CollectionId, DispatchError>;
+	) -> Result<(), DispatchError>;
 	fn collection_burn(issuer: AccountId, collection_id: CollectionId) -> DispatchResult;
 	fn collection_change_issuer(
 		collection_id: CollectionId,
