@@ -197,9 +197,21 @@ benchmarks! {
 		let owner: T::AccountId = whitelisted_caller();
 		let collection_index = 1;
 		let collection_id = create_test_collection::<T>(owner.clone(), collection_index);
-		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 42);
+		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 0);
 		let bob = funded_account::<T>("bob", 0);
 		let new_owner = AccountIdOrCollectionNftTuple::AccountId(bob);
+
+		// premint nfts
+		for i in 1..10 {
+			mint_test_nft::<T>(owner.clone(), None, collection_id, i);
+		}
+		// make deep nested chain of nfts ( send child to parent )
+		for i in 0..10 {
+			let parent_nft = T::Helper::item(i);
+			let new_nft_owner = AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, parent_nft);
+			let child_nft_id = T::Helper::item(i.saturating_add(1));
+			send_test_nft::<T>(owner.clone(), collection_id, child_nft_id, new_nft_owner);
+		}
 
 	}: send(RawOrigin::Signed(owner.clone()), collection_id, nft_id, new_owner.clone())
 	verify {
@@ -213,27 +225,41 @@ benchmarks! {
 	}
 
 	send_to_nft {
-		let alice: T::AccountId = whitelisted_caller();
+		let owner: T::AccountId = whitelisted_caller();
 		let collection_index = 1;
-		let collection_id = create_test_collection::<T>(alice.clone(), collection_index);
-		let nft_id1 = mint_test_nft::<T>(alice.clone(), None, collection_id, 1);
-		let child_nft = mint_test_nft::<T>(alice.clone(), None, collection_id, 2);
+		let collection_id = create_test_collection::<T>(owner.clone(), collection_index);
+		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 0);
+		// let child_nft = mint_test_nft::<T>(alice.clone(), None, collection_id, 2);
 		// Alice sends NFT (0,1) to Bob's account
 		let bob = funded_account::<T>("bob", 0);
-		let new_owner = AccountIdOrCollectionNftTuple::AccountId(bob);
-		send_test_nft::<T>(alice.clone(), collection_id, nft_id1, new_owner.clone());
+		// let new_owner = AccountIdOrCollectionNftTuple::AccountId(bob);
+		// send_test_nft::<T>(alice.clone(), collection_id, nft_id1, new_owner.clone());
 
+		let new_parent_nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 42);
 		// Alice sends child NFT (0,2) to parent NFT (0,1)
-		let parent_nft = AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, nft_id1);
+		let new_parent_nft = AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, new_parent_nft_id);
 
-	}: send(RawOrigin::Signed(alice.clone()), collection_id, child_nft, parent_nft.clone())
+		// premint nfts
+		for i in 1..10 {
+			mint_test_nft::<T>(owner.clone(), None, collection_id, i);
+		}
+
+		// make deep nested chain of nfts ( send child to parent )
+		for i in 0..10 {
+			let parent_nft = T::Helper::item(i);
+			let new_owner = AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, parent_nft);
+			let child_nft_id = T::Helper::item(i.saturating_add(1));
+			send_test_nft::<T>(owner.clone(), collection_id, child_nft_id, new_owner);
+		}
+
+	}: send(RawOrigin::Signed(owner.clone()), collection_id, nft_id, new_parent_nft.clone())
 	verify {
 		assert_last_event::<T>(Event::NFTSent {
-			sender: alice,
-			recipient: parent_nft,
+			sender: owner,
+			recipient: new_parent_nft,
 			collection_id,
-			nft_id: child_nft,
-			approval_required: true,
+			nft_id: nft_id,
+			approval_required: false,
 		}.into());
 	}
 
@@ -241,7 +267,20 @@ benchmarks! {
 		let owner: T::AccountId = whitelisted_caller();
 		let collection_index = 1;
 		let collection_id = create_test_collection::<T>(owner.clone(), collection_index);
-		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 42);
+		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 0);
+
+		// premint nfts
+		for i in 1..3 {
+			mint_test_nft::<T>(owner.clone(), None, collection_id, i);
+		}
+
+		// make deep nested chain of nfts ( send child to parent )
+		for i in 0..3 {
+			let parent_nft = T::Helper::item(i);
+			let new_owner = AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, parent_nft);
+			let child_nft_id = T::Helper::item(i.saturating_add(1));
+			send_test_nft::<T>(owner.clone(), collection_id, child_nft_id, new_owner);
+		}
 
 	}: _(RawOrigin::Signed(owner.clone()), collection_id, nft_id)
 	verify {
