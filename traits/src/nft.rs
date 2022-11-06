@@ -11,7 +11,11 @@ use sp_std::cmp::Eq;
 use frame_support::pallet_prelude::*;
 use sp_runtime::Permill;
 
-use crate::{budget::Budget, serialize};
+use crate::{
+	budget::Budget,
+	primitives::{ResourceId, SlotId},
+	serialize,
+};
 use sp_std::result::Result;
 
 #[cfg(feature = "std")]
