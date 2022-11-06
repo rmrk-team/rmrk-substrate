@@ -109,7 +109,9 @@ async function checkEquipStatus(
   api: ApiPromise,
   expectedStatus: "equipped" | "unequipped",
   collectionId: number,
-  nftId: number
+  nftId: number,
+  expectedResourceId?: number,
+  expectedSlotId?: number
 ) {
   const itemNftDataOpt = await getNft(api, collectionId, nftId);
   expect(itemNftDataOpt.isSome, "Error: unable to fetch item NFT data");
@@ -119,6 +121,22 @@ async function checkEquipStatus(
     itemNftData.equipped.isSome,
     `Error: item NFT should be ${expectedStatus}`
   ).to.be.equal(expectedStatus === "equipped");
+
+  if (
+    expectedStatus === "equipped" &&
+    expectedResourceId !== undefined &&
+    expectedSlotId !== undefined
+  ) {
+    expect(
+      itemNftData.equipped.unwrap()[0].toNumber(),
+      `Error: item NFT should be equipped at ${expectedResourceId} resource`
+    ).to.be.equal(expectedResourceId);
+  
+    expect(
+      itemNftData.equipped.unwrap()[1].toNumber(),
+      `Error: item NFT should be equipped at ${expectedSlotId} slot`
+    ).to.be.equal(expectedSlotId);
+  }
 }
 
 describe("integration test: Equip NFT", () => {
@@ -156,7 +174,7 @@ describe("integration test: Equip NFT", () => {
       slotId
     );
 
-    await checkEquipStatus(api, "equipped", collectionId, nftChildId);
+    await checkEquipStatus(api, "equipped", collectionId, nftChildId, resourceId, slotId);
   });
 
   it("unequip nft", async () => {
@@ -188,7 +206,7 @@ describe("integration test: Equip NFT", () => {
       slotId
     );
 
-    await checkEquipStatus(api, "equipped", collectionId, nftChildId);
+    await checkEquipStatus(api, "equipped", collectionId, nftChildId, resourceId, slotId);
 
     await unequipNft(
       api,
