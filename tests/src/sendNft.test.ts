@@ -15,9 +15,13 @@ describe("integration test: send NFT", () => {
   const alice = "//Alice";
   const bob = "//Bob";
 
-  const createTestCollection = async (issuerUri: string) => {
+  const createTestCollection = async (
+    issuerUri: string,
+    collectionId: number
+  ) => {
     return await createCollection(
       api,
+      collectionId,
       issuerUri,
       "nft-collection-metadata",
       null,
@@ -29,7 +33,7 @@ describe("integration test: send NFT", () => {
     const originalOwnerUri = alice;
     const newOwnerUri = bob;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 140);
 
     const nftId = await mintNft(
       api,
@@ -71,7 +75,7 @@ describe("integration test: send NFT", () => {
     const originalOwnerUri = alice;
     const newOwnerUri = bob;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 141);
 
     const nftId = await mintNft(
       api,
@@ -96,7 +100,7 @@ describe("integration test: send NFT", () => {
   it("send NFT to another NFT (same owner)", async () => {
     const originalOwnerUri = alice;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 142);
 
     const parentNftId = await mintNft(
       api,
@@ -131,7 +135,7 @@ describe("integration test: send NFT", () => {
   it("[negative] send non-existing NFT to another NFT", async () => {
     const originalOwnerUri = alice;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 143);
 
     const parentNftId = await mintNft(
       api,
@@ -168,7 +172,7 @@ describe("integration test: send NFT", () => {
   it("send NFT to another NFT (by not-an-owner)", async () => {
     const originalOwnerUri = alice;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 144);
 
     const author = alice;
     const attacker = bob;
@@ -215,7 +219,7 @@ describe("integration test: send NFT", () => {
   it("[negative] send NFT to non-existing NFT", async () => {
     const originalOwnerUri = alice;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 145);
 
     const parentNftId = maxNftId;
     const childNftId = await mintNft(
@@ -253,8 +257,8 @@ describe("integration test: send NFT", () => {
     const ownerAlice = alice;
     const ownerBob = bob;
 
-    const aliceCollectionId = await createTestCollection(alice);
-    const bobCollectionId = await createTestCollection(bob);
+    const aliceCollectionId = await createTestCollection(alice, 146);
+    const bobCollectionId = await createTestCollection(bob, 147);
 
     const parentNftId = await mintNft(
       api,
@@ -287,7 +291,7 @@ describe("integration test: send NFT", () => {
 
   it("[negative] unable to send NFT to itself", async () => {
     const nftOwner = alice;
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 148);
 
     const nftId = await mintNft(
       api,
@@ -316,7 +320,7 @@ describe("integration test: send NFT", () => {
   it("[negative] unable to send NFT to child NFT", async () => {
     const originalOwnerUri = alice;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 149);
 
     const parentNftId = await mintNft(
       api,
@@ -370,7 +374,7 @@ describe("integration test: send NFT", () => {
   it("[negative] unable to send NFT to descendent NFT", async () => {
     const originalOwnerUri = alice;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 150);
 
     const parentNftId = await mintNft(
       api,
@@ -451,7 +455,7 @@ describe("integration test: send NFT", () => {
     const originalOwner = alice;
     const newOwner = bob;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 151);
 
     const parentNftId = await mintNft(
       api,
@@ -495,7 +499,7 @@ describe("integration test: send NFT", () => {
     const originalOwner = alice;
     const newOwner = bob;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 152);
 
     const parentNftId = await mintNft(
       api,

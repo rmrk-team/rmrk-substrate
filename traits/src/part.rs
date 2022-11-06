@@ -2,7 +2,10 @@
 // This file is part of rmrk-substrate.
 // License: Apache 2.0 modified by RMRK, see LICENSE.md
 
-use crate::{primitives::*, serialize};
+use crate::{
+	primitives::{CollectionId, PartId, ZIndex},
+	serialize,
+};
 use codec::{Decode, Encode};
 use frame_support::pallet_prelude::MaxEncodedLen;
 use scale_info::TypeInfo;

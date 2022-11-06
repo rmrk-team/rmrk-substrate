@@ -19,7 +19,6 @@ import { executeTransaction } from "../substrate/substrate-api";
 import {
   getBase,
   getCollection,
-  getCollectionsCount,
   getEquippableList,
   getNft,
   getParts,
@@ -46,18 +45,22 @@ const expect = chai.expect;
 
 export async function createCollection(
   api: ApiPromise,
+  collectionId = 0,
   issuerUri: string,
   metadata: string,
   max: number | null,
   symbol: string
 ): Promise<number> {
-  let collectionId = 0;
-
-  const oldCollectionCount = await getCollectionsCount(api);
+  // const oldCollectionCount = await getCollectionsCount(api);
   const maxOptional = max ? max.toString() : null;
   const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
   const issuer = privateKey(issuerUri, Number(ss58Format));
-  const tx = api.tx.rmrkCore.createCollection(metadata, maxOptional, symbol);
+  const tx = api.tx.rmrkCore.createCollection(
+    collectionId,
+    metadata,
+    maxOptional,
+    symbol
+  );
   const events = await executeTransaction(api, issuer, tx);
 
   const collectionResult = extractRmrkCoreTxResult(
@@ -72,13 +75,13 @@ export async function createCollection(
 
   collectionId = collectionResult.successData!;
 
-  const newCollectionCount = await getCollectionsCount(api);
+  // const newCollectionCount = await getCollectionsCount(api);
   const collectionOption = await getCollection(api, collectionId);
 
-  expect(newCollectionCount).to.be.equal(
-    oldCollectionCount + 1,
-    "Error: NFT collection count should increase"
-  );
+  // expect(newCollectionCount).to.be.equal(
+  //   oldCollectionCount + 1,
+  //   "Error: NFT collection count should increase"
+  // );
   expect(
     collectionOption.isSome,
     "Error: unable to fetch created NFT collection"
@@ -1068,7 +1071,7 @@ export async function burnNft(
   const tx = api.tx.rmrkCore.burnNft(collectionId, nftId);
   const events = await executeTransaction(api, issuer, tx);
   const burnResult = extractRmrkCoreTxResult(events, "NFTBurned", (data) => {
-    return parseInt(data[1].toString(), 10);
+    return parseInt(data[2].toString(), 10);
   });
 
   expect(burnResult.success, "Error: Unable to burn an NFT").to.be.true;

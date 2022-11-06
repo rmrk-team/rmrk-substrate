@@ -18,7 +18,13 @@ macro_rules! bvec {
 
 /// Shortcut for a test collection creation (Alice is issue, max NFTs is 5)
 fn basic_collection() -> DispatchResult {
-	RmrkCore::create_collection(Origin::signed(ALICE), bvec![0u8; 20], Some(5), bvec![0u8; 15])
+	RmrkCore::create_collection(
+		Origin::signed(ALICE),
+		COLLECTION_ID_0,
+		bvec![0u8; 20],
+		Some(5),
+		bvec![0u8; 15],
+	)
 }
 
 /// Shortcut for a basic mint (Alice owner, Collection ID 0, Royalty 1.525)

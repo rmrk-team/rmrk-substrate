@@ -36,7 +36,11 @@ impl<T: Config> Pallet<T> {
 	/// Helper function for checking if an item is equipped
 	/// If the Equippings storage contains the Base/Slot for the Collection+NFT ID, the item is
 	/// already equipped
-	pub fn slot_is_equipped(item: (CollectionId, NftId), base_id: BaseId, slot_id: SlotId) -> bool {
+	pub fn slot_is_equipped(
+		item: (T::CollectionId, T::ItemId),
+		base_id: BaseId,
+		slot_id: SlotId,
+	) -> bool {
 		let (equipper_collection_id, equipper_nft_id) = item;
 		Equippings::<T>::get(((equipper_collection_id, equipper_nft_id), base_id, slot_id))
 			.is_some()
@@ -86,21 +90,19 @@ impl<T: Config> Pallet<T> {
 impl<T: Config>
 	Base<
 		T::AccountId,
-		CollectionId,
-		NftId,
+		T::CollectionId,
+		T::ItemId,
 		StringLimitOf<T>,
 		BoundedVec<
 			PartType<
 				StringLimitOf<T>,
-				BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+				BoundedVec<T::CollectionId, T::MaxCollectionsEquippablePerPart>,
 			>,
 			T::PartsLimit,
 		>,
-		BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+		BoundedVec<T::CollectionId, T::MaxCollectionsEquippablePerPart>,
 		BoundedVec<ThemeProperty<BoundedVec<u8, T::StringLimit>>, T::MaxPropertiesPerTheme>,
 	> for Pallet<T>
-where
-	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
 {
 	/// Implementation of the base_create function for the Base trait
 	/// Called by the create_base extrinsic to create a new Base.
@@ -118,7 +120,7 @@ where
 		parts: BoundedVec<
 			PartType<
 				StringLimitOf<T>,
-				BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+				BoundedVec<T::CollectionId, T::MaxCollectionsEquippablePerPart>,
 			>,
 			T::PartsLimit,
 		>,
@@ -148,7 +150,7 @@ where
 	fn base_change_issuer(
 		base_id: BaseId,
 		new_issuer: T::AccountId,
-	) -> Result<(T::AccountId, CollectionId), DispatchError> {
+	) -> Result<(T::AccountId, BaseId), DispatchError> {
 		ensure!(Bases::<T>::contains_key(base_id), Error::<T>::NoAvailableBaseId);
 
 		Bases::<T>::try_mutate_exists(base_id, |base| -> DispatchResult {
@@ -175,12 +177,12 @@ where
 	/// - slot_id: ID of the slot which the item and equipper must each have a resource referencing
 	fn do_equip(
 		issuer: T::AccountId,
-		item: (CollectionId, NftId),
-		equipper: (CollectionId, NftId),
+		item: (T::CollectionId, T::ItemId),
+		equipper: (T::CollectionId, T::ItemId),
 		resource_id: ResourceId,
 		base_id: BaseId,
 		slot_id: SlotId,
-	) -> Result<(CollectionId, NftId, BaseId, SlotId), DispatchError> {
+	) -> Result<(T::CollectionId, T::ItemId, BaseId, SlotId), DispatchError> {
 		let item_collection_id = item.0;
 		let item_nft_id = item.1;
 		let equipper_collection_id = equipper.0;
@@ -349,11 +351,11 @@ where
 	/// - slot_id: ID of the equipped item's slot
 	fn do_unequip(
 		issuer: T::AccountId,
-		item: (CollectionId, NftId),
-		equipper: (CollectionId, NftId),
+		item: (T::CollectionId, T::ItemId),
+		equipper: (T::CollectionId, T::ItemId),
 		base_id: BaseId,
 		slot_id: SlotId,
-	) -> Result<(CollectionId, NftId, BaseId, SlotId), DispatchError> {
+	) -> Result<(T::CollectionId, T::ItemId, BaseId, SlotId), DispatchError> {
 		let item_collection_id = item.0;
 		let item_nft_id = item.1;
 		let equipper_collection_id = equipper.0;
@@ -453,8 +455,8 @@ where
 		base_id: BaseId,
 		part_id: PartId,
 		operation: EquippableOperation<
-			CollectionId,
-			BoundedVec<CollectionId, T::MaxCollectionsEquippablePerPart>,
+			T::CollectionId,
+			BoundedVec<T::CollectionId, T::MaxCollectionsEquippablePerPart>,
 		>,
 	) -> Result<(BaseId, SlotId), DispatchError> {
 		// Caller must be issuer of base
@@ -482,7 +484,9 @@ where
 								if let EquippableList::Custom(mut equippables) =
 									slot_part.equippable
 								{
-									let _ = equippables.try_push(equippable).map_err(|_| Error::<T>::TooManyEquippables)?;
+									let _ = equippables
+										.try_push(equippable)
+										.map_err(|_| Error::<T>::TooManyEquippables)?;
 									slot_part.equippable = EquippableList::Custom(equippables);
 								}
 							},

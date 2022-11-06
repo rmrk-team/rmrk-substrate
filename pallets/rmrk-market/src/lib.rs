@@ -18,7 +18,7 @@ use sp_std::prelude::*;
 
 pub use pallet::*;
 
-use rmrk_traits::{primitives::*, AccountIdOrCollectionNftTuple, NftInfo};
+use rmrk_traits::{AccountIdOrCollectionNftTuple, NftInfo};
 
 pub mod types;
 
@@ -43,6 +43,8 @@ pub mod pallet {
 		<T as frame_system::Config>::AccountId,
 		Permill,
 		BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit>,
+		<T as pallet_uniques::Config>::CollectionId,
+		<T as pallet_uniques::Config>::ItemId,
 	>;
 
 	pub type BalanceOf<T> =
@@ -90,9 +92,9 @@ pub mod pallet {
 	pub type ListedNfts<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
-		CollectionId,
+		T::CollectionId,
 		Blake2_128Concat,
-		NftId,
+		T::ItemId,
 		ListInfoOf<T>,
 		OptionQuery,
 	>;
@@ -103,7 +105,7 @@ pub mod pallet {
 	pub type Offers<T: Config> = StorageDoubleMap<
 		_,
 		Blake2_128Concat,
-		(CollectionId, NftId),
+		(T::CollectionId, T::ItemId),
 		Blake2_128Concat,
 		T::AccountId,
 		OfferOf<T>,
@@ -116,42 +118,42 @@ pub mod pallet {
 		/// The price for a token was updated
 		TokenPriceUpdated {
 			owner: T::AccountId,
-			collection_id: CollectionId,
-			nft_id: NftId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
 			price: Option<BalanceOf<T>>,
 		},
 		/// Token was sold to a new owner
 		TokenSold {
 			owner: T::AccountId,
 			buyer: T::AccountId,
-			collection_id: CollectionId,
-			nft_id: NftId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
 			price: BalanceOf<T>,
 		},
 		/// Token listed on Marketplace
 		TokenListed {
 			owner: T::AccountId,
-			collection_id: CollectionId,
-			nft_id: NftId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
 			price: BalanceOf<T>,
 		},
 		/// Token unlisted on Marketplace
-		TokenUnlisted { owner: T::AccountId, collection_id: CollectionId, nft_id: NftId },
+		TokenUnlisted { owner: T::AccountId, collection_id: T::CollectionId, nft_id: T::ItemId },
 		/// Offer was placed on a token
 		OfferPlaced {
 			offerer: T::AccountId,
-			collection_id: CollectionId,
-			nft_id: NftId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
 			price: BalanceOf<T>,
 		},
 		/// Offer was withdrawn
-		OfferWithdrawn { sender: T::AccountId, collection_id: CollectionId, nft_id: NftId },
+		OfferWithdrawn { sender: T::AccountId, collection_id: T::CollectionId, nft_id: T::ItemId },
 		/// Offer was accepted
 		OfferAccepted {
 			owner: T::AccountId,
 			buyer: T::AccountId,
-			collection_id: CollectionId,
-			nft_id: NftId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
 		},
 	}
 
@@ -191,10 +193,7 @@ pub mod pallet {
 	}
 
 	#[pallet::call]
-	impl<T: Config> Pallet<T>
-	where
-		T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
-	{
+	impl<T: Config> Pallet<T> {
 		/// Buy a listed NFT. Ensure that the NFT is available for purchase and has not recently
 		/// been purchased, sent, or burned.
 		///
@@ -207,8 +206,8 @@ pub mod pallet {
 		#[transactional]
 		pub fn buy(
 			origin: OriginFor<T>,
-			collection_id: CollectionId,
-			nft_id: NftId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
 			amount: Option<BalanceOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
@@ -231,13 +230,13 @@ pub mod pallet {
 		#[transactional]
 		pub fn list(
 			origin: OriginFor<T>,
-			collection_id: CollectionId,
-			nft_id: NftId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
 			amount: BalanceOf<T>,
 			expires: Option<T::BlockNumber>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
-			let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id)
+			let owner = pallet_uniques::Pallet::<T>::owner(collection_id.into(), nft_id)
 				.ok_or(Error::<T>::TokenDoesNotExist)?;
 
 			// Ensure that the NFT is not owned by an NFT
@@ -285,13 +284,13 @@ pub mod pallet {
 		#[transactional]
 		pub fn unlist(
 			origin: OriginFor<T>,
-			collection_id: CollectionId,
-			nft_id: NftId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 			// Check if NFT is still in ListedNfts storage
 			ensure!(Self::is_nft_listed(collection_id, nft_id), Error::<T>::CannotUnlistToken);
-			let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id)
+			let owner = pallet_uniques::Pallet::<T>::owner(collection_id.into(), nft_id)
 				.ok_or(Error::<T>::TokenDoesNotExist)?;
 			// Ensure owner of NFT is performing call to unlist
 			ensure!(sender == owner, Error::<T>::NoPermission);
@@ -318,8 +317,8 @@ pub mod pallet {
 		#[transactional]
 		pub fn make_offer(
 			origin: OriginFor<T>,
-			collection_id: CollectionId,
-			nft_id: NftId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
 			amount: BalanceOf<T>,
 			expires: Option<T::BlockNumber>,
 		) -> DispatchResult {
@@ -327,7 +326,7 @@ pub mod pallet {
 			// Ensure amount is above the minimum threshold
 			ensure!(amount >= T::MinimumOfferAmount::get(), Error::<T>::OfferTooLow);
 			// Ensure NFT exists & sender is not owner
-			let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id)
+			let owner = pallet_uniques::Pallet::<T>::owner(collection_id.into(), nft_id)
 				.ok_or(Error::<T>::TokenDoesNotExist)?;
 
 			ensure!(sender != owner, Error::<T>::CannotOfferOnOwnToken);
@@ -370,8 +369,8 @@ pub mod pallet {
 		#[transactional]
 		pub fn withdraw_offer(
 			origin: OriginFor<T>,
-			collection_id: CollectionId,
-			nft_id: NftId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
@@ -383,7 +382,7 @@ pub mod pallet {
 				|maybe_offer| -> DispatchResult {
 					let offer = maybe_offer.take().ok_or(Error::<T>::UnknownOffer)?;
 					// Ensure NFT exists & sender is not owner
-					let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id)
+					let owner = pallet_uniques::Pallet::<T>::owner(collection_id.into(), nft_id)
 						.ok_or(Error::<T>::TokenDoesNotExist)?;
 					// Cannot withdraw offer on own token
 					ensure!(
@@ -412,13 +411,13 @@ pub mod pallet {
 		#[transactional]
 		pub fn accept_offer(
 			origin: OriginFor<T>,
-			collection_id: CollectionId,
-			nft_id: NftId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
 			offerer: T::AccountId,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 			// Ensure NFT exists & sender is not owner
-			let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id)
+			let owner = pallet_uniques::Pallet::<T>::owner(collection_id.into(), nft_id)
 				.ok_or(Error::<T>::TokenDoesNotExist)?;
 			// Cannot accept offer if not the owner
 			ensure!(sender == owner, Error::<T>::NoPermission);
@@ -453,10 +452,7 @@ pub mod pallet {
 	}
 }
 
-impl<T: Config> Pallet<T>
-where
-	T: pallet_uniques::Config<CollectionId = CollectionId, ItemId = NftId>,
-{
+impl<T: Config> Pallet<T> {
 	/// Buy the NFT helper funciton logic to handle both transactional calls of `buy` and
 	/// `accept_offer`
 	///
@@ -468,13 +464,13 @@ where
 	/// - `is_offer`: Whether the call is from `accept_offer` or `buy`
 	fn do_buy(
 		buyer: T::AccountId,
-		collection_id: CollectionId,
-		nft_id: NftId,
+		collection_id: T::CollectionId,
+		nft_id: T::ItemId,
 		amount: Option<BalanceOf<T>>,
 		is_offer: bool,
 	) -> DispatchResult {
 		// Ensure buyer is not the root owner
-		let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id)
+		let owner = pallet_uniques::Pallet::<T>::owner(collection_id.into(), nft_id)
 			.ok_or(Error::<T>::TokenDoesNotExist)?;
 		ensure!(buyer != owner, Error::<T>::CannotBuyOwnToken);
 
@@ -536,7 +532,7 @@ where
 	/// Parameters:
 	/// - collection_id: The collection id of the RMRK NFT
 	/// - nft_id: The nft id of the RMRK NFT
-	fn is_nft_listed(collection_id: CollectionId, nft_id: NftId) -> bool {
+	fn is_nft_listed(collection_id: T::CollectionId, nft_id: T::ItemId) -> bool {
 		ListedNfts::<T>::contains_key(collection_id, nft_id)
 	}
 
@@ -546,7 +542,11 @@ where
 	/// - collection_id: The collection id of the RMRK NFT
 	/// - nft_id: The nft id of the RMRK NFT
 	/// - sender: The account that may or may not have already sent an offer
-	fn has_active_offer(collection_id: CollectionId, nft_id: NftId, sender: T::AccountId) -> bool {
+	fn has_active_offer(
+		collection_id: T::CollectionId,
+		nft_id: T::ItemId,
+		sender: T::AccountId,
+	) -> bool {
 		Offers::<T>::contains_key((collection_id, nft_id), sender)
 	}
 
@@ -555,8 +555,8 @@ where
 	/// Parameters:
 	/// - collection_id: The collection id of the RMRK NFT
 	/// - nft_id: The nft id of the RMRK NFT
-	fn is_nft_owned_by_nft(collection_id: CollectionId, nft_id: NftId) -> bool {
-		let owner = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
+	fn is_nft_owned_by_nft(collection_id: T::CollectionId, nft_id: T::ItemId) -> bool {
+		let owner = pallet_uniques::Pallet::<T>::owner(collection_id.into(), nft_id);
 		if let Some(current_owner) = owner {
 			let current_owner_cid_nid =
 				pallet_rmrk_core::Pallet::<T>::decode_nft_account_id::<T::AccountId>(current_owner);

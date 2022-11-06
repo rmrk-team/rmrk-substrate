@@ -22,6 +22,7 @@ describe("integration test: get owned NFTs", () => {
 
     let collectionId = await createCollection(
       api,
+      80,
       alice,
       collectionMetadata,
       collectionMax,

@@ -26,6 +26,7 @@ describe("integration test: mint new NFT", () => {
 
     let collectionId = await createCollection(
       api,
+      100,
       alice,
       collectionMetadata,
       collectionMax,
@@ -55,6 +56,7 @@ describe("integration test: mint new NFT", () => {
 
     let collectionId = await createCollection(
       api,
+      101,
       alice,
       collectionMetadata,
       collectionMax,
@@ -84,6 +86,7 @@ describe("integration test: mint new NFT", () => {
 
     let collectionId = await createCollection(
       api,
+      102,
       alice,
       collectionMetadata,
       collectionMax,
@@ -149,6 +152,7 @@ describe("integration test: mint new NFT", () => {
 
     let collectionId = await createCollection(
       api,
+      103,
       alice,
       collectionMetadata,
       collectionMax,
@@ -200,6 +204,7 @@ describe("integration test: mint new NFT", () => {
 
     let collectionId = await createCollection(
       api,
+      104,
       alice,
       collectionMetadata,
       collectionMax,
