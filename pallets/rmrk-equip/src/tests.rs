@@ -7,7 +7,7 @@ use super::*;
 use rmrk_traits::{ComposableResource, FixedPart, SlotPart, SlotResource, ThemeProperty};
 
 use frame_support::{assert_noop, assert_ok};
-use mock::{Event as MockEvent, *};
+use mock::{RuntimeEvent as MockEvent, RuntimeOrigin as Origin, *};
 use sp_runtime::Permill;
 use sp_std::convert::TryInto;
 type RMRKEquip = Pallet<Test>;
