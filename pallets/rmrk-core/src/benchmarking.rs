@@ -102,12 +102,8 @@ fn mint_test_nft<T: Config>(
 }
 
 // premint nfts & make deep nested chain of nfts ( send child to parent )
-fn mint_and_send_to_parent<T: Config>(
-	owner: T::AccountId,
-	collection_id: T::CollectionId,
-	amount_to_mint: u32,
-) {
-	for i in 1..amount_to_mint {
+fn mint_and_send_to_parent<T: Config>(owner: T::AccountId, collection_id: T::CollectionId) {
+	for i in 1..T::NestingBudget::get() {
 		let id = mint_test_nft::<T>(owner.clone(), None, collection_id, i);
 		let parent_nft_id = T::Helper::item(i.saturating_sub(1));
 		let new_owner =
@@ -215,7 +211,7 @@ benchmarks! {
 		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 0);
 		let bob = funded_account::<T>("bob", 0);
 		let new_owner = AccountIdOrCollectionNftTuple::AccountId(bob);
-		mint_and_send_to_parent::<T>(owner.clone(), collection_id, 10);
+		mint_and_send_to_parent::<T>(owner.clone(), collection_id);
 	}: send(RawOrigin::Signed(owner.clone()), collection_id, nft_id, new_owner.clone())
 	verify {
 		assert_last_event::<T>(Event::NFTSent {
@@ -235,7 +231,7 @@ benchmarks! {
 		let bob = funded_account::<T>("bob", 0);
 		let new_parent_nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 42);
 		let new_parent_nft = AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, new_parent_nft_id);
-		mint_and_send_to_parent::<T>(owner.clone(), collection_id, 10);
+		mint_and_send_to_parent::<T>(owner.clone(), collection_id);
 	}: send(RawOrigin::Signed(owner.clone()), collection_id, nft_id, new_parent_nft.clone())
 	verify {
 		assert_last_event::<T>(Event::NFTSent {
@@ -252,7 +248,7 @@ benchmarks! {
 		let collection_index = 1;
 		let collection_id = create_test_collection::<T>(owner.clone(), collection_index);
 		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 0);
-		mint_and_send_to_parent::<T>(owner.clone(), collection_id, 3);
+		mint_and_send_to_parent::<T>(owner.clone(), collection_id);
 	}: _(RawOrigin::Signed(owner.clone()), collection_id, nft_id)
 	verify {
 		assert_last_event::<T>(Event::NFTBurned { owner, collection_id, nft_id }.into());

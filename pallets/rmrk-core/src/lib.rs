@@ -530,22 +530,19 @@ pub mod pallet {
 		}
 
 		/// burn nft
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::burn_nft())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::burn_nft(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn burn_nft(
 			origin: OriginFor<T>,
 			collection_id: T::CollectionId,
 			nft_id: T::ItemId,
-		) -> DispatchResult {
+		) -> DispatchResultWithPostInfo {
 			let sender = ensure_signed(origin)?;
 			let budget = budget::Value::new(T::NestingBudget::get());
 			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
 			// Check ownership
 			ensure!(sender == root_owner, Error::<T>::NoPermission);
-			let (_collection_id, _nft_id) =
-				Self::nft_burn(root_owner, collection_id, nft_id, &budget)?;
-
-			Ok(())
+			Self::nft_burn(root_owner, collection_id, nft_id, &budget)
 		}
 
 		/// destroy collection

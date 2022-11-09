@@ -18,6 +18,7 @@ use sp_runtime::{
 };
 
 use rmrk_traits::budget::Budget;
+use sp_runtime::{print, traits::Printable};
 use sp_std::collections::btree_set::BTreeSet;
 
 // Randomness to generate NFT virtual accounts
@@ -524,7 +525,7 @@ impl<T: Config>
 		collection_id: T::CollectionId,
 		nft_id: T::ItemId,
 		budget: &dyn Budget,
-	) -> sp_std::result::Result<(T::CollectionId, T::ItemId), DispatchError> {
+	) -> DispatchResultWithPostInfo {
 		// Remove self from parent's Children storage
 		if let Some(nft) = Self::nfts(collection_id, nft_id) {
 			if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(parent_col, parent_nft) =
@@ -561,7 +562,10 @@ impl<T: Config>
 
 		Self::deposit_event(Event::NFTBurned { owner, nft_id, collection_id });
 
-		Ok((collection_id, nft_id))
+		Ok(Some(<T as pallet::Config>::WeightInfo::burn_nft(
+			T::NestingBudget::get() - budget.val(),
+		))
+		.into())
 	}
 
 	fn nft_send(
@@ -741,7 +745,7 @@ impl<T: Config>
 		let _rejecting_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
-		Self::nft_burn(sender.clone(), collection_id, nft_id, &budget)?;
+		// Self::nft_burn(sender.clone(), collection_id, nft_id, &budget)?; FIXME: this
 
 		Ok((sender, collection_id, nft_id))
 	}
