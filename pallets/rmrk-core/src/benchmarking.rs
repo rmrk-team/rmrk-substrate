@@ -248,7 +248,13 @@ benchmarks! {
 		let collection_index = 1;
 		let collection_id = create_test_collection::<T>(owner.clone(), collection_index);
 		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 0);
-		mint_and_send_to_parent::<T>(owner.clone(), collection_id);
+
+		let n in 1 .. T::NestingBudget::get();
+		let id = mint_test_nft::<T>(owner.clone(), None, collection_id, n);
+		let parent_nft_id = T::Helper::item(n.saturating_sub(1));
+		let new_owner =
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, parent_nft_id);
+		send_test_nft::<T>(owner.clone(), collection_id, id, new_owner);
 	}: _(RawOrigin::Signed(owner.clone()), collection_id, nft_id)
 	verify {
 		assert_last_event::<T>(Event::NFTBurned { owner, collection_id, nft_id }.into());
