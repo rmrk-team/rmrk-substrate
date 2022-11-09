@@ -5,6 +5,7 @@
 use super::*;
 
 use frame_benchmarking::{account, benchmarks, whitelisted_caller};
+use frame_support::traits::Get;
 use pallet_rmrk_core::Pallet as RmrkCore;
 use sp_runtime::{traits::Bounded, Permill};
 
@@ -148,6 +149,33 @@ benchmarks! {
 	}: _(RawOrigin::Signed(caller.clone()), collection_id, nft_id)
 	verify {
 		assert_last_event::<T>(Event::TokenUnlisted { owner: caller, collection_id, nft_id }.into());
+	}
+
+	make_offer {
+		let bob = funded_account::<T>("bob", 0);
+		let collection_index = 1;
+		let collection_id = create_test_collection::<T>(bob.clone(), collection_index);
+		let nft_id = mint_test_nft::<T>(bob.clone(), None, collection_id, 42);
+		let caller: T::AccountId = whitelisted_caller();
+		let amount =  T::MinimumOfferAmount::get();
+		<T as pallet_uniques::Config>::Currency::make_free_balance_be(&caller, BalanceOf::<T>::max_value());
+	}: _(RawOrigin::Signed(caller.clone()), collection_id, nft_id, amount, None)
+	verify {
+		assert_last_event::<T>(Event::OfferPlaced { offerer: caller, collection_id, nft_id, price: amount }.into());
+	}
+
+	withdraw_offer {
+		let bob = funded_account::<T>("bob", 0);
+		let collection_index = 1;
+		let collection_id = create_test_collection::<T>(bob.clone(), collection_index);
+		let nft_id = mint_test_nft::<T>(bob.clone(), None, collection_id, 42);
+		let caller: T::AccountId = whitelisted_caller();
+		let amount =  T::MinimumOfferAmount::get();
+		<T as pallet_uniques::Config>::Currency::make_free_balance_be(&caller, BalanceOf::<T>::max_value());
+		let _ = RmrkMarket::<T>::make_offer(RawOrigin::Signed(caller.clone()).into(), collection_id, nft_id, amount, None);
+	}: _(RawOrigin::Signed(caller.clone()), collection_id, nft_id)
+	verify {
+		assert_last_event::<T>(Event::OfferWithdrawn { sender: caller, collection_id, nft_id }.into());
 	}
 
 	impl_benchmark_test_suite!(RmrkMarket, crate::benchmarking::tests::new_test_ext(), crate::mock::Test);
