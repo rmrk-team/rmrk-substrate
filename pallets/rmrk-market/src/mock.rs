@@ -104,9 +104,6 @@ parameter_types! {
 	pub const NestingBudget: u32 = 10;
 }
 
-#[cfg(feature = "runtime-benchmarks")]
-use pallet_rmrk_core::RmrkBenchmark;
-
 impl pallet_rmrk_core::Config for Test {
 	// type Currency = Balances;
 	type Event = Event;
@@ -118,8 +115,6 @@ impl pallet_rmrk_core::Config for Test {
 	type MaxResourcesOnMint = MaxResourcesOnMint;
 	type NestingBudget = NestingBudget;
 	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Test>;
-	#[cfg(feature = "runtime-benchmarks")]
-	type Helper = RmrkBenchmark;
 }
 
 parameter_types! {
@@ -162,6 +157,8 @@ impl Config for Test {
 	type ProtocolOrigin = EnsureRoot<AccountId>;
 	type Currency = Balances;
 	type MinimumOfferAmount = MinimumOfferAmount;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = RmrkBenchmark;
 }
 
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
