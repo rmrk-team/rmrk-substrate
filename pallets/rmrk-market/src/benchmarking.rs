@@ -22,6 +22,15 @@ macro_rules! bvec {
 	}
 }
 
+fn u32_to_balance<T: Config>(
+	val: u32,
+) -> <<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance
+{
+	<<T as pallet::Config>::Currency as Currency<
+		<T as frame_system::Config>::AccountId,
+	>>::Balance::from(val)
+}
+
 /// Assert that the last event equals the provided one.
 fn assert_last_event<T: Config>(generic_event: <T as Config>::Event) {
 	frame_system::Pallet::<T>::assert_last_event(generic_event.into());
@@ -94,9 +103,7 @@ fn list_test_nft<T: Config>(
 	price: u32,
 ) -> <<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance
 {
-	let amount = <<T as pallet::Config>::Currency as Currency<
-		<T as frame_system::Config>::AccountId,
-	>>::Balance::from(price);
+	let amount = u32_to_balance::<T>(price);
 	let _ = RmrkMarket::<T>::list(
 		RawOrigin::Signed(owner.clone()).into(),
 		collection_id,
@@ -119,6 +126,28 @@ benchmarks! {
 	}: _(RawOrigin::Signed(caller.clone()), collection_id, nft_id, None)
 	verify {
 		assert_last_event::<T>(Event::TokenSold { owner: bob, buyer: caller, collection_id, nft_id, price }.into());
+	}
+
+	list {
+		let caller: T::AccountId = whitelisted_caller();
+		let collection_index = 1;
+		let collection_id = create_test_collection::<T>(caller.clone(), collection_index);
+		let nft_id = mint_test_nft::<T>(caller.clone(), None, collection_id, 42);
+		let price = u32_to_balance::<T>(100);
+	}: _(RawOrigin::Signed(caller.clone()), collection_id, nft_id, price, None)
+	verify {
+		assert_last_event::<T>(Event::TokenListed { owner: caller, collection_id, nft_id, price }.into());
+	}
+
+	unlist {
+		let caller: T::AccountId = whitelisted_caller();
+		let collection_index = 1;
+		let collection_id = create_test_collection::<T>(caller.clone(), collection_index);
+		let nft_id = mint_test_nft::<T>(caller.clone(), None, collection_id, 42);
+		let _ = list_test_nft::<T>(caller.clone(), collection_id, nft_id, 100);
+	}: _(RawOrigin::Signed(caller.clone()), collection_id, nft_id)
+	verify {
+		assert_last_event::<T>(Event::TokenUnlisted { owner: caller, collection_id, nft_id }.into());
 	}
 
 	impl_benchmark_test_suite!(RmrkMarket, crate::benchmarking::tests::new_test_ext(), crate::mock::Test);
