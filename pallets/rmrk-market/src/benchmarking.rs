@@ -22,6 +22,11 @@ macro_rules! bvec {
 	}
 }
 
+/// Assert that the last event equals the provided one.
+fn assert_last_event<T: Config>(generic_event: <T as Config>::Event) {
+	frame_system::Pallet::<T>::assert_last_event(generic_event.into());
+}
+
 fn funded_account<T: Config>(name: &'static str, index: u32) -> T::AccountId {
 	let caller: T::AccountId = account(name, index, SEED);
 	<T as pallet_uniques::Config>::Currency::make_free_balance_be(
@@ -81,16 +86,39 @@ fn mint_test_nft<T: Config>(
 	nft_id
 }
 
+/// Lists an Nft
+fn list_test_nft<T: Config>(
+	owner: T::AccountId,
+	collection_id: T::CollectionId,
+	nft_id: T::ItemId,
+	price: u32,
+) -> <<T as pallet::Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance
+{
+	let amount = <<T as pallet::Config>::Currency as Currency<
+		<T as frame_system::Config>::AccountId,
+	>>::Balance::from(price);
+	let _ = RmrkMarket::<T>::list(
+		RawOrigin::Signed(owner.clone()).into(),
+		collection_id,
+		nft_id,
+		amount,
+		None,
+	);
+	amount.into()
+}
+
 benchmarks! {
 	buy {
 		let bob = funded_account::<T>("bob", 0);
 		let collection_index = 1;
 		let collection_id = create_test_collection::<T>(bob.clone(), collection_index);
 		let nft_id = mint_test_nft::<T>(bob.clone(), None, collection_id, 42);
+		let price = list_test_nft::<T>(bob.clone(), collection_id, nft_id, 100);
 		let caller: T::AccountId = whitelisted_caller();
-	}: _(RawOrigin::Signed(caller), collection_id, nft_id, None)
+		<T as pallet_uniques::Config>::Currency::make_free_balance_be(&caller, BalanceOf::<T>::max_value());
+	}: _(RawOrigin::Signed(caller.clone()), collection_id, nft_id, None)
 	verify {
-		//assert_last_event::<T>(Event::CollectionCreated { issuer: caller, collection_id }.into());
+		assert_last_event::<T>(Event::TokenSold { owner: bob, buyer: caller, collection_id, nft_id, price }.into());
 	}
 
 	impl_benchmark_test_suite!(RmrkMarket, crate::benchmarking::tests::new_test_ext(), crate::mock::Test);
