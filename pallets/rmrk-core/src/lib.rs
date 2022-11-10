@@ -631,19 +631,16 @@ pub mod pallet {
 		/// - `origin`: sender of the transaction
 		/// - `collection_id`: collection id of the nft to be accepted
 		/// - `nft_id`: nft id of the nft to be accepted
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::reject_nft())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::reject_nft(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn reject_nft(
 			origin: OriginFor<T>,
 			collection_id: T::CollectionId,
 			nft_id: T::ItemId,
-		) -> DispatchResult {
+		) -> DispatchResultWithPostInfo {
 			let sender = ensure_signed(origin)?;
 
-			let (sender, collection_id, nft_id) = Self::nft_reject(sender, collection_id, nft_id)?;
-
-			Self::deposit_event(Event::NFTRejected { sender, collection_id, nft_id });
-			Ok(())
+			Self::nft_reject(sender, collection_id, nft_id)
 		}
 
 		/// Change the issuer of a collection

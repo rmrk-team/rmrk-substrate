@@ -18,7 +18,6 @@ use sp_runtime::{
 };
 
 use rmrk_traits::budget::Budget;
-use sp_runtime::{print, traits::Printable};
 use sp_std::collections::btree_set::BTreeSet;
 
 // Randomness to generate NFT virtual accounts
@@ -713,7 +712,7 @@ impl<T: Config>
 		sender: T::AccountId,
 		collection_id: T::CollectionId,
 		nft_id: T::ItemId,
-	) -> Result<(T::AccountId, T::CollectionId, T::ItemId), DispatchError> {
+	) -> DispatchResultWithPostInfo {
 		// Look up root owner in Uniques to ensure permissions
 		let budget = budget::Value::new(T::NestingBudget::get());
 		let (root_owner, _root_nft) =
@@ -745,9 +744,11 @@ impl<T: Config>
 		let _rejecting_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
-		// Self::nft_burn(sender.clone(), collection_id, nft_id, &budget)?; FIXME: this
+		let result = Self::nft_burn(sender.clone(), collection_id, nft_id, &budget);
 
-		Ok((sender, collection_id, nft_id))
+		Self::deposit_event(Event::NFTRejected { sender: sender.clone(), collection_id, nft_id });
+
+		result
 	}
 }
 

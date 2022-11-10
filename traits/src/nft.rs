@@ -119,5 +119,5 @@ pub trait Nft<AccountId, BoundedString, BoundedResourceVec, CollectionId, NftId>
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-	) -> Result<(AccountId, CollectionId, NftId), DispatchError>;
+	) -> DispatchResultWithPostInfo;
 }
