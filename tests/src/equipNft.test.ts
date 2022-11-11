@@ -132,11 +132,7 @@ async function checkEquipStatus(
     `Error: item NFT should be ${expectedStatus}`
   ).to.be.equal(expectedStatus === "equipped");
 
-  if (
-    expectedStatus === "equipped" &&
-    expectedResourceId !== undefined &&
-    expectedSlotId !== undefined
-  ) {
+  if (expectedStatus === "equipped" && expectedResourceId && expectedSlotId) {
     expect(
       itemNftData.equipped.unwrap()[0].toNumber(),
       `Error: item NFT should be equipped at ${expectedResourceId} resource`
