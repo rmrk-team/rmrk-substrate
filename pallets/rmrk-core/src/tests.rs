@@ -1603,7 +1603,7 @@ fn resource_removal_works() {
 
 #[test]
 fn resource_replace_works() {
-	ExtBuilder::default().build().execute_with(|| {
+	ExtBuilder::build().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// Mint NFT
@@ -1664,7 +1664,7 @@ fn resource_replace_works() {
 
 #[test]
 fn resource_replace_non_exist_resource() {
-	ExtBuilder::default().build().execute_with(|| {
+	ExtBuilder::build().execute_with(|| {
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// Mint NFT
