@@ -5,7 +5,7 @@ import type { ApiTypes } from '@polkadot/api-base/types';
 import type { Bytes, Compact, Option, Vec, bool, u128, u16, u32, u64 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, MultiAddress, Perbill, Permill } from '@polkadot/types/interfaces/runtime';
-import type { PalletUniquesDestroyWitness, RmrkSubstrateRuntimeOriginCaller, RmrkTraitsNftAccountIdOrCollectionNftTuple, RmrkTraitsPartEquippableList, RmrkTraitsPartPartType, RmrkTraitsResourceBasicResource, RmrkTraitsResourceComposableResource, RmrkTraitsResourceResourceInfoMin, RmrkTraitsResourceSlotResource, RmrkTraitsTheme, SpCoreVoid, SpFinalityGrandpaEquivocationProof } from '@polkadot/types/lookup';
+import type { FrameSupportWeightsWeightV2Weight, PalletUniquesDestroyWitness, RmrkSubstrateRuntimeOriginCaller, RmrkTraitsNftAccountIdOrCollectionNftTuple, RmrkTraitsPartEquippableList, RmrkTraitsPartPartType, RmrkTraitsResourceBasicResource, RmrkTraitsResourceComposableResource, RmrkTraitsResourceResourceInfoMin, RmrkTraitsResourceSlotResource, RmrkTraitsTheme, SpCoreVoid, SpFinalityGrandpaEquivocationProof } from '@polkadot/types/lookup';
 
 declare module '@polkadot/api-base/types/submittable' {
   export interface AugmentedSubmittables<ApiType extends ApiTypes> {
@@ -173,7 +173,7 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * burn nft
        **/
-      burnNft: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, maxBurns: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, u32]>;
+      burnNft: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, u32]>;
       /**
        * Change the issuer of a collection
        * 
@@ -186,7 +186,7 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Create a collection
        **/
-      createCollection: AugmentedSubmittable<(metadata: Bytes | string | Uint8Array, max: Option<u32> | null | object | string | Uint8Array, symbol: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Bytes, Option<u32>, Bytes]>;
+      createCollection: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, metadata: Bytes | string | Uint8Array, max: Option<u32> | null | object | string | Uint8Array, symbol: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, Bytes, Option<u32>, Bytes]>;
       /**
        * destroy collection
        **/
@@ -249,7 +249,7 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * set a custom value on an NFT
        **/
-      setProperty: AugmentedSubmittable<(collectionId: Compact<u32> | AnyNumber | Uint8Array, maybeNftId: Option<u32> | null | object | string | Uint8Array, key: Bytes | string | Uint8Array, value: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Compact<u32>, Option<u32>, Bytes, Bytes]>;
+      setProperty: AugmentedSubmittable<(collectionId: u32 | AnyNumber | Uint8Array, maybeNftId: Option<u32> | null | object | string | Uint8Array, key: Bytes | string | Uint8Array, value: Bytes | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, Option<u32>, Bytes, Bytes]>;
       /**
        * Generic tx
        **/
@@ -455,7 +455,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - The weight of this call is defined by the caller.
        * # </weight>
        **/
-      sudoUncheckedWeight: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array, weight: u64 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, u64]>;
+      sudoUncheckedWeight: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array, weight: FrameSupportWeightsWeightV2Weight | { refTime?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, FrameSupportWeightsWeightV2Weight]>;
       /**
        * Generic tx
        **/
@@ -573,11 +573,14 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Approve an item to be transferred by a delegated third-party account.
        * 
-       * Origin must be Signed and must be the owner of the `item`.
+       * The origin must conform to `ForceOrigin` or must be `Signed` and the sender must be
+       * either the owner of the `item` or the admin of the collection.
        * 
        * - `collection`: The collection of the item to be approved for delegated transfer.
        * - `item`: The item of the item to be approved for delegated transfer.
        * - `delegate`: The account to delegate permission to transfer the item.
+       * 
+       * Important NOTE: The `approved` account gets reset after each transfer.
        * 
        * Emits `ApprovedTransfer` on success.
        * 
@@ -600,6 +603,18 @@ declare module '@polkadot/api-base/types/submittable' {
        * Modes: `check_owner.is_some()`.
        **/
       burn: AugmentedSubmittable<(collection: u32 | AnyNumber | Uint8Array, item: u32 | AnyNumber | Uint8Array, checkOwner: Option<MultiAddress> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, Option<MultiAddress>]>;
+      /**
+       * Allows to buy an item if it's up for sale.
+       * 
+       * Origin must be Signed and must not be the owner of the `item`.
+       * 
+       * - `collection`: The collection of the item.
+       * - `item`: The item the sender wants to buy.
+       * - `bid_price`: The price the sender is willing to pay.
+       * 
+       * Emits `ItemBought` on success.
+       **/
+      buyItem: AugmentedSubmittable<(collection: u32 | AnyNumber | Uint8Array, item: u32 | AnyNumber | Uint8Array, bidPrice: u128 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, u128]>;
       /**
        * Cancel the prior approval for the transfer of an item by a delegate.
        * 
@@ -889,6 +904,20 @@ declare module '@polkadot/api-base/types/submittable' {
        **/
       setMetadata: AugmentedSubmittable<(collection: u32 | AnyNumber | Uint8Array, item: u32 | AnyNumber | Uint8Array, data: Bytes | string | Uint8Array, isFrozen: bool | boolean | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, Bytes, bool]>;
       /**
+       * Set (or reset) the price for an item.
+       * 
+       * Origin must be Signed and must be the owner of the asset `item`.
+       * 
+       * - `collection`: The collection of the item.
+       * - `item`: The item to set the price for.
+       * - `price`: The price for the item. Pass `None`, to reset the price.
+       * - `buyer`: Restricts the buy operation to a specific account.
+       * 
+       * Emits `ItemPriceSet` on success if the price is not `None`.
+       * Emits `ItemPriceRemoved` on success if the price is `None`.
+       **/
+      setPrice: AugmentedSubmittable<(collection: u32 | AnyNumber | Uint8Array, item: u32 | AnyNumber | Uint8Array, price: Option<u128> | null | object | string | Uint8Array, whitelistedBuyer: Option<MultiAddress> | null | object | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32, u32, Option<u128>, Option<MultiAddress>]>;
+      /**
        * Change the Issuer, Admin and Freezer of a collection.
        * 
        * Origin must be Signed and the sender should be the Owner of the `collection`.
@@ -930,6 +959,8 @@ declare module '@polkadot/api-base/types/submittable' {
       thawCollection: AugmentedSubmittable<(collection: u32 | AnyNumber | Uint8Array) => SubmittableExtrinsic<ApiType>, [u32]>;
       /**
        * Move an item from the sender account to another.
+       * 
+       * This resets the approved account of the item.
        * 
        * Origin must be Signed and the signing account must be either:
        * - the Admin of the `collection`;

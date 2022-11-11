@@ -55,25 +55,30 @@ impl pallet_rmrk_equip::Config for Test {
 parameter_types! {
 	pub ClassBondAmount: Balance = 100;
 	pub MaxMetadataLength: u32 = 256;
-	pub const MaxRecursions: u32 = 10;
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 10;
 	pub const MaxPriorities: u32 = 3;
 	pub const CollectionSymbolLimit: u32 = 100;
 	pub const MaxResourcesOnMint: u32 = 3;
-
+	pub const NestingBudget: u32 = 10;
 }
+
+#[cfg(feature = "runtime-benchmarks")]
+use pallet_rmrk_core::RmrkBenchmark;
 
 impl pallet_rmrk_core::Config for Test {
 	// type Currency = Balances;
 	type Event = Event;
 	type ProtocolOrigin = EnsureRoot<AccountId>;
-	type MaxRecursions = MaxRecursions;
 	type ResourceSymbolLimit = ResourceSymbolLimit;
 	type PartsLimit = PartsLimit;
 	type MaxPriorities = MaxPriorities;
 	type CollectionSymbolLimit = CollectionSymbolLimit;
 	type MaxResourcesOnMint = MaxResourcesOnMint;
+	type NestingBudget = NestingBudget;
+	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Test>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = RmrkBenchmark;
 }
 
 parameter_types! {
@@ -164,6 +169,7 @@ pub const CHARLIE: AccountId = AccountId::new([3u8; 32]);
 pub const RMRK: Balance = 1;
 pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::CollectionId = 0;
 pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::CollectionId = 1;
+pub const COLLECTION_ID_2: <Test as pallet_uniques::Config>::CollectionId = 2;
 pub const NFT_ID_0: <Test as pallet_uniques::Config>::ItemId = 0;
 pub const NOT_EXISTING_CLASS_ID: <Test as pallet_uniques::Config>::CollectionId = 999;
 

@@ -8,7 +8,6 @@ use crate as pallet_rmrk_core;
 use frame_support::{
 	parameter_types,
 	traits::{AsEnsureOriginWithArg, ConstU32, Everything},
-	weights::Weight,
 };
 use frame_system::EnsureRoot;
 use sp_core::{crypto::AccountId32, H256};
@@ -22,6 +21,8 @@ mod nfc {
 	// Re-export needed for `impl_outer_event!`.
 	pub use super::super::*;
 }
+
+pub use weights::WeightInfo;
 
 type AccountId = AccountId32;
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
@@ -45,24 +46,30 @@ frame_support::construct_runtime!(
 parameter_types! {
 	pub ClassBondAmount: Balance = 100;
 	pub MaxMetadataLength: u32 = 256;
-	pub const MaxRecursions: u32 = 4;
 	pub const ResourceSymbolLimit: u32 = 10;
 	pub const PartsLimit: u32 = 50;
 	pub const MaxPriorities: u32 = 3;
+	pub const NestingBudget: u32 = 3;
 	pub const CollectionSymbolLimit: u32 = 100;
 	pub const MaxResourcesOnMint: u32 = 3;
 }
+
+#[cfg(feature = "runtime-benchmarks")]
+use pallet_rmrk_core::RmrkBenchmark;
 
 impl pallet_rmrk_core::Config for Test {
 	// type Currency = Balances;
 	type Event = Event;
 	type ProtocolOrigin = EnsureRoot<AccountId>;
-	type MaxRecursions = MaxRecursions;
 	type ResourceSymbolLimit = ResourceSymbolLimit;
 	type PartsLimit = PartsLimit;
 	type MaxPriorities = MaxPriorities;
 	type CollectionSymbolLimit = CollectionSymbolLimit;
 	type MaxResourcesOnMint = MaxResourcesOnMint;
+	type NestingBudget = NestingBudget;
+	type WeightInfo = weights::SubstrateWeight<Test>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = RmrkBenchmark;
 }
 
 parameter_types! {
@@ -98,7 +105,6 @@ impl pallet_uniques::Config for Test {
 
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
-	pub const MaximumBlockWeight: Weight = Weight::from_ref_time(1024);
 	pub const MaximumBlockLength: u32 = 2 * 1024;
 	pub const AvailableBlockRatio: Perbill = Perbill::one();
 }
@@ -154,8 +160,8 @@ pub const RMRK: Balance = 1;
 pub const COLLECTION_ID_0: <Test as pallet_uniques::Config>::CollectionId = 0;
 // pub const COLLECTION_ID_1: <Test as pallet_uniques::Config>::CollectionId = 1;
 pub const NFT_ID_0: <Test as pallet_uniques::Config>::ItemId = 0;
+pub const NFT_ID_1: <Test as pallet_uniques::Config>::ItemId = 1;
 pub const NOT_EXISTING_CLASS_ID: <Test as pallet_uniques::Config>::CollectionId = 999;
-pub const MAX_BURNS: u32 = 4;
 
 pub struct ExtBuilder;
 impl Default for ExtBuilder {
@@ -165,7 +171,7 @@ impl Default for ExtBuilder {
 }
 
 impl ExtBuilder {
-	pub fn build(self) -> sp_io::TestExternalities {
+	pub fn build() -> sp_io::TestExternalities {
 		let mut t = frame_system::GenesisConfig::default().build_storage::<Test>().unwrap();
 
 		pallet_balances::GenesisConfig::<Test> {

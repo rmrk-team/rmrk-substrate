@@ -4,7 +4,7 @@
 
 use super::*;
 
-use rmrk_traits::{FixedPart, SlotPart, ThemeProperty, ComposableResource, SlotResource};
+use rmrk_traits::{ComposableResource, FixedPart, SlotPart, SlotResource, ThemeProperty};
 
 use frame_support::{assert_noop, assert_ok};
 use mock::{Event as MockEvent, *};
@@ -158,6 +158,7 @@ fn equip_works() {
 		// Create collection 0
 		assert_ok!(RmrkCore::create_collection(
 			Origin::signed(ALICE),
+			COLLECTION_ID_0,
 			stb("ipfs://col0-metadata"), // metadata
 			Some(5),                     // max
 			sbvec!["COL0"]               // symbol
@@ -166,6 +167,7 @@ fn equip_works() {
 		// Create collection 1
 		assert_ok!(RmrkCore::create_collection(
 			Origin::signed(ALICE),
+			COLLECTION_ID_1,
 			stb("ipfs://col1-metadata"), // metadata
 			Some(5),                     // max
 			sbvec!["COL1"]               // symbol
@@ -543,6 +545,7 @@ fn nested_equip_works() {
 		// Create PERSON collection (0)
 		assert_ok!(RmrkCore::create_collection(
 			Origin::signed(ALICE),
+			COLLECTION_ID_0,
 			stb("person-collection"), // metadata
 			Some(5),                  // max
 			sbvec!["COL0"]            // symbol
@@ -551,6 +554,7 @@ fn nested_equip_works() {
 		// Create HEADWARE collection (1)
 		assert_ok!(RmrkCore::create_collection(
 			Origin::signed(ALICE),
+			COLLECTION_ID_1,
 			stb("headware-collection"), // metadata
 			Some(5),                    // max
 			sbvec!["COL1"]              // symbol
@@ -559,6 +563,7 @@ fn nested_equip_works() {
 		// Create GEM collection (2)
 		assert_ok!(RmrkCore::create_collection(
 			Origin::signed(ALICE),
+			COLLECTION_ID_2,
 			stb("gem-collection"), // metadata
 			Some(5),               // max
 			sbvec!["COL2"]         // symbol
@@ -842,6 +847,247 @@ fn equippable_works() {
 
 		// Question: Should be check existence of collections being equipped?
 	});
+}
+
+#[test]
+fn equippable_add_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// First we'll build our parts
+		// Fixed part body 1 is one option for body type
+		let fixed_part_body_1 = FixedPart { id: 101, z: 0, src: stb("body-1") };
+		// Fixed part body 2 is second option for body type
+		let fixed_part_body_2 = FixedPart { id: 102, z: 0, src: stb("body-2") };
+		// Slot part left hand can equip items from collections 0 or 1
+		let slot_part_left_hand = SlotPart {
+			id: 201,
+			z: 0,
+			src: Some(stb("left-hand")),
+			equippable: EquippableList::Custom(bvec![
+				0, // Collection 0
+				1, // Collection 1
+			]),
+		};
+		// Slot part right hand can equip items from collections 2 or 3
+		let slot_part_right_hand = SlotPart {
+			id: 202,
+			z: 0,
+			src: Some(stb("right-hand")),
+			equippable: EquippableList::Custom(bvec![
+				2, // Collection 2
+				3, // Collection 3
+			]),
+		};
+		// Let's create a base with these 4 parts
+		assert_ok!(RmrkEquip::create_base(
+			Origin::signed(ALICE), // origin
+			stb("svg"),            // base_type
+			stb("KANPEOPLE"),      // symbol
+			bvec![
+				PartType::FixedPart(fixed_part_body_1),
+				PartType::FixedPart(fixed_part_body_2),
+				PartType::SlotPart(slot_part_left_hand),
+				PartType::SlotPart(slot_part_right_hand),
+			],
+		));
+
+		// add_equippable extrinsic should work
+		assert_ok!(RmrkEquip::equippable_add(
+			Origin::signed(ALICE),
+			0,   // base ID
+			202, // slot ID
+			5,   // equippable collection
+		));
+
+		// Last event should be EquippablesUpdated
+		System::assert_last_event(MockEvent::RmrkEquip(crate::Event::EquippablesUpdated {
+			base_id: 0,
+			slot_id: 202,
+		}));
+
+		// Parts storage should be updated
+		let should_be = SlotPart {
+			id: 202,
+			z: 0,
+			src: Some(stb("right-hand")),
+			equippable: EquippableList::Custom(bvec![2, 3, 5]),
+		};
+		assert_eq!(RmrkEquip::parts(0, 202).unwrap(), PartType::SlotPart(should_be));
+
+		// equippable limit is 10.
+		for _i in 2..9 {
+			assert_ok!(RmrkEquip::equippable_add(
+				Origin::signed(ALICE),
+				0,   // base ID
+				202, // slot ID
+				5,   // equippable collection
+			));
+		}
+
+		// This should fail since the limit is reached.
+		assert_noop!(
+			RmrkEquip::equippable_add(
+				Origin::signed(ALICE),
+				0,   // base ID
+				202, // slot ID
+				5,   // equippable collection
+			),
+			Error::<Test>::TooManyEquippables
+		);
+
+		// Should not be able to change equippable on non-existent base
+		assert_noop!(
+			RmrkEquip::equippable_add(
+				Origin::signed(ALICE),
+				666, // base ID
+				202, // slot ID
+				5,   // equippable collection
+			),
+			Error::<Test>::BaseDoesntExist
+		);
+
+		// Should not be able to change equippable on non-existent part
+		assert_noop!(
+			RmrkEquip::equippable_add(
+				Origin::signed(ALICE),
+				0,   // base ID
+				200, // slot ID
+				5,   // equippable collection
+			),
+			Error::<Test>::PartDoesntExist
+		);
+
+		// Should not be able to change equippable on FixedPart part
+		assert_noop!(
+			RmrkEquip::equippable_add(
+				Origin::signed(ALICE),
+				0,   // base ID
+				101, // slot ID
+				5,   // equippable collection
+			),
+			Error::<Test>::NoEquippableOnFixedPart
+		);
+
+		// Should not be able to change equippable on non-issued base
+		assert_noop!(
+			RmrkEquip::equippable_add(
+				Origin::signed(BOB),
+				0,   // base ID
+				201, // slot ID
+				3,   // equippable collection
+			),
+			Error::<Test>::PermissionError
+		);
+	})
+}
+
+#[test]
+fn equippable_remove_works() {
+	ExtBuilder::default().build().execute_with(|| {
+		// First we'll build our parts
+		// Fixed part body 1 is one option for body type
+		let fixed_part_body_1 = FixedPart { id: 101, z: 0, src: stb("body-1") };
+		// Fixed part body 2 is second option for body type
+		let fixed_part_body_2 = FixedPart { id: 102, z: 0, src: stb("body-2") };
+		// Slot part left hand can equip items from collections 0 or 1
+		let slot_part_left_hand = SlotPart {
+			id: 201,
+			z: 0,
+			src: Some(stb("left-hand")),
+			equippable: EquippableList::Custom(bvec![
+				0, // Collection 0
+				1, // Collection 1
+			]),
+		};
+		// Slot part right hand can equip items from collections 2 or 3
+		let slot_part_right_hand = SlotPart {
+			id: 202,
+			z: 0,
+			src: Some(stb("right-hand")),
+			equippable: EquippableList::Custom(bvec![
+				2, // Collection 2
+				3, // Collection 3
+			]),
+		};
+		// Let's create a base with these 4 parts
+		assert_ok!(RmrkEquip::create_base(
+			Origin::signed(ALICE), // origin
+			stb("svg"),            // base_type
+			stb("KANPEOPLE"),      // symbol
+			bvec![
+				PartType::FixedPart(fixed_part_body_1),
+				PartType::FixedPart(fixed_part_body_2),
+				PartType::SlotPart(slot_part_left_hand),
+				PartType::SlotPart(slot_part_right_hand),
+			],
+		));
+
+		// add_equippable extrinsic should work
+		assert_ok!(RmrkEquip::equippable_remove(
+			Origin::signed(ALICE),
+			0,   // base ID
+			202, // slot ID
+			3,   // equippable collection
+		));
+
+		// Last event should be EquippablesUpdated
+		System::assert_last_event(MockEvent::RmrkEquip(crate::Event::EquippablesUpdated {
+			base_id: 0,
+			slot_id: 202,
+		}));
+
+		// Parts storage should be updated
+		let should_be = SlotPart {
+			id: 202,
+			z: 0,
+			src: Some(stb("right-hand")),
+			equippable: EquippableList::Custom(bvec![2]),
+		};
+		assert_eq!(RmrkEquip::parts(0, 202).unwrap(), PartType::SlotPart(should_be));
+
+		// Should not be able to change equippable on non-existent base
+		assert_noop!(
+			RmrkEquip::equippable_remove(
+				Origin::signed(ALICE),
+				666, // base ID
+				202, // slot ID
+				2,   // equippable collection
+			),
+			Error::<Test>::BaseDoesntExist
+		);
+
+		// Should not be able to change equippable on non-existent part
+		assert_noop!(
+			RmrkEquip::equippable_remove(
+				Origin::signed(ALICE),
+				0,   // base ID
+				200, // slot ID
+				2,   // equippable collection
+			),
+			Error::<Test>::PartDoesntExist
+		);
+
+		// Should not be able to change equippable on FixedPart part
+		assert_noop!(
+			RmrkEquip::equippable_remove(
+				Origin::signed(ALICE),
+				0,   // base ID
+				101, // slot ID
+				2,   // equippable collection
+			),
+			Error::<Test>::NoEquippableOnFixedPart
+		);
+
+		// Should not be able to change equippable on non-issued base
+		assert_noop!(
+			RmrkEquip::equippable_remove(
+				Origin::signed(BOB),
+				0,   // base ID
+				201, // slot ID
+				2,   // equippable collection
+			),
+			Error::<Test>::PermissionError
+		);
+	})
 }
 
 /// Base: Basic theme_add tests

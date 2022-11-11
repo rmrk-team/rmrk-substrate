@@ -14,6 +14,7 @@ describe("integration test: set collection property", () => {
   it("set collection property", async () => {
     await createCollection(
       api,
+      160,
       Alice,
       "test-metadata",
       null,
@@ -32,32 +33,27 @@ describe("integration test: set collection property", () => {
   });
 
   it("[negative] set non-existing collection property", async () => {
-    const tx = setPropertyCollection(
-      api,
-      Alice,
-      9999,
-      "test_key",
-      "42"
-    );
+    const tx = setPropertyCollection(api, Alice, 9999, "test_key", "42");
     await expectTxFailure(/rmrkCore\.CollectionUnknown/, tx);
   });
 
   it("[negative] set property not an owner NFT collection issuer", async () => {
     await createCollection(
       api,
+      161,
       Bob,
       "test-metadata",
       null,
       "test-symbol"
     ).then(async (collectionId) => {
-        const tx = setPropertyCollection(
-          api,
-          Alice,
-          collectionId,
-          "test_key",
-          "42"
-        );
-        await expectTxFailure(/rmrkCore\.NoPermission/, tx);
+      const tx = setPropertyCollection(
+        api,
+        Alice,
+        collectionId,
+        "test_key",
+        "42"
+      );
+      await expectTxFailure(/rmrkCore\.NoPermission/, tx);
     });
   });
 

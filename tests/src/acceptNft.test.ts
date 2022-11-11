@@ -13,9 +13,13 @@ describe("integration test: accept NFT", () => {
   const alice = "//Alice";
   const bob = "//Bob";
 
-  const createTestCollection = async (issuerUri: string) => {
+  const createTestCollection = async (
+    issuerUri: string,
+    collectionId: number
+  ) => {
     return await createCollection(
       api,
+      collectionId,
       issuerUri,
       "accept-metadata",
       null,
@@ -27,8 +31,8 @@ describe("integration test: accept NFT", () => {
     const ownerAlice = alice;
     const ownerBob = bob;
 
-    const aliceCollectionId = await createTestCollection(alice);
-    const bobCollectionId = await createTestCollection(bob);
+    const aliceCollectionId = await createTestCollection(alice, 0);
+    const bobCollectionId = await createTestCollection(bob, 1);
 
     const parentNftId = await mintNft(
       api,
@@ -72,8 +76,8 @@ describe("integration test: accept NFT", () => {
     const ownerAlice = alice;
     const ownerBob = bob;
 
-    const aliceCollectionId = await createTestCollection(alice);
-    const bobCollectionId = await createTestCollection(bob);
+    const aliceCollectionId = await createTestCollection(alice, 2);
+    const bobCollectionId = await createTestCollection(bob, 3);
 
     const parentNftId = await mintNft(
       api,
@@ -112,7 +116,7 @@ describe("integration test: accept NFT", () => {
     const maxNftId = 0xffffffff;
 
     const owner = alice;
-    const aliceCollectionId = await createTestCollection(alice);
+    const aliceCollectionId = await createTestCollection(alice, 4);
 
     const parentNftId = await mintNft(
       api,
@@ -134,8 +138,8 @@ describe("integration test: accept NFT", () => {
     const ownerAlice = alice;
     const ownerBob = bob;
 
-    const aliceCollectionId = await createTestCollection(alice);
-    const bobCollectionId = await createTestCollection(bob);
+    const aliceCollectionId = await createTestCollection(alice, 5);
+    const bobCollectionId = await createTestCollection(bob, 6);
 
     const parentNftId = await mintNft(
       api,
@@ -173,55 +177,61 @@ describe("integration test: accept NFT", () => {
     const ownerAlice = alice;
     const ownerBob = bob;
 
-    const aliceCollectionId = await createTestCollection(alice);
-    const bobCollectionId = await createTestCollection(bob);
+    const aliceCollectionId = await createTestCollection(alice, 7);
+    const bobCollectionId = await createTestCollection(bob, 8);
 
     const parentNftId = await mintNft(
-        api,
-        0,
-        alice,
-        ownerAlice,
-        aliceCollectionId,
-        "parent-nft-metadata"
+      api,
+      0,
+      alice,
+      ownerAlice,
+      aliceCollectionId,
+      "parent-nft-metadata"
     );
     const childNftId = await mintNft(
-        api,
-        0,
-        bob,
-        ownerBob,
-        bobCollectionId,
-        "child-nft-metadata"
+      api,
+      0,
+      bob,
+      ownerBob,
+      bobCollectionId,
+      "child-nft-metadata"
     );
 
     const parentNftId2 = await mintNft(
-        api,
-        1,
-        alice,
-        ownerAlice,
-        aliceCollectionId,
-        "parent-nft-metadata2"
+      api,
+      1,
+      alice,
+      ownerAlice,
+      aliceCollectionId,
+      "parent-nft-metadata2"
     );
 
     const newOwnerNFT: NftIdTuple = [aliceCollectionId, parentNftId];
     const notNewOwnerNFT: NftIdTuple = [aliceCollectionId, parentNftId2];
 
     await sendNft(
-        api,
-        "pending",
-        ownerBob,
-        bobCollectionId,
-        childNftId,
-        newOwnerNFT
+      api,
+      "pending",
+      ownerBob,
+      bobCollectionId,
+      childNftId,
+      newOwnerNFT
     );
-    const tx = acceptNft(api, alice, bobCollectionId, childNftId, notNewOwnerNFT);
+    const tx = acceptNft(
+      api,
+      alice,
+      bobCollectionId,
+      childNftId,
+      notNewOwnerNFT
+    );
 
     await expectTxFailure(/rmrkCore\.CannotAcceptToNewOwner/, tx);
 
     const isChild = await isNftChildOfAnother(
-        api,
-        bobCollectionId,
-        childNftId,
-        notNewOwnerNFT
+      api,
+      bobCollectionId,
+      childNftId,
+      notNewOwnerNFT
     );
     expect(isChild).to.be.false;
   });

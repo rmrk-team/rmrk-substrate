@@ -11,7 +11,7 @@ use sp_std::cmp::Eq;
 use frame_support::pallet_prelude::*;
 use sp_runtime::Permill;
 
-use crate::{primitives::*, serialize};
+use crate::{budget::Budget, serialize};
 use sp_std::result::Result;
 
 #[cfg(feature = "std")]
@@ -19,7 +19,7 @@ use serde::Serialize;
 
 #[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, Debug, TypeInfo, MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize))]
-pub enum AccountIdOrCollectionNftTuple<AccountId> {
+pub enum AccountIdOrCollectionNftTuple<AccountId, CollectionId, NftId> {
 	AccountId(AccountId),
 	CollectionAndNftTuple(CollectionId, NftId),
 }
@@ -42,12 +42,14 @@ pub struct RoyaltyInfo<AccountId, RoyaltyAmount> {
 	serde(bound = r#"
 			AccountId: Serialize,
 			RoyaltyAmount: Serialize,
-			BoundedString: AsRef<[u8]>
+			BoundedString: AsRef<[u8]>,
+			NftId: Serialize,
+			CollectionId: Serialize,
 		"#)
 )]
-pub struct NftInfo<AccountId, RoyaltyAmount, BoundedString> {
+pub struct NftInfo<AccountId, RoyaltyAmount, BoundedString, CollectionId, NftId> {
 	/// The owner of the NFT, can be either an Account or a tuple (CollectionId, NftId)
-	pub owner: AccountIdOrCollectionNftTuple<AccountId>,
+	pub owner: AccountIdOrCollectionNftTuple<AccountId, CollectionId, NftId>,
 	/// Royalty (optional)
 	pub royalty: Option<RoyaltyInfo<AccountId, RoyaltyAmount>>,
 
@@ -65,16 +67,14 @@ pub struct NftInfo<AccountId, RoyaltyAmount, BoundedString> {
 
 #[cfg_attr(feature = "std", derive(PartialEq, Eq, Serialize))]
 #[derive(Encode, Decode, TypeInfo, MaxEncodedLen)]
-pub struct NftChild {
+pub struct NftChild<CollectionId, NftId> {
 	pub collection_id: CollectionId,
 	pub nft_id: NftId,
 }
 
 /// Abstraction over a Nft system.
 #[allow(clippy::upper_case_acronyms)]
-pub trait Nft<AccountId, BoundedString, BoundedResourceVec> {
-	type MaxRecursions: Get<u32>;
-
+pub trait Nft<AccountId, BoundedString, BoundedResourceVec, CollectionId, NftId> {
 	fn nft_mint(
 		sender: AccountId,
 		owner: AccountId,
@@ -101,24 +101,23 @@ pub trait Nft<AccountId, BoundedString, BoundedResourceVec> {
 		owner: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		max_burns: u32,
+		budget: &dyn Budget,
 	) -> Result<(CollectionId, NftId), DispatchError>;
 	fn nft_send(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		new_owner: AccountIdOrCollectionNftTuple<AccountId>,
+		new_owner: AccountIdOrCollectionNftTuple<AccountId, CollectionId, NftId>,
 	) -> Result<(AccountId, bool), DispatchError>;
 	fn nft_accept(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		new_owner: AccountIdOrCollectionNftTuple<AccountId>,
+		new_owner: AccountIdOrCollectionNftTuple<AccountId, CollectionId, NftId>,
 	) -> Result<(AccountId, CollectionId, NftId), DispatchError>;
 	fn nft_reject(
 		sender: AccountId,
 		collection_id: CollectionId,
 		nft_id: NftId,
-		max_recursions: u32,
 	) -> Result<(AccountId, CollectionId, NftId), DispatchError>;
 }

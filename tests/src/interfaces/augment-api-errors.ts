@@ -81,6 +81,7 @@ declare module '@polkadot/api-base/types/errors' {
     };
     rmrkCore: {
       CannotAcceptNonOwnedNft: AugmentedError<ApiType>;
+      CannotAcceptToNewOwner: AugmentedError<ApiType>;
       CannotRejectNonOwnedNft: AugmentedError<ApiType>;
       CannotRejectNonPendingNft: AugmentedError<ApiType>;
       CannotSendEquippedItem: AugmentedError<ApiType>;
@@ -144,6 +145,8 @@ declare module '@polkadot/api-base/types/errors' {
       SlotNotEquipped: AugmentedError<ApiType>;
       TooManyProperties: AugmentedError<ApiType>;
       UnequipperMustOwnEitherItemOrEquipper: AugmentedError<ApiType>;
+      UnexpectedTryFromIntError: AugmentedError<ApiType>;
+      UnexpectedVecConversionError: AugmentedError<ApiType>;
       UnknownError: AugmentedError<ApiType>;
       /**
        * Generic error
@@ -284,6 +287,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       BadWitness: AugmentedError<ApiType>;
       /**
+       * The provided bid is too low.
+       **/
+      BidTooLow: AugmentedError<ApiType>;
+      /**
        * The item or collection is frozen.
        **/
       Frozen: AugmentedError<ApiType>;
@@ -316,6 +323,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       NoPermission: AugmentedError<ApiType>;
       /**
+       * Item is not for sale.
+       **/
+      NotForSale: AugmentedError<ApiType>;
+      /**
        * The named owner has not signed ownership of the collection is acceptable.
        **/
       Unaccepted: AugmentedError<ApiType>;
@@ -327,6 +338,10 @@ declare module '@polkadot/api-base/types/errors' {
        * The given item ID is unknown.
        **/
       UnknownCollection: AugmentedError<ApiType>;
+      /**
+       * The given item ID is unknown.
+       **/
+      UnknownItem: AugmentedError<ApiType>;
       /**
        * The delegate turned out to be different to what was expected.
        **/

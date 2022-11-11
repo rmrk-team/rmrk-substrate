@@ -32,6 +32,7 @@ describe("Integration test: remove nft resource", () => {
   it("deleting a resource directly by the NFT owner", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      120,
       Alice,
       "test-metadata",
       null,
@@ -70,6 +71,7 @@ describe("Integration test: remove nft resource", () => {
   it("deleting resources indirectly by the NFT owner", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      121,
       Alice,
       "test-metadata",
       null,
@@ -127,6 +129,7 @@ describe("Integration test: remove nft resource", () => {
   it("deleting a resource by the collection owner", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      122,
       Alice,
       "test-metadata",
       null,
@@ -172,6 +175,7 @@ describe("Integration test: remove nft resource", () => {
   it("deleting a resource in a nested NFT by the collection owner", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      123,
       Alice,
       "test-metadata",
       null,
@@ -236,6 +240,7 @@ describe("Integration test: remove nft resource", () => {
   it("[negative]: can't delete a resource in a non-existing collection", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      124,
       Alice,
       "test-metadata",
       null,
@@ -275,6 +280,7 @@ describe("Integration test: remove nft resource", () => {
   it("[negative]: only collection owner can delete a resource", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      125,
       Alice,
       "test-metadata",
       null,
@@ -314,6 +320,7 @@ describe("Integration test: remove nft resource", () => {
   it("[negative]: cannot delete a resource that does not exist", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      126,
       Alice,
       "test-metadata",
       null,
@@ -343,6 +350,7 @@ describe("Integration test: remove nft resource", () => {
   it("[negative]: Cannot accept deleting resource without owner attempt do delete it", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      127,
       Alice,
       "test-metadata",
       null,
@@ -381,6 +389,7 @@ describe("Integration test: remove nft resource", () => {
   it("[negative]: cannot confirm the deletion of a non-existing resource", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      128,
       Alice,
       "test-metadata",
       null,
@@ -403,6 +412,7 @@ describe("Integration test: remove nft resource", () => {
   it("[negative]: Non-owner user cannot confirm the deletion of resource", async () => {
     const collectionIdAlice = await createCollection(
       api,
+      129,
       Alice,
       "test-metadata",
       null,

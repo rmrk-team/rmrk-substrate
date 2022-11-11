@@ -37,6 +37,15 @@ pub struct BaseInfo<AccountId, BoundedString> {
 	pub symbol: BoundedString,
 }
 
+pub enum EquippableOperation<CollectionId, BoundedCollectionList> {
+	/// Adds a new collection that is allowed to be equipped.
+	Add(CollectionId),
+	/// Removes a collection from the list of equippables.
+	Remove(CollectionId),
+	/// Overrides all of the equippables.
+	Override(EquippableList<BoundedCollectionList>),
+}
+
 // Abstraction over a Base system.
 pub trait Base<
 	AccountId,
@@ -57,7 +66,7 @@ pub trait Base<
 	fn base_change_issuer(
 		base_id: BaseId,
 		new_issuer: AccountId,
-	) -> Result<(AccountId, CollectionId), DispatchError>;
+	) -> Result<(AccountId, BaseId), DispatchError>;
 	fn do_equip(
 		issuer: AccountId, // Maybe don't need?
 		item: (CollectionId, NftId),
@@ -77,7 +86,7 @@ pub trait Base<
 		issuer: AccountId,
 		base_id: BaseId,
 		slot: SlotId,
-		equippables: EquippableList<BoundedCollectionList>,
+		operation: EquippableOperation<CollectionId, BoundedCollectionList>,
 	) -> Result<(BaseId, SlotId), DispatchError>;
 	fn add_theme(
 		issuer: AccountId,

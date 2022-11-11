@@ -13,9 +13,13 @@ describe("integration test: reject NFT", () => {
   const alice = "//Alice";
   const bob = "//Bob";
 
-  const createTestCollection = async (issuerUri: string) => {
+  const createTestCollection = async (
+    issuerUri: string,
+    collectionId: number
+  ) => {
     return await createCollection(
       api,
+      collectionId,
       issuerUri,
       "reject-metadata",
       null,
@@ -27,8 +31,8 @@ describe("integration test: reject NFT", () => {
     const ownerAlice = alice;
     const ownerBob = bob;
 
-    const aliceCollectionId = await createTestCollection(alice);
-    const bobCollectionId = await createTestCollection(bob);
+    const aliceCollectionId = await createTestCollection(alice, 110);
+    const bobCollectionId = await createTestCollection(bob, 111);
 
     const parentNftId = await mintNft(
       api,
@@ -73,8 +77,8 @@ describe("integration test: reject NFT", () => {
     const ownerAlice = alice;
     const ownerBob = bob;
 
-    const aliceCollectionId = await createTestCollection(alice);
-    const bobCollectionId = await createTestCollection(bob);
+    const aliceCollectionId = await createTestCollection(alice, 112);
+    const bobCollectionId = await createTestCollection(bob, 113);
 
     const parentNftId = await mintNft(
       api,
@@ -111,7 +115,7 @@ describe("integration test: reject NFT", () => {
   it("[negative] unable to reject non-existing NFT", async () => {
     const maxNftId = 0xffffffff;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 114);
 
     const tx = rejectNft(api, alice, collectionId, maxNftId);
 
@@ -121,7 +125,7 @@ describe("integration test: reject NFT", () => {
   it("[negative] unable to reject NFT which is not sent", async () => {
     const ownerAlice = alice;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 115);
 
     const nftId = await mintNft(
       api,

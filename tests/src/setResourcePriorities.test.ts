@@ -11,9 +11,10 @@ describe("integration test: set NFT resource priorities", () => {
   const alice = "//Alice";
   const bob = "//Bob";
 
-  const createTestCollection = (issuerUri: string) => {
+  const createTestCollection = (issuerUri: string, collectionId: number) => {
     return createCollection(
       api,
+      collectionId,
       issuerUri,
       "resprio-collection-metadata",
       null,
@@ -24,7 +25,7 @@ describe("integration test: set NFT resource priorities", () => {
   it("set NFT resource priorities", async () => {
     const owner = alice;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 190);
     const nftId = await mintNft(
       api,
       0,
@@ -41,7 +42,7 @@ describe("integration test: set NFT resource priorities", () => {
     const owner = alice;
     const attacker = bob;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 191);
     const nftId = await mintNft(
       api,
       0,

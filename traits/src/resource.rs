@@ -11,8 +11,10 @@ use serde::Serialize;
 use sp_runtime::{DispatchError, DispatchResult, RuntimeDebug};
 use sp_std::{cmp::Eq, result::Result};
 
-use crate::{primitives::*, serialize};
-
+use crate::{
+	primitives::{BaseId, PartId, ResourceId, SlotId},
+	serialize,
+};
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 #[cfg_attr(feature = "std", derive(Serialize))]
 #[cfg_attr(feature = "std", serde(bound = "BoundedString: AsRef<[u8]>"))]
@@ -122,7 +124,7 @@ pub struct ResourceInfoMin<BoundedString, BoundedParts> {
 }
 
 /// Abstraction over a Resource system.
-pub trait Resource<BoundedString, AccountId, BoundedPart> {
+pub trait Resource<BoundedString, AccountId, BoundedPart, CollectionId, NftId> {
 	fn resource_add(
 		sender: AccountId,
 		collection_id: CollectionId,

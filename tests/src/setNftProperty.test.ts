@@ -12,9 +12,13 @@ describe("integration test: set NFT property", () => {
   const alice = "//Alice";
   const bob = "//Bob";
 
-  const createTestCollection = async (issuerUri: string) => {
+  const createTestCollection = async (
+    issuerUri: string,
+    collectionId: number
+  ) => {
     return await createCollection(
       api,
+      collectionId,
       issuerUri,
       "setprop-nft-collection-metadata",
       null,
@@ -25,7 +29,7 @@ describe("integration test: set NFT property", () => {
   it("set NFT property", async () => {
     const ownerAlice = alice;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 180);
     const nftId = await mintNft(
       api,
       300,
@@ -80,7 +84,7 @@ describe("integration test: set NFT property", () => {
   it("[negative] unable to set a property by not-an-owner", async () => {
     const ownerAlice = alice;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 181);
     const nftId = await mintNft(
       api,
       301,
@@ -105,7 +109,7 @@ describe("integration test: set NFT property", () => {
   it("set a property to nested NFT", async () => {
     const ownerAlice = alice;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 182);
     const parentNftId = await mintNft(
       api,
       302,
@@ -140,7 +144,7 @@ describe("integration test: set NFT property", () => {
   it("[negative] set a property to nested NFT (by not-root-owner)", async () => {
     const ownerAlice = alice;
 
-    const collectionId = await createTestCollection(alice);
+    const collectionId = await createTestCollection(alice, 183);
     const parentNftId = await mintNft(
       api,
       0,
