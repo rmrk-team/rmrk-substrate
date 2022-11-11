@@ -837,7 +837,7 @@ pub mod pallet {
 		}
 
 		/// Replace resource by id
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::replace_resource())]
 		#[transactional]
 		pub fn replace_resource(
 			origin: OriginFor<T>,
