@@ -348,9 +348,9 @@ pub mod pallet {
 			collection_id: T::CollectionId,
 		},
 		ResourceReplaced {
-			nft_id: NftId,
+			nft_id: T::ItemId,
 			resource_id: ResourceId,
-			collection_id: CollectionId,
+			collection_id: T::CollectionId,
 		},
 		ResourceAccepted {
 			nft_id: T::ItemId,
@@ -841,8 +841,8 @@ pub mod pallet {
 		#[transactional]
 		pub fn replace_resource(
 			origin: OriginFor<T>,
-			collection_id: CollectionId,
-			nft_id: NftId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
 			resource: ResourceTypes<StringLimitOf<T>, BoundedVec<PartId, T::PartsLimit>>,
 			resource_id: ResourceId,
 		) -> DispatchResult {

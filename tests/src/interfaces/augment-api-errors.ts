@@ -117,6 +117,9 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       StorageOverflow: AugmentedError<ApiType>;
       TooLong: AugmentedError<ApiType>;
+      /**
+       * The recursion limit has been reached.
+       **/
       TooManyRecursions: AugmentedError<ApiType>;
       /**
        * Generic error
@@ -143,6 +146,7 @@ declare module '@polkadot/api-base/types/errors' {
       PermissionError: AugmentedError<ApiType>;
       SlotAlreadyEquipped: AugmentedError<ApiType>;
       SlotNotEquipped: AugmentedError<ApiType>;
+      TooManyEquippables: AugmentedError<ApiType>;
       TooManyProperties: AugmentedError<ApiType>;
       UnequipperMustOwnEitherItemOrEquipper: AugmentedError<ApiType>;
       UnexpectedTryFromIntError: AugmentedError<ApiType>;

@@ -368,6 +368,11 @@ export default {
         resourceId: 'u32',
         collectionId: 'u32',
       },
+      ResourceReplaced: {
+        nftId: 'u32',
+        resourceId: 'u32',
+        collectionId: 'u32',
+      },
       ResourceAccepted: {
         nftId: 'u32',
         resourceId: 'u32',
@@ -981,6 +986,16 @@ export default {
         slotId: 'u32',
         equippables: 'RmrkTraitsPartEquippableList',
       },
+      equippable_add: {
+        baseId: 'u32',
+        slotId: 'u32',
+        equippable: 'u32',
+      },
+      equippable_remove: {
+        baseId: 'u32',
+        slotId: 'u32',
+        equippable: 'u32',
+      },
       theme_add: {
         baseId: 'u32',
         theme: 'RmrkTraitsTheme',
@@ -1077,7 +1092,6 @@ export default {
       burn_nft: {
         collectionId: 'u32',
         nftId: 'u32',
-        maxBurns: 'u32',
       },
       destroy_collection: {
         collectionId: 'u32',
@@ -1125,6 +1139,12 @@ export default {
         collectionId: 'u32',
         nftId: 'u32',
         resource: 'RmrkTraitsResourceSlotResource',
+        resourceId: 'u32',
+      },
+      replace_resource: {
+        collectionId: 'u32',
+        nftId: 'u32',
+        resource: 'RmrkTraitsResourceResourceTypes',
         resourceId: 'u32',
       },
       accept_resource: {
@@ -1430,7 +1450,7 @@ export default {
    * Lookup165: pallet_rmrk_equip::pallet::Error<T>
    **/
   PalletRmrkEquipError: {
-    _enum: ['PermissionError', 'ItemDoesntExist', 'EquipperDoesntExist', 'NoAvailableBaseId', 'NoAvailablePartId', 'MustBeDirectParent', 'PartDoesntExist', 'BaseDoesntExist', 'CantEquipFixedPart', 'NoResourceForThisBaseFoundOnNft', 'CollectionNotEquippable', 'ItemHasNoResourceToEquipThere', 'NoEquippableOnFixedPart', 'NeedsDefaultThemeFirst', 'ItemAlreadyEquipped', 'SlotAlreadyEquipped', 'SlotNotEquipped', 'UnknownError', 'ExceedsMaxPartsPerBase', 'TooManyProperties', 'ItemNotEquipped', 'UnequipperMustOwnEitherItemOrEquipper', 'UnexpectedTryFromIntError', 'UnexpectedVecConversionError']
+    _enum: ['PermissionError', 'ItemDoesntExist', 'EquipperDoesntExist', 'NoAvailableBaseId', 'TooManyEquippables', 'NoAvailablePartId', 'MustBeDirectParent', 'PartDoesntExist', 'BaseDoesntExist', 'CantEquipFixedPart', 'NoResourceForThisBaseFoundOnNft', 'CollectionNotEquippable', 'ItemHasNoResourceToEquipThere', 'NoEquippableOnFixedPart', 'NeedsDefaultThemeFirst', 'ItemAlreadyEquipped', 'SlotAlreadyEquipped', 'SlotNotEquipped', 'UnknownError', 'ExceedsMaxPartsPerBase', 'TooManyProperties', 'ItemNotEquipped', 'UnequipperMustOwnEitherItemOrEquipper', 'UnexpectedTryFromIntError', 'UnexpectedVecConversionError']
   },
   /**
    * Lookup166: rmrk_traits::collection::CollectionInfo<sp_runtime::bounded::bounded_vec::BoundedVec<T, S>, sp_runtime::bounded::bounded_vec::BoundedVec<T, S>, sp_core::crypto::AccountId32>

@@ -228,8 +228,8 @@ impl<T: Config>
 
 	fn resource_replace(
 		_sender: T::AccountId,
-		collection_id: CollectionId,
-		nft_id: NftId,
+		collection_id: T::CollectionId,
+		nft_id: T::ItemId,
 		resource: ResourceTypes<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>>,
 		resource_id: ResourceId,
 	) -> DispatchResult {
