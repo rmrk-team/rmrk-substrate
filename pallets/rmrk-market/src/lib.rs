@@ -17,6 +17,8 @@ use frame_system::{ensure_signed, RawOrigin};
 use sp_std::prelude::*;
 
 pub use pallet::*;
+mod weights;
+//pub use weights::WeightInfo;
 
 use rmrk_traits::{AccountIdOrCollectionNftTuple, NftInfo};
 
@@ -101,6 +103,7 @@ pub mod pallet {
 		#[pallet::constant]
 		type MinimumOfferAmount: Get<BalanceOf<Self>>;
 
+		/// Weight information for extrinsics in this pallet.
 		//type WeightInfo: WeightInfo;
 
 		#[cfg(feature = "runtime-benchmarks")]
