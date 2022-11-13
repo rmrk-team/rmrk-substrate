@@ -101,8 +101,7 @@ pub mod pallet {
 		#[pallet::constant]
 		type MinimumOfferAmount: Get<BalanceOf<Self>>;
 
-		// TODO: Weight values for this pallet
-		// type WeightInfo: WeightInfo;
+		//type WeightInfo: WeightInfo;
 
 		#[cfg(feature = "runtime-benchmarks")]
 		type Helper: BenchmarkHelper<Self::CollectionId, Self::ItemId>;

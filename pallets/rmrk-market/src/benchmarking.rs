@@ -51,7 +51,7 @@ fn create_test_collection<T: Config>(
 	caller: T::AccountId,
 	collection_index: u32,
 ) -> T::CollectionId {
-	let collection_id = T::Helper::collection(collection_index);
+	let collection_id = <T as pallet::Config>::Helper::collection(collection_index);
 	let metadata = bvec![0u8; 20];
 	let max = None;
 	let symbol = bvec![0u8; 15];
@@ -77,7 +77,7 @@ fn mint_test_nft<T: Config>(
 	collection_id: T::CollectionId,
 	nft_index: u32,
 ) -> T::ItemId {
-	let nft_id = T::Helper::item(nft_index);
+	let nft_id = <T as pallet::Config>::Helper::item(nft_index);
 	let royalty_recipient = owner.clone();
 	let royalty = Permill::from_percent(1);
 	let nft_metadata = bvec![0u8; 20];
@@ -178,15 +178,17 @@ benchmarks! {
 		assert_last_event::<T>(Event::OfferWithdrawn { sender: caller, collection_id, nft_id }.into());
 	}
 
-	impl_benchmark_test_suite!(RmrkMarket, crate::benchmarking::tests::new_test_ext(), crate::mock::Test);
-}
+	accept_offer {
+		let caller: T::AccountId = whitelisted_caller();
+		<T as pallet_uniques::Config>::Currency::make_free_balance_be(&caller, BalanceOf::<T>::max_value());
+		let collection_index = 1;
+		let collection_id = create_test_collection::<T>(caller.clone(), collection_index);
+		let nft_id = mint_test_nft::<T>(caller.clone(), None, collection_id, 42);
 
-#[cfg(test)]
-mod tests {
-	use crate::mock;
-	use sp_io::TestExternalities;
+		let bob = funded_account::<T>("bob", 0);
+		let amount =  T::MinimumOfferAmount::get();
+		let _ = RmrkMarket::<T>::make_offer(RawOrigin::Signed(bob.clone()).into(), collection_id, nft_id, amount, None);
+	}: _(RawOrigin::Signed(caller.clone()), collection_id, nft_id, bob.clone())
 
-	pub fn new_test_ext() -> TestExternalities {
-		mock::new_test_ext()
-	}
+	impl_benchmark_test_suite!(RmrkMarket, crate::mock::new_test_ext(), crate::mock::Test);
 }
