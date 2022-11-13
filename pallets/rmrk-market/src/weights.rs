@@ -30,9 +30,19 @@
 use frame_support::{traits::Get, weights::{Weight}};
 use sp_std::marker::PhantomData;
 
-/// Weight functions for `pallet_rmrk_market`.
-pub struct WeightInfo<T>(PhantomData<T>);
-impl<T: frame_system::Config> pallet_rmrk_market::WeightInfo for WeightInfo<T> {
+/// Weight functions needed for pallet_rmrk_market.
+pub trait WeightInfo {
+	fn buy() -> Weight;
+	fn list() -> Weight;
+	fn unlist() -> Weight;
+	fn make_offer() -> Weight;
+	fn withdraw_offer() -> Weight;
+	fn accept_offer() -> Weight;
+}
+
+/// Weight functions for `pallet_rmrk_core`.
+pub struct SubstrateWeight<T>(PhantomData<T>);
+impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 	// Storage: Uniques Asset (r:1 w:1)
 	// Storage: RmrkMarket ListedNfts (r:1 w:1)
 	// Storage: RmrkCore Lock (r:1 w:1)

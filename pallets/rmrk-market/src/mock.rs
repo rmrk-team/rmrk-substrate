@@ -157,6 +157,7 @@ impl Config for Test {
 	type ProtocolOrigin = EnsureRoot<AccountId>;
 	type Currency = Balances;
 	type MinimumOfferAmount = MinimumOfferAmount;
+	type WeightInfo = weights::SubstrateWeight<Test>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = RmrkBenchmark;
 }

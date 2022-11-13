@@ -380,6 +380,7 @@ impl pallet_rmrk_market::Config for Runtime {
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
 	type Currency = Balances;
 	type MinimumOfferAmount = MinimumOfferAmount;
+	type WeightInfo = pallet_rmrk_market::weights::SubstrateWeight<Runtime>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = pallet_rmrk_market::RmrkBenchmark;
 }
