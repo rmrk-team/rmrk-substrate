@@ -115,6 +115,8 @@ impl pallet_rmrk_core::Config for Test {
 	type MaxResourcesOnMint = MaxResourcesOnMint;
 	type NestingBudget = NestingBudget;
 	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Test>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = RmrkBenchmark;
 }
 
 parameter_types! {
