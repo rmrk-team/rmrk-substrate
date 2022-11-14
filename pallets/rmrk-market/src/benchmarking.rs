@@ -117,16 +117,17 @@ fn list_test_nft<T: Config>(
 
 benchmarks! {
 	buy {
-		let bob = funded_account::<T>("bob", 0);
+		let owner = funded_account::<T>("owner", 0);
 		let collection_index = 1;
-		let collection_id = create_test_collection::<T>(bob.clone(), collection_index);
-		let nft_id = mint_test_nft::<T>(bob.clone(), None, collection_id, 42);
-		let price = list_test_nft::<T>(bob.clone(), collection_id, nft_id, 100);
+		let collection_id = create_test_collection::<T>(owner.clone(), collection_index);
+		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 42);
+
+		let price = list_test_nft::<T>(owner.clone(), collection_id, nft_id, 100);
 		let caller: T::AccountId = whitelisted_caller();
 		<T as pallet_uniques::Config>::Currency::make_free_balance_be(&caller, BalanceOf::<T>::max_value());
 	}: _(RawOrigin::Signed(caller.clone()), collection_id, nft_id, None)
 	verify {
-		assert_last_event::<T>(Event::TokenSold { owner: bob, buyer: caller, collection_id, nft_id, price }.into());
+		assert_last_event::<T>(Event::TokenSold { owner, buyer: caller, collection_id, nft_id, price }.into());
 	}
 
 	list {
@@ -145,6 +146,7 @@ benchmarks! {
 		let collection_index = 1;
 		let collection_id = create_test_collection::<T>(caller.clone(), collection_index);
 		let nft_id = mint_test_nft::<T>(caller.clone(), None, collection_id, 42);
+
 		let _ = list_test_nft::<T>(caller.clone(), collection_id, nft_id, 100);
 	}: _(RawOrigin::Signed(caller.clone()), collection_id, nft_id)
 	verify {
@@ -152,10 +154,11 @@ benchmarks! {
 	}
 
 	make_offer {
-		let bob = funded_account::<T>("bob", 0);
+		let owner = funded_account::<T>("owner", 0);
 		let collection_index = 1;
-		let collection_id = create_test_collection::<T>(bob.clone(), collection_index);
-		let nft_id = mint_test_nft::<T>(bob.clone(), None, collection_id, 42);
+		let collection_id = create_test_collection::<T>(owner.clone(), collection_index);
+		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 42);
+
 		let caller: T::AccountId = whitelisted_caller();
 		let amount =  T::MinimumOfferAmount::get();
 		<T as pallet_uniques::Config>::Currency::make_free_balance_be(&caller, BalanceOf::<T>::max_value());
@@ -165,10 +168,11 @@ benchmarks! {
 	}
 
 	withdraw_offer {
-		let bob = funded_account::<T>("bob", 0);
+		let owner = funded_account::<T>("owner", 0);
 		let collection_index = 1;
-		let collection_id = create_test_collection::<T>(bob.clone(), collection_index);
-		let nft_id = mint_test_nft::<T>(bob.clone(), None, collection_id, 42);
+		let collection_id = create_test_collection::<T>(owner.clone(), collection_index);
+		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 42);
+
 		let caller: T::AccountId = whitelisted_caller();
 		let amount =  T::MinimumOfferAmount::get();
 		<T as pallet_uniques::Config>::Currency::make_free_balance_be(&caller, BalanceOf::<T>::max_value());
@@ -180,15 +184,18 @@ benchmarks! {
 
 	accept_offer {
 		let caller: T::AccountId = whitelisted_caller();
-		<T as pallet_uniques::Config>::Currency::make_free_balance_be(&caller, BalanceOf::<T>::max_value());
+
 		let collection_index = 1;
 		let collection_id = create_test_collection::<T>(caller.clone(), collection_index);
 		let nft_id = mint_test_nft::<T>(caller.clone(), None, collection_id, 42);
 
-		let bob = funded_account::<T>("bob", 0);
+		let offerer = funded_account::<T>("offerer", 0);
 		let amount =  T::MinimumOfferAmount::get();
-		let _ = RmrkMarket::<T>::make_offer(RawOrigin::Signed(bob.clone()).into(), collection_id, nft_id, amount, None);
-	}: _(RawOrigin::Signed(caller.clone()), collection_id, nft_id, bob.clone())
+		let _ = RmrkMarket::<T>::make_offer(RawOrigin::Signed(offerer.clone()).into(), collection_id, nft_id, amount, None);
+	}: _(RawOrigin::Signed(caller.clone()), collection_id, nft_id, offerer.clone())
+	verify {
+		assert_last_event::<T>(Event::OfferAccepted { owner: caller, buyer: offerer, collection_id, nft_id }.into());
+	}
 
 	impl_benchmark_test_suite!(RmrkMarket, crate::mock::new_test_ext(), crate::mock::Test);
 }
