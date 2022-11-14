@@ -28,6 +28,9 @@ pub mod types;
 #[cfg(any(feature = "runtime-benchmarks"))]
 pub mod benchmarking;
 
+#[cfg(feature = "runtime-benchmarks")]
+use pallet_rmrk_core::BenchmarkHelper;
+
 #[cfg(test)]
 mod mock;
 
@@ -36,26 +39,6 @@ mod tests;
 
 use crate::types::Offer;
 pub use pallet::*;
-
-#[cfg(feature = "runtime-benchmarks")]
-pub trait BenchmarkHelper<CollectionId, ItemId> {
-	fn collection(i: u32) -> CollectionId;
-	fn item(i: u32) -> ItemId;
-}
-#[cfg(feature = "runtime-benchmarks")]
-pub struct RmrkBenchmark;
-
-#[cfg(feature = "runtime-benchmarks")]
-impl<CollectionId: From<u32>, ItemId: From<u32>> BenchmarkHelper<CollectionId, ItemId>
-	for RmrkBenchmark
-{
-	fn collection(i: u32) -> CollectionId {
-		i.into()
-	}
-	fn item(i: u32) -> ItemId {
-		i.into()
-	}
-}
 
 #[frame_support::pallet]
 pub mod pallet {

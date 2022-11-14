@@ -104,6 +104,9 @@ parameter_types! {
 	pub const NestingBudget: u32 = 10;
 }
 
+#[cfg(feature = "runtime-benchmarks")]
+use pallet_rmrk_core::RmrkBenchmark;
+
 impl pallet_rmrk_core::Config for Test {
 	// type Currency = Balances;
 	type Event = Event;
