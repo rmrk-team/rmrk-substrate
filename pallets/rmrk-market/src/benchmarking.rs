@@ -7,7 +7,7 @@ use super::*;
 use frame_benchmarking::{account, benchmarks, whitelisted_caller};
 use frame_support::traits::Get;
 use pallet_rmrk_core::Pallet as RmrkCore;
-use sp_runtime::{traits::Bounded, Permill};
+use sp_runtime::{traits::Bounded, Permill, SaturatedConversion};
 
 use crate::Pallet as RmrkMarket;
 
@@ -55,10 +55,6 @@ fn create_test_collection<T: Config>(
 	let metadata = bvec![0u8; 20];
 	let max = None;
 	let symbol = bvec![0u8; 15];
-	<T as pallet_uniques::Config>::Currency::make_free_balance_be(
-		&caller,
-		BalanceOf::<T>::max_value(),
-	);
 	let _ = RmrkCore::<T>::create_collection(
 		(RawOrigin::Signed(caller.clone())).into(),
 		collection_id.clone(),
@@ -133,6 +129,8 @@ benchmarks! {
 	list {
 		let caller: T::AccountId = whitelisted_caller();
 		let collection_index = 1;
+		<T as pallet_uniques::Config>::Currency::make_free_balance_be(&caller, BalanceOf::<T>::max_value());
+
 		let collection_id = create_test_collection::<T>(caller.clone(), collection_index);
 		let nft_id = mint_test_nft::<T>(caller.clone(), None, collection_id, 42);
 		let price = u32_to_balance::<T>(100);
@@ -144,6 +142,8 @@ benchmarks! {
 	unlist {
 		let caller: T::AccountId = whitelisted_caller();
 		let collection_index = 1;
+		<T as pallet_uniques::Config>::Currency::make_free_balance_be(&caller, BalanceOf::<T>::max_value());
+
 		let collection_id = create_test_collection::<T>(caller.clone(), collection_index);
 		let nft_id = mint_test_nft::<T>(caller.clone(), None, collection_id, 42);
 
@@ -184,8 +184,11 @@ benchmarks! {
 
 	accept_offer {
 		let caller: T::AccountId = whitelisted_caller();
-
 		let collection_index = 1;
+		// The balance is not set to `max_value` because the caller needs to
+		// accept `MinimumOfferAmount::get()` without an overflow.
+		<T as pallet_uniques::Config>::Currency::make_free_balance_be(&caller, 50_000_000u64.saturated_into());
+
 		let collection_id = create_test_collection::<T>(caller.clone(), collection_index);
 		let nft_id = mint_test_nft::<T>(caller.clone(), None, collection_id, 42);
 
