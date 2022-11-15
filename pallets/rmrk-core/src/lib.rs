@@ -19,6 +19,7 @@ use sp_std::convert::TryInto;
 
 use rmrk_traits::{
 	budget,
+	misc::CheckAllowTransferFn,
 	primitives::{BaseId, PartId, ResourceId, SlotId},
 	AccountIdOrCollectionNftTuple, BasicResource, Collection, CollectionInfo, ComposableResource,
 	Nft, NftChild, NftInfo, PhantomType, Priority, Property, PropertyInfo, Resource, ResourceInfo,
@@ -148,6 +149,12 @@ pub mod pallet {
 
 		#[cfg(feature = "runtime-benchmarks")]
 		type Helper: BenchmarkHelper<Self::CollectionId, Self::ItemId>;
+
+		type CheckAllowTransfer: CheckAllowTransferFn<
+			Self::AccountId,
+			Self::CollectionId,
+			Self::ItemId,
+		>;
 	}
 
 	#[pallet::storage]
@@ -406,6 +413,7 @@ pub mod pallet {
 		// rmrk-equip pallet but the send operation lives in rmrk-core)
 		CannotSendEquippedItem,
 		CannotAcceptToNewOwner,
+		CannotSendNft,
 	}
 
 	#[pallet::call]
