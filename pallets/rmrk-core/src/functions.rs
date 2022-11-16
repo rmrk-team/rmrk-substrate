@@ -17,7 +17,7 @@ use sp_runtime::{
 	ArithmeticError,
 };
 
-use rmrk_traits::budget::Budget;
+use rmrk_traits::{budget::Budget, misc::CheckAllowTransferFn};
 use sp_std::collections::btree_set::BTreeSet;
 
 // Randomness to generate NFT virtual accounts
@@ -570,6 +570,10 @@ impl<T: Config>
 		nft_id: T::ItemId,
 		new_owner: AccountIdOrCollectionNftTuple<T::AccountId, T::CollectionId, T::ItemId>,
 	) -> sp_std::result::Result<(T::AccountId, bool), DispatchError> {
+		ensure!(
+			T::CheckAllowTransfer::check(&sender, &collection_id, &nft_id),
+			Error::<T>::CannotSendNft
+		);
 		// Get current owner for child removal later
 		let parent = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
 		// Check if parent returns None which indicates the NFT is not available
