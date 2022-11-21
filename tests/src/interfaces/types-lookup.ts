@@ -1048,6 +1048,18 @@ declare module '@polkadot/types/lookup' {
       readonly slotId: u32;
       readonly equippables: RmrkTraitsPartEquippableList;
     } & Struct;
+    readonly isEquippableAdd: boolean;
+    readonly asEquippableAdd: {
+      readonly baseId: u32;
+      readonly slotId: u32;
+      readonly equippable: u32;
+    } & Struct;
+    readonly isEquippableRemove: boolean;
+    readonly asEquippableRemove: {
+      readonly baseId: u32;
+      readonly slotId: u32;
+      readonly equippable: u32;
+    } & Struct;
     readonly isThemeAdd: boolean;
     readonly asThemeAdd: {
       readonly baseId: u32;
@@ -1059,7 +1071,7 @@ declare module '@polkadot/types/lookup' {
       readonly symbol: Bytes;
       readonly parts: Vec<RmrkTraitsPartPartType>;
     } & Struct;
-    readonly type: 'ChangeBaseIssuer' | 'Equip' | 'Unequip' | 'Equippable' | 'ThemeAdd' | 'CreateBase';
+    readonly type: 'ChangeBaseIssuer' | 'Equip' | 'Unequip' | 'Equippable' | 'EquippableAdd' | 'EquippableRemove' | 'ThemeAdd' | 'CreateBase';
   }
 
   /** @name RmrkTraitsPartEquippableList (125) */
@@ -1143,7 +1155,6 @@ declare module '@polkadot/types/lookup' {
     readonly asBurnNft: {
       readonly collectionId: u32;
       readonly nftId: u32;
-      readonly maxBurns: u32;
     } & Struct;
     readonly isDestroyCollection: boolean;
     readonly asDestroyCollection: {
@@ -1538,6 +1549,7 @@ declare module '@polkadot/types/lookup' {
     readonly isItemDoesntExist: boolean;
     readonly isEquipperDoesntExist: boolean;
     readonly isNoAvailableBaseId: boolean;
+    readonly isTooManyEquippables: boolean;
     readonly isNoAvailablePartId: boolean;
     readonly isMustBeDirectParent: boolean;
     readonly isPartDoesntExist: boolean;
@@ -1558,7 +1570,7 @@ declare module '@polkadot/types/lookup' {
     readonly isUnequipperMustOwnEitherItemOrEquipper: boolean;
     readonly isUnexpectedTryFromIntError: boolean;
     readonly isUnexpectedVecConversionError: boolean;
-    readonly type: 'PermissionError' | 'ItemDoesntExist' | 'EquipperDoesntExist' | 'NoAvailableBaseId' | 'NoAvailablePartId' | 'MustBeDirectParent' | 'PartDoesntExist' | 'BaseDoesntExist' | 'CantEquipFixedPart' | 'NoResourceForThisBaseFoundOnNft' | 'CollectionNotEquippable' | 'ItemHasNoResourceToEquipThere' | 'NoEquippableOnFixedPart' | 'NeedsDefaultThemeFirst' | 'ItemAlreadyEquipped' | 'SlotAlreadyEquipped' | 'SlotNotEquipped' | 'UnknownError' | 'ExceedsMaxPartsPerBase' | 'TooManyProperties' | 'ItemNotEquipped' | 'UnequipperMustOwnEitherItemOrEquipper' | 'UnexpectedTryFromIntError' | 'UnexpectedVecConversionError';
+    readonly type: 'PermissionError' | 'ItemDoesntExist' | 'EquipperDoesntExist' | 'NoAvailableBaseId' | 'TooManyEquippables' | 'NoAvailablePartId' | 'MustBeDirectParent' | 'PartDoesntExist' | 'BaseDoesntExist' | 'CantEquipFixedPart' | 'NoResourceForThisBaseFoundOnNft' | 'CollectionNotEquippable' | 'ItemHasNoResourceToEquipThere' | 'NoEquippableOnFixedPart' | 'NeedsDefaultThemeFirst' | 'ItemAlreadyEquipped' | 'SlotAlreadyEquipped' | 'SlotNotEquipped' | 'UnknownError' | 'ExceedsMaxPartsPerBase' | 'TooManyProperties' | 'ItemNotEquipped' | 'UnequipperMustOwnEitherItemOrEquipper' | 'UnexpectedTryFromIntError' | 'UnexpectedVecConversionError';
   }
 
   /** @name RmrkTraitsCollectionCollectionInfo (166) */
