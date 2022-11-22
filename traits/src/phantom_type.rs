@@ -8,14 +8,11 @@ impl<T: TypeInfo + 'static> TypeInfo for PhantomType<T> {
 	type Identity = PhantomType<T>;
 
 	fn type_info() -> scale_info::Type {
-		use scale_info::{
-			build::{FieldsBuilder, UnnamedFields},
-			type_params, Path, Type,
-		};
+		use scale_info::{build::Fields, type_params, Path, Type};
 		Type::builder()
 			.path(Path::new("phantom_type", "PhantomType"))
 			.type_params(type_params!(T))
-			.composite(<FieldsBuilder<UnnamedFields>>::default().field(|b| b.ty::<[T; 0]>()))
+			.composite(Fields::unnamed().field(|b| b.ty::<[T; 0]>()))
 	}
 }
 impl<T> MaxEncodedLen for PhantomType<T> {
