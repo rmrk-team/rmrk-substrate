@@ -570,10 +570,6 @@ impl<T: Config>
 		nft_id: T::ItemId,
 		new_owner: AccountIdOrCollectionNftTuple<T::AccountId, T::CollectionId, T::ItemId>,
 	) -> sp_std::result::Result<(T::AccountId, bool), DispatchError> {
-		ensure!(
-			T::CheckAllowTransfer::check(&sender, &collection_id, &nft_id),
-			Error::<T>::CannotSendNft
-		);
 		// Get current owner for child removal later
 		let parent = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
 		// Check if parent returns None which indicates the NFT is not available
@@ -587,6 +583,11 @@ impl<T: Config>
 		// Get NFT info
 		let mut sending_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
+		// Defaults to true, but can be implemented downstream for custom logic
+		ensure!(
+			T::CheckAllowTransfer::check(&sender, &collection_id, &nft_id),
+			Error::<T>::CannotSendNft
+		);
 
 		// Check NFT is transferable
 		Self::check_is_transferable(&sending_nft)?;
