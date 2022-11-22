@@ -52,6 +52,7 @@ pub trait WeightInfo {
 	fn remove_resource() -> Weight;
 	fn accept_resource_removal() -> Weight;
 	fn set_priority(n: u32) -> Weight;
+	fn replace_resource() -> Weight;
 }
 
 pub struct SubstrateWeight<T>(PhantomData<T>);
@@ -185,6 +186,12 @@ impl<T: frame_system::Config> WeightInfo for SubstrateWeight<T> {
 			.saturating_add(T::DbWeight::get().reads(1 as u64))
 			.saturating_add(T::DbWeight::get().writes(1 as u64))
 	}
+	// Storage: RmrkCore Resources (r:1 w:1)
+	fn replace_resource() -> Weight {
+		Weight::from_ref_time(25_000_000 as u64)
+			.saturating_add(T::DbWeight::get().reads(1 as u64))
+			.saturating_add(T::DbWeight::get().writes(1 as u64))
+	}	
 	// Storage: RmrkCore Collections (r:1 w:0)
 	// Storage: Uniques Asset (r:1 w:0)
 	// Storage: RmrkCore Lock (r:1 w:0)

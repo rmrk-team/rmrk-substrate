@@ -212,7 +212,7 @@ impl<T: Config>
 			},
 			Some(nft) => {
 				// Item must not already be equipped
-				if nft.equipped {
+				if nft.equipped.is_some() {
 					return Err(Error::<T>::ItemAlreadyEquipped.into())
 				}
 			},
@@ -322,7 +322,7 @@ impl<T: Config>
 							item_nft_id,
 							|nft| -> DispatchResult {
 								if let Some(nft) = nft {
-									nft.equipped = true;
+									nft.equipped = Some((resource_id, slot_id));
 								}
 								Ok(())
 							},
@@ -392,7 +392,7 @@ impl<T: Config>
 				item_nft_id,
 				|nft| -> DispatchResult {
 					if let Some(nft) = nft {
-						nft.equipped = false;
+						nft.equipped = None;
 					}
 					Ok(())
 				},
@@ -430,7 +430,7 @@ impl<T: Config>
 			item_nft_id,
 			|nft| -> DispatchResult {
 				if let Some(nft) = nft {
-					nft.equipped = false;
+					nft.equipped = None;
 				}
 				Ok(())
 			},

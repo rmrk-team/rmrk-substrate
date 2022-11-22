@@ -11,7 +11,11 @@ use sp_std::cmp::Eq;
 use frame_support::pallet_prelude::*;
 use sp_runtime::Permill;
 
-use crate::{budget::Budget, serialize};
+use crate::{
+	budget::Budget,
+	primitives::{ResourceId, SlotId},
+	serialize,
+};
 use sp_std::result::Result;
 
 #[cfg(feature = "std")]
@@ -57,8 +61,8 @@ pub struct NftInfo<AccountId, RoyaltyAmount, BoundedString, CollectionId, NftId>
 	#[cfg_attr(feature = "std", serde(with = "serialize::vec"))]
 	pub metadata: BoundedString,
 
-	/// Equipped state
-	pub equipped: bool,
+	/// Contains an optional `ResourceId` and the `SlotId` for the equipped nft.
+	pub equipped: Option<(ResourceId, SlotId)>,
 	/// Pending state (if sent to NFT)
 	pub pending: bool,
 	/// transferability ( non-transferable is "souldbound" )

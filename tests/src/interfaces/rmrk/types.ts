@@ -1536,7 +1536,12 @@ export interface RmrkTraitsNftNftInfo extends Struct {
   readonly owner: RmrkTraitsNftAccountIdOrCollectionNftTuple;
   readonly royalty: Option<RmrkTraitsNftRoyaltyInfo>;
   readonly metadata: Bytes;
-  readonly equipped: bool;
+  readonly equipped: Option<
+    ITuple<[
+      RmrkTraitsResourceResourceTypes, 
+      u32
+    ]>
+  >;
   readonly pending: bool;
   readonly transferable: bool;
 }
