@@ -551,7 +551,7 @@ impl<T: Config>
 		collection_id: T::CollectionId,
 		nft_id: T::ItemId,
 		budget: &dyn Budget,
-	) -> sp_std::result::Result<(T::CollectionId, T::ItemId), DispatchError> {
+	) -> DispatchResultWithPostInfo {
 		// Remove self from parent's Children storage
 		if let Some(nft) = Self::nfts(collection_id, nft_id) {
 			if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(parent_col, parent_nft) =
@@ -588,7 +588,10 @@ impl<T: Config>
 
 		Self::deposit_event(Event::NFTBurned { owner, nft_id, collection_id });
 
-		Ok((collection_id, nft_id))
+		Ok(Some(<T as pallet::Config>::WeightInfo::burn_nft(
+			T::NestingBudget::get() - budget.val(),
+		))
+		.into())
 	}
 
 	fn nft_send(
@@ -736,7 +739,7 @@ impl<T: Config>
 		sender: T::AccountId,
 		collection_id: T::CollectionId,
 		nft_id: T::ItemId,
-	) -> Result<(T::AccountId, T::CollectionId, T::ItemId), DispatchError> {
+	) -> DispatchResultWithPostInfo {
 		// Look up root owner in Uniques to ensure permissions
 		let budget = budget::Value::new(T::NestingBudget::get());
 		let (root_owner, _root_nft) =
@@ -768,9 +771,11 @@ impl<T: Config>
 		let _rejecting_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
-		Self::nft_burn(sender.clone(), collection_id, nft_id, &budget)?;
+		let result = Self::nft_burn(sender.clone(), collection_id, nft_id, &budget);
 
-		Ok((sender, collection_id, nft_id))
+		Self::deposit_event(Event::NFTRejected { sender: sender.clone(), collection_id, nft_id });
+
+		result
 	}
 }
 
