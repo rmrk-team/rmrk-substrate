@@ -7,9 +7,9 @@ use crate as pallet_rmrk_core;
 
 use frame_support::{
 	parameter_types,
-	traits::{AsEnsureOriginWithArg, ConstU32, Everything},
+	traits::{AsEnsureOriginWithArg, ConstU32, Everything, EitherOfDiverse, SortedMembers},
 };
-use frame_system::EnsureRoot;
+use frame_system::{EnsureRoot, EnsureSignedBy, EnsureSigned};
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
 	testing::Header,
@@ -57,6 +57,17 @@ parameter_types! {
 #[cfg(feature = "runtime-benchmarks")]
 use pallet_rmrk_core::RmrkBenchmark;
 
+
+parameter_types! {
+    pub AllowedMinters: Vec<AccountId> = vec![];
+}
+
+impl SortedMembers<AccountId> for AllowedMinters {
+    fn sorted_members() -> Vec<AccountId> {
+        AllowedMinters::get()
+    }
+}
+
 impl pallet_rmrk_core::Config for Test {
 	// type Currency = Balances;
 	type Event = Event;
@@ -68,6 +79,8 @@ impl pallet_rmrk_core::Config for Test {
 	type MaxResourcesOnMint = MaxResourcesOnMint;
 	type NestingBudget = NestingBudget;
 	type WeightInfo = weights::SubstrateWeight<Test>;
+    type MinterOrigin = EnsureSignedBy<AllowedMinters, Self::AccountId>;
+
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = RmrkBenchmark;
 }

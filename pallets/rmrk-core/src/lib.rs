@@ -113,7 +113,7 @@ impl<CollectionId: From<u32>, ItemId: From<u32>> BenchmarkHelper<CollectionId, I
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
+	use frame_support::{dispatch::DispatchResult, pallet_prelude::*, traits::{EnsureOrigin, EnsureOriginWithArg}};
 	use frame_system::pallet_prelude::*;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
@@ -142,6 +142,9 @@ pub mod pallet {
 		type CollectionSymbolLimit: Get<u32>;
 
 		type MaxResourcesOnMint: Get<u32>;
+
+        /// Who can mint nft
+        type MinterOrigin: EnsureOrigin<Self::Origin, Success = Self::AccountId>;
 
 		/// Weight information for extrinsics in this pallet.
 		type WeightInfo: WeightInfo;
@@ -490,7 +493,8 @@ pub mod pallet {
 			transferable: bool,
 			resources: Option<BoundedResourceInfoTypeOf<T>>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			//let sender = ensure_signed(origin.clone())?;
+            let sender = T::MinterOrigin::ensure_origin(origin.clone())?;
 
 			// Collection must exist and sender must be issuer of collection
 			if let Some(collection_issuer) =
