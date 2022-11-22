@@ -345,6 +345,16 @@ benchmarks! {
 		assert_last_event::<T>(Event::CollectionLocked { issuer: alice, collection_id }.into());
 	}
 
+	replace_resource {
+		let (alice, _, collection_id, nft_id, resource_id) = prepare_resource::<T>();
+		let basic_resource = BasicResource{ metadata: stbd::<T> ("basic test metadata") };
+		let _ = RmrkCore::<T>::add_basic_resource(RawOrigin::Signed(alice.clone()).into(), collection_id, nft_id, basic_resource, resource_id);
+		let resource = ResourceTypes::Basic(BasicResource { metadata: stbd::<T> ("replaced basic test metadata") }); // new_resource
+	}:  _(RawOrigin::Signed(alice.clone()), collection_id, nft_id, resource, resource_id)
+	verify {
+		assert_last_event::<T>(Event::ResourceReplaced { nft_id, resource_id, collection_id }.into());
+	}
+
 	add_basic_resource{
 		let (alice, _, collection_id, nft_id, resource_id) = prepare_resource::<T>();
 		let basic_resource = BasicResource{ metadata: stbd::<T> ("basic test metadata") };

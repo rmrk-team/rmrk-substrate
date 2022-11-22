@@ -226,6 +226,33 @@ impl<T: Config>
 		Ok(())
 	}
 
+	fn resource_replace(
+		_sender: T::AccountId,
+		collection_id: T::CollectionId,
+		nft_id: T::ItemId,
+		resource: ResourceTypes<BoundedVec<u8, T::StringLimit>, BoundedVec<PartId, T::PartsLimit>>,
+		resource_id: ResourceId,
+	) -> DispatchResult {
+		ensure!(
+			Resources::<T>::get((collection_id, nft_id, resource_id)).is_some(),
+			Error::<T>::ResourceDoesntExist
+		);
+
+		Resources::<T>::try_mutate(
+			(collection_id, nft_id, resource_id),
+			|current_resource| -> DispatchResult {
+				if let Some(res) = current_resource.into_mut() {
+					res.resource = resource;
+				}
+				Ok(())
+			},
+		)?;
+
+		Self::deposit_event(Event::ResourceReplaced { nft_id, resource_id, collection_id });
+
+		Ok(())
+	}
+
 	fn accept_removal(
 		_sender: T::AccountId,
 		collection_id: T::CollectionId,

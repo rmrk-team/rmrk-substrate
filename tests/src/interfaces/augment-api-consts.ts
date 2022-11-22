@@ -43,6 +43,10 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       maxPriorities: u32 & AugmentedConst<ApiType>;
       /**
+       * The maximum nesting allowed in the pallet extrinsics.
+       **/
+      nestingBudget: u32 & AugmentedConst<ApiType>;
+      /**
        * The maximum number of parts each resource may have
        **/
       partsLimit: u32 & AugmentedConst<ApiType>;
