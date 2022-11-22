@@ -1469,7 +1469,7 @@ export default {
     owner: 'RmrkTraitsNftAccountIdOrCollectionNftTuple',
     royalty: 'Option<RmrkTraitsNftRoyaltyInfo>',
     metadata: 'Bytes',
-    equipped: 'bool',
+    equipped: 'Option<(u32,u32)>',
     pending: 'bool',
     transferable: 'bool'
   },

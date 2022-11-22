@@ -1600,7 +1600,7 @@ declare module '@polkadot/types/lookup' {
     readonly owner: RmrkTraitsNftAccountIdOrCollectionNftTuple;
     readonly royalty: Option<RmrkTraitsNftRoyaltyInfo>;
     readonly metadata: Bytes;
-    readonly equipped: bool;
+    readonly equipped: Option<ITuple<[u32, u32]>>;
     readonly pending: bool;
     readonly transferable: bool;
   }
