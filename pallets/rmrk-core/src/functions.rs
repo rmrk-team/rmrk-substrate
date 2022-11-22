@@ -413,7 +413,7 @@ impl<T: Config>
 			owner: AccountIdOrCollectionNftTuple::AccountId(owner.clone()),
 			royalty,
 			metadata,
-			equipped: false,
+			equipped: None,
 			pending,
 			transferable,
 		};
@@ -499,7 +499,7 @@ impl<T: Config>
 			owner: AccountIdOrCollectionNftTuple::CollectionAndNftTuple(owner.0, owner.1),
 			royalty,
 			metadata,
-			equipped: false,
+			equipped: None,
 			pending,
 			transferable,
 		};
@@ -979,7 +979,7 @@ impl<T: Config> Pallet<T> {
 
 	// Check NFT is not equipped
 	pub fn check_is_not_equipped(nft: &InstanceInfoOf<T>) -> DispatchResult {
-		ensure!(!nft.equipped, Error::<T>::CannotSendEquippedItem);
+		ensure!(nft.equipped.is_none(), Error::<T>::CannotSendEquippedItem);
 		Ok(())
 	}
 
