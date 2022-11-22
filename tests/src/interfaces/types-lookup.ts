@@ -392,6 +392,12 @@ declare module '@polkadot/types/lookup' {
       readonly resourceId: u32;
       readonly collectionId: u32;
     } & Struct;
+    readonly isResourceReplaced: boolean;
+    readonly asResourceReplaced: {
+      readonly nftId: u32;
+      readonly resourceId: u32;
+      readonly collectionId: u32;
+    } & Struct;
     readonly isResourceAccepted: boolean;
     readonly asResourceAccepted: {
       readonly nftId: u32;
@@ -415,7 +421,7 @@ declare module '@polkadot/types/lookup' {
       readonly collectionId: u32;
       readonly nftId: u32;
     } & Struct;
-    readonly type: 'CollectionCreated' | 'NftMinted' | 'NftBurned' | 'CollectionDestroyed' | 'NftSent' | 'NftAccepted' | 'NftRejected' | 'IssuerChanged' | 'PropertySet' | 'PropertyRemoved' | 'CollectionLocked' | 'ResourceAdded' | 'ResourceAccepted' | 'ResourceRemoval' | 'ResourceRemovalAccepted' | 'PrioritySet';
+    readonly type: 'CollectionCreated' | 'NftMinted' | 'NftBurned' | 'CollectionDestroyed' | 'NftSent' | 'NftAccepted' | 'NftRejected' | 'IssuerChanged' | 'PropertySet' | 'PropertyRemoved' | 'CollectionLocked' | 'ResourceAdded' | 'ResourceReplaced' | 'ResourceAccepted' | 'ResourceRemoval' | 'ResourceRemovalAccepted' | 'PrioritySet';
   }
 
   /** @name RmrkTraitsNftAccountIdOrCollectionNftTuple (43) */
@@ -1214,6 +1220,13 @@ declare module '@polkadot/types/lookup' {
       readonly resource: RmrkTraitsResourceSlotResource;
       readonly resourceId: u32;
     } & Struct;
+    readonly isReplaceResource: boolean;
+    readonly asReplaceResource: {
+      readonly collectionId: u32;
+      readonly nftId: u32;
+      readonly resource: RmrkTraitsResourceResourceTypes;
+      readonly resourceId: u32;
+    } & Struct;
     readonly isAcceptResource: boolean;
     readonly asAcceptResource: {
       readonly collectionId: u32;
@@ -1238,7 +1251,7 @@ declare module '@polkadot/types/lookup' {
       readonly nftId: u32;
       readonly priorities: Vec<u32>;
     } & Struct;
-    readonly type: 'MintNft' | 'MintNftDirectlyToNft' | 'CreateCollection' | 'BurnNft' | 'DestroyCollection' | 'Send' | 'AcceptNft' | 'RejectNft' | 'ChangeCollectionIssuer' | 'SetProperty' | 'LockCollection' | 'AddBasicResource' | 'AddComposableResource' | 'AddSlotResource' | 'AcceptResource' | 'RemoveResource' | 'AcceptResourceRemoval' | 'SetPriority';
+    readonly type: 'MintNft' | 'MintNftDirectlyToNft' | 'CreateCollection' | 'BurnNft' | 'DestroyCollection' | 'Send' | 'AcceptNft' | 'RejectNft' | 'ChangeCollectionIssuer' | 'SetProperty' | 'LockCollection' | 'AddBasicResource' | 'AddComposableResource' | 'AddSlotResource' | 'ReplaceResource' | 'AcceptResource' | 'RemoveResource' | 'AcceptResourceRemoval' | 'SetPriority';
   }
 
   /** @name RmrkTraitsResourceResourceInfoMin (142) */

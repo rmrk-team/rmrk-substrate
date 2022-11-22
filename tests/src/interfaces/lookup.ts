@@ -368,6 +368,11 @@ export default {
         resourceId: 'u32',
         collectionId: 'u32',
       },
+      ResourceReplaced: {
+        nftId: 'u32',
+        resourceId: 'u32',
+        collectionId: 'u32',
+      },
       ResourceAccepted: {
         nftId: 'u32',
         resourceId: 'u32',
@@ -1134,6 +1139,12 @@ export default {
         collectionId: 'u32',
         nftId: 'u32',
         resource: 'RmrkTraitsResourceSlotResource',
+        resourceId: 'u32',
+      },
+      replace_resource: {
+        collectionId: 'u32',
+        nftId: 'u32',
+        resource: 'RmrkTraitsResourceResourceTypes',
         resourceId: 'u32',
       },
       accept_resource: {

@@ -629,8 +629,7 @@ fn nested_equip_works() {
 		// and part 200 is the HEADWARE slot part
 		let composable_resource_for_person_zero = ComposableResource {
 			parts: vec![100, 200].try_into().unwrap(), // BoundedVec of Parts
-
-			base: 0, // BaseID
+			base: 0,                                   // BaseID
 			metadata: None,
 			slot: None,
 		};
@@ -711,10 +710,10 @@ fn nested_equip_works() {
 		// hat-0 should have gem-0's resource 0 equipped to GEM slot 400
 		assert!(pallet::Equippings::<Test>::get(((1, 0), 1, 400)).is_some());
 
-		// hat-0 should be in equipped state
-		assert!(pallet_rmrk_core::Nfts::<Test>::get(1, 0).unwrap().equipped);
-		// gem-0 should be in equipped state
-		assert!(pallet_rmrk_core::Nfts::<Test>::get(2, 0).unwrap().equipped);
+		// hat-0 should be in equipped state and in the slotId 200.
+		assert_eq!(pallet_rmrk_core::Nfts::<Test>::get(1, 0).unwrap().equipped, Some((0, 200)));
+		// gem-0 should be in equipped state and in the slotId 400.
+		assert_eq!(pallet_rmrk_core::Nfts::<Test>::get(2, 0).unwrap().equipped, Some((0, 400)));
 	});
 }
 

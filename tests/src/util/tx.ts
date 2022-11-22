@@ -855,7 +855,7 @@ export async function addToEquippableList(
   expect(fetchedEquippableList, "Error: unable to fetch equippable list").to.be
     .not.null;
 
-  if(fetchedEquippableList === "All" || fetchedEquippableList === "Empty") 
+  if (fetchedEquippableList === "All" || fetchedEquippableList === "Empty")
     throw "Error: equippable wasn't added";
   if (fetchedEquippableList) {
     expect(fetchedEquippableList.Custom).to.be.deep.contain(
@@ -908,7 +908,11 @@ export async function removeFromEquippableList(
   expect(fetchedEquippableList, "Error: unable to fetch equippable list").to.be
     .not.null;
 
-  if(fetchedEquippableList && !(fetchedEquippableList === "All") && !(fetchedEquippableList === "Empty")) {
+  if (
+    fetchedEquippableList &&
+    !(fetchedEquippableList === "All") &&
+    !(fetchedEquippableList === "Empty")
+  ) {
     expect(fetchedEquippableList.Custom).to.not.contain(
       equippable,
       "Error: equippable wasn't removed"
@@ -1120,6 +1124,50 @@ export async function acceptNftResource(
 
   const resource = await getResourceById(api, collectionId, nftId, resourceId);
   checkResourceStatus(resource, "added");
+}
+
+export async function replaceResource(
+  api: ApiPromise,
+  issuerUri: string,
+  collectionId: number,
+  nftId: number,
+  resourceId: number,
+  resource: { Basic: any } | { Composable: any } | { Slot: any }
+) {
+  const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
+  const issuer = privateKey(issuerUri, Number(ss58Format));
+
+  const tx = api.tx.rmrkCore.replaceResource(
+    collectionId,
+    nftId,
+    resource,
+    resourceId
+  );
+
+  const events = await executeTransaction(api, issuer, tx);
+
+  const replaceResult = extractRmrkCoreTxResult(
+    events,
+    "ResourceReplaced",
+    (data) => {
+      return {
+        nftId: parseInt(data[0].toString(), 10),
+        resourceId: parseInt(data[1].toString(), 10),
+        collectionId: parseInt(data[2].toString(), 10),
+      };
+    }
+  );
+
+  expect(replaceResult.success, "Error: Unable to replace a resource").to.be
+    .true;
+
+  const checkResource = await getResourceById(
+    api,
+    collectionId,
+    nftId,
+    resourceId
+  );
+  checkResourceStatus(checkResource, "added");
 }
 
 async function executeResourceCreation(

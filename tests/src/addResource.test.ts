@@ -10,6 +10,7 @@ import {
   sendNft,
   addNftSlotResource,
   addNftComposableResource,
+  replaceResource,
 } from "./util/tx";
 import { RmrkTraitsResourceResourceInfo as ResourceInfo } from "@polkadot/types/lookup";
 
