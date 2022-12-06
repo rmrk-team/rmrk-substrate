@@ -8,7 +8,7 @@ use sp_runtime::Permill;
 // use crate::types::ClassType;
 
 use super::*;
-use mock::{Event as MockEvent, *};
+use mock::{RuntimeEvent as MockEvent, RuntimeOrigin as Origin, *};
 use pallet_uniques as UNQ;
 use sp_std::convert::TryInto;
 
