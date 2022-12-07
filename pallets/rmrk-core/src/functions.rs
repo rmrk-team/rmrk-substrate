@@ -17,7 +17,7 @@ use sp_runtime::{
 	ArithmeticError,
 };
 
-use rmrk_traits::budget::Budget;
+use rmrk_traits::{budget::Budget, misc::CheckAllowTransferFn};
 use sp_std::collections::btree_set::BTreeSet;
 
 // Randomness to generate NFT virtual accounts
@@ -614,6 +614,12 @@ impl<T: Config>
 		let mut sending_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
+		// Defaults to true, but can be implemented downstream for custom logic
+		ensure!(
+			T::CheckAllowTransfer::pre_check(&sender, &collection_id, &nft_id),
+			Error::<T>::CannotSendNft
+		);
+
 		// Check NFT is transferable
 		Self::check_is_transferable(&sending_nft)?;
 
@@ -693,12 +699,18 @@ impl<T: Config>
 		)?;
 
 		Self::deposit_event(Event::NFTSent {
-			sender,
+			sender: sender.clone(),
 			recipient: new_owner,
 			collection_id,
 			nft_id,
 			approval_required,
 		});
+
+		// Defaults to true, but can be implemented downstream for custom logic
+		ensure!(
+			T::CheckAllowTransfer::post_check(&sender, &new_owner_account, &collection_id, &nft_id),
+			Error::<T>::CannotSendNft
+		);
 
 		Ok((new_owner_account, approval_required))
 	}

@@ -367,6 +367,7 @@ impl pallet_rmrk_core::Config for Runtime {
 	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Runtime>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = RmrkBenchmark;
+	type CheckAllowTransfer = ();
 }
 
 parameter_types! {
