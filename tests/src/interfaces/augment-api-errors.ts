@@ -85,12 +85,13 @@ declare module '@polkadot/api-base/types/errors' {
       CannotRejectNonOwnedNft: AugmentedError<ApiType>;
       CannotRejectNonPendingNft: AugmentedError<ApiType>;
       CannotSendEquippedItem: AugmentedError<ApiType>;
-      CannotSendNft: AugmentedError<ApiType>;
       CannotSendToDescendentOrSelf: AugmentedError<ApiType>;
       CollectionFullOrLocked: AugmentedError<ApiType>;
       CollectionNotEmpty: AugmentedError<ApiType>;
       CollectionUnknown: AugmentedError<ApiType>;
       EmptyResource: AugmentedError<ApiType>;
+      FailedTransferHooksPostTransfer: AugmentedError<ApiType>;
+      FailedTransferHooksPreCheck: AugmentedError<ApiType>;
       MetadataNotSet: AugmentedError<ApiType>;
       NftAlreadyExists: AugmentedError<ApiType>;
       NftIsLocked: AugmentedError<ApiType>;

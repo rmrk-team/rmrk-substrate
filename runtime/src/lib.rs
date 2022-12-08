@@ -165,7 +165,8 @@ pub fn native_version() -> NativeVersion {
 
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
-const MAXIMUM_BLOCK_WEIGHT: Weight = WEIGHT_PER_SECOND.saturating_mul(2).set_proof_size(MAX_POV_SIZE);
+const MAXIMUM_BLOCK_WEIGHT: Weight =
+	WEIGHT_PER_SECOND.saturating_mul(2).set_proof_size(MAX_POV_SIZE);
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
@@ -369,7 +370,7 @@ impl pallet_rmrk_core::Config for Runtime {
 	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Runtime>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = RmrkBenchmark;
-	type CheckAllowTransfer = ();
+	type TransferHooks = ();
 }
 
 parameter_types! {

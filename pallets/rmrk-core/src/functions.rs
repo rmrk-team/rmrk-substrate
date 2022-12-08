@@ -17,7 +17,7 @@ use sp_runtime::{
 	ArithmeticError,
 };
 
-use rmrk_traits::{budget::Budget, misc::CheckAllowTransferFn};
+use rmrk_traits::{budget::Budget, misc::TransferHooks};
 use sp_std::collections::btree_set::BTreeSet;
 
 // Randomness to generate NFT virtual accounts
@@ -616,8 +616,8 @@ impl<T: Config>
 
 		// Defaults to true, but can be implemented downstream for custom logic
 		ensure!(
-			T::CheckAllowTransfer::pre_check(&sender, &collection_id, &nft_id),
-			Error::<T>::CannotSendNft
+			T::TransferHooks::pre_check(&sender, &collection_id, &nft_id),
+			Error::<T>::FailedTransferHooksPreCheck
 		);
 
 		// Check NFT is transferable
@@ -708,8 +708,8 @@ impl<T: Config>
 
 		// Defaults to true, but can be implemented downstream for custom logic
 		ensure!(
-			T::CheckAllowTransfer::post_check(&sender, &new_owner_account, &collection_id, &nft_id),
-			Error::<T>::CannotSendNft
+			T::TransferHooks::post_transfer(&sender, &new_owner_account, &collection_id, &nft_id),
+			Error::<T>::FailedTransferHooksPostTransfer
 		);
 
 		Ok((new_owner_account, approval_required))

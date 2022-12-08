@@ -19,7 +19,7 @@ pub mod theme;
 
 pub use base::{Base, BaseInfo};
 pub use collection::{Collection, CollectionInfo};
-pub use misc::CheckAllowTransferFn;
+pub use misc::TransferHooks;
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftChild, NftInfo, RoyaltyInfo};
 pub use part::{EquippableList, FixedPart, PartType, SlotPart};
 pub use priority::Priority;
