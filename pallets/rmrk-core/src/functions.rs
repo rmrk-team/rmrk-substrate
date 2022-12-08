@@ -698,19 +698,19 @@ impl<T: Config>
 			|_class_details, _details| Ok(()),
 		)?;
 
-		Self::deposit_event(Event::NFTSent {
-			sender: sender.clone(),
-			recipient: new_owner,
-			collection_id,
-			nft_id,
-			approval_required,
-		});
-
 		// Defaults to true, but can be implemented downstream for custom logic
 		ensure!(
 			T::TransferHooks::post_transfer(&sender, &new_owner_account, &collection_id, &nft_id),
 			Error::<T>::FailedTransferHooksPostTransfer
 		);
+
+		Self::deposit_event(Event::NFTSent {
+			sender,
+			recipient: new_owner,
+			collection_id,
+			nft_id,
+			approval_required,
+		});
 
 		Ok((new_owner_account, approval_required))
 	}
