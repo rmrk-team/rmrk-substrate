@@ -587,6 +587,7 @@ pub mod pallet {
 
 			Ok(())
 		}
+
 		/// Accepts an NFT sent from another account to self or owned NFT
 		///
 		/// Parameters:
