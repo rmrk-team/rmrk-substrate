@@ -392,6 +392,12 @@ declare module '@polkadot/types/lookup' {
       readonly resourceId: u32;
       readonly collectionId: u32;
     } & Struct;
+    readonly isResourceReplaced: boolean;
+    readonly asResourceReplaced: {
+      readonly nftId: u32;
+      readonly resourceId: u32;
+      readonly collectionId: u32;
+    } & Struct;
     readonly isResourceAccepted: boolean;
     readonly asResourceAccepted: {
       readonly nftId: u32;
@@ -415,7 +421,7 @@ declare module '@polkadot/types/lookup' {
       readonly collectionId: u32;
       readonly nftId: u32;
     } & Struct;
-    readonly type: 'CollectionCreated' | 'NftMinted' | 'NftBurned' | 'CollectionDestroyed' | 'NftSent' | 'NftAccepted' | 'NftRejected' | 'IssuerChanged' | 'PropertySet' | 'PropertyRemoved' | 'CollectionLocked' | 'ResourceAdded' | 'ResourceAccepted' | 'ResourceRemoval' | 'ResourceRemovalAccepted' | 'PrioritySet';
+    readonly type: 'CollectionCreated' | 'NftMinted' | 'NftBurned' | 'CollectionDestroyed' | 'NftSent' | 'NftAccepted' | 'NftRejected' | 'IssuerChanged' | 'PropertySet' | 'PropertyRemoved' | 'CollectionLocked' | 'ResourceAdded' | 'ResourceReplaced' | 'ResourceAccepted' | 'ResourceRemoval' | 'ResourceRemovalAccepted' | 'PrioritySet';
   }
 
   /** @name RmrkTraitsNftAccountIdOrCollectionNftTuple (43) */
@@ -1048,6 +1054,18 @@ declare module '@polkadot/types/lookup' {
       readonly slotId: u32;
       readonly equippables: RmrkTraitsPartEquippableList;
     } & Struct;
+    readonly isEquippableAdd: boolean;
+    readonly asEquippableAdd: {
+      readonly baseId: u32;
+      readonly slotId: u32;
+      readonly equippable: u32;
+    } & Struct;
+    readonly isEquippableRemove: boolean;
+    readonly asEquippableRemove: {
+      readonly baseId: u32;
+      readonly slotId: u32;
+      readonly equippable: u32;
+    } & Struct;
     readonly isThemeAdd: boolean;
     readonly asThemeAdd: {
       readonly baseId: u32;
@@ -1059,7 +1077,7 @@ declare module '@polkadot/types/lookup' {
       readonly symbol: Bytes;
       readonly parts: Vec<RmrkTraitsPartPartType>;
     } & Struct;
-    readonly type: 'ChangeBaseIssuer' | 'Equip' | 'Unequip' | 'Equippable' | 'ThemeAdd' | 'CreateBase';
+    readonly type: 'ChangeBaseIssuer' | 'Equip' | 'Unequip' | 'Equippable' | 'EquippableAdd' | 'EquippableRemove' | 'ThemeAdd' | 'CreateBase';
   }
 
   /** @name RmrkTraitsPartEquippableList (125) */
@@ -1143,7 +1161,6 @@ declare module '@polkadot/types/lookup' {
     readonly asBurnNft: {
       readonly collectionId: u32;
       readonly nftId: u32;
-      readonly maxBurns: u32;
     } & Struct;
     readonly isDestroyCollection: boolean;
     readonly asDestroyCollection: {
@@ -1203,6 +1220,13 @@ declare module '@polkadot/types/lookup' {
       readonly resource: RmrkTraitsResourceSlotResource;
       readonly resourceId: u32;
     } & Struct;
+    readonly isReplaceResource: boolean;
+    readonly asReplaceResource: {
+      readonly collectionId: u32;
+      readonly nftId: u32;
+      readonly resource: RmrkTraitsResourceResourceTypes;
+      readonly resourceId: u32;
+    } & Struct;
     readonly isAcceptResource: boolean;
     readonly asAcceptResource: {
       readonly collectionId: u32;
@@ -1227,7 +1251,7 @@ declare module '@polkadot/types/lookup' {
       readonly nftId: u32;
       readonly priorities: Vec<u32>;
     } & Struct;
-    readonly type: 'MintNft' | 'MintNftDirectlyToNft' | 'CreateCollection' | 'BurnNft' | 'DestroyCollection' | 'Send' | 'AcceptNft' | 'RejectNft' | 'ChangeCollectionIssuer' | 'SetProperty' | 'LockCollection' | 'AddBasicResource' | 'AddComposableResource' | 'AddSlotResource' | 'AcceptResource' | 'RemoveResource' | 'AcceptResourceRemoval' | 'SetPriority';
+    readonly type: 'MintNft' | 'MintNftDirectlyToNft' | 'CreateCollection' | 'BurnNft' | 'DestroyCollection' | 'Send' | 'AcceptNft' | 'RejectNft' | 'ChangeCollectionIssuer' | 'SetProperty' | 'LockCollection' | 'AddBasicResource' | 'AddComposableResource' | 'AddSlotResource' | 'ReplaceResource' | 'AcceptResource' | 'RemoveResource' | 'AcceptResourceRemoval' | 'SetPriority';
   }
 
   /** @name RmrkTraitsResourceResourceInfoMin (142) */
@@ -1538,6 +1562,7 @@ declare module '@polkadot/types/lookup' {
     readonly isItemDoesntExist: boolean;
     readonly isEquipperDoesntExist: boolean;
     readonly isNoAvailableBaseId: boolean;
+    readonly isTooManyEquippables: boolean;
     readonly isNoAvailablePartId: boolean;
     readonly isMustBeDirectParent: boolean;
     readonly isPartDoesntExist: boolean;
@@ -1558,7 +1583,7 @@ declare module '@polkadot/types/lookup' {
     readonly isUnequipperMustOwnEitherItemOrEquipper: boolean;
     readonly isUnexpectedTryFromIntError: boolean;
     readonly isUnexpectedVecConversionError: boolean;
-    readonly type: 'PermissionError' | 'ItemDoesntExist' | 'EquipperDoesntExist' | 'NoAvailableBaseId' | 'NoAvailablePartId' | 'MustBeDirectParent' | 'PartDoesntExist' | 'BaseDoesntExist' | 'CantEquipFixedPart' | 'NoResourceForThisBaseFoundOnNft' | 'CollectionNotEquippable' | 'ItemHasNoResourceToEquipThere' | 'NoEquippableOnFixedPart' | 'NeedsDefaultThemeFirst' | 'ItemAlreadyEquipped' | 'SlotAlreadyEquipped' | 'SlotNotEquipped' | 'UnknownError' | 'ExceedsMaxPartsPerBase' | 'TooManyProperties' | 'ItemNotEquipped' | 'UnequipperMustOwnEitherItemOrEquipper' | 'UnexpectedTryFromIntError' | 'UnexpectedVecConversionError';
+    readonly type: 'PermissionError' | 'ItemDoesntExist' | 'EquipperDoesntExist' | 'NoAvailableBaseId' | 'TooManyEquippables' | 'NoAvailablePartId' | 'MustBeDirectParent' | 'PartDoesntExist' | 'BaseDoesntExist' | 'CantEquipFixedPart' | 'NoResourceForThisBaseFoundOnNft' | 'CollectionNotEquippable' | 'ItemHasNoResourceToEquipThere' | 'NoEquippableOnFixedPart' | 'NeedsDefaultThemeFirst' | 'ItemAlreadyEquipped' | 'SlotAlreadyEquipped' | 'SlotNotEquipped' | 'UnknownError' | 'ExceedsMaxPartsPerBase' | 'TooManyProperties' | 'ItemNotEquipped' | 'UnequipperMustOwnEitherItemOrEquipper' | 'UnexpectedTryFromIntError' | 'UnexpectedVecConversionError';
   }
 
   /** @name RmrkTraitsCollectionCollectionInfo (166) */
@@ -1575,7 +1600,7 @@ declare module '@polkadot/types/lookup' {
     readonly owner: RmrkTraitsNftAccountIdOrCollectionNftTuple;
     readonly royalty: Option<RmrkTraitsNftRoyaltyInfo>;
     readonly metadata: Bytes;
-    readonly equipped: bool;
+    readonly equipped: Option<ITuple<[u32, u32]>>;
     readonly pending: bool;
     readonly transferable: bool;
   }

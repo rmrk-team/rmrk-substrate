@@ -1601,6 +1601,97 @@ fn resource_removal_works() {
 	});
 }
 
+#[test]
+fn resource_replace_works() {
+	ExtBuilder::build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint NFT
+		assert_ok!(basic_mint(0));
+		// Add resource to NFT
+		assert_ok!(RMRKCore::add_basic_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			BasicResource { metadata: stbd("bafybeiakahlc6") },
+			0
+		));
+
+		// Replace to Basic resource
+		assert_ok!(RMRKCore::replace_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			ResourceTypes::Basic(BasicResource { metadata: stbd("new_meta") }), // new_resource
+			0,                                                                  // resource_id
+		));
+
+		// Replace to Composable resource
+		assert_ok!(RMRKCore::replace_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			ResourceTypes::Composable(ComposableResource {
+				parts: vec![0, 1].try_into().unwrap(), // BoundedVec of Parts
+				base: 0,                               // BaseID
+				metadata: None,
+				slot: None,
+			}), // new_resource
+			0, // resource_id
+		));
+
+		// Replace to Slot resource
+		assert_ok!(RMRKCore::replace_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			ResourceTypes::Slot(SlotResource {
+				base: 0,
+				metadata: Some(stbd("new_meta_slot")),
+				slot: 0
+			}), // new_resource
+			0, // resource_id
+		));
+
+		// Successful resource replace should trigger ResourceReplaced event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::ResourceReplaced {
+			nft_id: 0,
+			resource_id: 0,
+			collection_id: 0,
+		}));
+	});
+}
+
+#[test]
+fn resource_replace_non_exist_resource() {
+	ExtBuilder::build().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint NFT
+		assert_ok!(basic_mint(0));
+		// Add resource to NFT
+		assert_ok!(RMRKCore::add_basic_resource(
+			Origin::signed(ALICE),
+			COLLECTION_ID_0,
+			NFT_ID_0,
+			BasicResource { metadata: stbd("bafybeiakahlc6") },
+			0
+		));
+
+		// Replace to Basic resource of non exist resource
+		assert_noop!(
+			RMRKCore::replace_resource(
+				Origin::signed(ALICE),
+				COLLECTION_ID_0,
+				NFT_ID_0,
+				ResourceTypes::Basic(BasicResource { metadata: stbd("new_meta") }), // new_resource
+				101,                                                                // resource_id
+			),
+			Error::<Test>::ResourceDoesntExist
+		);
+	});
+}
+
 /// Resource: Resource removal with pending and accept
 #[test]
 fn resource_removal_pending_works() {

@@ -39,6 +39,7 @@
     "testSetNftProperty": "mocha --timeout 9999999 -r ts-node/register './src/setNftProperty.test.ts'",
     "testSetCollectionProperty": "mocha --timeout 9999999 -r ts-node/register './src/setCollectionProperty.test.ts'",
     "testAddResource": "mocha --timeout 9999999 -r ts-node/register './src/addResource.test.ts'",
+    "testReplaceResource": "mocha --timeout 9999999 -r ts-node/register './src/replaceResource.test.ts'",
     "testRemoveResource": "mocha --timeout 9999999 -r ts-node/register './src/removeResource.test.ts'",
     "testSetResourcePriorities": "mocha --timeout 9999999 -r ts-node/register './src/setResourcePriorities.test.ts'",
     "testSetEquippableList": "mocha --timeout 9999999 -r ts-node/register './src/setEquippableList.test.ts'",

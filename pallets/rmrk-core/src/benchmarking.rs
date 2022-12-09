@@ -101,6 +101,17 @@ fn mint_test_nft<T: Config>(
 	nft_id
 }
 
+// premint nfts & make deep nested chain of nfts ( send child to parent )
+fn mint_and_send_to_parent<T: Config>(owner: T::AccountId, collection_id: T::CollectionId, n: u32) {
+	for i in 1..n {
+		let id = mint_test_nft::<T>(owner.clone(), None, collection_id, i);
+		let parent_nft_id = T::Helper::item(i.saturating_sub(1));
+		let new_owner =
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, parent_nft_id);
+		send_test_nft::<T>(owner.clone(), collection_id, id, new_owner);
+	}
+}
+
 // Send nft to Account or to another nft
 fn send_test_nft<T: Config>(
 	owner: T::AccountId,
@@ -241,8 +252,10 @@ benchmarks! {
 		let owner: T::AccountId = whitelisted_caller();
 		let collection_index = 1;
 		let collection_id = create_test_collection::<T>(owner.clone(), collection_index);
-		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 42);
+		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 0);
 
+		let n in 1 .. T::NestingBudget::get();
+		mint_and_send_to_parent::<T>(owner.clone(), collection_id, n);
 	}: _(RawOrigin::Signed(owner.clone()), collection_id, nft_id)
 	verify {
 		assert_last_event::<T>(Event::NFTBurned { owner, collection_id, nft_id }.into());
@@ -274,15 +287,19 @@ benchmarks! {
 	}
 
 	reject_nft {
+		let n in 1 .. T::NestingBudget::get();
 		let alice: T::AccountId = whitelisted_caller();
-	let collection_index = 1;
-	let collection_id = create_test_collection::<T>(alice.clone(), collection_index);
-		let nft_id1 = mint_test_nft::<T>(alice.clone(), None, collection_id, 1);
-		let child_nft = mint_test_nft::<T>(alice.clone(), None, collection_id, 2);
+		let collection_index = 1;
+		let collection_id = create_test_collection::<T>(alice.clone(), collection_index);
+		let nft_id1 = mint_test_nft::<T>(alice.clone(), None, collection_id, 0);
+		let child_nft = mint_test_nft::<T>(alice.clone(), None, collection_id, 42);
 		// Alice sends NFT (0,1) to Bob's account
 		let bob = funded_account::<T>("bob", 0);
 		let new_owner = AccountIdOrCollectionNftTuple::AccountId(bob.clone());
 		send_test_nft::<T>(alice.clone(), collection_id, nft_id1, new_owner.clone());
+
+
+		mint_and_send_to_parent::<T>(alice.clone(), collection_id, n);
 
 		// Alice sends child NFT (0,2) to parent NFT (0,1)
 		let parent_nft = AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, nft_id1);
@@ -343,6 +360,16 @@ benchmarks! {
 	}: _(RawOrigin::Signed(alice.clone()), collection_id)
 	verify {
 		assert_last_event::<T>(Event::CollectionLocked { issuer: alice, collection_id }.into());
+	}
+
+	replace_resource {
+		let (alice, _, collection_id, nft_id, resource_id) = prepare_resource::<T>();
+		let basic_resource = BasicResource{ metadata: stbd::<T> ("basic test metadata") };
+		let _ = RmrkCore::<T>::add_basic_resource(RawOrigin::Signed(alice.clone()).into(), collection_id, nft_id, basic_resource, resource_id);
+		let resource = ResourceTypes::Basic(BasicResource { metadata: stbd::<T> ("replaced basic test metadata") }); // new_resource
+	}:  _(RawOrigin::Signed(alice.clone()), collection_id, nft_id, resource, resource_id)
+	verify {
+		assert_last_event::<T>(Event::ResourceReplaced { nft_id, resource_id, collection_id }.into());
 	}
 
 	add_basic_resource{
