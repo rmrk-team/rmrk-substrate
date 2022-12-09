@@ -173,10 +173,15 @@ benchmarks! {
 	}
 
 	mint_nft_directly_to_nft {
+		let n in 1 .. (T::NestingBudget::get() - 1);
+		
 		let owner: T::AccountId = whitelisted_caller();
 		let collection_index = 1;
 		let collection_id = create_test_collection::<T>(owner.clone(), collection_index);
-		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 1);
+		mint_test_nft::<T>(owner.clone(), None, collection_id, 0);
+
+		mint_and_send_to_parent::<T>(owner.clone(), collection_id, n);
+		let nft_id = T::Helper::item(n-1);
 
 		let nft_child_id: <T as pallet_uniques::Config>::ItemId = T::Helper::item(2);
 		let owner_tuple = AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, nft_id);
@@ -262,7 +267,7 @@ benchmarks! {
 	}
 
 	accept_nft {
-		let n in 1 .. (T::NestingBudget::get());
+		let n in 1 .. (T::NestingBudget::get() - 1);
 
 		let alice: T::AccountId = whitelisted_caller();
 		let collection_index = 1;
@@ -487,11 +492,11 @@ benchmarks! {
 		let (alice, bob, collection_id, _, resource_id) = prepare_resource::<T>();
 
 		mint_and_send_to_parent::<T>(alice.clone(), collection_id, k);
-		let nft_id = T::Helper::item(n-1);
+		let nft_id = T::Helper::item(k-1);
 
 		let basic_resource = BasicResource{ metadata: stbd::<T> ("basic test metadata") };
 		let mut priorities: BoundedVec<ResourceId, T::MaxPriorities> = vec![].try_into().unwrap();
-		for resource_id in 1.. n{
+		for resource_id in 1 .. n{
 			let _ = priorities.try_push(resource_id);
 		}
 
