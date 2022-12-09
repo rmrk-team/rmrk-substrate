@@ -19,6 +19,7 @@ use sp_std::convert::TryInto;
 
 use rmrk_traits::{
 	budget,
+	misc::TransferHooks,
 	primitives::{BaseId, PartId, ResourceId, SlotId},
 	AccountIdOrCollectionNftTuple, BasicResource, Collection, CollectionInfo, ComposableResource,
 	Nft, NftChild, NftInfo, PhantomType, Priority, Property, PropertyInfo, Resource, ResourceInfo,
@@ -120,8 +121,8 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_uniques::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+		type ProtocolOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 
 		/// The maximum resource symbol length
 		#[pallet::constant]
@@ -148,6 +149,8 @@ pub mod pallet {
 
 		#[cfg(feature = "runtime-benchmarks")]
 		type Helper: BenchmarkHelper<Self::CollectionId, Self::ItemId>;
+
+		type TransferHooks: TransferHooks<Self::AccountId, Self::CollectionId, Self::ItemId>;
 	}
 
 	#[pallet::storage]
@@ -411,6 +414,8 @@ pub mod pallet {
 		// rmrk-equip pallet but the send operation lives in rmrk-core)
 		CannotSendEquippedItem,
 		CannotAcceptToNewOwner,
+		FailedTransferHooksPreCheck,
+		FailedTransferHooksPostTransfer,
 	}
 
 	#[pallet::call]
