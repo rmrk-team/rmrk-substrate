@@ -599,7 +599,7 @@ impl<T: Config>
 		collection_id: T::CollectionId,
 		nft_id: T::ItemId,
 		new_owner: AccountIdOrCollectionNftTuple<T::AccountId, T::CollectionId, T::ItemId>,
-	) -> sp_std::result::Result<(T::AccountId, bool), DispatchError> {
+	) -> Result<(T::AccountId, bool), DispatchError> {
 		// Get current owner for child removal later
 		let parent = pallet_uniques::Pallet::<T>::owner(collection_id, nft_id);
 		// Check if parent returns None which indicates the NFT is not available
