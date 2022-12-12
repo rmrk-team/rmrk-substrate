@@ -589,7 +589,7 @@ impl<T: Config>
 		Self::deposit_event(Event::NFTBurned { owner, nft_id, collection_id });
 
 		Ok(Some(<T as pallet::Config>::WeightInfo::burn_nft(
-			T::NestingBudget::get() - budget.val(),
+			T::NestingBudget::get().saturating_sub(budget.val()),
 		))
 		.into())
 	}
