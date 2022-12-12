@@ -13,7 +13,7 @@ use frame_support::{
 };
 
 use sp_runtime::{
-	traits::{Saturating, TrailingZeroInput},
+	traits::{One, Saturating, TrailingZeroInput},
 	ArithmeticError,
 };
 
@@ -476,7 +476,7 @@ impl<T: Config>
 		}
 
 		// Calculate the rootowner of the intended owner of the minted NFT
-		let budget = budget::Value::new(T::NestingBudget::get());
+		let budget = budget::Value::new(T::NestingBudget::get().saturating_sub(One::one()));
 		let (rootowner, _) = Self::lookup_root_owner(owner.0, owner.1, &budget)?;
 
 		// NFT should be pending if minting either to an NFT owned by another account
@@ -588,10 +588,8 @@ impl<T: Config>
 
 		Self::deposit_event(Event::NFTBurned { owner, nft_id, collection_id });
 
-		Ok(Some(<T as pallet::Config>::WeightInfo::burn_nft(
-			T::NestingBudget::get().saturating_sub(budget.val()),
-		))
-		.into())
+		Ok(Some(<T as pallet::Config>::WeightInfo::burn_nft(budget.get_budget_consumed_value()))
+			.into())
 	}
 
 	fn nft_send(
@@ -648,7 +646,7 @@ impl<T: Config>
 					!Pallet::<T>::is_x_descendent_of_y(cid, nid, collection_id, nft_id),
 					Error::<T>::CannotSendToDescendentOrSelf
 				);
-				let budget = budget::Value::new(T::NestingBudget::get());
+				let budget = budget::Value::new(T::NestingBudget::get().saturating_sub(One::one()));
 				let (recipient_root_owner, _root_nft) =
 					Pallet::<T>::lookup_root_owner(cid, nid, &budget)?;
 				if recipient_root_owner == root_owner {
