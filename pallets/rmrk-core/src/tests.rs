@@ -10,6 +10,7 @@ use sp_runtime::Permill;
 use super::*;
 use mock::{RuntimeEvent as MockEvent, RuntimeOrigin as Origin, *};
 use pallet_uniques as UNQ;
+use rmrk_traits::budget::Budget;
 use sp_std::convert::TryInto;
 
 type RMRKCore = Pallet<Test>;
@@ -411,7 +412,6 @@ fn mint_directly_to_nft_with_resources() {
 		// Created resource 0 on NFT (0, 1) should exist
 		assert!(RmrkCore::resources((0, 1, 0)).is_some());
 
-		println!("{:?}", RmrkCore::resources((0, 1, 0)).unwrap());
 		// Created resource 0 on NFT (0, 1) should not be pending
 		assert!(!RmrkCore::resources((0, 1, 0)).unwrap().pending);
 	});
@@ -810,8 +810,8 @@ fn lookup_root_owner_nesting_budget_works() {
 			None,
 		));
 
-		// Mint a bunch of nfts(over the `NestingBudget`).
-		for i in 1..=<Test as Config>::NestingBudget::get() + 1 {
+		// Mint a bunch of nfts(Equal to the `NestingBudget`).
+		for i in 1..=<Test as Config>::NestingBudget::get() {
 			assert_ok!(RMRKCore::mint_nft_directly_to_nft(
 				Origin::signed(ALICE),
 				(COLLECTION_ID_0, i - 1),
@@ -830,8 +830,8 @@ fn lookup_root_owner_nesting_budget_works() {
 		assert_noop!(
 			RMRKCore::mint_nft_directly_to_nft(
 				Origin::signed(ALICE),
-				(COLLECTION_ID_0, <Test as Config>::NestingBudget::get() + 1),
-				<Test as Config>::NestingBudget::get() + 2,
+				(COLLECTION_ID_0, <Test as Config>::NestingBudget::get()),
+				<Test as Config>::NestingBudget::get() + 1,
 				COLLECTION_ID_0,
 				None,
 				None,
@@ -843,21 +843,21 @@ fn lookup_root_owner_nesting_budget_works() {
 		);
 
 		let budget = budget::Value::new(<Test as Config>::NestingBudget::get());
-		// This should also fail since we nested too many nfts.
+		// This should also fail since we are not allowed to nest too many NFTs
 		assert_noop!(
 			RMRKCore::lookup_root_owner(
 				COLLECTION_ID_0,
 				<Test as Config>::NestingBudget::get() + 1,
 				&budget
 			),
-			Error::<Test>::TooManyRecursions
+			Error::<Test>::NoAvailableNftId
 		);
 
-		// If we increase the nesting budget `lookup_root_owner` should work.
-		let budget = budget::Value::new(<Test as Config>::NestingBudget::get() + 5);
+		// `lookup_root_owner` should work.
+		let budget = budget::Value::new(<Test as Config>::NestingBudget::get());
 		assert_ok!(RMRKCore::lookup_root_owner(
 			COLLECTION_ID_0,
-			<Test as Config>::NestingBudget::get() + 1,
+			<Test as Config>::NestingBudget::get(),
 			&budget
 		));
 	});
@@ -1229,12 +1229,22 @@ fn burn_nft_beyond_max_recursions_fails_gracefully() {
 			3,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
 		));
-		// ALICE sends NFT (0, 4) to NFT (0, 3)
+		// ALICE sends NFT (0, 4) to NFT (0, 3) fails bc there nested budget threshold is exceeded
+		assert_noop!(
+			RMRKCore::send(
+				Origin::signed(ALICE),
+				0,
+				4,
+				AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 3),
+			),
+			Error::<Test>::TooManyRecursions
+		);
+		// ALICE sends NFT (0, 4) to NFT (0, 0) succeeds since the budget threshold is not exceeded
 		assert_ok!(RMRKCore::send(
 			Origin::signed(ALICE),
 			0,
 			4,
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 3),
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 0),
 		));
 		// All NFTs exist
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 0).is_some(), true);
@@ -1244,7 +1254,7 @@ fn burn_nft_beyond_max_recursions_fails_gracefully() {
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 4).is_some(), true);
 		// Burn great-grandparent NFT (0, 0)
 		assert_noop!(
-			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0),
+			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, 0),
 			Error::<Test>::TooManyRecursions
 		);
 		// All NFTs still exist
@@ -1252,6 +1262,17 @@ fn burn_nft_beyond_max_recursions_fails_gracefully() {
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 1).is_some(), true);
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 2).is_some(), true);
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_some(), true);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 4).is_some(), true);
+		// Burn great-grandparent NFT (0,1) successfully
+		assert_ok!(
+			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, 1),
+			//Error::<Test>::TooManyRecursions
+		);
+		// NFTs [0,1], [0,2], [0,3] are burned
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 0).is_some(), true);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 1).is_some(), false);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 2).is_some(), false);
+		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 3).is_some(), false);
 		assert_eq!(RMRKCore::nfts(COLLECTION_ID_0, 4).is_some(), true);
 	});
 }
