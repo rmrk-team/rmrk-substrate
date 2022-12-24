@@ -30,6 +30,9 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
+#[cfg(any(feature = "runtime-benchmarks"))]
+pub mod benchmarking;
+
 // Re-export pallet items so that they can be accessed from the crate namespace.
 pub use pallet::*;
 
@@ -249,8 +252,6 @@ pub mod pallet {
 			let base = Self::bases(base_id).ok_or(Error::<T>::BaseDoesntExist)?;
 			ensure!(base.issuer == sender, Error::<T>::PermissionError);
 			let new_owner = T::Lookup::lookup(new_issuer)?;
-
-			ensure!(Bases::<T>::contains_key(base_id), Error::<T>::NoAvailableBaseId);
 
 			let (new_owner, base_id) = Self::base_change_issuer(base_id, new_owner)?;
 

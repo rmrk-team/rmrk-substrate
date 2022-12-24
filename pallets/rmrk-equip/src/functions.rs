@@ -142,7 +142,7 @@ impl<T: Config>
 	}
 
 	/// Implementation of the base_change_issuer function for the Base trait
-	/// Called by the change_base_issuer extrinsic to change the issuer of a base
+	/// called by the change_base_issuer extrinsic to change the issuer of a base
 	///
 	/// Parameters:
 	/// - base_id: The Base ID to change the issuer of
