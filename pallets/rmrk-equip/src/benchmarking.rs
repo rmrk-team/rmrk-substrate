@@ -8,10 +8,7 @@ use frame_benchmarking::{account, benchmarks, whitelisted_caller};
 use frame_support::traits::Currency;
 use frame_system::RawOrigin;
 use pallet_rmrk_core::Pallet as RmrkCore;
-use rmrk_traits::{
-	primitives::{BaseId, SlotId},
-	ComposableResource, FixedPart, SlotPart, SlotResource,
-};
+use rmrk_traits::{ComposableResource, SlotPart, SlotResource};
 use sp_runtime::{traits::Bounded, Permill};
 
 use crate::Pallet as RmrkEquip;
@@ -23,7 +20,7 @@ pub type BalanceOf<T> = <<T as pallet_uniques::Config>::Currency as Currency<
 const SEED: u32 = 0;
 
 /// Turns a string into a BoundedVec
-fn stb<T: Config>(s: &str) -> BoundedVec<u8, <T as pallet_uniques::Config>::StringLimit> {
+fn stb<T: Config>(s: &str) -> BoundedVec<u8, T::StringLimit> {
 	s.as_bytes().to_vec().try_into().unwrap()
 }
 
@@ -127,14 +124,68 @@ fn create_base<T: Config>(
 	>,
 ) {
 	let _ = RmrkEquip::<T>::create_base(
-		RawOrigin::Signed(creator).into(), // origin
-		bvec![0u8; 20],                    // base_type
-		bvec![0u8; 20],                    // symbol
-		parts,                             // parts
+		RawOrigin::Signed(creator).into(),
+		bvec![0u8; 20],
+		bvec![0u8; 20],
+		parts,
 	);
 }
 
-fn test_slot_part<T: Config>() {}
+fn hand_slot_part<T: Config>(
+	collection_id: T::CollectionId,
+	id: u32,
+) -> SlotPart<
+	BoundedVec<u8, T::StringLimit>,
+	BoundedVec<T::CollectionId, T::MaxCollectionsEquippablePerPart>,
+> {
+	SlotPart {
+		id,
+		z: 0,
+		src: Some(stb::<T>("hand")),
+		equippable: EquippableList::Custom(bvec![collection_id]),
+	}
+}
+
+fn add_composable_resource<T: Config>(
+	caller: T::AccountId,
+	collection_id: T::CollectionId,
+	item: T::ItemId,
+	base_id: BaseId,
+	parts: Vec<u32>,
+) {
+	let composable_resource = ComposableResource {
+		parts: parts.try_into().unwrap(),
+		base: base_id,
+		metadata: None,
+		slot: None,
+	};
+
+	let _ = RmrkCore::<T>::add_composable_resource(
+		RawOrigin::Signed(caller.clone()).into(),
+		collection_id,
+		item,
+		composable_resource,
+		0,
+	);
+}
+
+fn add_slot_resource<T: Config>(
+	caller: T::AccountId,
+	collection_id: T::CollectionId,
+	item: T::ItemId,
+	base_id: BaseId,
+	slot: u32,
+) {
+	let slot_resource = SlotResource { base: base_id, metadata: None, slot };
+
+	let _ = RmrkCore::<T>::add_slot_resource(
+		RawOrigin::Signed(caller.clone()).into(),
+		collection_id,
+		item,
+		slot_resource,
+		0,
+	);
+}
 
 benchmarks! {
 	change_base_issuer {
@@ -155,69 +206,14 @@ benchmarks! {
 		let caller: T::AccountId = whitelisted_caller();
 		let collection_id = create_test_collection::<T>(caller.clone(), 1);
 
-		// create the slot parts.
-		let fixed_part_body = FixedPart {
-			id: 101,
-			z: 0,
-			src: Some(stb::<T>("body")),
-		};
-
-		let slot_part_hand = SlotPart {
-			id: 201,
-			z: 0,
-			src: Some(stb::<T>("hand")),
-			equippable: EquippableList::Custom(bvec![
-				collection_id
-			]),
-		};
-
-		let _ = RmrkEquip::<T>::create_base(
-			RawOrigin::Signed(caller.clone()).into(),
-			bvec![42, 5],
-			bvec![42, 5],
-			bvec![
-				//PartType::FixedPart(fixed_part_body),
-				PartType::SlotPart(slot_part_hand),
-			],
-		);
+		let slot_part_hand = hand_slot_part::<T>(collection_id, 201);
+		create_base::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
 
 		let character = mint_test_nft::<T>(caller.clone(), None, collection_id, 0);
-		let sword = mint_test_nft_directly_to::<T>(
-			caller.clone(),
-			(collection_id, character),
-			collection_id,
-			1
-		);
+		let sword = mint_test_nft_directly_to::<T>(caller.clone(), (collection_id, character), collection_id, 1);
 
-		let composable_resource = ComposableResource {
-			parts: bvec![101, 201],
-			base: 0,
-			metadata: None,
-			slot: None,
-		};
-
-		let _ = RmrkCore::<T>::add_composable_resource(
-			RawOrigin::Signed(caller.clone()).into(),
-			collection_id,
-			character,
-			composable_resource,
-			0, // base id
-		);
-
-		let sword_slot_resource = SlotResource {
-			base: 0,
-			metadata: None,
-			slot: 201
-		};
-
-		let _ = RmrkCore::<T>::add_slot_resource(
-			RawOrigin::Signed(caller.clone()).into(),
-			collection_id,
-			sword,
-			sword_slot_resource,
-			0 // base id
-		);
-
+		add_composable_resource::<T>(caller.clone(), collection_id, character, 0, vec![201]);
+		add_slot_resource::<T>(caller.clone(), collection_id, sword, 0, 201);
 		let item = (collection_id, sword);
 		let equipper = (collection_id, character);
 	}: _(RawOrigin::Signed(caller.clone()), item, equipper, 0u32, 0, 201)
