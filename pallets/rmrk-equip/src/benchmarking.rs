@@ -246,6 +246,43 @@ benchmarks! {
 		}.into())
 	}
 
+	equippable {
+		let caller: T::AccountId = whitelisted_caller();
+		let collection_0 = <T as pallet::Config>::Helper::collection(0);
+
+		let slot_part_hand = hand_slot_part::<T>(collection_0, 201);
+		create_base::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
+
+		let collection_1 = <T as pallet::Config>::Helper::collection(1);
+	}: _(RawOrigin::Signed(caller.clone()), 0, 201, EquippableList::Custom(bvec![collection_1]))
+	verify {
+		assert_last_event::<T>(Event::EquippablesUpdated { base_id: 0, slot_id: 201 }.into())
+	}
+
+	equippable_add {
+		let caller: T::AccountId = whitelisted_caller();
+		let collection_0 = <T as pallet::Config>::Helper::collection(0);
+
+		let slot_part_hand = hand_slot_part::<T>(collection_0, 201);
+		create_base::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
+
+		let collection_1 = <T as pallet::Config>::Helper::collection(1);
+	}: _(RawOrigin::Signed(caller.clone()), 0, 201, collection_1)
+	verify {
+		assert_last_event::<T>(Event::EquippablesUpdated { base_id: 0, slot_id: 201 }.into())
+	}
+
+	equippable_remove {
+		let caller: T::AccountId = whitelisted_caller();
+		let collection_0 = <T as pallet::Config>::Helper::collection(0);
+
+		let slot_part_hand = hand_slot_part::<T>(collection_0, 201);
+		create_base::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
+	}: _(RawOrigin::Signed(caller.clone()), 0, 201, collection_0)
+	verify {
+		assert_last_event::<T>(Event::EquippablesUpdated { base_id: 0, slot_id: 201 }.into())
+	}
+
 	impl_benchmark_test_suite!(RmrkEquip, crate::benchmarking::tests::new_test_ext(), crate::mock::Test);
 }
 
