@@ -90,29 +90,19 @@ fn mint_test_nft<T: Config>(
 	nft_id
 }
 
-fn mint_test_nft_directly_to<T: Config>(
+// Send nft to Account or to another nft
+fn send_test_nft<T: Config>(
 	owner: T::AccountId,
-	mint_to: (T::CollectionId, T::ItemId),
 	collection_id: T::CollectionId,
-	nft_index: u32,
-) -> T::ItemId {
-	let nft_id = <T as pallet::Config>::Helper::item(nft_index);
-	let royalty_recipient = owner.clone();
-	let royalty = Permill::from_percent(1);
-	let nft_metadata = bvec![0u8; 20];
-	let resource = None;
-	let _ = RmrkCore::<T>::mint_nft_directly_to_nft(
+	nft_id: T::ItemId,
+	new_owner_enum: AccountIdOrCollectionNftTuple<T::AccountId, T::CollectionId, T::ItemId>,
+) {
+	let _ = RmrkCore::<T>::send(
 		RawOrigin::Signed(owner.clone()).into(),
-		mint_to,
-		nft_id,
 		collection_id,
-		Some(royalty_recipient),
-		Some(royalty),
-		nft_metadata,
-		true,
-		resource,
+		nft_id,
+		new_owner_enum,
 	);
-	nft_id
 }
 
 /// Creates a base
@@ -210,7 +200,9 @@ benchmarks! {
 		create_base::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
 
 		let character = mint_test_nft::<T>(caller.clone(), None, collection_id, 0);
-		let sword = mint_test_nft_directly_to::<T>(caller.clone(), (collection_id, character), collection_id, 1);
+		let sword = mint_test_nft::<T>(caller.clone(), None, collection_id, 1);
+		let new_owner = AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, character);
+		send_test_nft::<T>(caller.clone(), collection_id, sword, new_owner);
 
 		add_composable_resource::<T>(caller.clone(), collection_id, character, 0, vec![201]);
 		add_slot_resource::<T>(caller.clone(), collection_id, sword, 0, 201);
