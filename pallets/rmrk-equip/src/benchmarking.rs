@@ -97,16 +97,12 @@ fn send_test_nft<T: Config>(
 	nft_id: T::ItemId,
 	new_owner_enum: AccountIdOrCollectionNftTuple<T::AccountId, T::CollectionId, T::ItemId>,
 ) {
-	let _ = RmrkCore::<T>::send(
-		RawOrigin::Signed(owner.clone()).into(),
-		collection_id,
-		nft_id,
-		new_owner_enum,
-	);
+	let _ =
+		RmrkCore::<T>::send(RawOrigin::Signed(owner).into(), collection_id, nft_id, new_owner_enum);
 }
 
 /// Creates a base
-fn create_base<T: Config>(
+fn base_create<T: Config>(
 	creator: T::AccountId,
 	parts: BoundedVec<
 		PartType<StringLimitOf<T>, BoundedVec<T::CollectionId, T::MaxCollectionsEquippablePerPart>>,
@@ -182,7 +178,7 @@ benchmarks! {
 		let caller: T::AccountId = whitelisted_caller();
 		let new_issuer = funded_account::<T>("new_issuer", 0);
 		let new_issuer_lookup = T::Lookup::unlookup(new_issuer.clone());
-		create_base::<T>(caller.clone(), bvec![]);
+		base_create::<T>(caller.clone(), bvec![]);
 	}: _(RawOrigin::Signed(caller.clone()), 0u32, new_issuer_lookup)
 	verify {
 		assert_last_event::<T>(Event::BaseIssuerChanged {
@@ -197,7 +193,7 @@ benchmarks! {
 		let collection_id = create_test_collection::<T>(caller.clone(), 1);
 
 		let slot_part_hand = hand_slot_part::<T>(collection_id, 201);
-		create_base::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
+		base_create::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
 
 		let character = mint_test_nft::<T>(caller.clone(), None, collection_id, 0);
 		let sword = mint_test_nft::<T>(caller.clone(), None, collection_id, 1);
@@ -223,7 +219,7 @@ benchmarks! {
 		let collection_id = create_test_collection::<T>(caller.clone(), 1);
 
 		let slot_part_hand = hand_slot_part::<T>(collection_id, 201);
-		create_base::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
+		base_create::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
 
 		let character = mint_test_nft::<T>(caller.clone(), None, collection_id, 0);
 		let sword = mint_test_nft::<T>(caller.clone(), None, collection_id, 1);
@@ -251,7 +247,7 @@ benchmarks! {
 		let collection_0 = <T as pallet::Config>::Helper::collection(0);
 
 		let slot_part_hand = hand_slot_part::<T>(collection_0, 201);
-		create_base::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
+		base_create::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
 
 		let collection_1 = <T as pallet::Config>::Helper::collection(1);
 	}: _(RawOrigin::Signed(caller.clone()), 0, 201, EquippableList::Custom(bvec![collection_1]))
@@ -264,7 +260,7 @@ benchmarks! {
 		let collection_0 = <T as pallet::Config>::Helper::collection(0);
 
 		let slot_part_hand = hand_slot_part::<T>(collection_0, 201);
-		create_base::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
+		base_create::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
 
 		let collection_1 = <T as pallet::Config>::Helper::collection(1);
 	}: _(RawOrigin::Signed(caller.clone()), 0, 201, collection_1)
@@ -277,10 +273,33 @@ benchmarks! {
 		let collection_0 = <T as pallet::Config>::Helper::collection(0);
 
 		let slot_part_hand = hand_slot_part::<T>(collection_0, 201);
-		create_base::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
+		base_create::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
 	}: _(RawOrigin::Signed(caller.clone()), 0, 201, collection_0)
 	verify {
 		assert_last_event::<T>(Event::EquippablesUpdated { base_id: 0, slot_id: 201 }.into())
+	}
+
+	theme_add {
+		let caller: T::AccountId = whitelisted_caller();
+		let default_theme = Theme {
+			name: stb::<T>("default"),
+			properties: bvec![
+				ThemeProperty { key: stb::<T>("primary_color"), value: stb::<T>("red") },
+				ThemeProperty { key: stb::<T>("secondary_color"), value: stb::<T>("blue") },
+			],
+			inherit: false,
+		};
+		base_create::<T>(caller.clone(), bvec![]);
+	}: _(RawOrigin::Signed(caller.clone()), 0, default_theme)
+	verify {
+
+	}
+
+	create_base {
+		let caller: T::AccountId = whitelisted_caller();
+	}: _(RawOrigin::Signed(caller.clone()), bvec![42u8; 20], bvec![25u8; 20], bvec![])
+	verify {
+		assert_last_event::<T>(Event::BaseCreated { issuer: caller, base_id: 0 }.into())
 	}
 
 	impl_benchmark_test_suite!(RmrkEquip, crate::benchmarking::tests::new_test_ext(), crate::mock::Test);
