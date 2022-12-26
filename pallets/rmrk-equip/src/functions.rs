@@ -275,7 +275,7 @@ impl<T: Config>
 			Error::<T>::NoResourceForThisBaseFoundOnNft
 		);
 
-		// The item being equipped must be have a resource that is equippable into that base.slot
+		// The item being equipped must have a resource that is equippable into that base.slot
 		ensure!(
 			pallet_rmrk_core::Pallet::<T>::equippable_slots((
 				item_collection_id,

@@ -30,8 +30,11 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-#[cfg(any(feature = "runtime-benchmarks"))]
+#[cfg(feature = "runtime-benchmarks")]
 pub mod benchmarking;
+
+#[cfg(feature = "runtime-benchmarks")]
+use pallet_rmrk_core::BenchmarkHelper;
 
 // Re-export pallet items so that they can be accessed from the crate namespace.
 pub use pallet::*;
@@ -74,6 +77,9 @@ pub mod pallet {
 		/// Maximum number of Properties allowed for any Theme
 		#[pallet::constant]
 		type MaxCollectionsEquippablePerPart: Get<u32>;
+
+		#[cfg(feature = "runtime-benchmarks")]
+		type Helper: BenchmarkHelper<Self::CollectionId, Self::ItemId>;
 	}
 
 	#[pallet::storage]
@@ -262,6 +268,7 @@ pub mod pallet {
 			});
 			Ok(())
 		}
+
 		/// Equips a child NFT's resource to a parent's slot, if all are available.
 		/// Equipping operations are maintained inside the Equippings storage.
 		/// Modeled after [equip interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/equip.md)
