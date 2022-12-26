@@ -10,6 +10,7 @@ use frame_system::RawOrigin;
 use pallet_rmrk_core::Pallet as RmrkCore;
 use rmrk_traits::{ComposableResource, SlotPart, SlotResource};
 use sp_runtime::{traits::Bounded, Permill};
+use sp_std::vec;
 
 use crate::Pallet as RmrkEquip;
 

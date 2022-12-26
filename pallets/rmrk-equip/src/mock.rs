@@ -50,6 +50,7 @@ impl pallet_rmrk_equip::Config for Test {
 	type Event = Event;
 	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
 	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
+	type WeightInfo = crate::weights::SubstrateWeight<Test>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = RmrkBenchmark;
 }
