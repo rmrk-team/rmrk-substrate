@@ -210,7 +210,40 @@ benchmarks! {
 		let equipper = (collection_id, character);
 	}: _(RawOrigin::Signed(caller.clone()), item, equipper, 0u32, 0, 201)
 	verify {
+		assert_last_event::<T>(Event::SlotEquipped {
+			item_collection: collection_id,
+			item_nft: item.1,
+			base_id: 0,
+			slot_id: 201,
+		}.into())
+	}
 
+	unequip {
+		let caller: T::AccountId = whitelisted_caller();
+		let collection_id = create_test_collection::<T>(caller.clone(), 1);
+
+		let slot_part_hand = hand_slot_part::<T>(collection_id, 201);
+		create_base::<T>(caller.clone(), bvec![PartType::SlotPart(slot_part_hand)]);
+
+		let character = mint_test_nft::<T>(caller.clone(), None, collection_id, 0);
+		let sword = mint_test_nft::<T>(caller.clone(), None, collection_id, 1);
+		let new_owner = AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, character);
+		send_test_nft::<T>(caller.clone(), collection_id, sword, new_owner);
+
+		add_composable_resource::<T>(caller.clone(), collection_id, character, 0, vec![201]);
+		add_slot_resource::<T>(caller.clone(), collection_id, sword, 0, 201);
+		let item = (collection_id, sword);
+		// the equipper is going to be the unequipper.
+		let equipper = (collection_id, character);
+		let _ = RmrkEquip::<T>::equip(RawOrigin::Signed(caller.clone()).into(), item, equipper, 0u32, 0, 201);
+	}: _(RawOrigin::Signed(caller.clone()), item, equipper, 0, 201)
+	verify {
+		assert_last_event::<T>(Event::SlotUnequipped {
+			item_collection: collection_id,
+			item_nft: item.1,
+			base_id: 0,
+			slot_id: 201,
+		}.into())
 	}
 
 	impl_benchmark_test_suite!(RmrkEquip, crate::benchmarking::tests::new_test_ext(), crate::mock::Test);
