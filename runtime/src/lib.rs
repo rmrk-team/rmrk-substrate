@@ -399,6 +399,7 @@ impl pallet_rmrk_equip::Config for Runtime {
 	type Event = Event;
 	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
 	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
+	type WeightInfo = pallet_rmrk_equip::weights::SubstrateWeight<Runtime>;
 	type Helper = RmrkBenchmark;
 }
 
