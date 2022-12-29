@@ -27,7 +27,9 @@ pub use frame_support::{
 		StorageInfo,
 	},
 	weights::{
-		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_PER_SECOND},
+		constants::{
+			BlockExecutionWeight, ExtrinsicBaseWeight, RocksDbWeight, WEIGHT_REF_TIME_PER_SECOND,
+		},
 		IdentityFee, Weight,
 	},
 	BoundedVec, StorageValue,
@@ -166,7 +168,7 @@ pub fn native_version() -> NativeVersion {
 const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 const MAX_POV_SIZE: u64 = 5 * 1024 * 1024;
 const MAXIMUM_BLOCK_WEIGHT: Weight =
-	WEIGHT_PER_SECOND.saturating_mul(2).set_proof_size(MAX_POV_SIZE);
+	Weight::from_parts(2u64 * WEIGHT_REF_TIME_PER_SECOND, MAX_POV_SIZE);
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
