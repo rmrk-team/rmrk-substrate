@@ -202,6 +202,7 @@ pub mod pallet {
 		/// 	- `collection_id` - Collection id of the RMRK NFT
 		/// 	- `nft_id` - NFT id of the RMRK NFT
 		/// 	- `amount` - Optional price at which buyer purchased at
+		#[pallet::call_index(0)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn buy(
@@ -226,6 +227,7 @@ pub mod pallet {
 		/// 	- `nft_id` - NFT id of the RMRK NFT
 		/// 	- `amount` - Price of the RMRK NFT
 		/// 	- `expires` - Optional BlockNumber for when the listing expires
+		#[pallet::call_index(1)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn list(
@@ -280,6 +282,7 @@ pub mod pallet {
 		/// - `origin` - Account owner of the listed RMRK NFT
 		/// - `collection_id` - Collection id of the RMRK NFT
 		/// - `nft_id` - NFT id of the RMRK NFT
+		#[pallet::call_index(2)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn unlist(
@@ -313,6 +316,7 @@ pub mod pallet {
 		/// - `nft_id` - NFT id of the RMRK NFT
 		/// - `amount` - Price of the RMRK NFT
 		/// - `expiration` - Expiration of the offer
+		#[pallet::call_index(3)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn make_offer(
@@ -365,6 +369,7 @@ pub mod pallet {
 		/// - `origin` - Account that wants to withdraw their offer
 		/// - `collection_id` - Collection id of the RMRK NFT
 		/// - `nft_id` - NFT id of the RMRK NFT
+		#[pallet::call_index(4)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn withdraw_offer(
@@ -400,13 +405,14 @@ pub mod pallet {
 			)
 		}
 
-		// Accept an offer on a RMRK NFT from a potential buyer.
-		//
-		// Parameters:
-		// - `origin` - Account of the current owner that is accepting the offerer's offer
-		// - `collection_id` - Collection id of the RMRK NFT
-		// - `nft_id` - NFT id of the RMRK NFT
-		// - `offerer` - Account that made the offer
+		/// Accept an offer on a RMRK NFT from a potential buyer.
+		///
+		/// Parameters:
+		/// - `origin` - Account of the current owner that is accepting the offerer's offer
+		/// - `collection_id` - Collection id of the RMRK NFT
+		/// - `nft_id` - NFT id of the RMRK NFT
+		/// - `offerer` - Account that made the offer
+		#[pallet::call_index(5)]
 		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
 		#[transactional]
 		pub fn accept_offer(
