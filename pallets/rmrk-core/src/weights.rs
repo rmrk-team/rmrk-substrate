@@ -35,24 +35,24 @@ use sp_std::marker::PhantomData;
 pub trait WeightInfo {
 	fn create_collection() -> Weight;
 	fn mint_nft() -> Weight;
-	fn mint_nft_directly_to_nft() -> Weight;
+	fn mint_nft_directly_to_nft(n: u32) -> Weight;
 	fn destroy_collection() -> Weight;
-	fn send_to_account() -> Weight;
-	fn send_to_nft() -> Weight;
+	fn send_to_account(n: u32) -> Weight;
+	fn send_to_nft(n: u32) -> Weight;
 	fn burn_nft(n: u32) -> Weight;
-	fn accept_nft() -> Weight;
+	fn accept_nft(n: u32) -> Weight;
 	fn reject_nft(n: u32) -> Weight;
 	fn change_collection_issuer() -> Weight;
 	fn set_property() -> Weight;
 	fn lock_collection() -> Weight;
-	fn add_basic_resource() -> Weight;
-	fn add_composable_resource() -> Weight;
-	fn add_slot_resource() -> Weight;
-	fn accept_resource() -> Weight;
-	fn remove_resource() -> Weight;
-	fn accept_resource_removal() -> Weight;
+	fn add_basic_resource(n: u32) -> Weight;
+	fn add_composable_resource(n: u32) -> Weight;
+	fn add_slot_resource(n: u32) -> Weight;
+	fn accept_resource(n: u32) -> Weight;
+	fn remove_resource(n: u32) -> Weight;
+	fn accept_resource_removal(n: u32) -> Weight;
 	fn set_priority(n: u32) -> Weight;
-	fn replace_resource() -> Weight;
+	fn replace_resource(n: u32, k: u32) -> Weight;
 }
 
 pub struct SubstrateWeight<T>(PhantomData<T>);
