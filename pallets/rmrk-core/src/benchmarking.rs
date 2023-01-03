@@ -199,7 +199,7 @@ benchmarks! {
 		mint_and_send_to_parent::<T>(owner.clone(), collection_id, n);
 		let nft_id = T::Helper::item(n-1);
 
-		let nft_child_id: <T as pallet_uniques::Config>::ItemId = T::Helper::item(2);
+		let nft_child_id: <T as pallet_uniques::Config>::ItemId = T::Helper::item(n);
 		let owner_tuple = AccountIdOrCollectionNftTuple::CollectionAndNftTuple(collection_id, nft_id);
 		let nft_owner_tuple = (collection_id, nft_id);
 		let royalty_recipient = owner.clone();
