@@ -51,8 +51,8 @@ pub trait WeightInfo {
 	fn accept_resource(n: u32) -> Weight;
 	fn remove_resource(n: u32) -> Weight;
 	fn accept_resource_removal(n: u32) -> Weight;
-	fn set_priority(n: u32) -> Weight;
-	fn replace_resource(n: u32, k: u32) -> Weight;
+	fn set_priority(n: u32, k: u32) -> Weight;
+	fn replace_resource() -> Weight;
 }
 
 pub struct SubstrateWeight<T>(PhantomData<T>);
