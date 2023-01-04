@@ -6,7 +6,7 @@
 /// the logic of RMRK's current funcitonality.
 pub trait TransferHooks<AccountId, CollectionId, NftId> {
 	/// Check if the NFT's pre-checks and post-checks for the transfer function based on the sender,
-	/// collection_id and nft_id parameters.
+	/// `collection_id` and `nft_id` parameters.
 	fn pre_check(sender: &AccountId, collection_id: &CollectionId, nft_id: &NftId) -> bool;
 	fn post_transfer(
 		sender: &AccountId,

@@ -1229,7 +1229,7 @@ fn burn_nft_beyond_max_recursions_fails_gracefully() {
 			3,
 			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(0, 2),
 		));
-		// ALICE sends NFT (0, 4) to NFT (0, 3) fails bc there nested budget threshold is exceeded
+		// ALICE sends NFT (0, 4) to NFT (0, 3) fails bc the nested budget threshold is exceeded
 		assert_noop!(
 			RMRKCore::send(
 				Origin::signed(ALICE),
