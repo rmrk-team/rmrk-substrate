@@ -120,6 +120,11 @@ pub trait RmrkApi<
 		at: Option<BlockHash>,
 	) -> RpcResult<Vec<NftChild<CollectionId, NftId>>>;
 
+	#[method(name = "nftsOfUser")]
+	/// Get all of the NFTs of the provided account.
+	fn nfts_of_user(&self, account_id: AccountId, at: Option<BlockHash>)
+		-> RpcResult<Vec<NftInfo>>;
+
 	#[method(name = "collectionProperties")]
 	/// Get collection properties
 	fn collection_properties(
@@ -232,6 +237,7 @@ where
 	pass_method!(nft_by_id(collection_id: CollectionId, nft_id: NftId) -> Option<NftInfo>);
 	pass_method!(account_tokens(account_id: AccountId, collection_id: CollectionId) -> Vec<NftId>);
 	pass_method!(nft_children(collection_id: CollectionId, nft_id: NftId) -> Vec<NftChild<CollectionId, NftId>>);
+	pass_method!(nfts_of_user(account_id: AccountId) -> Vec<NftInfo>);
 	pass_method!(
 		collection_properties(
 			collection_id: CollectionId,

@@ -49,6 +49,9 @@ sp_api::decl_runtime_apis! {
 		/// Get NFT children
 		fn nft_children(collection_id: CollectionId, nft_id: NftId) -> Result<Vec<NftChild<CollectionId, NftId>>>;
 
+		/// Get all of the NFTs of the provided account.
+		fn nfts_of_user(account_id: AccountId) -> Result<Vec<NftInfo>>;
+
 		/// Get collection properties
 		fn collection_properties(collection_id: CollectionId, filter_keys: Option<Vec<PropertyKey>>) -> Result<Vec<PropertyInfo>>;
 
