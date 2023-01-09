@@ -531,16 +531,21 @@ impl_runtime_apis! {
 			Ok(children)
 		}
 
-		fn nfts_of_user(account_id: AccountId) -> pallet_rmrk_rpc_runtime_api::Result<Vec<InstanceInfoOf<Runtime>>> {
-			let collections = RmrkCore::iterate_collections();
+		fn nfts_of_user(account_id: AccountId, start: Option<u32>, count: Option<u32>) -> pallet_rmrk_rpc_runtime_api::Result<Vec<InstanceInfoOf<Runtime>>> {
+			let collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
+			let start = start.unwrap_or_default() as usize;
+
+			let count = count.unwrap_or(collections.len().saturating_sub(start) as u32);
 
 			let mut nfts = vec![];
-			collections.for_each(|collection_id| {
+			collections.into_iter().skip(start).take(count as usize).for_each(|collection_id| {
 				// The nft ids owned by the `account_id` from the collection.
 				let owned_nfts = Uniques::owned_in_collection(&collection_id, &account_id);
 				// Get more information about the nfts.
 				owned_nfts.for_each(|nft_id| {
-					nfts.push(RmrkCore::nfts(collection_id, nft_id).unwrap())
+					if let Some(nft_info) = RmrkCore::nfts(collection_id, nft_id) {
+						nfts.push(nft_info);
+					}
 				});
 			});
 
