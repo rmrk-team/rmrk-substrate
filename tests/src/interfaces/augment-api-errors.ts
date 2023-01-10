@@ -19,7 +19,7 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       ExistingVestingSchedule: AugmentedError<ApiType>;
       /**
-       * Balance too low to send value
+       * Balance too low to send value.
        **/
       InsufficientBalance: AugmentedError<ApiType>;
       /**
@@ -90,6 +90,8 @@ declare module '@polkadot/api-base/types/errors' {
       CollectionNotEmpty: AugmentedError<ApiType>;
       CollectionUnknown: AugmentedError<ApiType>;
       EmptyResource: AugmentedError<ApiType>;
+      FailedTransferHooksPostTransfer: AugmentedError<ApiType>;
+      FailedTransferHooksPreCheck: AugmentedError<ApiType>;
       MetadataNotSet: AugmentedError<ApiType>;
       NftAlreadyExists: AugmentedError<ApiType>;
       NftIsLocked: AugmentedError<ApiType>;
