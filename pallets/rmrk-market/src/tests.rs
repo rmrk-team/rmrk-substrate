@@ -5,7 +5,7 @@
 use super::*;
 use crate::mock::*;
 use frame_support::{assert_noop, assert_ok};
-use mock::{RuntimeEvent as MockEvent, RuntimeOrigin as Origin, *};
+use mock::{RuntimeEvent as MockEvent, RuntimeOrigin as Origin};
 
 use sp_runtime::Permill;
 use sp_std::convert::TryInto;

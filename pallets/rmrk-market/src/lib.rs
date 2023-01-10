@@ -214,7 +214,7 @@ pub mod pallet {
 		/// 	- `collection_id` - Collection id of the RMRK NFT
 		/// 	- `nft_id` - NFT id of the RMRK NFT
 		/// 	- `amount` - Optional price at which buyer purchased at
-    #[pallet::call_index(0)]
+		#[pallet::call_index(0)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::buy())]
 		#[transactional]
 		pub fn buy(
