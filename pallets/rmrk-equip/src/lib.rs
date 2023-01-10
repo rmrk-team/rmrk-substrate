@@ -71,7 +71,7 @@ pub mod pallet {
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_rmrk_core::Config {
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// Maximum allowed Parts (either Fixed or Slot) per Base
 		#[pallet::constant]
@@ -254,6 +254,7 @@ pub mod pallet {
 		/// - `origin`: sender of the transaction
 		/// - `base_id`: base_id to change issuer of
 		/// - `new_issuer`: Base's new issuer
+    #[pallet::call_index(0)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::change_base_issuer())]
 		pub fn change_base_issuer(
 			origin: OriginFor<T>,
@@ -285,6 +286,7 @@ pub mod pallet {
 		/// - equipper: Parent NFT which will equip the item
 		/// - base: ID of the base which the item and equipper must each have a resource referencing
 		/// - slot: ID of the slot which the item and equipper must each have a resource referencing
+    #[pallet::call_index(1)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::equip())]
 		pub fn equip(
 			origin: OriginFor<T>,
@@ -324,6 +326,7 @@ pub mod pallet {
 		/// - unequipper: Parent NFT which will unequip the item
 		/// - base: ID of the base which the item and equipper must each have a resource referencing
 		/// - slot: ID of the slot which the item and equipper must each have a resource referencing
+    #[pallet::call_index(2)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::unequip())]
 		pub fn unequip(
 			origin: OriginFor<T>,
@@ -355,6 +358,7 @@ pub mod pallet {
 		/// - base_id: The Base containing the Slot Part to be updated
 		/// - part_id: The Slot Part whose Equippable List is being updated
 		/// - equippables: The list of equippables that will override the current Equippaables list
+		#[pallet::call_index(3)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::equippable())]
 		pub fn equippable(
 			origin: OriginFor<T>,
@@ -384,6 +388,7 @@ pub mod pallet {
 		/// - base_id: The Base containing the Slot Part to be updated
 		/// - part_id: The Slot Part whose Equippable List is being updated
 		/// - equippable: The equippable that will be added to the current Equippaables list
+		#[pallet::call_index(4)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::equippable_add())]
 		pub fn equippable_add(
 			origin: OriginFor<T>,
@@ -411,6 +416,7 @@ pub mod pallet {
 		/// - base_id: The Base containing the Slot Part to be updated
 		/// - part_id: The Slot Part whose Equippable List is being updated
 		/// - equippable: The equippable that will be removed from the current Equippaables list
+		#[pallet::call_index(5)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::equippable_remove())]
 		pub fn equippable_remove(
 			origin: OriginFor<T>,
@@ -444,6 +450,7 @@ pub mod pallet {
 		///   - key: arbitrary BoundedString, defined by client
 		///   - value: arbitrary BoundedString, defined by client
 		///   - inherit: optional bool
+		#[pallet::call_index(6)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::theme_add())]
 		pub fn theme_add(
 			origin: OriginFor<T>,
@@ -477,6 +484,7 @@ pub mod pallet {
 		/// - symbol: arbitrary client-chosen symbol, e.g. "kanaria_superbird"
 		/// - parts: array of Fixed and Slot parts composing the base, confined in length by
 		///   PartsLimit
+		#[pallet::call_index(7)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::create_base())]
 		pub fn create_base(
 			origin: OriginFor<T>,

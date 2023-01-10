@@ -19,6 +19,7 @@ use sp_std::convert::TryInto;
 
 use rmrk_traits::{
 	budget,
+	misc::TransferHooks,
 	primitives::{BaseId, PartId, ResourceId, SlotId},
 	AccountIdOrCollectionNftTuple, BasicResource, Collection, CollectionInfo, ComposableResource,
 	Nft, NftChild, NftInfo, PhantomType, Priority, Property, PropertyInfo, Resource, ResourceInfo,
@@ -120,8 +121,8 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_uniques::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
-		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
+		type ProtocolOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 
 		/// The maximum resource symbol length
 		#[pallet::constant]
@@ -148,6 +149,8 @@ pub mod pallet {
 
 		#[cfg(feature = "runtime-benchmarks")]
 		type Helper: BenchmarkHelper<Self::CollectionId, Self::ItemId>;
+
+		type TransferHooks: TransferHooks<Self::AccountId, Self::CollectionId, Self::ItemId>;
 	}
 
 	#[pallet::storage]
@@ -411,6 +414,8 @@ pub mod pallet {
 		// rmrk-equip pallet but the send operation lives in rmrk-core)
 		CannotSendEquippedItem,
 		CannotAcceptToNewOwner,
+		FailedTransferHooksPreCheck,
+		FailedTransferHooksPostTransfer,
 	}
 
 	#[pallet::call]
@@ -424,6 +429,7 @@ pub mod pallet {
 		/// - `recipient`: Receiver of the royalty
 		/// - `royalty`: Permillage reward from each trade for the Recipient
 		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
+		#[pallet::call_index(0)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::mint_nft())]
 		#[transactional]
 		pub fn mint_nft(
@@ -477,6 +483,7 @@ pub mod pallet {
 		/// - `recipient`: Receiver of the royalty
 		/// - `royalty`: Permillage reward from each trade for the Recipient
 		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
+		#[pallet::call_index(1)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::mint_nft_directly_to_nft())]
 		#[transactional]
 		pub fn mint_nft_directly_to_nft(
@@ -518,6 +525,7 @@ pub mod pallet {
 		}
 
 		/// Create a collection
+		#[pallet::call_index(2)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::create_collection())]
 		#[transactional]
 		pub fn create_collection(
@@ -535,6 +543,7 @@ pub mod pallet {
 		}
 
 		/// burn nft
+		#[pallet::call_index(3)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::burn_nft(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn burn_nft(
@@ -551,6 +560,7 @@ pub mod pallet {
 		}
 
 		/// destroy collection
+		#[pallet::call_index(4)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::destroy_collection())]
 		#[transactional]
 		pub fn destroy_collection(
@@ -571,6 +581,7 @@ pub mod pallet {
 		/// - `collection_id`: collection id of the nft to be transferred
 		/// - `nft_id`: nft id of the nft to be transferred
 		/// - `new_owner`: new owner of the nft which can be either an account or a NFT
+		#[pallet::call_index(5)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::send_to_account().max(<T as
 		pallet::Config>::WeightInfo::send_to_nft()))]
 		#[transactional]
@@ -595,6 +606,7 @@ pub mod pallet {
 		/// - `nft_id`: nft id of the nft to be accepted
 		/// - `new_owner`: either origin's account ID or origin-owned NFT, whichever the NFT was
 		///   sent to
+		#[pallet::call_index(6)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::accept_nft())]
 		#[transactional]
 		pub fn accept_nft(
@@ -636,6 +648,7 @@ pub mod pallet {
 		/// - `origin`: sender of the transaction
 		/// - `collection_id`: collection id of the nft to be accepted
 		/// - `nft_id`: nft id of the nft to be accepted
+		#[pallet::call_index(7)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::reject_nft(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn reject_nft(
@@ -654,6 +667,7 @@ pub mod pallet {
 		/// - `origin`: sender of the transaction
 		/// - `collection_id`: collection id of the nft to change issuer of
 		/// - `new_issuer`: Collection's new issuer
+		#[pallet::call_index(8)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::change_collection_issuer())]
 		pub fn change_collection_issuer(
 			origin: OriginFor<T>,
@@ -685,6 +699,7 @@ pub mod pallet {
 		}
 
 		/// set a custom value on an NFT
+		#[pallet::call_index(9)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_property())]
 		#[transactional]
 		pub fn set_property(
@@ -702,6 +717,7 @@ pub mod pallet {
 			Ok(())
 		}
 		/// lock collection
+		#[pallet::call_index(10)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::lock_collection())]
 		#[transactional]
 		pub fn lock_collection(
@@ -719,6 +735,7 @@ pub mod pallet {
 		}
 
 		/// Create basic resource
+		#[pallet::call_index(11)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::add_basic_resource())]
 		#[transactional]
 		pub fn add_basic_resource(
@@ -756,6 +773,7 @@ pub mod pallet {
 		}
 
 		/// Create composable resource
+		#[pallet::call_index(12)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::add_composable_resource())]
 		#[transactional]
 		pub fn add_composable_resource(
@@ -794,6 +812,7 @@ pub mod pallet {
 		}
 
 		/// Create slot resource
+		#[pallet::call_index(13)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::add_slot_resource())]
 		#[transactional]
 		pub fn add_slot_resource(
@@ -831,6 +850,7 @@ pub mod pallet {
 		}
 
 		/// Replace resource by id
+		#[pallet::call_index(14)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::replace_resource())]
 		#[transactional]
 		pub fn replace_resource(
@@ -847,6 +867,7 @@ pub mod pallet {
 		}
 
 		/// accept the addition of a new resource to an existing NFT
+		#[pallet::call_index(15)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::accept_resource())]
 		#[transactional]
 		pub fn accept_resource(
@@ -868,6 +889,7 @@ pub mod pallet {
 		}
 
 		/// remove resource
+		#[pallet::call_index(16)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::remove_resource())]
 		#[transactional]
 		pub fn remove_resource(
@@ -892,6 +914,7 @@ pub mod pallet {
 		}
 
 		/// accept the removal of a resource of an existing NFT
+		#[pallet::call_index(17)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::accept_resource_removal())]
 		#[transactional]
 		pub fn accept_resource_removal(
@@ -912,7 +935,7 @@ pub mod pallet {
 		}
 
 		/// set a different order of resource priority
-		// #[transactional]
+		#[pallet::call_index(18)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_priority(T::MaxPriorities::get()))]
 		pub fn set_priority(
 			origin: OriginFor<T>,

@@ -5,7 +5,7 @@ import type { ApiTypes } from '@polkadot/api-base/types';
 import type { Bytes, Compact, Option, Vec, bool, u128, u16, u32, u64 } from '@polkadot/types-codec';
 import type { AnyNumber, IMethod, ITuple } from '@polkadot/types-codec/types';
 import type { AccountId32, Call, MultiAddress, Perbill, Permill } from '@polkadot/types/interfaces/runtime';
-import type { FrameSupportWeightsWeightV2Weight, PalletUniquesDestroyWitness, RmrkSubstrateRuntimeOriginCaller, RmrkTraitsNftAccountIdOrCollectionNftTuple, RmrkTraitsPartEquippableList, RmrkTraitsPartPartType, RmrkTraitsResourceBasicResource, RmrkTraitsResourceComposableResource, RmrkTraitsResourceResourceInfoMin, RmrkTraitsResourceResourceTypes, RmrkTraitsResourceSlotResource, RmrkTraitsTheme, SpCoreVoid, SpFinalityGrandpaEquivocationProof } from '@polkadot/types/lookup';
+import type { PalletUniquesDestroyWitness, RmrkSubstrateRuntimeOriginCaller, RmrkTraitsNftAccountIdOrCollectionNftTuple, RmrkTraitsPartEquippableList, RmrkTraitsPartPartType, RmrkTraitsResourceBasicResource, RmrkTraitsResourceComposableResource, RmrkTraitsResourceResourceInfoMin, RmrkTraitsResourceResourceTypes, RmrkTraitsResourceSlotResource, RmrkTraitsTheme, SpCoreVoid, SpFinalityGrandpaEquivocationProof, SpWeightsWeightV2Weight } from '@polkadot/types/lookup';
 
 declare module '@polkadot/api-base/types/submittable' {
   export interface AugmentedSubmittables<ApiType extends ApiTypes> {
@@ -479,7 +479,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * - The weight of this call is defined by the caller.
        * # </weight>
        **/
-      sudoUncheckedWeight: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array, weight: FrameSupportWeightsWeightV2Weight | { refTime?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, FrameSupportWeightsWeightV2Weight]>;
+      sudoUncheckedWeight: AugmentedSubmittable<(call: Call | IMethod | string | Uint8Array, weight: SpWeightsWeightV2Weight | { refTime?: any; proofSize?: any } | string | Uint8Array) => SubmittableExtrinsic<ApiType>, [Call, SpWeightsWeightV2Weight]>;
       /**
        * Generic tx
        **/
@@ -711,7 +711,7 @@ declare module '@polkadot/api-base/types/submittable' {
        * 
        * This new collection has no items initially and its owner is the origin.
        * 
-       * The origin must be Signed and the sender must have sufficient funds free.
+       * The origin must conform to the configured `CreateOrigin` and have sufficient funds free.
        * 
        * `ItemDeposit` funds of sender are reserved.
        * 
@@ -1040,13 +1040,13 @@ declare module '@polkadot/api-base/types/submittable' {
       /**
        * Send a batch of dispatch calls.
        * 
-       * May be called from any origin.
+       * May be called from any origin except `None`.
        * 
        * - `calls`: The calls to be dispatched from the same origin. The number of call must not
        * exceed the constant: `batched_calls_limit` (available in constant metadata).
        * 
-       * If origin is root then call are dispatch without checking origin filter. (This includes
-       * bypassing `frame_system::Config::BaseCallFilter`).
+       * If origin is root then the calls are dispatched without checking origin filter. (This
+       * includes bypassing `frame_system::Config::BaseCallFilter`).
        * 
        * # <weight>
        * - Complexity: O(C) where C is the number of calls to be batched.
@@ -1063,13 +1063,13 @@ declare module '@polkadot/api-base/types/submittable' {
        * Send a batch of dispatch calls and atomically execute them.
        * The whole transaction will rollback and fail if any of the calls failed.
        * 
-       * May be called from any origin.
+       * May be called from any origin except `None`.
        * 
        * - `calls`: The calls to be dispatched from the same origin. The number of call must not
        * exceed the constant: `batched_calls_limit` (available in constant metadata).
        * 
-       * If origin is root then call are dispatch without checking origin filter. (This includes
-       * bypassing `frame_system::Config::BaseCallFilter`).
+       * If origin is root then the calls are dispatched without checking origin filter. (This
+       * includes bypassing `frame_system::Config::BaseCallFilter`).
        * 
        * # <weight>
        * - Complexity: O(C) where C is the number of calls to be batched.
@@ -1093,13 +1093,13 @@ declare module '@polkadot/api-base/types/submittable' {
        * Send a batch of dispatch calls.
        * Unlike `batch`, it allows errors and won't interrupt.
        * 
-       * May be called from any origin.
+       * May be called from any origin except `None`.
        * 
        * - `calls`: The calls to be dispatched from the same origin. The number of call must not
        * exceed the constant: `batched_calls_limit` (available in constant metadata).
        * 
-       * If origin is root then call are dispatch without checking origin filter. (This includes
-       * bypassing `frame_system::Config::BaseCallFilter`).
+       * If origin is root then the calls are dispatch without checking origin filter. (This
+       * includes bypassing `frame_system::Config::BaseCallFilter`).
        * 
        * # <weight>
        * - Complexity: O(C) where C is the number of calls to be batched.
