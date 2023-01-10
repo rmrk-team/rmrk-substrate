@@ -122,14 +122,26 @@ pub trait RmrkApi<
 
 	#[method(name = "nftsOfUser")]
 	/// Get all of the NFTs of the provided account. Supports pagination by
-	/// appliying the starting collection from which to start reading.
+	/// specifying an optional start and number of nfts to read.
 	fn nfts_of_user(
 		&self,
 		account_id: AccountId,
 		start: Option<u32>,
 		count: Option<u32>,
 		at: Option<BlockHash>,
-	) -> RpcResult<Vec<NftInfo>>;
+	) -> RpcResult<Vec<(NftId, NftInfo)>>;
+
+	#[method(name = "propertiesOfNftsOwnedBy")]
+	/// Get all of the properties of the NFTs owned by the specified account.
+	/// Supports pagination by specifying an optional start and number of nfts
+	/// to read.
+	fn properties_of_nfts_owned_by(
+		&self,
+		account_id: AccountId,
+		start: Option<u32>,
+		count: Option<u32>,
+		at: Option<BlockHash>,
+	) -> RpcResult<Vec<(NftId, Vec<PropertyInfo>)>>;
 
 	#[method(name = "collectionProperties")]
 	/// Get collection properties
@@ -243,7 +255,8 @@ where
 	pass_method!(nft_by_id(collection_id: CollectionId, nft_id: NftId) -> Option<NftInfo>);
 	pass_method!(account_tokens(account_id: AccountId, collection_id: CollectionId) -> Vec<NftId>);
 	pass_method!(nft_children(collection_id: CollectionId, nft_id: NftId) -> Vec<NftChild<CollectionId, NftId>>);
-	pass_method!(nfts_of_user(account_id: AccountId, start: Option<CollectionId>, count: Option<u32>) -> Vec<NftInfo>);
+	pass_method!(nfts_of_user(account_id: AccountId, start: Option<CollectionId>, count: Option<u32>) -> Vec<(NftId, NftInfo)>);
+	pass_method!(properties_of_nfts_owned_by(account_id: AccountId, start: Option<CollectionId>, count: Option<u32>) -> <Vec<(NftId, Vec<PropertyInfo>>)>);
 	pass_method!(
 		collection_properties(
 			collection_id: CollectionId,

@@ -531,10 +531,13 @@ impl_runtime_apis! {
 			Ok(children)
 		}
 
-		fn nfts_of_user(account_id: AccountId, start: Option<u32>, count: Option<u32>) -> pallet_rmrk_rpc_runtime_api::Result<Vec<InstanceInfoOf<Runtime>>> {
+		fn nfts_of_user(account_id: AccountId,
+			start: Option<u32>,
+			count: Option<u32>
+		) -> pallet_rmrk_rpc_runtime_api::Result<Vec<(NftId, InstanceInfoOf<Runtime>)>> {
 			let collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
-			let start = start.unwrap_or_default() as usize;
 
+			let start = start.unwrap_or_default() as usize;
 			let count = count.unwrap_or(collections.len().saturating_sub(start) as u32);
 
 			let mut nfts = vec![];
@@ -544,12 +547,37 @@ impl_runtime_apis! {
 				// Get more information about the nfts.
 				owned_nfts.for_each(|nft_id| {
 					if let Some(nft_info) = RmrkCore::nfts(collection_id, nft_id) {
-						nfts.push(nft_info);
+						nfts.push((nft_id, nft_info));
 					}
 				});
 			});
 
 			Ok(nfts)
+		}
+
+		fn properties_of_nfts_owned_by(
+			account_id: AccountId,
+			start: Option<u32>,
+			count: Option<u32>
+		) -> pallet_rmrk_rpc_runtime_api::Result<Vec<(NftId, Vec<PropertyInfoOf<Runtime>>)>>
+		{
+			let collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
+
+			let start = start.unwrap_or_default() as usize;
+			let count = count.unwrap_or(collections.len().saturating_sub(start) as u32);
+
+			let mut props_of_nfts = vec![];
+			collections.into_iter().skip(start).take(count as usize).for_each(|collection_id| {
+				// The nft ids owned by the `account_id` from the collection.
+				let owned_nfts = Uniques::owned_in_collection(&collection_id, &account_id);
+				// Get the properties for each of these NFTs.
+				owned_nfts.for_each(|nft_id| {
+					let nft_props: Vec<PropertyInfoOf<Runtime>> = RmrkCore::query_properties(collection_id, Some(nft_id), None).collect();
+					props_of_nfts.push((nft_id, nft_props));
+				});
+			});
+
+			Ok(props_of_nfts)
 		}
 
 		fn collection_properties(
