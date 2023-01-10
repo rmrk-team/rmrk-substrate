@@ -5,7 +5,7 @@ import type { RmrkTraitsBaseBaseInfo, RmrkTraitsCollectionCollectionInfo, RmrkTr
 import type { AugmentedRpc } from '@polkadot/rpc-core/types';
 import type { Metadata, StorageKey } from '@polkadot/types';
 import type { Bytes, HashMap, Json, Null, Option, Text, U256, U64, Vec, bool, u32, u64 } from '@polkadot/types-codec';
-import type { AnyNumber, Codec } from '@polkadot/types-codec/types';
+import type { AnyNumber, Codec, ITuple } from '@polkadot/types-codec/types';
 import type { ExtrinsicOrHash, ExtrinsicStatus } from '@polkadot/types/interfaces/author';
 import type { EpochAuthorship } from '@polkadot/types/interfaces/babe';
 import type { BeefySignedCommitment } from '@polkadot/types/interfaces/beefy';
@@ -422,6 +422,14 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        * Get NFT by collection id and NFT id
        **/
       nftById: AugmentedRpc<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Option<RmrkTraitsNftNftInfo>>>;
+      /**
+       * Get all of the NFTs of the provided account
+       **/
+      nftsOwnedBy: AugmentedRpc<(accountId: AccountId32, start: u32 | AnyNumber | Uint8Array, count: u32 | AnyNumber | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, RmrkTraitsNftNftInfo]>>>>;
+      /**
+       * Get all of the properties of the NFTs owned by the provided account.
+       **/
+      propertiesOfNftsOwnedBy: AugmentedRpc<(accountId: AccountId32, start: u32 | AnyNumber | Uint8Array, count: u32 | AnyNumber | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, Vec<RmrkTraitsNftNftChild>]>>>>;
       /**
        * Get NFT children
        **/
