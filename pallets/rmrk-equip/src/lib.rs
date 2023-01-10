@@ -254,7 +254,7 @@ pub mod pallet {
 		/// - `origin`: sender of the transaction
 		/// - `base_id`: base_id to change issuer of
 		/// - `new_issuer`: Base's new issuer
-    #[pallet::call_index(0)]
+		#[pallet::call_index(0)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::change_base_issuer())]
 		pub fn change_base_issuer(
 			origin: OriginFor<T>,
@@ -286,7 +286,7 @@ pub mod pallet {
 		/// - equipper: Parent NFT which will equip the item
 		/// - base: ID of the base which the item and equipper must each have a resource referencing
 		/// - slot: ID of the slot which the item and equipper must each have a resource referencing
-    #[pallet::call_index(1)]
+		#[pallet::call_index(1)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::equip())]
 		pub fn equip(
 			origin: OriginFor<T>,
@@ -326,7 +326,7 @@ pub mod pallet {
 		/// - unequipper: Parent NFT which will unequip the item
 		/// - base: ID of the base which the item and equipper must each have a resource referencing
 		/// - slot: ID of the slot which the item and equipper must each have a resource referencing
-    #[pallet::call_index(2)]
+		#[pallet::call_index(2)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::unequip())]
 		pub fn unequip(
 			origin: OriginFor<T>,
