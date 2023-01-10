@@ -75,10 +75,10 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_rmrk_core::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
-		type Event: From<Event<Self>> + IsType<<Self as frame_system::Config>::Event>;
+		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		/// The origin which may forcibly buy, sell, list/unlist, offer & withdraw offer on Tokens
-		type ProtocolOrigin: EnsureOrigin<Self::Origin>;
+		type ProtocolOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 
 		/// The market currency mechanism.
 		type Currency: ReservableCurrency<Self::AccountId>;
@@ -214,6 +214,7 @@ pub mod pallet {
 		/// 	- `collection_id` - Collection id of the RMRK NFT
 		/// 	- `nft_id` - NFT id of the RMRK NFT
 		/// 	- `amount` - Optional price at which buyer purchased at
+    #[pallet::call_index(0)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::buy())]
 		#[transactional]
 		pub fn buy(
@@ -238,6 +239,7 @@ pub mod pallet {
 		/// 	- `nft_id` - NFT id of the RMRK NFT
 		/// 	- `amount` - Price of the RMRK NFT
 		/// 	- `expires` - Optional BlockNumber for when the listing expires
+		#[pallet::call_index(1)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::list())]
 		#[transactional]
 		pub fn list(
@@ -292,6 +294,7 @@ pub mod pallet {
 		/// - `origin` - Account owner of the listed RMRK NFT
 		/// - `collection_id` - Collection id of the RMRK NFT
 		/// - `nft_id` - NFT id of the RMRK NFT
+		#[pallet::call_index(2)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::unlist())]
 		#[transactional]
 		pub fn unlist(
@@ -325,6 +328,7 @@ pub mod pallet {
 		/// - `nft_id` - NFT id of the RMRK NFT
 		/// - `amount` - Price of the RMRK NFT
 		/// - `expiration` - Expiration of the offer
+		#[pallet::call_index(3)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::make_offer())]
 		#[transactional]
 		pub fn make_offer(
@@ -377,6 +381,7 @@ pub mod pallet {
 		/// - `origin` - Account that wants to withdraw their offer
 		/// - `collection_id` - Collection id of the RMRK NFT
 		/// - `nft_id` - NFT id of the RMRK NFT
+		#[pallet::call_index(4)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::withdraw_offer())]
 		#[transactional]
 		pub fn withdraw_offer(
@@ -412,13 +417,14 @@ pub mod pallet {
 			)
 		}
 
-		// Accept an offer on a RMRK NFT from a potential buyer.
-		//
-		// Parameters:
-		// - `origin` - Account of the current owner that is accepting the offerer's offer
-		// - `collection_id` - Collection id of the RMRK NFT
-		// - `nft_id` - NFT id of the RMRK NFT
-		// - `offerer` - Account that made the offer
+		/// Accept an offer on a RMRK NFT from a potential buyer.
+		///
+		/// Parameters:
+		/// - `origin` - Account of the current owner that is accepting the offerer's offer
+		/// - `collection_id` - Collection id of the RMRK NFT
+		/// - `nft_id` - NFT id of the RMRK NFT
+		/// - `offerer` - Account that made the offer
+		#[pallet::call_index(5)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::accept_offer())]
 		#[transactional]
 		pub fn accept_offer(
@@ -486,7 +492,7 @@ impl<T: Config> Pallet<T> {
 			.ok_or(Error::<T>::TokenDoesNotExist)?;
 		ensure!(buyer != owner, Error::<T>::CannotBuyOwnToken);
 
-		let owner_origin = T::Origin::from(RawOrigin::Signed(owner.clone()));
+		let owner_origin = T::RuntimeOrigin::from(RawOrigin::Signed(owner.clone()));
 		let token_id = (collection_id, nft_id);
 
 		let list_price = if is_offer {
