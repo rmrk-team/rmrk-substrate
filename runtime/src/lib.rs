@@ -384,6 +384,9 @@ impl pallet_rmrk_market::Config for Runtime {
 	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
 	type Currency = Balances;
 	type MinimumOfferAmount = MinimumOfferAmount;
+	type WeightInfo = pallet_rmrk_market::weights::SubstrateWeight<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type Helper = RmrkBenchmark;
 }
 
 parameter_types! {
@@ -755,6 +758,7 @@ impl_runtime_apis! {
 			list_benchmark!(list, extra, pallet_timestamp, Timestamp);
 			list_benchmark!(list, extra, pallet_template, TemplateModule);
 			list_benchmark!(list, extra, pallet_rmrk_core, RmrkCore);
+			list_benchmark!(list, extra, pallet_rmrk_market, RmrkMarket);
 
 			let storage_info = AllPalletsWithSystem::storage_info();
 
@@ -794,6 +798,7 @@ impl_runtime_apis! {
 			add_benchmark!(params, batches, pallet_timestamp, Timestamp);
 			add_benchmark!(params, batches, pallet_template, TemplateModule);
 			add_benchmark!(params, batches, pallet_rmrk_core, RmrkCore);
+			add_benchmark!(params, batches, pallet_rmrk_market, RmrkMarket);
 
 			Ok(batches)
 		}

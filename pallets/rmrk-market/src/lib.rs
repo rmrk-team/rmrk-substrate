@@ -18,9 +18,18 @@ use sp_std::prelude::*;
 
 pub use pallet::*;
 
+pub mod weights;
+pub use weights::WeightInfo;
+
 use rmrk_traits::{AccountIdOrCollectionNftTuple, NftInfo};
 
 pub mod types;
+
+#[cfg(any(feature = "runtime-benchmarks"))]
+pub mod benchmarking;
+
+#[cfg(feature = "runtime-benchmarks")]
+use pallet_rmrk_core::BenchmarkHelper;
 
 #[cfg(test)]
 mod mock;
@@ -78,8 +87,11 @@ pub mod pallet {
 		#[pallet::constant]
 		type MinimumOfferAmount: Get<BalanceOf<Self>>;
 
-		// TODO: Weight values for this pallet
-		// type WeightInfo: WeightInfo;
+		/// Weight information for extrinsics in this pallet.
+		type WeightInfo: WeightInfo;
+
+		#[cfg(feature = "runtime-benchmarks")]
+		type Helper: BenchmarkHelper<Self::CollectionId, Self::ItemId>;
 	}
 
 	#[pallet::pallet]
@@ -203,7 +215,7 @@ pub mod pallet {
 		/// 	- `nft_id` - NFT id of the RMRK NFT
 		/// 	- `amount` - Optional price at which buyer purchased at
 		#[pallet::call_index(0)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::buy())]
 		#[transactional]
 		pub fn buy(
 			origin: OriginFor<T>,
@@ -228,7 +240,7 @@ pub mod pallet {
 		/// 	- `amount` - Price of the RMRK NFT
 		/// 	- `expires` - Optional BlockNumber for when the listing expires
 		#[pallet::call_index(1)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::list())]
 		#[transactional]
 		pub fn list(
 			origin: OriginFor<T>,
@@ -283,7 +295,7 @@ pub mod pallet {
 		/// - `collection_id` - Collection id of the RMRK NFT
 		/// - `nft_id` - NFT id of the RMRK NFT
 		#[pallet::call_index(2)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::unlist())]
 		#[transactional]
 		pub fn unlist(
 			origin: OriginFor<T>,
@@ -317,7 +329,7 @@ pub mod pallet {
 		/// - `amount` - Price of the RMRK NFT
 		/// - `expiration` - Expiration of the offer
 		#[pallet::call_index(3)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::make_offer())]
 		#[transactional]
 		pub fn make_offer(
 			origin: OriginFor<T>,
@@ -370,7 +382,7 @@ pub mod pallet {
 		/// - `collection_id` - Collection id of the RMRK NFT
 		/// - `nft_id` - NFT id of the RMRK NFT
 		#[pallet::call_index(4)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::withdraw_offer())]
 		#[transactional]
 		pub fn withdraw_offer(
 			origin: OriginFor<T>,
@@ -413,7 +425,7 @@ pub mod pallet {
 		/// - `nft_id` - NFT id of the RMRK NFT
 		/// - `offerer` - Account that made the offer
 		#[pallet::call_index(5)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::accept_offer())]
 		#[transactional]
 		pub fn accept_offer(
 			origin: OriginFor<T>,
