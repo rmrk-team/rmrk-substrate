@@ -423,14 +423,6 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        **/
       nftById: AugmentedRpc<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Option<RmrkTraitsNftNftInfo>>>;
       /**
-       * Get all of the NFTs of the provided account
-       **/
-      nftsOwnedBy: AugmentedRpc<(accountId: AccountId32 | string | Uint8Array, start: Option<u32> | null | u32, count: Option<u32> | null | u32, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, RmrkTraitsNftNftInfo]>>>>;
-      /**
-       * Get all of the properties of the NFTs owned by the provided account.
-       **/
-      propertiesOfNftsOwnedBy: AugmentedRpc<(accountId: AccountId32 | string | Uint8Array, start: Option<u32> | null | u32, count: Option<u32> | u32 | null, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, Vec<RmrkTraitsPropertyPropertyInfo>]>>>>;
-      /**
        * Get NFT children
        **/
       nftChildren: AugmentedRpc<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<RmrkTraitsNftNftChild>>>;
@@ -446,6 +438,14 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
        * Get NFT resources
        **/
       nftResources: AugmentedRpc<(collectionId: u32 | AnyNumber | Uint8Array, nftId: u32 | AnyNumber | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<RmrkTraitsResourceResourceInfo>>>;
+      /**
+       * Get all the nfts owned by a user
+       **/
+      nftsOwnedBy: AugmentedRpc<(accountId: AccountId32 | string | Uint8Array, start: Option<u32> | null | object | string | Uint8Array, count: Option<u32> | null | object | string | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, RmrkTraitsNftNftInfo]>>>>;
+      /**
+       * Get the properties of all the nfts owned by a user
+       **/
+      propertiesOfNftsOwnedBy: AugmentedRpc<(accountId: AccountId32 | string | Uint8Array, start: Option<u32> | null | object | string | Uint8Array, count: Option<u32> | null | object | string | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, Vec<RmrkTraitsPropertyPropertyInfo>]>>>>;
       /**
        * Get Base's theme names
        **/

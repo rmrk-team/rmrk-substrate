@@ -11,7 +11,7 @@ describe("integration test: get owned NFTs", () => {
 
   const alice = "//Alice";
 
-  it("fetch all NFTs owned by a user", async () => {
+  it("fetch all NFTs owned by a user in a specific collection", async () => {
     const owner = alice;
     const collectionMetadata = "aliceCollectionMetadata";
     const collectionMax = null;

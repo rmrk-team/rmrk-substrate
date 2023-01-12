@@ -30,6 +30,24 @@ export default {
       ],
       "Option<RmrkTraitsNftNftInfo>"
     ),
+    nftsOwnedBy: fn(
+      "Get all the nfts owned by a user",
+      [
+        { name: "accountId", type: "AccountId32" },
+        { name: "start", type: "Option<u32>" },
+        { name: "count", type: "Option<u32>" },
+      ],
+      "Vec<(u32, u32, RmrkTraitsNftNftInfo)>"
+    ),
+    propertiesOfNftsOwnedBy: fn(
+      "Get the properties of all the nfts owned by a user",
+      [
+        { name: "accountId", type: "AccountId32" },
+        { name: "start", type: "Option<u32>" },
+        { name: "count", type: "Option<u32>" },
+      ],
+      "Vec<(u32, u32, Vec<RmrkTraitsPropertyPropertyInfo>)>"
+    ),
     accountTokens: fn(
       "Get tokens owned by an account in a collection",
       [
