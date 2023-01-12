@@ -1,5 +1,5 @@
 import { ApiPromise } from "@polkadot/api";
-import type { Option, Vec, u32 } from "@polkadot/types-codec";
+import { Option, Vec, u32 } from "@polkadot/types-codec";
 import { ITuple } from "@polkadot/types-codec/types";
 import type {
   RmrkTraitsCollectionCollectionInfo as Collection,
@@ -48,8 +48,8 @@ export async function getNft(
 export async function getOwnedNfts(
   api: ApiPromise,
   ownerUri: string,
-  start: u32 | null,
-  count: u32 | null,
+  start: string | null,
+  count: string | null,
 ): Promise<Vec<ITuple<[u32, u32, Nft]>>> {
   const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
   const owner = privateKey(ownerUri, Number(ss58Format));
@@ -60,8 +60,8 @@ export async function getOwnedNfts(
 export async function getPropertiesOfOwnedNfts(
   api: ApiPromise,
   ownerUri: string,
-  start: u32 | null = null,
-  count: u32 | null = null,
+  start: string | null = null,
+  count: string | null = null,
 ): Promise<Vec<ITuple<[u32, u32, Vec<Property>]>>> {
   const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
   const owner = privateKey(ownerUri, Number(ss58Format));

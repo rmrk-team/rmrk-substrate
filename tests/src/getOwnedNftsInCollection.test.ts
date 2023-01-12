@@ -3,7 +3,7 @@ import { getApiConnection } from "./substrate/substrate-api";
 import { getOwnedNftsInCollection } from "./util/fetch";
 import { mintNft, createCollection } from "./util/tx";
 
-describe("integration test: get owned NFTs", () => {
+describe("integration test: get owned NFTs inside a collection", () => {
   let api: any;
   before(async () => {
     api = await getApiConnection();
