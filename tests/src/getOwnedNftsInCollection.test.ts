@@ -1,6 +1,6 @@
 import { expect } from "chai";
 import { getApiConnection } from "./substrate/substrate-api";
-import { getOwnedNfts } from "./util/fetch";
+import { getOwnedNftsInCollection } from "./util/fetch";
 import { mintNft, createCollection } from "./util/tx";
 
 describe("integration test: get owned NFTs", () => {
@@ -62,12 +62,12 @@ describe("integration test: get owned NFTs", () => {
       ),
     ];
 
-    const ownedNfts = await getOwnedNfts(api, alice, null, null);
+    const ownedNfts = await getOwnedNftsInCollection(api, alice, collectionId);
 
     const isFound = (nftId: number) => {
       return (
-        ownedNfts.find((ownedNft) => {
-          return ownedNft[0].toNumber() === nftId;
+        ownedNfts.find((ownedNftId) => {
+          return ownedNftId === nftId;
         }) !== undefined
       );
     };

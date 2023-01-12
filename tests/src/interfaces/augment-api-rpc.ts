@@ -425,11 +425,11 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * Get all of the NFTs of the provided account
        **/
-      nftsOwnedBy: AugmentedRpc<(accountId: AccountId32, start: u32 | AnyNumber | Uint8Array, count: u32 | AnyNumber | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, RmrkTraitsNftNftInfo]>>>>;
+      nftsOwnedBy: AugmentedRpc<(accountId: AccountId32 | string | Uint8Array, start: Option<u32> | null | u32, count: Option<u32> | null | u32, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, RmrkTraitsNftNftInfo]>>>>;
       /**
        * Get all of the properties of the NFTs owned by the provided account.
        **/
-      propertiesOfNftsOwnedBy: AugmentedRpc<(accountId: AccountId32, start: u32 | AnyNumber | Uint8Array, count: u32 | AnyNumber | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, Vec<RmrkTraitsNftNftChild>]>>>>;
+      propertiesOfNftsOwnedBy: AugmentedRpc<(accountId: AccountId32 | string | Uint8Array, start: Option<u32> | null | u32, count: Option<u32> | u32 | null, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, Vec<RmrkTraitsPropertyPropertyInfo>]>>>>;
       /**
        * Get NFT children
        **/
