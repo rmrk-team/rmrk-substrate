@@ -14,6 +14,9 @@ use sp_runtime::traits::StaticLookup;
 
 pub use pallet::*;
 
+pub mod weights;
+pub use weights::WeightInfo;
+
 use rmrk_traits::{
 	base::EquippableOperation,
 	primitives::{BaseId, PartId, ResourceId, SlotId},
@@ -29,6 +32,12 @@ mod mock;
 
 #[cfg(test)]
 mod tests;
+
+#[cfg(feature = "runtime-benchmarks")]
+pub mod benchmarking;
+
+#[cfg(feature = "runtime-benchmarks")]
+use pallet_rmrk_core::BenchmarkHelper;
 
 // Re-export pallet items so that they can be accessed from the crate namespace.
 pub use pallet::*;
@@ -71,6 +80,12 @@ pub mod pallet {
 		/// Maximum number of Properties allowed for any Theme
 		#[pallet::constant]
 		type MaxCollectionsEquippablePerPart: Get<u32>;
+
+		/// Weight information for extrinsics in this pallet.
+		type WeightInfo: WeightInfo;
+
+		#[cfg(feature = "runtime-benchmarks")]
+		type Helper: BenchmarkHelper<Self::CollectionId, Self::ItemId>;
 	}
 
 	#[pallet::storage]
@@ -240,7 +255,7 @@ pub mod pallet {
 		/// - `base_id`: base_id to change issuer of
 		/// - `new_issuer`: Base's new issuer
 		#[pallet::call_index(0)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::change_base_issuer())]
 		pub fn change_base_issuer(
 			origin: OriginFor<T>,
 			base_id: BaseId,
@@ -251,8 +266,6 @@ pub mod pallet {
 			ensure!(base.issuer == sender, Error::<T>::PermissionError);
 			let new_owner = T::Lookup::lookup(new_issuer)?;
 
-			ensure!(Bases::<T>::contains_key(base_id), Error::<T>::NoAvailableBaseId);
-
 			let (new_owner, base_id) = Self::base_change_issuer(base_id, new_owner)?;
 
 			Self::deposit_event(Event::BaseIssuerChanged {
@@ -262,6 +275,7 @@ pub mod pallet {
 			});
 			Ok(())
 		}
+
 		/// Equips a child NFT's resource to a parent's slot, if all are available.
 		/// Equipping operations are maintained inside the Equippings storage.
 		/// Modeled after [equip interaction](https://github.com/rmrk-team/rmrk-spec/blob/master/standards/rmrk2.0.0/interactions/equip.md)
@@ -273,7 +287,7 @@ pub mod pallet {
 		/// - base: ID of the base which the item and equipper must each have a resource referencing
 		/// - slot: ID of the slot which the item and equipper must each have a resource referencing
 		#[pallet::call_index(1)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::equip())]
 		pub fn equip(
 			origin: OriginFor<T>,
 			item: (T::CollectionId, T::ItemId),
@@ -313,7 +327,7 @@ pub mod pallet {
 		/// - base: ID of the base which the item and equipper must each have a resource referencing
 		/// - slot: ID of the slot which the item and equipper must each have a resource referencing
 		#[pallet::call_index(2)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::unequip())]
 		pub fn unequip(
 			origin: OriginFor<T>,
 			item: (T::CollectionId, T::ItemId),
@@ -345,7 +359,7 @@ pub mod pallet {
 		/// - part_id: The Slot Part whose Equippable List is being updated
 		/// - equippables: The list of equippables that will override the current Equippaables list
 		#[pallet::call_index(3)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::equippable())]
 		pub fn equippable(
 			origin: OriginFor<T>,
 			base_id: BaseId,
@@ -375,7 +389,7 @@ pub mod pallet {
 		/// - part_id: The Slot Part whose Equippable List is being updated
 		/// - equippable: The equippable that will be added to the current Equippaables list
 		#[pallet::call_index(4)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::equippable_add())]
 		pub fn equippable_add(
 			origin: OriginFor<T>,
 			base_id: BaseId,
@@ -403,7 +417,7 @@ pub mod pallet {
 		/// - part_id: The Slot Part whose Equippable List is being updated
 		/// - equippable: The equippable that will be removed from the current Equippaables list
 		#[pallet::call_index(5)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::equippable_remove())]
 		pub fn equippable_remove(
 			origin: OriginFor<T>,
 			base_id: BaseId,
@@ -437,7 +451,7 @@ pub mod pallet {
 		///   - value: arbitrary BoundedString, defined by client
 		///   - inherit: optional bool
 		#[pallet::call_index(6)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::theme_add())]
 		pub fn theme_add(
 			origin: OriginFor<T>,
 			base_id: BaseId,
@@ -471,7 +485,7 @@ pub mod pallet {
 		/// - parts: array of Fixed and Slot parts composing the base, confined in length by
 		///   PartsLimit
 		#[pallet::call_index(7)]
-		#[pallet::weight(10_000 + T::DbWeight::get().reads_writes(1,1).ref_time())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::create_base())]
 		pub fn create_base(
 			origin: OriginFor<T>,
 			base_type: BoundedVec<u8, T::StringLimit>,

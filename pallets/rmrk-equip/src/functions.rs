@@ -142,7 +142,7 @@ impl<T: Config>
 	}
 
 	/// Implementation of the base_change_issuer function for the Base trait
-	/// Called by the change_base_issuer extrinsic to change the issuer of a base
+	/// called by the change_base_issuer extrinsic to change the issuer of a base
 	///
 	/// Parameters:
 	/// - base_id: The Base ID to change the issuer of
@@ -275,7 +275,7 @@ impl<T: Config>
 			Error::<T>::NoResourceForThisBaseFoundOnNft
 		);
 
-		// The item being equipped must be have a resource that is equippable into that base.slot
+		// The item being equipped must have a resource that is equippable into that base.slot
 		ensure!(
 			pallet_rmrk_core::Pallet::<T>::equippable_slots((
 				item_collection_id,
