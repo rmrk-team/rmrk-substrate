@@ -483,8 +483,8 @@ pub mod pallet {
 		/// - `recipient`: Receiver of the royalty
 		/// - `royalty`: Permillage reward from each trade for the Recipient
 		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
-		#[pallet::call_index(1)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::mint_nft_directly_to_nft())]
+    #[pallet::call_index(1)]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::mint_nft_directly_to_nft(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn mint_nft_directly_to_nft(
 			origin: OriginFor<T>,
@@ -582,8 +582,8 @@ pub mod pallet {
 		/// - `nft_id`: nft id of the nft to be transferred
 		/// - `new_owner`: new owner of the nft which can be either an account or a NFT
 		#[pallet::call_index(5)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::send_to_account().max(<T as
-		pallet::Config>::WeightInfo::send_to_nft()))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::send_to_account(T::NestingBudget::get()).max(<T as
+		pallet::Config>::WeightInfo::send_to_nft(T::NestingBudget::get())))]
 		#[transactional]
 		pub fn send(
 			origin: OriginFor<T>,
@@ -598,6 +598,7 @@ pub mod pallet {
 
 			Ok(())
 		}
+
 		/// Accepts an NFT sent from another account to self or owned NFT
 		///
 		/// Parameters:
@@ -607,7 +608,7 @@ pub mod pallet {
 		/// - `new_owner`: either origin's account ID or origin-owned NFT, whichever the NFT was
 		///   sent to
 		#[pallet::call_index(6)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::accept_nft())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::accept_nft(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn accept_nft(
 			origin: OriginFor<T>,
@@ -736,7 +737,7 @@ pub mod pallet {
 
 		/// Create basic resource
 		#[pallet::call_index(11)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::add_basic_resource())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::add_basic_resource(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn add_basic_resource(
 			origin: OriginFor<T>,
@@ -774,7 +775,7 @@ pub mod pallet {
 
 		/// Create composable resource
 		#[pallet::call_index(12)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::add_composable_resource())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::add_composable_resource(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn add_composable_resource(
 			origin: OriginFor<T>,
@@ -813,7 +814,7 @@ pub mod pallet {
 
 		/// Create slot resource
 		#[pallet::call_index(13)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::add_slot_resource())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::add_slot_resource(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn add_slot_resource(
 			origin: OriginFor<T>,
@@ -868,7 +869,7 @@ pub mod pallet {
 
 		/// accept the addition of a new resource to an existing NFT
 		#[pallet::call_index(15)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::accept_resource())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::accept_resource(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn accept_resource(
 			origin: OriginFor<T>,
@@ -890,7 +891,7 @@ pub mod pallet {
 
 		/// remove resource
 		#[pallet::call_index(16)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::remove_resource())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::remove_resource(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn remove_resource(
 			origin: OriginFor<T>,
@@ -915,7 +916,7 @@ pub mod pallet {
 
 		/// accept the removal of a resource of an existing NFT
 		#[pallet::call_index(17)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::accept_resource_removal())]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::accept_resource_removal(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn accept_resource_removal(
 			origin: OriginFor<T>,
@@ -936,7 +937,7 @@ pub mod pallet {
 
 		/// set a different order of resource priority
 		#[pallet::call_index(18)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_priority(T::MaxPriorities::get()))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::set_priority(T::MaxPriorities::get(), T::NestingBudget::get()))]
 		pub fn set_priority(
 			origin: OriginFor<T>,
 			collection_id: T::CollectionId,
