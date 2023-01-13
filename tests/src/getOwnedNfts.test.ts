@@ -162,8 +162,7 @@ describe("integration test: get owned NFTs", () => {
 
   it("fetch all NFTs owned by a user over multiple collections providing count", async () => {
     // We should only get the NFTs from the first two collections since we are
-    // setting the count to "2". In this case we are getting two NFTs from the
-    // first and one from the second collection.
+    // setting the count to "2".
     const ownedNfts = await getOwnedNfts(api, alice, null, "2");
     console.log(ownedNfts);
     expect(ownedNfts.length === 3, "Three NFTs should be returned from the first and second collection.").to.be
