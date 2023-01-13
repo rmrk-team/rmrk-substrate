@@ -20,14 +20,18 @@ function checkMetadata(nft: any, nftMetadata: string, nftId: number) {
 
 describe("integration test: get owned NFTs", () => {
   let api: any;
-  let collections: any;
-  let collectionId1: any;
-  let collectionId2: any;
-  let collectionId3: any;
-  let ids: Array<{nftId: number, collectionId: any}>;
+  let collections: Array<{id: number, metadata: string, collectionMax: any, symbol: string}>;
+  let nfts: Array<{nftId: number, collectionId: any}>;
+
+  const alice = "//Alice";
+  const owner = alice;
+  const recipientUri = null;
+  const royalty = null;
+  const nftMetadata = "alice-NFT-metadata";
 
   before(async () => {
     api = await getApiConnection();
+
     collections = [
       {
         id: 1,
@@ -48,92 +52,42 @@ describe("integration test: get owned NFTs", () => {
         symbol: "Col3Sym",
       }
     ];
-    collectionId1 = await createCollection(
-      api,
-      collections[0].id,
-      alice,
-      collections[0].metadata,
-      collections[0].collectionMax,
-      collections[0].symbol
-    );
-
-    collectionId2 = await createCollection(
-      api,
-      collections[1].id,
-      alice,
-      collections[1].metadata,
-      collections[1].collectionMax,
-      collections[1].symbol
-    );
-
-    collectionId3 = await createCollection(
-      api,
-      collections[2].id,
-      alice,
-      collections[2].metadata,
-      collections[2].collectionMax,
-      collections[2].symbol
-    );
-
-    await mintNft(
-      api,
-      0,
-      alice,
-      owner,
-      collectionId1,
-      nftMetadata + "-0",
-      recipientUri,
-      royalty
-    );
-    await mintNft(
-      api,
-      1,
-      alice,
-      owner,
-      collectionId1,
-      nftMetadata + "-1",
-      recipientUri,
-      royalty
-    );
-    await mintNft(
-      api,
-      0,
-      alice,
-      owner,
-      collectionId2,
-      nftMetadata + "-0",
-      recipientUri,
-      royalty
-    );
-    await mintNft(
-      api,
-      0,
-      alice,
-      owner,
-      collectionId3,
-      nftMetadata + "-0",
-      recipientUri,
-      royalty
-    );
-
-    ids = [
+    nfts = [
       {nftId: 0, collectionId: collections[0].id}, 
       {nftId: 1, collectionId: collections[0].id}, 
       {nftId: 0, collectionId: collections[1].id},
       {nftId: 0, collectionId: collections[2].id}
     ];
-  });
+    
+    for(const collection of collections) {
+      await createCollection(
+        api,
+        collection.id,
+        alice,
+        collection.metadata,
+        collection.collectionMax,
+        collection.symbol
+      );
+    }
 
-  const alice = "//Alice";
-  const owner = alice;
-  const recipientUri = null;
-  const royalty = null;
-  const nftMetadata = "alice-NFT-metadata";
+    for(const nft of nfts) {
+      await mintNft(
+        api,
+        nft.nftId,
+        alice,
+        owner,
+        nft.collectionId,
+        nftMetadata + `-${nft.nftId}`,
+        recipientUri,
+        royalty
+      );
+    }
+  });
 
   it("fetch all NFTs owned by a user over multiple collections", async () => {
     const ownedNfts = await getOwnedNfts(api, alice, null, null);
 
-    ids.forEach(({nftId, collectionId}) => {
+    nfts.forEach(({nftId, collectionId}) => {
       const nft = ownedNfts.find((ownedNft) => {
         return ownedNft[0].toNumber() === collectionId && ownedNft[1].toNumber() === nftId;
       });
@@ -150,7 +104,6 @@ describe("integration test: get owned NFTs", () => {
     // should only get the NFTs from the rest of the collections, in this case
     // the NFTs from collection 2 and 3.
     const ownedNfts = await getOwnedNfts(api, alice, "1", null);
-    console.log(ownedNfts);
     expect(ownedNfts.length === 2, "Only two NFTs should be returned since we skipped the first collection.").to.be
       .true;
 
@@ -164,7 +117,6 @@ describe("integration test: get owned NFTs", () => {
     // We should only get the NFTs from the first two collections since we are
     // setting the count to "2".
     const ownedNfts = await getOwnedNfts(api, alice, null, "2");
-    console.log(ownedNfts);
     expect(ownedNfts.length === 3, "Three NFTs should be returned from the first and second collection.").to.be
       .true;
 
@@ -180,7 +132,6 @@ describe("integration test: get owned NFTs", () => {
     // from one collection, i.e. the collection following the first one, in this
     // case collection number 2.
     const ownedNfts = await getOwnedNfts(api, alice, "1", "1");
-    console.log(ownedNfts);
     expect(ownedNfts.length === 1, "Only one NFT should be returned.").to.be
       .true;
 

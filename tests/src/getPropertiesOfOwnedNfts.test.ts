@@ -5,14 +5,12 @@ import { mintNft, createCollection, setNftProperty } from "./util/tx";
 
 describe("integration test: get properties of owned NFTs", () => {
   let api: any;
-  let collections: any;
-  let collectionId1: any;
-  let collectionId2: any;
-  let collectionId3: any;
-  let properties: Array<{nftId: number, collectionId: any, key: string, value: string}>;
+  let collections: Array<{id: number, metadata: string, collectionMax: any, symbol: string}>;
+  let nftProperties: Array<{nftId: number, collectionId: any, key: string, value: string}>;
 
   before(async () => {
     api = await getApiConnection();
+
     collections = [
       {
         id: 1,
@@ -34,7 +32,7 @@ describe("integration test: get properties of owned NFTs", () => {
       }
     ];
 
-    properties = [
+    nftProperties = [
       {
         nftId: 0, 
         collectionId: collections[0].id,
@@ -61,106 +59,38 @@ describe("integration test: get properties of owned NFTs", () => {
       }
     ];
 
-    collectionId1 = await createCollection(
-      api,
-      collections[0].id,
-      alice,
-      collections[0].metadata,
-      collections[0].collectionMax,
-      collections[0].symbol
-    );
+    for(const collection of collections) {
+      await createCollection(
+        api,
+        collection.id,
+        alice,
+        collection.metadata,
+        collection.collectionMax,
+        collection.symbol
+      );
+    }
 
-    collectionId2 = await createCollection(
-      api,
-      collections[1].id,
-      alice,
-      collections[1].metadata,
-      collections[1].collectionMax,
-      collections[1].symbol
-    );
+    for(const nftProps of nftProperties) {
+      await mintNft(
+        api,
+        nftProps.nftId,
+        alice,
+        owner,
+        nftProps.collectionId,
+        nftMetadata + `-${nftProps.nftId}`,
+        recipientUri,
+        royalty
+      );
 
-    collectionId3 = await createCollection(
-      api,
-      collections[2].id,
-      alice,
-      collections[2].metadata,
-      collections[2].collectionMax,
-      collections[2].symbol
-    );
-
-    await mintNft(
-      api,
-      0,
-      alice,
-      owner,
-      collectionId1,
-      nftMetadata + "-0",
-      recipientUri,
-      royalty
-    );
-    await mintNft(
-      api,
-      1,
-      alice,
-      owner,
-      collectionId1,
-      nftMetadata + "-1",
-      recipientUri,
-      royalty
-    );
-    await mintNft(
-      api,
-      0,
-      alice,
-      owner,
-      collectionId2,
-      nftMetadata + "-0",
-      recipientUri,
-      royalty
-    );
-    await mintNft(
-      api,
-      0,
-      alice,
-      owner,
-      collectionId3,
-      nftMetadata + "-0",
-      recipientUri,
-      royalty
-    );
-
-    await setNftProperty(
-      api,
-      alice,
-      collectionId1,
-      0,
-      properties[0].key,
-      properties[0].value,
-    );
-    await setNftProperty(
-      api,
-      alice,
-      collectionId1,
-      1,
-      properties[1].key,
-      properties[1].value,
-    );
-    await setNftProperty(
-      api,
-      alice,
-      collectionId2,
-      0,
-      properties[2].key,
-      properties[2].value,
-    );
-    await setNftProperty(
-      api,
-      alice,
-      collectionId3,
-      0,
-      properties[3].key,
-      properties[3].value,
-    );
+      await setNftProperty(
+        api,
+        alice,
+        nftProps.collectionId,
+        nftProps.nftId,
+        nftProps.key,
+        nftProps.value,
+      );
+    }
   });
 
   const alice = "//Alice";
@@ -172,7 +102,7 @@ describe("integration test: get properties of owned NFTs", () => {
   it("fetch all the properites of the NFTs owned by a user over multiple collections", async () => {
     const ownedNfts = await getPropertiesOfOwnedNfts(api, alice, null, null);
 
-    properties.forEach(({nftId, collectionId, key, value}) => {
+    nftProperties.forEach(({nftId, collectionId, key, value}) => {
       const nft = ownedNfts.find((ownedNft) => {
         return ownedNft[0].toNumber() === collectionId && ownedNft[1].toNumber() === nftId;
       });
