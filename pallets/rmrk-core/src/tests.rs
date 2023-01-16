@@ -1936,6 +1936,11 @@ fn remove_properties_with_internal_works() {
 		// `Origin::root()` removes all properties
 		assert_ok!(RMRKCore::do_remove_properties(0, Some(0)));
 		assert_eq!(RMRKCore::query_properties(0, Some(0), None).count(), 0);
+
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertiesRemoved {
+			collection_id: 0,
+			maybe_nft_id: Some(0),
+		}));
 	});
 }
 
