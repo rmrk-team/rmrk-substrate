@@ -341,6 +341,10 @@ pub mod pallet {
 			maybe_nft_id: Option<T::ItemId>,
 			key: KeyLimitOf<T>,
 		},
+		PropertiesRemoved {
+			collection_id: T::CollectionId,
+			maybe_nft_id: Option<T::ItemId>,
+		},
 		CollectionLocked {
 			issuer: T::AccountId,
 			collection_id: T::CollectionId,
@@ -483,7 +487,7 @@ pub mod pallet {
 		/// - `recipient`: Receiver of the royalty
 		/// - `royalty`: Permillage reward from each trade for the Recipient
 		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
-    #[pallet::call_index(1)]
+		#[pallet::call_index(1)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::mint_nft_directly_to_nft(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn mint_nft_directly_to_nft(
