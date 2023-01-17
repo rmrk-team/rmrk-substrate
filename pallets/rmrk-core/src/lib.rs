@@ -136,7 +136,7 @@ pub mod pallet {
 		#[pallet::constant]
 		type MaxPriorities: Get<u32>;
 
-		/// The maximum number of properties each item can have
+		/// The maximum number of properties each can have
 		#[pallet::constant]
 		type PropertiesLimit: Get<u32>;
 
@@ -552,7 +552,7 @@ pub mod pallet {
 
 		/// burn nft
 		#[pallet::call_index(3)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::burn_nft(T::NestingBudget::get()))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::burn_nft(T::NestingBudget::get(), T::PropertiesLimit::get()))]
 		#[transactional]
 		pub fn burn_nft(
 			origin: OriginFor<T>,

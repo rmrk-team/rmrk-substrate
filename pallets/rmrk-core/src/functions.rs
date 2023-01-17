@@ -582,6 +582,8 @@ impl<T: Config>
 
 		// Remove all of the properties of the NFT
 		Self::do_remove_properties(collection_id, Some(nft_id), T::PropertiesLimit::get())?;
+		// Remove the lock from the NFT if it was locked
+		Lock::<T>::remove((&collection_id, nft_id));
 
 		let _multi_removal_results = Resources::<T>::clear_prefix(
 			(collection_id, nft_id),
@@ -608,8 +610,11 @@ impl<T: Config>
 
 		Self::deposit_event(Event::NFTBurned { owner, nft_id, collection_id });
 
-		Ok(Some(<T as pallet::Config>::WeightInfo::burn_nft(budget.get_budget_consumed_value()))
-			.into())
+		Ok(Some(<T as pallet::Config>::WeightInfo::burn_nft(
+			budget.get_budget_consumed_value(),
+			T::PropertiesLimit::get(),
+		))
+		.into())
 	}
 
 	fn nft_send(
