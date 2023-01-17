@@ -113,12 +113,9 @@ impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId, T::Collec
 	fn do_remove_properties(
 		collection_id: T::CollectionId,
 		maybe_nft_id: Option<T::ItemId>,
+		limit: u32,
 	) -> sp_runtime::DispatchResult {
-		let _ = Properties::<T>::clear_prefix(
-			(&collection_id, maybe_nft_id),
-			Properties::<T>::iter_prefix((collection_id, maybe_nft_id)).count() as u32,
-			None,
-		);
+		let _ = Properties::<T>::clear_prefix((&collection_id, maybe_nft_id), limit, None);
 
 		Self::deposit_event(Event::PropertiesRemoved { collection_id, maybe_nft_id });
 		Ok(())
@@ -584,7 +581,7 @@ impl<T: Config>
 		Nfts::<T>::remove(collection_id, nft_id);
 
 		// Remove all of the properties of the NFT
-		Self::do_remove_properties(collection_id, Some(nft_id))?;
+		Self::do_remove_properties(collection_id, Some(nft_id), T::PropertiesLimit::get())?;
 
 		let _multi_removal_results = Resources::<T>::clear_prefix(
 			(collection_id, nft_id),

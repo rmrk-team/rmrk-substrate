@@ -61,5 +61,6 @@ pub trait Property<KeyLimit, ValueLimit, AccountId, CollectionId, NftId> {
 	fn do_remove_properties(
 		collection_id: CollectionId,
 		maybe_nft_id: Option<NftId>,
+		limit: u32,
 	) -> DispatchResult;
 }

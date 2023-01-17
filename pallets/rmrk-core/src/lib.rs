@@ -136,6 +136,10 @@ pub mod pallet {
 		#[pallet::constant]
 		type MaxPriorities: Get<u32>;
 
+		/// The maximum number of properties each item can have
+		#[pallet::constant]
+		type PropertiesLimit: Get<u32>;
+
 		/// The maximum nesting allowed in the pallet extrinsics.
 		#[pallet::constant]
 		type NestingBudget: Get<u32>;
