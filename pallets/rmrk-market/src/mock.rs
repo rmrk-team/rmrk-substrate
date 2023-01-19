@@ -101,6 +101,7 @@ parameter_types! {
 	pub const MaxPriorities: u32 = 3;
 	pub const CollectionSymbolLimit: u32 = 100;
 	pub const MaxResourcesOnMint: u32 = 3;
+	pub const PropertiesLimit: u32 = 15;
 	pub const NestingBudget: u32 = 10;
 }
 
@@ -115,6 +116,7 @@ impl pallet_rmrk_core::Config for Test {
 	type MaxPriorities = MaxPriorities;
 	type CollectionSymbolLimit = CollectionSymbolLimit;
 	type MaxResourcesOnMint = MaxResourcesOnMint;
+	type PropertiesLimit = PropertiesLimit;
 	type NestingBudget = NestingBudget;
 	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Test>;
 	#[cfg(feature = "runtime-benchmarks")]

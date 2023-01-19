@@ -998,10 +998,14 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn set_lock(nft: (T::CollectionId, T::ItemId), lock_status: bool) -> bool {
-		Lock::<T>::mutate(nft, |lock| {
-			*lock = lock_status;
-			*lock
-		});
+		if lock_status {
+			Lock::<T>::mutate(nft, |lock| {
+				*lock = lock_status;
+				*lock
+			});
+		} else {
+			Lock::<T>::remove(nft);
+		}
 		lock_status
 	}
 
