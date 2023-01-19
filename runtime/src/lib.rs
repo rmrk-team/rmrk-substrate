@@ -407,6 +407,7 @@ impl pallet_rmrk_equip::Config for Runtime {
 	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
 	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
 	type WeightInfo = pallet_rmrk_equip::weights::SubstrateWeight<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = RmrkBenchmark;
 }
 
