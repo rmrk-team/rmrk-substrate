@@ -116,6 +116,7 @@ pub mod pallet {
 	use super::*;
 	use frame_support::{dispatch::DispatchResult, pallet_prelude::*};
 	use frame_system::pallet_prelude::*;
+	use rmrk_traits::property::PropertyValue;
 
 	/// Configure the pallet by specifying the parameters and types on which it depends.
 	#[pallet::config]
@@ -258,7 +259,8 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, Option<T::ItemId>>,
 			NMapKey<Blake2_128Concat, KeyLimitOf<T>>,
 		),
-		ValueLimitOf<T>,
+		// ValueLimitOf<T>,
+		rmrk_traits::property::PropertyValue<ValueLimitOf<T>>,
 		OptionQuery,
 	>;
 
@@ -334,7 +336,7 @@ pub mod pallet {
 			collection_id: T::CollectionId,
 			maybe_nft_id: Option<T::ItemId>,
 			key: KeyLimitOf<T>,
-			value: ValueLimitOf<T>,
+			value: PropertyValue<ValueLimitOf<T>>,
 		},
 		PropertyRemoved {
 			collection_id: T::CollectionId,
@@ -449,7 +451,7 @@ pub mod pallet {
 			{
 				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
 			} else {
-				return Err(Error::<T>::CollectionUnknown.into())
+				return Err(Error::<T>::CollectionUnknown.into());
 			}
 
 			// Extract intended owner or default to sender
@@ -483,7 +485,7 @@ pub mod pallet {
 		/// - `recipient`: Receiver of the royalty
 		/// - `royalty`: Permillage reward from each trade for the Recipient
 		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
-    #[pallet::call_index(1)]
+		#[pallet::call_index(1)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::mint_nft_directly_to_nft(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn mint_nft_directly_to_nft(
@@ -505,7 +507,7 @@ pub mod pallet {
 			{
 				ensure!(collection_issuer == sender, Error::<T>::NoPermission);
 			} else {
-				return Err(Error::<T>::CollectionUnknown.into())
+				return Err(Error::<T>::CollectionUnknown.into());
 			}
 
 			// Mint NFT for RMRK storage
@@ -628,8 +630,9 @@ pub mod pallet {
 				Some(owner) => {
 					let owner_account =
 						match Pallet::<T>::decode_nft_account_id::<T::AccountId>(owner.clone()) {
-							Some((cid, nid)) =>
-								AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid),
+							Some((cid, nid)) => {
+								AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid)
+							},
 							None => AccountIdOrCollectionNftTuple::AccountId(owner),
 						};
 					ensure!(new_owner == owner_account, Error::<T>::CannotAcceptToNewOwner)
@@ -708,13 +711,24 @@ pub mod pallet {
 			collection_id: T::CollectionId,
 			maybe_nft_id: Option<T::ItemId>,
 			key: KeyLimitOf<T>,
-			value: ValueLimitOf<T>,
+			value: rmrk_traits::property::PropertyValue<ValueLimitOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			Self::property_set(sender, collection_id, maybe_nft_id, key.clone(), value.clone())?;
+			let actual_value = Self::property_set(
+				sender,
+				collection_id,
+				maybe_nft_id,
+				key.clone(),
+				value.clone(),
+			)?;
 
-			Self::deposit_event(Event::PropertySet { collection_id, maybe_nft_id, key, value });
+			Self::deposit_event(Event::PropertySet {
+				collection_id,
+				maybe_nft_id,
+				key,
+				value: actual_value,
+			});
 			Ok(())
 		}
 		/// lock collection

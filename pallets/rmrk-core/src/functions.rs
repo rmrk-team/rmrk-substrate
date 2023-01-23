@@ -17,7 +17,7 @@ use sp_runtime::{
 	ArithmeticError,
 };
 
-use rmrk_traits::{budget::Budget, misc::TransferHooks};
+use rmrk_traits::{budget::Budget, misc::TransferHooks, property::PropertyValue};
 use sp_std::collections::btree_set::BTreeSet;
 
 // Randomness to generate NFT virtual accounts
@@ -46,7 +46,11 @@ impl<T: Config>
 			priority_index += 1;
 		}
 		Self::deposit_event(Event::PrioritySet { collection_id, nft_id });
-		Ok(Some(<T as pallet::Config>::WeightInfo::set_priority(priority_index, T::NestingBudget::get())).into())
+		Ok(Some(<T as pallet::Config>::WeightInfo::set_priority(
+			priority_index,
+			T::NestingBudget::get(),
+		))
+		.into())
 	}
 }
 
@@ -58,23 +62,53 @@ impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId, T::Collec
 		collection_id: T::CollectionId,
 		maybe_nft_id: Option<T::ItemId>,
 		key: KeyLimitOf<T>,
-		value: ValueLimitOf<T>,
-	) -> DispatchResult {
+		value: PropertyValue<ValueLimitOf<T>>,
+	) -> Result<PropertyValue<ValueLimitOf<T>>, DispatchError> {
 		let collection =
-			Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
-		if let Some(nft_id) = &maybe_nft_id {
-			// Check NFT lock status
-			ensure!(
-				!Pallet::<T>::is_locked(collection_id, *nft_id),
-				pallet_uniques::Error::<T>::Locked
-			);
-			let budget = budget::Value::new(T::NestingBudget::get());
-			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id, &budget)?;
-			ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
-		}
-		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
-		Ok(())
+			Collections::<T>::get(collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+
+		Properties::<T>::try_mutate((&collection_id, maybe_nft_id, &key), |property| {
+			let new_value = if let Some(nft_id) = &maybe_nft_id {
+				// Check NFT lock status
+				ensure!(
+					!Pallet::<T>::is_locked(collection_id, *nft_id),
+					pallet_uniques::Error::<T>::Locked
+				);
+
+				let budget = budget::Value::new(T::NestingBudget::get());
+
+				let (root_owner, _) =
+					Pallet::<T>::lookup_root_owner(collection_id, *nft_id, &budget)?;
+
+				let new_value = match (property.take(), sender == collection.issuer) {
+					(Some(PropertyValue { mutable, .. }), false) => {
+						ensure!(root_owner == sender && mutable, Error::<T>::NoPermission);
+
+						PropertyValue { mutable: true, value: value.value }
+					},
+					(None, _) | (Some(_), true) => {
+						ensure!(
+							root_owner == collection.issuer && root_owner == sender,
+							Error::<T>::NoPermission
+						);
+
+						value
+					},
+				};
+
+				*property = Some(new_value.clone());
+
+				new_value
+			} else {
+				ensure!(collection.issuer == sender, Error::<T>::NoPermission);
+
+				*property = Some(value.clone());
+
+				value
+			};
+
+			Ok(new_value)
+		})
 	}
 
 	// Internal function to set a property for downstream `Origin::root()` calls.
@@ -82,7 +116,7 @@ impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId, T::Collec
 		collection_id: T::CollectionId,
 		maybe_nft_id: Option<T::ItemId>,
 		key: KeyLimitOf<T>,
-		value: ValueLimitOf<T>,
+		value: rmrk_traits::property::PropertyValue<ValueLimitOf<T>>,
 	) -> sp_runtime::DispatchResult {
 		// Ensure collection exists
 		Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
@@ -723,8 +757,9 @@ impl<T: Config>
 		ensure!(Pallet::<T>::nft_exists((collection_id, nft_id)), Error::<T>::NoAvailableNftId);
 
 		let owner_account = match new_owner.clone() {
-			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) =>
-				Pallet::<T>::nft_to_account_id(cid, nid),
+			AccountIdOrCollectionNftTuple::CollectionAndNftTuple(cid, nid) => {
+				Pallet::<T>::nft_to_account_id(cid, nid)
+			},
 			AccountIdOrCollectionNftTuple::AccountId(owner_account) => owner_account,
 		};
 

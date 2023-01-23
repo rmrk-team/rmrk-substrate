@@ -10,7 +10,7 @@ use sp_runtime::Permill;
 use super::*;
 use mock::{RuntimeEvent as MockEvent, RuntimeOrigin as Origin, *};
 use pallet_uniques as UNQ;
-use rmrk_traits::budget::Budget;
+use rmrk_traits::{budget::Budget, property::PropertyValue};
 use sp_std::convert::TryInto;
 
 type RMRKCore = Pallet<Test>;
@@ -1797,11 +1797,18 @@ fn set_property_works() {
 	ExtBuilder::build().execute_with(|| {
 		// Define property key
 		let key = stbk("test-key");
-		// Define property value
-		let value = stb("test-value");
+		// Define property value (immutable because collection issue should skip the check)
+		let value_immutable = PropertyValue { mutable: false, value: stb("test-value") };
+
 		// set_property fails without a collection (CollectionUnknown)
 		assert_noop!(
-			RMRKCore::set_property(Origin::signed(ALICE), 0, Some(0), key.clone(), value.clone()),
+			RMRKCore::set_property(
+				Origin::signed(ALICE),
+				0,
+				Some(0),
+				key.clone(),
+				value_immutable.clone()
+			),
 			Error::<Test>::CollectionUnknown
 		);
 		// Create a basic collection
@@ -1814,21 +1821,106 @@ fn set_property_works() {
 			0,
 			Some(0),
 			key.clone(),
-			value.clone()
+			value_immutable.clone()
 		));
 		// Successful property setting should trigger a PropertySet event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
 			collection_id: 0,
 			maybe_nft_id: Some(0),
 			key: key.clone(),
-			value: value.clone(),
+			value: value_immutable.clone(),
 		}));
 		// Property value now exists
-		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())).unwrap(), value.clone());
+		assert_eq!(
+			RMRKCore::properties((0, Some(0), key.clone())).unwrap(),
+			value_immutable.clone()
+		);
 		// BOB does not own NFT so attempt to set property should fail
 		assert_noop!(
-			RMRKCore::set_property(Origin::signed(BOB), 0, Some(0), key.clone(), value.clone()),
+			RMRKCore::set_property(
+				Origin::signed(BOB),
+				0,
+				Some(0),
+				key.clone(),
+				value_immutable.clone()
+			),
 			Error::<Test>::NoPermission
+		);
+	});
+}
+
+#[test]
+fn set_mutable_property_works() {
+	ExtBuilder::build().execute_with(|| {
+		// Define property key
+		let key = stbk("test-key");
+		// Define property value (immutable because collection issue should skip the check)
+		let value_immutable = PropertyValue { mutable: false, value: stb("test-value0") };
+		let value_mutable = PropertyValue { mutable: true, value: stb("test-value1") };
+
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint NFT
+		assert_ok!(basic_mint(0));
+		// ALICE sets property on NFT
+		assert_ok!(RMRKCore::set_property(
+			Origin::signed(ALICE),
+			0,
+			Some(0),
+			key.clone(),
+			value_immutable.clone()
+		));
+		// Successful property setting should trigger a PropertySet event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
+			collection_id: 0,
+			maybe_nft_id: Some(0),
+			key: key.clone(),
+			value: value_immutable.clone(),
+		}));
+		// Property value now exists
+		assert_eq!(
+			RMRKCore::properties((0, Some(0), key.clone())).unwrap(),
+			value_immutable.clone()
+		);
+		// ALICE sets property on NFT
+		assert_ok!(RMRKCore::set_property(
+			Origin::signed(ALICE),
+			0,
+			Some(0),
+			key.clone(),
+			value_mutable.clone()
+		));
+		// Successful property setting should trigger a PropertySet event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
+			collection_id: 0,
+			maybe_nft_id: Some(0),
+			key: key.clone(),
+			value: value_mutable.clone(),
+		}));
+		// Property value now exists
+		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())).unwrap(), value_mutable.clone());
+		// ALICE sends NFT to BOB
+		assert_ok!(RMRKCore::nft_send(ALICE, 0, 0, AccountIdOrCollectionNftTuple::AccountId(BOB)));
+		// BOB owns the NFT, so he should be able to change the value, but not the mutability
+		assert_ok!(RMRKCore::set_property(
+			Origin::signed(BOB),
+			0,
+			Some(0),
+			key.clone(),
+			value_immutable.clone()
+		));
+		eprintln!("last event");
+		// Successful property setting should trigger a PropertySet event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
+			collection_id: 0,
+			maybe_nft_id: Some(0),
+			key: key.clone(),
+			value: PropertyValue { mutable: true, value: value_immutable.value.clone() },
+		}));
+		// Property value now be changed
+		assert_eq!(
+			RMRKCore::properties((0, Some(0), key.clone())).unwrap(),
+			PropertyValue { mutable: true, value: value_immutable.value.clone() }
 		);
 	});
 }
@@ -1839,7 +1931,7 @@ fn set_property_with_internal_works() {
 		// Define property key
 		let key = stbk("test-key");
 		// Define property value
-		let value = stb("test-value");
+		let value = PropertyValue { mutable: false, value: stb("test-value") };
 		// set_property fails without a collection (CollectionUnknown)
 		assert_noop!(
 			RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()),
@@ -1869,7 +1961,7 @@ fn remove_property_with_internal_works() {
 		// Define property key
 		let key = stbk("test-key");
 		// Define property value
-		let value = stb("test-value");
+		let value = PropertyValue { mutable: false, value: stb("test-value") };
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// Mint NFT
