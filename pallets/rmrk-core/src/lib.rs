@@ -259,8 +259,7 @@ pub mod pallet {
 			NMapKey<Blake2_128Concat, Option<T::ItemId>>,
 			NMapKey<Blake2_128Concat, KeyLimitOf<T>>,
 		),
-		// ValueLimitOf<T>,
-		rmrk_traits::property::PropertyValue<ValueLimitOf<T>>,
+		PropertyValue<ValueLimitOf<T>>,
 		OptionQuery,
 	>;
 
@@ -711,7 +710,7 @@ pub mod pallet {
 			collection_id: T::CollectionId,
 			maybe_nft_id: Option<T::ItemId>,
 			key: KeyLimitOf<T>,
-			value: rmrk_traits::property::PropertyValue<ValueLimitOf<T>>,
+			value: PropertyValue<ValueLimitOf<T>>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 

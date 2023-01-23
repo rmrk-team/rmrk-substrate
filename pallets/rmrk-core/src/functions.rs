@@ -116,7 +116,7 @@ impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId, T::Collec
 		collection_id: T::CollectionId,
 		maybe_nft_id: Option<T::ItemId>,
 		key: KeyLimitOf<T>,
-		value: rmrk_traits::property::PropertyValue<ValueLimitOf<T>>,
+		value: PropertyValue<ValueLimitOf<T>>,
 	) -> sp_runtime::DispatchResult {
 		// Ensure collection exists
 		Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
