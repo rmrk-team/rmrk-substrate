@@ -9,7 +9,7 @@ use crate::Pallet as RmrkCore;
 use frame_benchmarking::{account, benchmarks, whitelisted_caller};
 use frame_support::traits::{Currency, Get};
 use frame_system::RawOrigin;
-use rmrk_traits::{AccountIdOrCollectionNftTuple, BasicResource};
+use rmrk_traits::{property::PropertyValue, AccountIdOrCollectionNftTuple, BasicResource};
 use sp_runtime::traits::Bounded;
 use sp_std::vec;
 
@@ -374,7 +374,7 @@ benchmarks! {
 		let alice: T::AccountId = whitelisted_caller();
 
 		let key = stbk::<T>("test-key");
-		let value = stb::<T>("test-value");
+		let value = PropertyValue { mutable: true, value: stb::<T>("test-value") };
 
 		let collection_index = 1;
 		let collection_id = create_test_collection::<T>(alice.clone(), collection_index);
