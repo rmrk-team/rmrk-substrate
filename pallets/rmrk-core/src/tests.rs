@@ -1909,7 +1909,6 @@ fn set_mutable_property_works() {
 			key.clone(),
 			value_immutable.clone()
 		));
-		eprintln!("last event");
 		// Successful property setting should trigger a PropertySet event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
 			collection_id: 0,
