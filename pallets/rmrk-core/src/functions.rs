@@ -46,7 +46,11 @@ impl<T: Config>
 			priority_index += 1;
 		}
 		Self::deposit_event(Event::PrioritySet { collection_id, nft_id });
-		Ok(Some(<T as pallet::Config>::WeightInfo::set_priority(priority_index, T::NestingBudget::get())).into())
+		Ok(Some(<T as pallet::Config>::WeightInfo::set_priority(
+			priority_index,
+			T::NestingBudget::get(),
+		))
+		.into())
 	}
 }
 
@@ -101,6 +105,19 @@ impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId, T::Collec
 		Properties::<T>::remove((&collection_id, maybe_nft_id, &key));
 
 		Self::deposit_event(Event::PropertyRemoved { collection_id, maybe_nft_id, key });
+		Ok(())
+	}
+
+	// Internal function to remove all of the properties for downstream
+	// `Origin::root()` calls.
+	fn do_remove_properties(
+		collection_id: T::CollectionId,
+		maybe_nft_id: Option<T::ItemId>,
+		limit: u32,
+	) -> sp_runtime::DispatchResult {
+		let _ = Properties::<T>::clear_prefix((&collection_id, maybe_nft_id), limit, None);
+
+		Self::deposit_event(Event::PropertiesRemoved { collection_id, maybe_nft_id });
 		Ok(())
 	}
 }
@@ -563,6 +580,11 @@ impl<T: Config>
 
 		Nfts::<T>::remove(collection_id, nft_id);
 
+		// Remove all of the properties of the NFT
+		Self::do_remove_properties(collection_id, Some(nft_id), T::PropertiesLimit::get())?;
+		// Remove the lock from the NFT if it was locked
+		Lock::<T>::remove((&collection_id, nft_id));
+
 		let _multi_removal_results = Resources::<T>::clear_prefix(
 			(collection_id, nft_id),
 			T::MaxResourcesOnMint::get(),
@@ -588,8 +610,11 @@ impl<T: Config>
 
 		Self::deposit_event(Event::NFTBurned { owner, nft_id, collection_id });
 
-		Ok(Some(<T as pallet::Config>::WeightInfo::burn_nft(budget.get_budget_consumed_value()))
-			.into())
+		Ok(Some(<T as pallet::Config>::WeightInfo::burn_nft(
+			budget.get_budget_consumed_value(),
+			T::PropertiesLimit::get(),
+		))
+		.into())
 	}
 
 	fn nft_send(
@@ -973,10 +998,14 @@ impl<T: Config> Pallet<T> {
 	}
 
 	pub fn set_lock(nft: (T::CollectionId, T::ItemId), lock_status: bool) -> bool {
-		Lock::<T>::mutate(nft, |lock| {
-			*lock = lock_status;
-			*lock
-		});
+		if lock_status {
+			Lock::<T>::mutate(nft, |lock| {
+				*lock = lock_status;
+				*lock
+			});
+		} else {
+			Lock::<T>::remove(nft);
+		}
 		lock_status
 	}
 

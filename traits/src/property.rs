@@ -55,4 +55,12 @@ pub trait Property<KeyLimit, ValueLimit, AccountId, CollectionId, NftId> {
 		maybe_nft_id: Option<NftId>,
 		key: KeyLimit,
 	) -> DispatchResult;
+
+	// Internal function to remove all of the properties that can be called from `Origin::root()`
+	// downstream.
+	fn do_remove_properties(
+		collection_id: CollectionId,
+		maybe_nft_id: Option<NftId>,
+		limit: u32,
+	) -> DispatchResult;
 }
