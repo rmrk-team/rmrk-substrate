@@ -6,6 +6,7 @@ use super::*;
 #[allow(unused)]
 use crate::Pallet as RmrkCore;
 
+use codec::alloc::string::ToString;
 use frame_benchmarking::{account, benchmarks, whitelisted_caller};
 use frame_support::traits::{Currency, Get};
 use frame_system::RawOrigin;
@@ -155,6 +156,23 @@ fn prepare_resource<T: Config>(
 	(alice, bob, collection_id, nft_id, resource_id)
 }
 
+fn set_properties<T: Config>(
+	caller: T::AccountId,
+	collection_id: T::CollectionId,
+	maybe_nft_id: Option<T::ItemId>,
+	n: u32,
+) {
+	(0..n).for_each(|i| {
+		let _ = RmrkCore::<T>::set_property(
+			RawOrigin::Signed(caller.clone()).into(),
+			collection_id,
+			maybe_nft_id,
+			stbk::<T>(i.to_string().as_str()),
+			stb::<T>(i.to_string().as_str()),
+		);
+	});
+}
+
 benchmarks! {
 	create_collection {
 		let caller: T::AccountId = whitelisted_caller();
@@ -278,13 +296,17 @@ benchmarks! {
 	}
 
 	burn_nft {
+		let n in 1 .. T::NestingBudget::get();
+		let k in 0 .. T::PropertiesLimit::get();
+
 		let owner: T::AccountId = whitelisted_caller();
 		let collection_index = 1;
 		let collection_id = create_test_collection::<T>(owner.clone(), collection_index);
 		let nft_id = mint_test_nft::<T>(owner.clone(), None, collection_id, 0);
 
-		let n in 1 .. T::NestingBudget::get();
+		set_properties::<T>(owner.clone(), collection_id, Some(nft_id), k);
 		mint_and_send_to_parent::<T>(owner.clone(), collection_id, n);
+		RmrkCore::<T>::set_lock((collection_id, nft_id), true);
 	}: _(RawOrigin::Signed(owner.clone()), collection_id, nft_id)
 	verify {
 		assert_last_event::<T>(Event::NFTBurned { owner, collection_id, nft_id }.into());
