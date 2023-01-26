@@ -58,7 +58,7 @@ describe("integration test: get owned NFTs", () => {
       {nftId: 0, collectionId: collections[1].id},
       {nftId: 0, collectionId: collections[2].id}
     ];
-    
+
     for(const collection of collections) {
       await createCollection(
         api,

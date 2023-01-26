@@ -539,20 +539,34 @@ impl_runtime_apis! {
 			let mut collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
 			collections.sort();
 
-			let start = start.unwrap_or_default() as usize;
-			let count = count.unwrap_or(collections.len().saturating_sub(start) as u32);
+			let start = start.unwrap_or_default();
+			let limit = count.unwrap_or(collections.len().saturating_sub(start as usize) as u32);
 
+			let mut stored_collections = 0;
 			let mut nfts = vec![];
-			collections.into_iter().skip(start).take(count as usize).for_each(|collection_id| {
+
+			for collection_id in collections {
 				// The nft ids owned by the `account_id` from the collection.
-				let owned_nfts = Uniques::owned_in_collection(&collection_id, &account_id);
+				let owned_nfts: Vec<NftId> = Uniques::owned_in_collection(&collection_id, &account_id).collect();
+
+				// check if the user owns any nfts from the collection.
+				if !owned_nfts.is_empty() {
+					stored_collections += 1;
+					if stored_collections <= start {
+						continue;
+					}
+					if stored_collections - start > limit {
+						break;
+					}
+				}
+
 				// Get more information about the nfts.
-				owned_nfts.for_each(|nft_id| {
+				owned_nfts.into_iter().for_each(|nft_id| {
 					if let Some(nft_info) = RmrkCore::nfts(collection_id, nft_id) {
 						nfts.push((collection_id, nft_id, nft_info));
 					}
 				});
-			});
+			}
 
 			Ok(nfts)
 		}
@@ -566,19 +580,33 @@ impl_runtime_apis! {
 			let mut collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
 			collections.sort();
 
-			let start = start.unwrap_or_default() as usize;
-			let count = count.unwrap_or(collections.len().saturating_sub(start) as u32);
+			let start = start.unwrap_or_default();
+			let limit = count.unwrap_or(collections.len().saturating_sub(start as usize) as u32);
 
+			let mut stored_collections = 0;
 			let mut props_of_nfts = vec![];
-			collections.into_iter().skip(start).take(count as usize).for_each(|collection_id| {
+
+			for collection_id in collections {
 				// The nft ids owned by the `account_id` from the collection.
-				let owned_nfts = Uniques::owned_in_collection(&collection_id, &account_id);
+				let owned_nfts: Vec<NftId> = Uniques::owned_in_collection(&collection_id, &account_id).collect();
+
+				// check if the user owns any nfts from the collection.
+				if !owned_nfts.is_empty() {
+					stored_collections += 1;
+					if stored_collections <= start {
+						continue;
+					}
+					if stored_collections - start > limit {
+						break;
+					}
+				}
+
 				// Get the properties for each of these NFTs.
-				owned_nfts.for_each(|nft_id| {
+				owned_nfts.into_iter().for_each(|nft_id| {
 					let nft_props: Vec<PropertyInfoOf<Runtime>> = RmrkCore::query_properties(collection_id, Some(nft_id), None).collect();
 					props_of_nfts.push((collection_id, nft_id, nft_props));
 				});
-			});
+			};
 
 			Ok(props_of_nfts)
 		}
