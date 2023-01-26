@@ -536,7 +536,8 @@ impl_runtime_apis! {
 			start: Option<u32>,
 			count: Option<u32>
 		) -> pallet_rmrk_rpc_runtime_api::Result<Vec<(CollectionId, NftId, InstanceInfoOf<Runtime>)>> {
-			let collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
+			let mut collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
+			collections.sort();
 
 			let start = start.unwrap_or_default() as usize;
 			let count = count.unwrap_or(collections.len().saturating_sub(start) as u32);
@@ -562,7 +563,8 @@ impl_runtime_apis! {
 			count: Option<u32>
 		) -> pallet_rmrk_rpc_runtime_api::Result<Vec<(CollectionId, NftId, Vec<PropertyInfoOf<Runtime>>)>>
 		{
-			let collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
+			let mut collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
+			collections.sort();
 
 			let start = start.unwrap_or_default() as usize;
 			let count = count.unwrap_or(collections.len().saturating_sub(start) as u32);

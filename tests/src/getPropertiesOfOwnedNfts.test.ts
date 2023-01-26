@@ -13,22 +13,22 @@ describe("integration test: get properties of owned NFTs", () => {
 
     collections = [
       {
-        id: 1,
-        metadata: "Metadata#1",
+        id: 421,
+        metadata: "Metadata#421",
         collectionMax: null,
-        symbol: "Col1Sym",
+        symbol: "Sym421",
       },
       {
-        id: 2,
-        metadata: "Metadata#2",
+        id: 422,
+        metadata: "Metadata#422",
         collectionMax: null,
-        symbol: "Col2Sym",
+        symbol: "Sym422",
       },
       {
-        id: 3,
-        metadata: "Metadata#3",
+        id: 423,
+        metadata: "Metadata#423",
         collectionMax: null,
-        symbol: "Col3Sym",
+        symbol: "Sym423",
       }
     ];
 
@@ -63,7 +63,7 @@ describe("integration test: get properties of owned NFTs", () => {
       await createCollection(
         api,
         collection.id,
-        alice,
+        dave,
         collection.metadata,
         collection.collectionMax,
         collection.symbol
@@ -74,7 +74,7 @@ describe("integration test: get properties of owned NFTs", () => {
       await mintNft(
         api,
         nftProps.nftId,
-        alice,
+        dave,
         owner,
         nftProps.collectionId,
         nftMetadata + `-${nftProps.nftId}`,
@@ -84,7 +84,7 @@ describe("integration test: get properties of owned NFTs", () => {
 
       await setNftProperty(
         api,
-        alice,
+        dave,
         nftProps.collectionId,
         nftProps.nftId,
         nftProps.key,
@@ -93,14 +93,14 @@ describe("integration test: get properties of owned NFTs", () => {
     }
   });
 
-  const alice = "//Alice";
-  const owner = alice;
+  const dave = "//Dave";
+  const owner = dave;
   const recipientUri = null;
   const royalty = null;
-  const nftMetadata = "alice-NFT-metadata";
+  const nftMetadata = "dave-NFT-metadata";
 
   it("fetch all the properites of the NFTs owned by a user over multiple collections", async () => {
-    const ownedNfts = await getPropertiesOfOwnedNfts(api, alice, null, null);
+    const ownedNfts = await getPropertiesOfOwnedNfts(api, dave, null, null);
 
     nftProperties.forEach(({nftId, collectionId, key, value}) => {
       const nft = ownedNfts.find((ownedNft) => {
@@ -121,30 +121,29 @@ describe("integration test: get properties of owned NFTs", () => {
 
   it("fetch all the properites of the NFTs owned by a user over multiple collections with specified start", async () => {
     // We are skipping the first collection by setting the start to "1". So we
-    // should only get the properties from the NFTs from the rest of the
-    // collections, in this case the NFTs from collection 2 and 3.
-    const ownedNfts = await getPropertiesOfOwnedNfts(api, alice, "1", null);
+    // should only get the properties of the NFTs from the collection 192 and
+    // 193.
+    const ownedNfts = await getPropertiesOfOwnedNfts(api, dave, "1", null);
 
-    expect(ownedNfts.length === 2, "Only two NFTs should be returned.").to.be
+    expect(ownedNfts.length === 2, "Two NFTs should be returned.").to.be
       .true;
 
     ownedNfts.forEach((nft) => {
-      expect(nft[0].toNumber() !== collections[0].id, "The returned NFTs shouldn't be from the first collection.").to.be
-        .true;
+      expect(nft[0].toNumber() === collections[1].id || nft[0].toNumber() === collections[2].id,
+       "The returned NFTs should be from collection 192 and 193.").to.be.true;
     });
   });
 
   it("fetch all the properites of the NFTs owned by a user over multiple collections with specified count", async () => {
-    // We should only get the properties from the NFTs in the first two
-    // collections since we are setting the count to "2".
-    const ownedNfts = await getPropertiesOfOwnedNfts(api, alice, null, "2");
+    // We should only get the properties from the NFTs in collection 191 and 192.
+    const ownedNfts = await getPropertiesOfOwnedNfts(api, dave, null, "2");
 
-    expect(ownedNfts.length === 3, "Only three NFTs should be returned.").to.be
+    expect(ownedNfts.length === 3, "Three NFTs should be returned.").to.be
       .true;
 
     ownedNfts.forEach((nft) => {
-      expect(nft[0].toNumber() !== collections[2].id, "The returned NFTs shouldn't be from the third collection.").to.be
-        .true;
+      expect(nft[0].toNumber() === collections[0].id || nft[0].toNumber() === collections[1].id, 
+        "The returned NFTs shouldn't be from collection 193.").to.be.true;
     });
   });
 
@@ -152,14 +151,14 @@ describe("integration test: get properties of owned NFTs", () => {
     // We are skipping the first collection by setting the start to "1". But
     // because we are setting the count to "1" we are only going to receive the
     // properties from NFTs inside one collection, i.e. the collection following
-    // the first one, in this case collection number 2.
-    const ownedNfts = await getPropertiesOfOwnedNfts(api, alice, "1", "1");
+    // the first one, in this case collection number 422.
+    const ownedNfts = await getPropertiesOfOwnedNfts(api, dave, "1", "1");
 
     expect(ownedNfts.length === 1, "Only one NFT should be returned.").to.be
       .true;
 
     ownedNfts.forEach((nft) => {
-      expect(nft[0].toNumber() === collections[1].id, "The returned NFTs should be from the second collection.").to.be
+      expect(nft[0].toNumber() === collections[1].id, "The returned NFTs should be from collection 192").to.be
         .true;
     });
   });
