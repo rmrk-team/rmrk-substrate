@@ -1092,7 +1092,7 @@ fn burn_nft_works() {
 
 		// Add a property to the NFT to see whether it will also get deleted
 		let key = stbk("test-key");
-		let value = stb("test-value");
+		let value = PropertyValue { mutable: false, value: stb("test-value") };
 		assert_ok!(RMRKCore::set_property(
 			Origin::signed(ALICE),
 			0,
@@ -2041,7 +2041,7 @@ fn remove_properties_with_internal_works() {
 		// Define the keys of the properties
 		let keys = vec![stbk("test-key-1"), stbk("test-key-2"), stbk("test-key-3")];
 		// Define properties value
-		let value = stb("test-value");
+		let value = PropertyValue { mutable: false, value: stb("test-value") };
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// Mint NFT
