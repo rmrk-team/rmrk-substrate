@@ -1854,6 +1854,7 @@ fn set_mutable_property_works() {
 	ExtBuilder::build().execute_with(|| {
 		// Define property key
 		let key = stbk("test-key");
+		let key2 = stbk("test-key2");
 		// Define property value (immutable because collection issue should skip the check)
 		let value_immutable = PropertyValue { mutable: false, value: stb("test-value0") };
 		let value_mutable = PropertyValue { mutable: true, value: stb("test-value1") };
@@ -1899,6 +1900,26 @@ fn set_mutable_property_works() {
 		}));
 		// Property value now exists
 		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())).unwrap(), value_mutable.clone());
+		// ALICE sets property on NFT
+		assert_ok!(RMRKCore::set_property(
+			Origin::signed(ALICE),
+			0,
+			Some(0),
+			key2.clone(),
+			value_immutable.clone()
+		));
+		// Successful property setting should trigger a PropertySet event
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
+			collection_id: 0,
+			maybe_nft_id: Some(0),
+			key: key2.clone(),
+			value: value_immutable.clone(),
+		}));
+		// Property value now exists
+		assert_eq!(
+			RMRKCore::properties((0, Some(0), key2.clone())).unwrap(),
+			value_immutable.clone()
+		);
 		// ALICE sends NFT to BOB
 		assert_ok!(RMRKCore::nft_send(ALICE, 0, 0, AccountIdOrCollectionNftTuple::AccountId(BOB)));
 		// BOB owns the NFT, so he should be able to change the value, but not the mutability
@@ -1920,6 +1941,22 @@ fn set_mutable_property_works() {
 		assert_eq!(
 			RMRKCore::properties((0, Some(0), key.clone())).unwrap(),
 			PropertyValue { mutable: true, value: value_immutable.value.clone() }
+		);
+		// BOB shouldn't be able to change neither the value nor the mutability of an immutable property
+		assert_noop!(
+			RMRKCore::set_property(
+				Origin::signed(BOB),
+				0,
+				Some(0),
+				key2.clone(),
+				value_mutable.clone()
+			),
+			Error::<Test>::NoPermission
+		);
+		// Property value not changed
+		assert_eq!(
+			RMRKCore::properties((0, Some(0), key2.clone())).unwrap(),
+			value_immutable.clone()
 		);
 	});
 }
