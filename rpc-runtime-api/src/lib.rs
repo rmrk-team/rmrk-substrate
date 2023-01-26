@@ -49,10 +49,24 @@ sp_api::decl_runtime_apis! {
 		/// Get NFT children
 		fn nft_children(collection_id: CollectionId, nft_id: NftId) -> Result<Vec<NftChild<CollectionId, NftId>>>;
 
-		/// Get all of the NFTs of the provided account.
+		/// Get all of the NFTs of the provided account. Supports pagination by
+		/// specifying an optional `start` and `count`.
+		///
+		/// The `start` parameter defines the number of collections after which we
+		/// start reading the NFTs. The collections in which the user doesn't own
+		/// any NFTs are not counted.
+		///
+		/// The `count` parameter specifies the number of collections to read from.
 		fn nfts_owned_by(account_id: AccountId, start: Option<u32>, count: Option<u32>) -> Result<Vec<(CollectionId, NftId, NftInfo)>>;
 
-		/// Get all of the properties of the NFTs owned by the provided account.
+		/// Get all of the properties of the NFTs owned by the specified account.
+		/// Supports pagination by specifying an optional `start` and `count`.
+		///
+		/// The `start` parameter defines the number of collections after which we
+		/// start reading the NFT properties. The collections in which the user
+		/// doesn't own any NFTs are not counted.
+		///
+		/// The `count` parameter specifies the number of collections to read from.
 		fn properties_of_nfts_owned_by(
 			account_id: AccountId,
 			start: Option<u32>,

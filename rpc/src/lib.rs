@@ -122,7 +122,13 @@ pub trait RmrkApi<
 
 	#[method(name = "nftsOwnedBy")]
 	/// Get all of the NFTs of the provided account. Supports pagination by
-	/// specifying an optional start and number of collections to read through.
+	/// specifying an optional `start` and `count`.
+	///
+	/// The `start` parameter defines the number of collections after which we
+	/// start reading the NFTs. The collections in which the user doesn't own
+	/// any NFTs are not counted.
+	///
+	/// The `count` parameter specifies the number of collections to read from.
 	fn nfts_owned_by(
 		&self,
 		account_id: AccountId,
@@ -133,8 +139,13 @@ pub trait RmrkApi<
 
 	#[method(name = "propertiesOfNftsOwnedBy")]
 	/// Get all of the properties of the NFTs owned by the specified account.
-	/// Supports pagination by specifying an optional start and number of
-	/// collections to read through.
+	/// Supports pagination by specifying an optional `start` and `count`.
+	///
+	/// The `start` parameter defines the number of collections after which we
+	/// start reading the NFT properties. The collections in which the user
+	/// doesn't own any NFTs are not counted.
+	///
+	/// The `count` parameter specifies the number of collections to read from.
 	fn properties_of_nfts_owned_by(
 		&self,
 		account_id: AccountId,
