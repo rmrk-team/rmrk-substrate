@@ -2,6 +2,10 @@
 // This file is part of rmrk-substrate.
 // License: Apache 2.0 modified by RMRK, see LICENSE.md
 
+use crate::{
+	primitives::{BaseId, PartId},
+	Entity,
+};
 use codec::{Decode, Encode};
 use scale_info::TypeInfo;
 use sp_runtime::DispatchResult;
@@ -35,16 +39,14 @@ pub struct PropertyInfo<BoundedKey, BoundedValue> {
 pub trait Property<KeyLimit, ValueLimit, AccountId, CollectionId, NftId> {
 	fn property_set(
 		sender: AccountId,
-		collection_id: CollectionId,
-		maybe_nft_id: Option<NftId>,
+		enity: Entity<CollectionId, NftId, BaseId, PartId>,
 		key: KeyLimit,
 		value: ValueLimit,
 	) -> DispatchResult;
 
 	/// Internal function to set a property that can be called from `Origin::root()` downstream.
 	fn do_set_property(
-		collection_id: CollectionId,
-		maybe_nft_id: Option<NftId>,
+		entity: Entity<CollectionId, NftId, BaseId, PartId>,
 		key: KeyLimit,
 		value: ValueLimit,
 	) -> DispatchResult;

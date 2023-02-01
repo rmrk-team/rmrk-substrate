@@ -22,8 +22,8 @@ use rmrk_traits::{
 	misc::TransferHooks,
 	primitives::{BaseId, PartId, ResourceId, SlotId},
 	AccountIdOrCollectionNftTuple, BasicResource, Collection, CollectionInfo, ComposableResource,
-	Nft, NftChild, NftInfo, PhantomType, Priority, Property, PropertyInfo, Resource, ResourceInfo,
-	ResourceInfoMin, ResourceTypes, RoyaltyInfo, SlotResource,
+	Entity, Nft, NftChild, NftInfo, PhantomType, Priority, Property, PropertyInfo, Resource,
+	ResourceInfo, ResourceInfoMin, ResourceTypes, RoyaltyInfo, SlotResource,
 };
 use sp_std::result::Result;
 
@@ -85,6 +85,13 @@ pub type BoundedResourceInfoTypeOf<T> = BoundedVec<
 >;
 
 pub type PropertyInfoOf<T> = PropertyInfo<KeyLimitOf<T>, ValueLimitOf<T>>;
+
+pub type EntityOf<T> = Entity<
+	<T as pallet_uniques::Config>::CollectionId,
+	<T as pallet_uniques::Config>::ItemId,
+	BaseId,
+	PartId,
+>;
 
 pub mod types;
 
@@ -263,6 +270,12 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn base_properties)]
+	/// Arbitrary properties / metadata of a base.
+	pub type BaseProperties<T: Config> =
+		StorageMap<_, Twox64Concat, BaseId, ValueLimitOf<T>, OptionQuery>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn lock)]
 	/// Lock for NFTs
 	pub type Lock<T: Config> =
@@ -331,8 +344,7 @@ pub mod pallet {
 			collection_id: T::CollectionId,
 		},
 		PropertySet {
-			collection_id: T::CollectionId,
-			maybe_nft_id: Option<T::ItemId>,
+			entity: EntityOf<T>,
 			key: KeyLimitOf<T>,
 			value: ValueLimitOf<T>,
 		},
@@ -483,7 +495,7 @@ pub mod pallet {
 		/// - `recipient`: Receiver of the royalty
 		/// - `royalty`: Permillage reward from each trade for the Recipient
 		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
-    #[pallet::call_index(1)]
+		#[pallet::call_index(1)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::mint_nft_directly_to_nft(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn mint_nft_directly_to_nft(
@@ -705,18 +717,18 @@ pub mod pallet {
 		#[transactional]
 		pub fn set_property(
 			origin: OriginFor<T>,
-			collection_id: T::CollectionId,
-			maybe_nft_id: Option<T::ItemId>,
+			entity: EntityOf<T>,
 			key: KeyLimitOf<T>,
 			value: ValueLimitOf<T>,
 		) -> DispatchResult {
 			let sender = ensure_signed(origin)?;
 
-			Self::property_set(sender, collection_id, maybe_nft_id, key.clone(), value.clone())?;
+			Self::property_set(sender, entity.clone(), key.clone(), value.clone())?;
 
-			Self::deposit_event(Event::PropertySet { collection_id, maybe_nft_id, key, value });
+			Self::deposit_event(Event::PropertySet { entity, key, value });
 			Ok(())
 		}
+
 		/// lock collection
 		#[pallet::call_index(10)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::lock_collection())]
