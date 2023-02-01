@@ -1088,6 +1088,18 @@ fn burn_nft_works() {
 		assert_ok!(basic_collection());
 		// Mint an NFT
 		assert_ok!(basic_mint(0));
+
+		// Add a property to the NFT to see whether it will also get deleted
+		let key = stbk("test-key");
+		let value = stb("test-value");
+		assert_ok!(RMRKCore::set_property(
+			Origin::signed(ALICE),
+			0,
+			Some(0),
+			key.clone(),
+			value.clone()
+		));
+
 		// Add two resources to NFT (to test if burning also burns the resources)
 
 		let basic_resource = BasicResource { metadata: stbd("bafybeiakahlc6") };
@@ -1120,6 +1132,10 @@ fn burn_nft_works() {
 		}));
 		// NFT count of collection is now 0
 		assert_eq!(RMRKCore::collections(COLLECTION_ID_0).unwrap().nfts_count, 0);
+
+		// Once the NFT is burned the property should be deleted
+		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())), None);
+
 		// ALICE can't burn an NFT twice
 		assert_noop!(
 			RMRKCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, NFT_ID_0),
@@ -1852,7 +1868,7 @@ fn set_property_with_internal_works() {
 		assert_ok!(basic_mint(0));
 		// Root sets property on NFT
 		assert_ok!(RMRKCore::do_set_property(nft.clone(), key.clone(), value.clone()));
-		// Successful property setting should trigger a PropertySet event
+		// Successful property setting should trigger a `PropertySet` event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
 			entity: nft,
 			key: key.clone(),
@@ -1886,9 +1902,51 @@ fn remove_property_with_internal_works() {
 		}));
 		// Property value now exists
 		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())).unwrap(), value);
-		// Origin::root() removes property
+		// `Origin::root()` removes property
 		assert_ok!(RMRKCore::do_remove_property(0, Some(0), key.clone()));
 		assert_eq!(RMRKCore::properties((0, Some(0), key)), None);
+	});
+}
+
+#[test]
+fn remove_properties_with_internal_works() {
+	ExtBuilder::build().execute_with(|| {
+		// Define the keys of the properties
+		let keys = vec![stbk("test-key-1"), stbk("test-key-2"), stbk("test-key-3")];
+		// Define properties value
+		let value = stb("test-value");
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint NFT
+		assert_ok!(basic_mint(0));
+		// Root sets properties on NFT
+		keys.into_iter().for_each(|key| {
+			assert_ok!(RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()));
+
+			// Successful property setting should trigger a `PropertySet` event
+			System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
+				collection_id: 0,
+				maybe_nft_id: Some(0),
+				key: key.clone(),
+				value: value.clone(),
+			}));
+
+			// Property value now exists
+			assert_eq!(RMRKCore::properties((0, Some(0), key.clone())).unwrap(), value);
+		});
+
+		// `Origin::root()` removes all properties
+		assert_ok!(RMRKCore::do_remove_properties(
+			0,
+			Some(0),
+			<Test as Config>::PropertiesLimit::get()
+		));
+		assert_eq!(RMRKCore::query_properties(0, Some(0), None).count(), 0);
+
+		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertiesRemoved {
+			collection_id: 0,
+			maybe_nft_id: Some(0),
+		}));
 	});
 }
 

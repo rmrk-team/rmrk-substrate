@@ -354,6 +354,7 @@ parameter_types! {
 	pub const MaxPriorities: u32 = 25;
 	pub const CollectionSymbolLimit: u32 = 100;
 	pub const MaxResourcesOnMint: u32 = 100;
+	pub const PropertiesLimit: u32 = 25;
 	pub const NestingBudget: u32 = 20;
 }
 
@@ -368,6 +369,7 @@ impl pallet_rmrk_core::Config for Runtime {
 	type MaxPriorities = MaxPriorities;
 	type CollectionSymbolLimit = CollectionSymbolLimit;
 	type MaxResourcesOnMint = MaxResourcesOnMint;
+	type PropertiesLimit = PropertiesLimit;
 	type NestingBudget = NestingBudget;
 	type WeightInfo = pallet_rmrk_core::weights::SubstrateWeight<Runtime>;
 	#[cfg(feature = "runtime-benchmarks")]
@@ -407,6 +409,7 @@ impl pallet_rmrk_equip::Config for Runtime {
 	type MaxPropertiesPerTheme = MaxPropertiesPerTheme;
 	type MaxCollectionsEquippablePerPart = MaxCollectionsEquippablePerPart;
 	type WeightInfo = pallet_rmrk_equip::weights::SubstrateWeight<Runtime>;
+	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = RmrkBenchmark;
 }
 
