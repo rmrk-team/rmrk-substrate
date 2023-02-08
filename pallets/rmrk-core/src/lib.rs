@@ -136,6 +136,10 @@ pub mod pallet {
 		#[pallet::constant]
 		type MaxPriorities: Get<u32>;
 
+		/// The maximum number of properties each can have
+		#[pallet::constant]
+		type PropertiesLimit: Get<u32>;
+
 		/// The maximum nesting allowed in the pallet extrinsics.
 		#[pallet::constant]
 		type NestingBudget: Get<u32>;
@@ -341,6 +345,10 @@ pub mod pallet {
 			maybe_nft_id: Option<T::ItemId>,
 			key: KeyLimitOf<T>,
 		},
+		PropertiesRemoved {
+			collection_id: T::CollectionId,
+			maybe_nft_id: Option<T::ItemId>,
+		},
 		CollectionLocked {
 			issuer: T::AccountId,
 			collection_id: T::CollectionId,
@@ -483,7 +491,7 @@ pub mod pallet {
 		/// - `recipient`: Receiver of the royalty
 		/// - `royalty`: Permillage reward from each trade for the Recipient
 		/// - `metadata`: Arbitrary data about an nft, e.g. IPFS hash
-    #[pallet::call_index(1)]
+		#[pallet::call_index(1)]
 		#[pallet::weight(<T as pallet::Config>::WeightInfo::mint_nft_directly_to_nft(T::NestingBudget::get()))]
 		#[transactional]
 		pub fn mint_nft_directly_to_nft(
@@ -544,7 +552,7 @@ pub mod pallet {
 
 		/// burn nft
 		#[pallet::call_index(3)]
-		#[pallet::weight(<T as pallet::Config>::WeightInfo::burn_nft(T::NestingBudget::get()))]
+		#[pallet::weight(<T as pallet::Config>::WeightInfo::burn_nft(T::NestingBudget::get(), T::PropertiesLimit::get()))]
 		#[transactional]
 		pub fn burn_nft(
 			origin: OriginFor<T>,
