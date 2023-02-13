@@ -43,7 +43,7 @@ pub use pallet::*;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use crate::types::ListInfo;
+	use crate::types::{ListInfo, MarketplaceHooks};
 	use frame_support::{pallet_prelude::*, traits::tokens::nonfungibles::Inspect};
 	use frame_system::pallet_prelude::*;
 	use sp_runtime::Permill;
@@ -92,6 +92,13 @@ pub mod pallet {
 
 		#[cfg(feature = "runtime-benchmarks")]
 		type Helper: BenchmarkHelper<Self::CollectionId, Self::ItemId>;
+
+		/// Marketplace hooks to be implemented downstream.
+		type MarketplaceHooks: MarketplaceHooks<BalanceOf<Self>, Self::CollectionId, Self::ItemId>;
+
+		/// Market fee to be implemented downstream.
+		#[pallet::constant]
+		type MarketFee: Get<Permill>;
 	}
 
 	#[pallet::pallet]

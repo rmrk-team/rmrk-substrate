@@ -379,6 +379,7 @@ impl pallet_rmrk_core::Config for Runtime {
 
 parameter_types! {
 	pub const MinimumOfferAmount: Balance = UNITS / 10_000;
+	pub const MarketFee: Permill = Permill::from_percent(0);
 }
 
 impl pallet_rmrk_market::Config for Runtime {
@@ -389,6 +390,8 @@ impl pallet_rmrk_market::Config for Runtime {
 	type WeightInfo = pallet_rmrk_market::weights::SubstrateWeight<Runtime>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = RmrkBenchmark;
+	type MarketplaceHooks = ();
+	type MarketFee = MarketFee;
 }
 
 parameter_types! {
