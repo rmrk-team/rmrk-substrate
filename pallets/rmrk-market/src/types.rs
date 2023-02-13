@@ -3,6 +3,7 @@
 // License: Apache 2.0 modified by RMRK, see LICENSE.md
 
 use frame_support::pallet_prelude::*;
+use sp_runtime::Permill;
 
 #[cfg(feature = "std")]
 use serde::{Deserialize, Serialize};
@@ -29,4 +30,33 @@ pub struct Offer<AccountId, Balance, BlockNumber> {
 	pub(super) amount: Balance,
 	/// After this block the offer can't be accepted
 	pub(super) expires: Option<BlockNumber>,
+}
+
+/// Trait to calculate Marketplace hooks that can be implemented downstream to enforce standard
+/// Marketplace fees and royalties.
+pub trait MarketplaceHooks<Balance, CollectionId, NftId> {
+	/// Market Fee.
+	type MarketFee;
+	/// Standard Marketplace fee set downstream. The default return value will be None.
+	fn calculate_market_fee(amount: Balance) -> Option<Balance>;
+	/// For Marketplaces that enforce royalties, a royalty fee is paid after a successful `buy()`.
+	/// Default return value is None.
+	fn calculate_royalty_fee(amount: Balance, royalty_fee: Permill) -> Option<Balance>;
+	/// Check to ensure the NFT can be listed or bought in the Marketplace. Default is true.
+	fn can_list_or_buy_in_marketplace(collection_id: &CollectionId, nft_id: &NftId) -> bool;
+}
+
+impl<Balance, CollectionId, NftId> MarketplaceHooks<Balance, CollectionId, NftId> for () {
+	type MarketFee = Permill;
+	fn calculate_market_fee(_amount: Balance) -> Option<Balance> {
+		None
+	}
+
+	fn calculate_royalty_fee(_amount: Balance, _royalty_fee: Permill) -> Option<Balance> {
+		None
+	}
+
+	fn can_list_or_buy_in_marketplace(_collection_id: &CollectionId, _nft_id: &NftId) -> bool {
+		true
+	}
 }
