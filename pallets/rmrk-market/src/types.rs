@@ -40,6 +40,8 @@ pub trait MarketplaceHooks<Balance, CollectionId, NftId> {
 	/// For Marketplaces that enforce royalties, a royalty fee is paid after a successful `buy()`.
 	/// Default return value is None.
 	fn calculate_royalty_fee(amount: Balance, royalty_fee: Permill) -> Option<Balance>;
+	/// Check to ensure the NFT can be listed or bought in the Marketplace. Default is true.
+	fn can_sell_in_marketplace(collection_id: CollectionId, nft_id: NftId) -> bool;
 }
 
 impl<Balance, CollectionId, NftId> MarketplaceHooks<Balance, CollectionId, NftId> for () {
@@ -49,5 +51,9 @@ impl<Balance, CollectionId, NftId> MarketplaceHooks<Balance, CollectionId, NftId
 
 	fn calculate_royalty_fee(_amount: Balance, _royalty_fee: Permill) -> Option<Balance> {
 		None
+	}
+
+	fn can_sell_in_marketplace(_collection_id: CollectionId, _nft_id: NftId) -> bool {
+		true
 	}
 }

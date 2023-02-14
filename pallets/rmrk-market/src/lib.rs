@@ -233,6 +233,8 @@ pub mod pallet {
 		NonTransferable,
 		/// Marketplace owner not configured
 		MarketplaceOwnerNotSet,
+		/// Cannot list NFT based on downstream logic implemented for MarketplaceHooks trait
+		CannotListNft,
 	}
 
 	#[pallet::call]
@@ -283,6 +285,11 @@ pub mod pallet {
 			let sender = ensure_signed(origin)?;
 			let owner = pallet_uniques::Pallet::<T>::owner(collection_id.into(), nft_id)
 				.ok_or(Error::<T>::TokenDoesNotExist)?;
+			// Check MarketplaceHooks function if the can NFT be listed
+			ensure!(
+				T::MarketplaceHooks::can_sell_in_marketplace(collection_id, nft_id),
+				Error::<T>::CannotListNft
+			);
 
 			// Ensure that the NFT is not owned by an NFT
 			ensure!(
