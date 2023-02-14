@@ -157,6 +157,7 @@ impl pallet_uniques::Config for Test {
 
 parameter_types! {
 	pub const MinimumOfferAmount: Balance = 50 * UNITS;
+	pub const MarketFee: Permill = Permill::from_percent(0);
 }
 
 impl Config for Test {
@@ -167,6 +168,8 @@ impl Config for Test {
 	type WeightInfo = weights::SubstrateWeight<Test>;
 	#[cfg(feature = "runtime-benchmarks")]
 	type Helper = RmrkBenchmark;
+	type MarketplaceHooks = ();
+	type MarketFee = MarketFee;
 }
 
 pub const ALICE: AccountId = AccountId::new([1u8; 32]);
