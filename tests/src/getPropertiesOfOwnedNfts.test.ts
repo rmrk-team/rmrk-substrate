@@ -120,9 +120,9 @@ describe("integration test: get properties of owned NFTs", () => {
   });
 
   it("fetch all the properites of the NFTs owned by a user over multiple collections with specified start", async () => {
-    // We are skipping the first collection by setting the start to "1". So we
-    // should only get the properties of the NFTs from the collection 192 and
-    // 193.
+    // We are skipping the first collection by setting the start index to "1".
+    // So we should only get the properties of the NFTs from the collection 192
+    // and 193.
     const ownedNfts = await getPropertiesOfOwnedNfts(api, dave, "1", null);
 
     expect(ownedNfts.length === 2, "Two NFTs should be returned.").to.be
@@ -148,10 +148,10 @@ describe("integration test: get properties of owned NFTs", () => {
   });
 
   it("fetch all the properites of the NFTs owned by a user over multiple collections with specified start and count", async () => {
-    // We are skipping the first collection by setting the start to "1". But
-    // because we are setting the count to "1" we are only going to receive the
-    // properties from NFTs inside one collection, i.e. the collection following
-    // the first one, in this case collection number 422.
+    // We are skipping the first collection by setting the start index to "1".
+    // But because we are setting the count to "1" we are only going to receive
+    // the properties from NFTs inside one collection, i.e. the collection
+    // following the first one, in this case collection number 422.
     const ownedNfts = await getPropertiesOfOwnedNfts(api, dave, "1", "1");
 
     expect(ownedNfts.length === 1, "Only one NFT should be returned.").to.be

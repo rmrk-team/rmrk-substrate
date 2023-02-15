@@ -122,26 +122,26 @@ pub trait RmrkApi<
 
 	#[method(name = "nftsOwnedBy")]
 	/// Get all of the NFTs of the provided account. Supports pagination by
-	/// specifying an optional `start` and `count`.
+	/// specifying an optional `start_index` and `count`.
 	///
-	/// The `start` parameter defines the number of collections after which we
-	/// start reading the NFTs. The collections in which the user doesn't own
-	/// any NFTs are not counted.
+	/// The `start_index` parameter defines the number of collections after
+	/// which we start reading the NFTs. The collections in which the user
+	/// doesn't own any NFTs are not counted.
 	///
 	/// The `count` parameter specifies the number of collections to read from.
 	fn nfts_owned_by(
 		&self,
 		account_id: AccountId,
-		start: Option<u32>,
+		start_index: Option<u32>,
 		count: Option<u32>,
 		at: Option<BlockHash>,
 	) -> RpcResult<Vec<(CollectionId, NftId, NftInfo)>>;
 
 	#[method(name = "propertiesOfNftsOwnedBy")]
 	/// Get all of the properties of the NFTs owned by the specified account.
-	/// Supports pagination by specifying an optional `start` and `count`.
+	/// Supports pagination by specifying an optional `start_index` and `count`.
 	///
-	/// The `start` parameter defines the number of collections after which we
+	/// The `start_index` parameter defines the number of collections after which we
 	/// start reading the NFT properties. The collections in which the user
 	/// doesn't own any NFTs are not counted.
 	///
@@ -149,7 +149,7 @@ pub trait RmrkApi<
 	fn properties_of_nfts_owned_by(
 		&self,
 		account_id: AccountId,
-		start: Option<u32>,
+		start_index: Option<u32>,
 		count: Option<u32>,
 		at: Option<BlockHash>,
 	) -> RpcResult<Vec<(CollectionId, NftId, Vec<PropertyInfo>)>>;
@@ -269,14 +269,14 @@ where
 	pass_method!(
 		nfts_owned_by(
 			account_id: AccountId,
-			start: Option<CollectionId>,
+			start_index: Option<CollectionId>,
 			count: Option<u32>
 		) -> Vec<(CollectionId, NftId, NftInfo)>
 	);
 	pass_method!(
 		properties_of_nfts_owned_by(
 			account_id: AccountId,
-			start: Option<CollectionId>,
+			start_index: Option<CollectionId>,
 			count: Option<u32>
 		) -> Vec<(CollectionId, NftId, Vec<PropertyInfo>)>
 	);

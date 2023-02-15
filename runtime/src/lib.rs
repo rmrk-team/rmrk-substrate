@@ -533,14 +533,14 @@ impl_runtime_apis! {
 
 		fn nfts_owned_by(
 			account_id: AccountId,
-			start: Option<u32>,
+			start_index: Option<u32>,
 			count: Option<u32>
 		) -> pallet_rmrk_rpc_runtime_api::Result<Vec<(CollectionId, NftId, InstanceInfoOf<Runtime>)>> {
 			let mut collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
 			collections.sort();
 
-			let start = start.unwrap_or_default();
-			let limit = count.unwrap_or(collections.len().saturating_sub(start as usize) as u32);
+			let start_index = start_index.unwrap_or_default();
+			let limit = count.unwrap_or(collections.len().saturating_sub(start_index as usize) as u32);
 
 			let mut stored_collections = 0;
 			let mut nfts = vec![];
@@ -552,10 +552,10 @@ impl_runtime_apis! {
 				// check if the user owns any nfts from the collection.
 				if !owned_nfts.is_empty() {
 					stored_collections += 1;
-					if stored_collections <= start {
+					if stored_collections <= start_index {
 						continue;
 					}
-					if stored_collections - start > limit {
+					if stored_collections - start_index > limit {
 						break;
 					}
 				}
@@ -573,15 +573,15 @@ impl_runtime_apis! {
 
 		fn properties_of_nfts_owned_by(
 			account_id: AccountId,
-			start: Option<u32>,
+			start_index: Option<u32>,
 			count: Option<u32>
 		) -> pallet_rmrk_rpc_runtime_api::Result<Vec<(CollectionId, NftId, Vec<PropertyInfoOf<Runtime>>)>>
 		{
 			let mut collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
 			collections.sort();
 
-			let start = start.unwrap_or_default();
-			let limit = count.unwrap_or(collections.len().saturating_sub(start as usize) as u32);
+			let start_index = start_index.unwrap_or_default();
+			let limit = count.unwrap_or(collections.len().saturating_sub(start_index as usize) as u32);
 
 			let mut stored_collections = 0;
 			let mut props_of_nfts = vec![];
@@ -593,10 +593,10 @@ impl_runtime_apis! {
 				// check if the user owns any nfts from the collection.
 				if !owned_nfts.is_empty() {
 					stored_collections += 1;
-					if stored_collections <= start {
+					if stored_collections <= start_index {
 						continue;
 					}
-					if stored_collections - start > limit {
+					if stored_collections - start_index > limit {
 						break;
 					}
 				}

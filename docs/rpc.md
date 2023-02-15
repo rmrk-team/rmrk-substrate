@@ -48,7 +48,7 @@ nftById(collectionId: CollectionId, nftId: NftId) -> Option<NftInfo>
 The frontend can fetch several NFTs at once. Pagination is supported.
 
 ```rust
-fn nfts_owned_by(account_id: AccountId, start: Option<u32>, count: Option<u32>) -> Result<Vec<(CollectionId, NftId, NftInfo)>>;
+fn nfts_owned_by(account_id: AccountId, start_index: Option<u32>, count: Option<u32>) -> Result<Vec<(CollectionId, NftId, NftInfo)>>;
 ```
 
 ### Get the properties of all of the NFTs owned by user
@@ -58,7 +58,7 @@ The frontend can fetch several properties of multiple NFTs at once. Pagination i
 ```rust
 fn properties_of_nfts_owned_by(
 	account_id: AccountId,
-	start: Option<u32>,
+	start_index: Option<u32>,
 	count: Option<u32>
 ) -> Result<Vec<(CollectionId, NftId, Vec<PropertyInfo>)>>;
 ```

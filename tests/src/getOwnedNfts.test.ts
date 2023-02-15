@@ -100,7 +100,7 @@ describe("integration test: get owned NFTs", () => {
   });
 
   it("fetch all NFTs owned by a user over multiple collections providing start", async () => {
-    // We are skipping the first collection by setting the start to "1". So the
+    // We are skipping the first collection by setting the start index to "1". So the
     // collection we are skipping here is 291.
     const ownedNfts = await getOwnedNfts(api, eve, "1", null);
     expect(ownedNfts.length === 2, "Two NFTs should be returned since we skipped the first collection.").to.be
@@ -125,7 +125,7 @@ describe("integration test: get owned NFTs", () => {
   });
 
   it("fetch all NFTs owned by a user over multiple collections providing start and count", async () => {
-    // We are skipping the first collection by setting the start to "1". But
+    // We are skipping the first collection by setting the start index to "1". But
     // because we are setting the count to "1" we are only going to receive NFTs
     // from one collection.
     const ownedNfts = await getOwnedNfts(api, eve, "1", "1");

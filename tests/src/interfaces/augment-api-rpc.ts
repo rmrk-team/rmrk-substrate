@@ -441,11 +441,11 @@ declare module '@polkadot/rpc-core/types/jsonrpc' {
       /**
        * Get all the nfts owned by a user
        **/
-      nftsOwnedBy: AugmentedRpc<(accountId: AccountId32 | string | Uint8Array, start: Option<u32> | null | object | string | Uint8Array, count: Option<u32> | null | object | string | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, RmrkTraitsNftNftInfo]>>>>;
+      nftsOwnedBy: AugmentedRpc<(accountId: AccountId32 | string | Uint8Array, startIndex: Option<u32> | null | object | string | Uint8Array, count: Option<u32> | null | object | string | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, RmrkTraitsNftNftInfo]>>>>;
       /**
        * Get the properties of all the nfts owned by a user
        **/
-      propertiesOfNftsOwnedBy: AugmentedRpc<(accountId: AccountId32 | string | Uint8Array, start: Option<u32> | null | object | string | Uint8Array, count: Option<u32> | null | object | string | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, Vec<RmrkTraitsPropertyPropertyInfo>]>>>>;
+      propertiesOfNftsOwnedBy: AugmentedRpc<(accountId: AccountId32 | string | Uint8Array, startIndex: Option<u32> | null | object | string | Uint8Array, count: Option<u32> | null | object | string | Uint8Array, at?: Hash | string | Uint8Array) => Observable<Vec<ITuple<[u32, u32, Vec<RmrkTraitsPropertyPropertyInfo>]>>>>;
       /**
        * Get Base's theme names
        **/

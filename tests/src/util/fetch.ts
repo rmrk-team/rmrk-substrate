@@ -48,25 +48,25 @@ export async function getNft(
 export async function getOwnedNfts(
   api: ApiPromise,
   ownerUri: string,
-  start: string | null,
+  startIndex: string | null,
   count: string | null,
 ): Promise<Vec<ITuple<[u32, u32, Nft]>>> {
   const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
   const owner = privateKey(ownerUri, Number(ss58Format));
 
-  return api.rpc.rmrk.nftsOwnedBy(owner.address, start, count);
+  return api.rpc.rmrk.nftsOwnedBy(owner.address, startIndex, count);
 }
 
 export async function getPropertiesOfOwnedNfts(
   api: ApiPromise,
   ownerUri: string,
-  start: string | null = null,
+  startIndex: string | null = null,
   count: string | null = null,
 ): Promise<Vec<ITuple<[u32, u32, Vec<Property>]>>> {
   const ss58Format = api.registry.getChainProperties()!.toJSON().ss58Format;
   const owner = privateKey(ownerUri, Number(ss58Format));
 
-  return api.rpc.rmrk.propertiesOfNftsOwnedBy(owner.address, start, count);
+  return api.rpc.rmrk.propertiesOfNftsOwnedBy(owner.address, startIndex, count);
 }
 
 export async function getCollectionProperties(
