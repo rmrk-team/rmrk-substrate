@@ -169,6 +169,10 @@ declare module '@polkadot/api-base/types/errors' {
        **/
       CannotBuyOwnToken: AugmentedError<ApiType>;
       /**
+       * Cannot list NFT based on downstream logic implemented for MarketplaceHooks trait
+       **/
+      CannotListNft: AugmentedError<ApiType>;
+      /**
        * Cannot list NFT owned by a NFT
        **/
       CannotListNftOwnedByNft: AugmentedError<ApiType>;
@@ -188,6 +192,10 @@ declare module '@polkadot/api-base/types/errors' {
        * Listing has expired and cannot be bought
        **/
       ListingHasExpired: AugmentedError<ApiType>;
+      /**
+       * Marketplace owner not configured
+       **/
+      MarketplaceOwnerNotSet: AugmentedError<ApiType>;
       /**
        * Not possible to list non-transferable NFT
        **/
