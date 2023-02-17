@@ -638,12 +638,6 @@ impl<T: Config>
 		let mut sending_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
-		// Defaults to true, but can be implemented downstream for custom logic
-		ensure!(
-			T::TransferHooks::pre_check(&sender, &collection_id, &nft_id),
-			Error::<T>::FailedTransferHooksPreCheck
-		);
-
 		// Check NFT is transferable
 		Self::check_is_transferable(&sending_nft)?;
 
@@ -684,6 +678,11 @@ impl<T: Config>
 			},
 		};
 
+		// Defaults to true, but can be implemented downstream for custom logic
+		ensure!(
+			T::TransferHooks::pre_check(&sender, &new_owner_account, &collection_id, &nft_id),
+			Error::<T>::FailedTransferHooksPreCheck
+		);
 		sending_nft.owner = new_owner.clone();
 
 		if approval_required {

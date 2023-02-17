@@ -7,7 +7,12 @@
 pub trait TransferHooks<AccountId, CollectionId, NftId> {
 	/// Check if the NFT's pre-checks and post-checks for the transfer function based on the sender,
 	/// `collection_id` and `nft_id` parameters.
-	fn pre_check(sender: &AccountId, collection_id: &CollectionId, nft_id: &NftId) -> bool;
+	fn pre_check(
+		sender: &AccountId,
+		recipient: &AccountId,
+		collection_id: &CollectionId,
+		nft_id: &NftId,
+	) -> bool;
 	fn post_transfer(
 		sender: &AccountId,
 		recipient: &AccountId,
@@ -17,7 +22,12 @@ pub trait TransferHooks<AccountId, CollectionId, NftId> {
 }
 
 impl<AccountId, CollectionId, NftId> TransferHooks<AccountId, CollectionId, NftId> for () {
-	fn pre_check(_sender: &AccountId, _collection_id: &CollectionId, _nft_id: &NftId) -> bool {
+	fn pre_check(
+		_sender: &AccountId,
+		_recipient: &AccountId,
+		_collection_id: &CollectionId,
+		_nft_id: &NftId,
+	) -> bool {
 		true
 	}
 
