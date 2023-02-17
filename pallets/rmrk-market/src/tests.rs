@@ -818,3 +818,28 @@ fn accept_expired_offer_wont_works() {
 		);
 	});
 }
+
+#[test]
+fn burn_locked_nft_fail() {
+	new_test_ext().execute_with(|| {
+		// Create a basic collection
+		assert_ok!(basic_collection());
+		// Mint non-transferable NFT
+		assert_ok!(RmrkCore::mint_nft(
+			Origin::signed(ALICE),
+			Some(ALICE),
+			NFT_ID_0,
+			COLLECTION_ID_0,
+			Some(ALICE),
+			Some(Permill::from_float(1.525)),
+			bvec![0u8; 20],
+			true,
+			None,
+		));
+		assert_ok!(RmrkMarket::list(Origin::signed(ALICE), COLLECTION_ID_0, 0, 10u128, None,));
+		assert_noop!(
+			RmrkCore::burn_nft(Origin::signed(ALICE), COLLECTION_ID_0, 0),
+			pallet_uniques::Error::<Test>::Locked
+		);
+	});
+}

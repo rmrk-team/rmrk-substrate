@@ -9,10 +9,11 @@
 use frame_support::{
 	dispatch::DispatchResult,
 	ensure,
-	traits::{Currency, ExistenceRequirement, ReservableCurrency},
+	traits::{Currency, ExistenceRequirement, Get, ReservableCurrency},
 	transactional, BoundedVec,
 };
 use frame_system::{ensure_signed, RawOrigin};
+use sp_runtime::{Permill, Saturating};
 
 use sp_std::prelude::*;
 
@@ -21,7 +22,7 @@ pub use pallet::*;
 pub mod weights;
 pub use weights::WeightInfo;
 
-use rmrk_traits::{AccountIdOrCollectionNftTuple, NftInfo};
+use rmrk_traits::{AccountIdOrCollectionNftTuple, NftInfo, RoyaltyInfo};
 
 pub mod types;
 
@@ -37,13 +38,13 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-use crate::types::Offer;
+use crate::types::{MarketplaceHooks, Offer};
 pub use pallet::*;
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use crate::types::ListInfo;
+	use crate::types::{ListInfo, MarketplaceHooks};
 	use frame_support::{pallet_prelude::*, traits::tokens::nonfungibles::Inspect};
 	use frame_system::pallet_prelude::*;
 	use sp_runtime::Permill;
@@ -92,6 +93,13 @@ pub mod pallet {
 
 		#[cfg(feature = "runtime-benchmarks")]
 		type Helper: BenchmarkHelper<Self::CollectionId, Self::ItemId>;
+
+		/// Marketplace hooks to be implemented downstream.
+		type MarketplaceHooks: MarketplaceHooks<BalanceOf<Self>, Self::CollectionId, Self::ItemId>;
+
+		/// Market fee to be implemented downstream.
+		#[pallet::constant]
+		type MarketFee: Get<Permill>;
 	}
 
 	#[pallet::pallet]
@@ -123,6 +131,11 @@ pub mod pallet {
 		OfferOf<T>,
 		OptionQuery,
 	>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn marketplace_owner)]
+	/// Stores the marketplace owner account
+	pub type MarketplaceOwner<T: Config> = StorageValue<_, T::AccountId, OptionQuery>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -167,6 +180,22 @@ pub mod pallet {
 			collection_id: T::CollectionId,
 			nft_id: T::ItemId,
 		},
+		/// Royalty fee paid to royalty owner
+		RoyaltyFeePaid {
+			sender: T::AccountId,
+			royalty_owner: T::AccountId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
+			amount: BalanceOf<T>,
+		},
+		/// Market fee paid to marketplace owner
+		MarketFeePaid {
+			sender: T::AccountId,
+			marketplace_owner: T::AccountId,
+			collection_id: T::CollectionId,
+			nft_id: T::ItemId,
+			amount: BalanceOf<T>,
+		},
 	}
 
 	// Errors inform users that something went wrong.
@@ -202,6 +231,10 @@ pub mod pallet {
 		PriceDiffersFromExpected,
 		/// Not possible to list non-transferable NFT
 		NonTransferable,
+		/// Marketplace owner not configured
+		MarketplaceOwnerNotSet,
+		/// Cannot list NFT based on downstream logic implemented for MarketplaceHooks trait
+		CannotListNft,
 	}
 
 	#[pallet::call]
@@ -252,6 +285,11 @@ pub mod pallet {
 			let sender = ensure_signed(origin)?;
 			let owner = pallet_uniques::Pallet::<T>::owner(collection_id.into(), nft_id)
 				.ok_or(Error::<T>::TokenDoesNotExist)?;
+			// Check MarketplaceHooks function if the can NFT be listed
+			ensure!(
+				T::MarketplaceHooks::can_sell_in_marketplace(collection_id, nft_id),
+				Error::<T>::CannotListNft
+			);
 
 			// Ensure that the NFT is not owned by an NFT
 			ensure!(
@@ -520,15 +558,24 @@ impl<T: Config> Pallet<T> {
 			ensure!(list_price == amount, Error::<T>::PriceDiffersFromExpected);
 		}
 
+		// Get NFT info for RoyaltyInfo and get the market fee constant
+		let nft_info = pallet_rmrk_core::Nfts::<T>::get(collection_id, nft_id)
+			.ok_or(pallet_rmrk_core::Error::<T>::NoAvailableNftId)?;
+		let royalty_info = nft_info.royalty;
+		let market_fee = T::MarketFee::get();
+
 		// Set NFT Lock status to false to facilitate the purchase
 		pallet_rmrk_core::Pallet::<T>::set_lock((collection_id, nft_id), false);
 
-		// Transfer currency then transfer the NFT
-		<T as pallet::Config>::Currency::transfer(
-			&buyer,
-			&owner,
+		// Calculate and finalize transfer of fees and payment then transfer the NFT
+		Self::calculate_and_finalize_purchase_and_fees(
+			buyer.clone(),
+			owner.clone(),
+			collection_id,
+			nft_id,
 			list_price,
-			ExistenceRequirement::KeepAlive,
+			market_fee,
+			royalty_info,
 		)?;
 
 		let new_owner = AccountIdOrCollectionNftTuple::AccountId(buyer.clone());
@@ -583,5 +630,82 @@ impl<T: Config> Pallet<T> {
 			}
 		}
 		false
+	}
+
+	/// Helper function to handle market fees and royalty payments that are
+	/// implemented downstream. By default, no market fees or royalties
+	/// are paid out.
+	///
+	/// Parameters:
+	/// - buyer: Account ID of the buyer.
+	/// - seller: Account ID of the seller.
+	/// - amount: Amount the NFT is being sold for.
+	/// - market_fee: Percentage to calculate the market free implemented in `MarketplaceHooks`
+	///   trait.
+	/// - royalty_info: Royalty account and royalty fee to be calculated in the `MarketplaceHooks`
+	///   trait.
+	fn calculate_and_finalize_purchase_and_fees(
+		buyer: T::AccountId,
+		seller: T::AccountId,
+		collection_id: T::CollectionId,
+		nft_id: T::ItemId,
+		amount: BalanceOf<T>,
+		market_fee: Permill,
+		royalty_info: Option<RoyaltyInfo<T::AccountId, Permill>>,
+	) -> DispatchResult {
+		let mut final_amount_after_fees = amount.clone();
+		// Calculate market fee and update final amount
+		if let Some(calculated_market_fee) =
+			T::MarketplaceHooks::calculate_market_fee(amount, market_fee)
+		{
+			let marketplace_owner =
+				MarketplaceOwner::<T>::get().ok_or(Error::<T>::MarketplaceOwnerNotSet)?;
+			final_amount_after_fees = final_amount_after_fees.saturating_sub(calculated_market_fee);
+			<T as pallet::Config>::Currency::transfer(
+				&buyer,
+				&marketplace_owner,
+				calculated_market_fee,
+				ExistenceRequirement::KeepAlive,
+			)?;
+			Self::deposit_event(Event::MarketFeePaid {
+				sender: buyer.clone(),
+				marketplace_owner,
+				collection_id,
+				nft_id,
+				amount: calculated_market_fee,
+			})
+		}
+		// Calculate royalty fees and update the final amount
+		if let Some(royalty_info) = royalty_info {
+			if let Some(calculated_royalty_fee) =
+				T::MarketplaceHooks::calculate_royalty_fee(amount, royalty_info.amount)
+			{
+				let royalty_owner = royalty_info.recipient;
+				final_amount_after_fees =
+					final_amount_after_fees.saturating_sub(calculated_royalty_fee);
+				<T as pallet::Config>::Currency::transfer(
+					&buyer,
+					&royalty_owner,
+					calculated_royalty_fee,
+					ExistenceRequirement::KeepAlive,
+				)?;
+				Self::deposit_event(Event::RoyaltyFeePaid {
+					sender: buyer.clone(),
+					royalty_owner,
+					collection_id,
+					nft_id,
+					amount: calculated_royalty_fee,
+				})
+			}
+		}
+		// Finalize payment
+		<T as pallet::Config>::Currency::transfer(
+			&buyer,
+			&seller,
+			final_amount_after_fees,
+			ExistenceRequirement::KeepAlive,
+		)?;
+
+		Ok(())
 	}
 }

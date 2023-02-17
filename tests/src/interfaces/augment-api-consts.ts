@@ -4,6 +4,7 @@
 import type { ApiTypes } from '@polkadot/api-base/types';
 import type { u128, u16, u32, u64, u8 } from '@polkadot/types-codec';
 import type { Codec } from '@polkadot/types-codec/types';
+import type { Permill } from '@polkadot/types/interfaces/runtime';
 import type { FrameSystemLimitsBlockLength, FrameSystemLimitsBlockWeights, SpVersionRuntimeVersion, SpWeightsRuntimeDbWeight } from '@polkadot/types/lookup';
 
 declare module '@polkadot/api-base/types/consts' {
@@ -51,6 +52,10 @@ declare module '@polkadot/api-base/types/consts' {
        **/
       partsLimit: u32 & AugmentedConst<ApiType>;
       /**
+       * The maximum number of properties each can have
+       **/
+      propertiesLimit: u32 & AugmentedConst<ApiType>;
+      /**
        * The maximum resource symbol length
        **/
       resourceSymbolLimit: u32 & AugmentedConst<ApiType>;
@@ -74,6 +79,10 @@ declare module '@polkadot/api-base/types/consts' {
       [key: string]: Codec;
     };
     rmrkMarket: {
+      /**
+       * Market fee to be implemented downstream.
+       **/
+      marketFee: Permill & AugmentedConst<ApiType>;
       /**
        * Minimum offer amount as a valid offer
        **/

@@ -154,6 +154,7 @@ pub mod pallet {
 		#[cfg(feature = "runtime-benchmarks")]
 		type Helper: BenchmarkHelper<Self::CollectionId, Self::ItemId>;
 
+		/// Transfer hooks to be implemented downstream.
 		type TransferHooks: TransferHooks<Self::AccountId, Self::CollectionId, Self::ItemId>;
 	}
 

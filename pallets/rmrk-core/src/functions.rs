@@ -569,6 +569,9 @@ impl<T: Config>
 		nft_id: T::ItemId,
 		budget: &dyn Budget,
 	) -> DispatchResultWithPostInfo {
+		// Check Lock to prevent locked NFTs from being burned. Owner must unlock the NFT before
+		// burning.
+		ensure!(!Pallet::<T>::is_locked(collection_id, nft_id), pallet_uniques::Error::<T>::Locked);
 		// Remove self from parent's Children storage
 		if let Some(nft) = Self::nfts(collection_id, nft_id) {
 			if let AccountIdOrCollectionNftTuple::CollectionAndNftTuple(parent_col, parent_nft) =
@@ -582,8 +585,6 @@ impl<T: Config>
 
 		// Remove all of the properties of the NFT
 		Self::do_remove_properties(collection_id, Some(nft_id), T::PropertiesLimit::get())?;
-		// Remove the lock from the NFT if it was locked
-		Lock::<T>::remove((&collection_id, nft_id));
 
 		let _multi_removal_results = Resources::<T>::clear_prefix(
 			(collection_id, nft_id),
@@ -637,12 +638,6 @@ impl<T: Config>
 		let mut sending_nft =
 			Nfts::<T>::get(collection_id, nft_id).ok_or(Error::<T>::NoAvailableNftId)?;
 
-		// Defaults to true, but can be implemented downstream for custom logic
-		ensure!(
-			T::TransferHooks::pre_check(&sender, &collection_id, &nft_id),
-			Error::<T>::FailedTransferHooksPreCheck
-		);
-
 		// Check NFT is transferable
 		Self::check_is_transferable(&sending_nft)?;
 
@@ -683,6 +678,11 @@ impl<T: Config>
 			},
 		};
 
+		// Defaults to true, but can be implemented downstream for custom logic
+		ensure!(
+			T::TransferHooks::pre_check(&sender, &new_owner_account, &collection_id, &nft_id),
+			Error::<T>::FailedTransferHooksPreCheck
+		);
 		sending_nft.owner = new_owner.clone();
 
 		if approval_required {
