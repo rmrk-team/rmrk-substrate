@@ -840,6 +840,10 @@ impl<T: Config> Pallet<T> {
 		Resources::<T>::iter_prefix_values((collection_id, nft_id))
 	}
 
+	pub fn iterate_collections() -> impl Iterator<Item = T::CollectionId> {
+		Collections::<T>::iter().map(|c| c.0)
+	}
+
 	pub fn query_properties(
 		collection_id: T::CollectionId,
 		nft_id: Option<T::ItemId>,

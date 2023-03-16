@@ -120,6 +120,40 @@ pub trait RmrkApi<
 		at: Option<BlockHash>,
 	) -> RpcResult<Vec<NftChild<CollectionId, NftId>>>;
 
+	#[method(name = "nftsOwnedBy")]
+	/// Get all of the NFTs of the provided account. Supports pagination by
+	/// specifying an optional `start_index` and `count`.
+	///
+	/// The `start_index` parameter defines the number of collections after
+	/// which we start reading the NFTs. The collections in which the user
+	/// doesn't own any NFTs are not counted.
+	///
+	/// The `count` parameter specifies the number of collections to read from.
+	fn nfts_owned_by(
+		&self,
+		account_id: AccountId,
+		start_index: Option<u32>,
+		count: Option<u32>,
+		at: Option<BlockHash>,
+	) -> RpcResult<Vec<(CollectionId, NftId, NftInfo)>>;
+
+	#[method(name = "propertiesOfNftsOwnedBy")]
+	/// Get all of the properties of the NFTs owned by the specified account.
+	/// Supports pagination by specifying an optional `start_index` and `count`.
+	///
+	/// The `start_index` parameter defines the number of collections after which we
+	/// start reading the NFT properties. The collections in which the user
+	/// doesn't own any NFTs are not counted.
+	///
+	/// The `count` parameter specifies the number of collections to read from.
+	fn properties_of_nfts_owned_by(
+		&self,
+		account_id: AccountId,
+		start_index: Option<u32>,
+		count: Option<u32>,
+		at: Option<BlockHash>,
+	) -> RpcResult<Vec<(CollectionId, NftId, Vec<PropertyInfo>)>>;
+
 	#[method(name = "collectionProperties")]
 	/// Get collection properties
 	fn collection_properties(
@@ -232,6 +266,20 @@ where
 	pass_method!(nft_by_id(collection_id: CollectionId, nft_id: NftId) -> Option<NftInfo>);
 	pass_method!(account_tokens(account_id: AccountId, collection_id: CollectionId) -> Vec<NftId>);
 	pass_method!(nft_children(collection_id: CollectionId, nft_id: NftId) -> Vec<NftChild<CollectionId, NftId>>);
+	pass_method!(
+		nfts_owned_by(
+			account_id: AccountId,
+			start_index: Option<CollectionId>,
+			count: Option<u32>
+		) -> Vec<(CollectionId, NftId, NftInfo)>
+	);
+	pass_method!(
+		properties_of_nfts_owned_by(
+			account_id: AccountId,
+			start_index: Option<CollectionId>,
+			count: Option<u32>
+		) -> Vec<(CollectionId, NftId, Vec<PropertyInfo>)>
+	);
 	pass_method!(
 		collection_properties(
 			collection_id: CollectionId,

@@ -7,7 +7,7 @@ import {
 import type { EventRecord } from '@polkadot/types/interfaces';
 import type { GenericEventData } from '@polkadot/types';
 import privateKey from "../substrate/privateKey";
-import { NftIdTuple, getChildren, getOwnedNfts, getCollectionProperties, getNftProperties, getResources } from './fetch';
+import { NftIdTuple, getChildren, getOwnedNftsInCollection, getCollectionProperties, getNftProperties, getResources } from './fetch';
 import chaiAsPromised from 'chai-as-promised';
 import chai from 'chai';
 
@@ -41,7 +41,7 @@ export async function isNftOwnedBy(
     nftId: number
 ): Promise<boolean> {
     if (typeof owner === "string") {
-        return (await getOwnedNfts(api, owner, collectionId))
+        return (await getOwnedNftsInCollection(api, owner, collectionId))
             .find(ownedNftId => {
                 return ownedNftId === nftId;
             }) !== undefined;

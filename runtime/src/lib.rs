@@ -544,6 +544,86 @@ impl_runtime_apis! {
 			Ok(children)
 		}
 
+		fn nfts_owned_by(
+			account_id: AccountId,
+			start_index: Option<u32>,
+			count: Option<u32>
+		) -> pallet_rmrk_rpc_runtime_api::Result<Vec<(CollectionId, NftId, InstanceInfoOf<Runtime>)>> {
+			let mut collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
+			collections.sort();
+
+			let start_index = start_index.unwrap_or_default();
+			let limit = count.unwrap_or(collections.len().saturating_sub(start_index as usize) as u32);
+
+			let mut stored_collections = 0;
+			let mut nfts = vec![];
+
+			for collection_id in collections {
+				// The nft ids owned by the `account_id` from the collection.
+				let owned_nfts: Vec<NftId> = Uniques::owned_in_collection(&collection_id, &account_id).collect();
+
+				// check if the user owns any nfts from the collection.
+				if !owned_nfts.is_empty() {
+					stored_collections += 1;
+					if stored_collections <= start_index {
+						continue;
+					}
+					if stored_collections - start_index > limit {
+						break;
+					}
+				}
+
+				// Get more information about the nfts.
+				owned_nfts.into_iter().for_each(|nft_id| {
+					if let Some(nft_info) = RmrkCore::nfts(collection_id, nft_id) {
+						nfts.push((collection_id, nft_id, nft_info));
+					}
+				});
+			}
+
+			Ok(nfts)
+		}
+
+		fn properties_of_nfts_owned_by(
+			account_id: AccountId,
+			start_index: Option<u32>,
+			count: Option<u32>
+		) -> pallet_rmrk_rpc_runtime_api::Result<Vec<(CollectionId, NftId, Vec<PropertyInfoOf<Runtime>>)>>
+		{
+			let mut collections: Vec<CollectionId> = RmrkCore::iterate_collections().collect();
+			collections.sort();
+
+			let start_index = start_index.unwrap_or_default();
+			let limit = count.unwrap_or(collections.len().saturating_sub(start_index as usize) as u32);
+
+			let mut stored_collections = 0;
+			let mut props_of_nfts = vec![];
+
+			for collection_id in collections {
+				// The nft ids owned by the `account_id` from the collection.
+				let owned_nfts: Vec<NftId> = Uniques::owned_in_collection(&collection_id, &account_id).collect();
+
+				// check if the user owns any nfts from the collection.
+				if !owned_nfts.is_empty() {
+					stored_collections += 1;
+					if stored_collections <= start_index {
+						continue;
+					}
+					if stored_collections - start_index > limit {
+						break;
+					}
+				}
+
+				// Get the properties for each of these NFTs.
+				owned_nfts.into_iter().for_each(|nft_id| {
+					let nft_props: Vec<PropertyInfoOf<Runtime>> = RmrkCore::query_properties(collection_id, Some(nft_id), None).collect();
+					props_of_nfts.push((collection_id, nft_id, nft_props));
+				});
+			};
+
+			Ok(props_of_nfts)
+		}
+
 		fn collection_properties(
 			collection_id: CollectionId,
 			filter_keys: Option<Vec<pallet_rmrk_rpc_runtime_api::PropertyKey>>
