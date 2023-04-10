@@ -1,5 +1,7 @@
 # RMRK Substrate
 
+> **Warning**: No stability and security guarantees. Not production ready.
+
 Additional documentation [https://rmrk-team.github.io/rmrk-substrate](https://rmrk-team.github.io/rmrk-substrate)
 
 ### Rust Setup
