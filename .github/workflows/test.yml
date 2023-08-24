@@ -25,7 +25,9 @@ jobs:
         key: ${{ runner.os }}-cargo
 
     - name: Set-Up
-      run: sudo apt install -y git clang curl libssl-dev llvm libudev-dev protobuf-compiler
+      run: |
+        sudo apt-get update
+        sudo apt install -y git clang curl libssl-dev llvm libudev-dev protobuf-compiler
 
     - name: Install toolchain
       # hacky way to install rust. Rustup is pre-installed on runners. Calling rustup show will detect the rust-toolchain.toml, and subsequently

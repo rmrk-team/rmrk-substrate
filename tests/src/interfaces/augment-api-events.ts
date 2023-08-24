@@ -86,6 +86,7 @@ declare module '@polkadot/api-base/types/events' {
       NFTRejected: AugmentedEvent<ApiType, [sender: AccountId32, collectionId: u32, nftId: u32], { sender: AccountId32, collectionId: u32, nftId: u32 }>;
       NFTSent: AugmentedEvent<ApiType, [sender: AccountId32, recipient: RmrkTraitsNftAccountIdOrCollectionNftTuple, collectionId: u32, nftId: u32, approvalRequired: bool], { sender: AccountId32, recipient: RmrkTraitsNftAccountIdOrCollectionNftTuple, collectionId: u32, nftId: u32, approvalRequired: bool }>;
       PrioritySet: AugmentedEvent<ApiType, [collectionId: u32, nftId: u32], { collectionId: u32, nftId: u32 }>;
+      PropertiesRemoved: AugmentedEvent<ApiType, [collectionId: u32, maybeNftId: Option<u32>], { collectionId: u32, maybeNftId: Option<u32> }>;
       PropertyRemoved: AugmentedEvent<ApiType, [collectionId: u32, maybeNftId: Option<u32>, key: Bytes], { collectionId: u32, maybeNftId: Option<u32>, key: Bytes }>;
       PropertySet: AugmentedEvent<ApiType, [collectionId: u32, maybeNftId: Option<u32>, key: Bytes, value: Bytes], { collectionId: u32, maybeNftId: Option<u32>, key: Bytes, value: Bytes }>;
       ResourceAccepted: AugmentedEvent<ApiType, [nftId: u32, resourceId: u32, collectionId: u32], { nftId: u32, resourceId: u32, collectionId: u32 }>;
@@ -111,6 +112,10 @@ declare module '@polkadot/api-base/types/events' {
     };
     rmrkMarket: {
       /**
+       * Market fee paid to marketplace owner
+       **/
+      MarketFeePaid: AugmentedEvent<ApiType, [sender: AccountId32, marketplaceOwner: AccountId32, collectionId: u32, nftId: u32, amount: u128], { sender: AccountId32, marketplaceOwner: AccountId32, collectionId: u32, nftId: u32, amount: u128 }>;
+      /**
        * Offer was accepted
        **/
       OfferAccepted: AugmentedEvent<ApiType, [owner: AccountId32, buyer: AccountId32, collectionId: u32, nftId: u32], { owner: AccountId32, buyer: AccountId32, collectionId: u32, nftId: u32 }>;
@@ -122,6 +127,10 @@ declare module '@polkadot/api-base/types/events' {
        * Offer was withdrawn
        **/
       OfferWithdrawn: AugmentedEvent<ApiType, [sender: AccountId32, collectionId: u32, nftId: u32], { sender: AccountId32, collectionId: u32, nftId: u32 }>;
+      /**
+       * Royalty fee paid to royalty owner
+       **/
+      RoyaltyFeePaid: AugmentedEvent<ApiType, [sender: AccountId32, royaltyOwner: AccountId32, collectionId: u32, nftId: u32, amount: u128], { sender: AccountId32, royaltyOwner: AccountId32, collectionId: u32, nftId: u32, amount: u128 }>;
       /**
        * Token listed on Marketplace
        **/

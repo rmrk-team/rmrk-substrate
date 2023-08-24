@@ -306,7 +306,6 @@ benchmarks! {
 
 		set_properties::<T>(owner.clone(), collection_id, Some(nft_id), k);
 		mint_and_send_to_parent::<T>(owner.clone(), collection_id, n);
-		RmrkCore::<T>::set_lock((collection_id, nft_id), true);
 	}: _(RawOrigin::Signed(owner.clone()), collection_id, nft_id)
 	verify {
 		assert_last_event::<T>(Event::NFTBurned { owner, collection_id, nft_id }.into());

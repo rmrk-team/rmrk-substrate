@@ -29,8 +29,8 @@ pub enum AccountIdOrCollectionNftTuple<AccountId, CollectionId, NftId> {
 }
 
 /// Royalty information (recipient and amount)
-#[cfg_attr(feature = "std", derive(PartialEq, Eq, Serialize))]
-#[derive(Encode, Decode, Debug, TypeInfo, MaxEncodedLen)]
+#[cfg_attr(feature = "std", derive(Serialize))]
+#[derive(Encode, Decode, Clone, Debug, PartialEq, Eq, TypeInfo, MaxEncodedLen)]
 pub struct RoyaltyInfo<AccountId, RoyaltyAmount> {
 	/// Recipient (AccountId) of the royalty
 	pub recipient: AccountId,
