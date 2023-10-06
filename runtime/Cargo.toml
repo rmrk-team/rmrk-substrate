@@ -16,37 +16,37 @@ targets = ["x86_64-unknown-linux-gnu"]
 codec = { package = "parity-scale-codec", version = "3.2.2", default-features = false, features = ["derive"] }
 scale-info = { version = "2.1", default-features = false, features = ["derive"] }
 
-pallet-uniques = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-pallet-utility = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-pallet-aura = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-pallet-balances = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-frame-support = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-pallet-grandpa = { version = "4.0.0-dev", default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-pallet-sudo = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-frame-system = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-pallet-timestamp = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-pallet-transaction-payment = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-frame-executive = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-api = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-block-builder = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-consensus-aura = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-core = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-inherents = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-offchain = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-runtime = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-session = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-std = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-transaction-pool = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-sp-version = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
+pallet-uniques = { version = "4.0.0-dev", default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+pallet-utility = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+pallet-aura = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+pallet-balances = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+frame-support = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+pallet-grandpa = { version = "4.0.0-dev", default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+pallet-randomness-collective-flip = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+pallet-sudo = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+frame-system = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+pallet-timestamp = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+pallet-transaction-payment = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+frame-executive = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+sp-api = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+sp-block-builder = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+sp-consensus-aura = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+sp-core = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+sp-inherents = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+sp-offchain = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+sp-runtime = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+sp-session = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+sp-std = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+sp-transaction-pool = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+sp-version = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
 
 # Used for the node template"s RPCs
-frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
-pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
+frame-system-rpc-runtime-api = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
+pallet-transaction-payment-rpc-runtime-api = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
 
 # Used for runtime benchmarking
-frame-benchmarking = { default-features = false, git = "https://github.com/paritytech/substrate.git", optional = true, branch = "polkadot-v0.9.38" }
-frame-system-benchmarking = { default-features = false, git = "https://github.com/paritytech/substrate.git", optional = true, branch = "polkadot-v0.9.38" }
+frame-benchmarking = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", optional = true, branch = "peaq-polkadot-v0.9.38" }
+frame-system-benchmarking = { default-features = false, git = "https://github.com/peaqnetwork/substrate.git", optional = true, branch = "peaq-polkadot-v0.9.38" }
 hex-literal = { version = "0.3.1", optional = true }
 
 # Local Dependencies
@@ -58,7 +58,7 @@ rmrk-traits = { version = "0.0.1", default-features = false, path = "../traits" 
 pallet-rmrk-rpc-runtime-api = { version = "0.0.1", default-features = false, path = "../rpc-runtime-api" }
 
 [build-dependencies]
-substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.38" }
+substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/peaqnetwork/substrate.git", branch = "peaq-polkadot-v0.9.38" }
 
 [features]
 default = ["std"]
