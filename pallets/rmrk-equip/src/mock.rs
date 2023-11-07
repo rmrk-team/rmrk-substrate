@@ -8,7 +8,7 @@ use frame_support::{
 	traits::{AsEnsureOriginWithArg, ConstU32, Everything},
 	weights::Weight,
 };
-use frame_system::EnsureRoot;
+use frame_system::{EnsureRoot, EnsureSigned};
 use sp_core::{crypto::AccountId32, H256};
 use sp_runtime::{
 	testing::Header,
@@ -72,7 +72,7 @@ use pallet_rmrk_core::RmrkBenchmark;
 
 impl pallet_rmrk_core::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	type ProtocolOrigin = EnsureRoot<AccountId>;
+	type ProtocolOrigin = EnsureSigned<AccountId>;
 	type ResourceSymbolLimit = ResourceSymbolLimit;
 	type PartsLimit = PartsLimit;
 	type MaxPriorities = MaxPriorities;

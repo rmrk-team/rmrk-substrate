@@ -107,10 +107,11 @@ parameter_types! {
 
 #[cfg(feature = "runtime-benchmarks")]
 use pallet_rmrk_core::RmrkBenchmark;
+use system::EnsureSigned;
 
 impl pallet_rmrk_core::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	type ProtocolOrigin = EnsureRoot<AccountId>;
+	type ProtocolOrigin = EnsureSigned<AccountId>;
 	type ResourceSymbolLimit = ResourceSymbolLimit;
 	type PartsLimit = PartsLimit;
 	type MaxPriorities = MaxPriorities;

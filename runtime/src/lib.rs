@@ -363,7 +363,7 @@ use pallet_rmrk_core::RmrkBenchmark;
 
 impl pallet_rmrk_core::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type ProtocolOrigin = frame_system::EnsureRoot<AccountId>;
+	type ProtocolOrigin = frame_system::EnsureSigned<AccountId>;
 	type ResourceSymbolLimit = ResourceSymbolLimit;
 	type PartsLimit = PartsLimit;
 	type MaxPriorities = MaxPriorities;

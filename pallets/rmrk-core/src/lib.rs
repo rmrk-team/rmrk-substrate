@@ -9,10 +9,13 @@
 use frame_support::{
 	dispatch::{DispatchResult, DispatchResultWithPostInfo},
 	ensure,
-	traits::tokens::{nonfungibles::*, Locker},
+	traits::{
+		tokens::{nonfungibles::*, Locker},
+		EnsureOrigin, IsType,
+	},
 	transactional, BoundedVec,
 };
-use frame_system::ensure_signed;
+use frame_system::{ensure_signed, RawOrigin};
 
 use sp_runtime::{traits::StaticLookup, DispatchError, Permill};
 use sp_std::convert::TryInto;
@@ -122,7 +125,7 @@ pub mod pallet {
 	pub trait Config: frame_system::Config + pallet_uniques::Config {
 		/// Because this pallet emits events, it depends on the runtime's definition of an event.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		type ProtocolOrigin: EnsureOrigin<Self::RuntimeOrigin>;
+		type ProtocolOrigin: EnsureOrigin<Self::RuntimeOrigin, Success = Self::AccountId>;
 
 		/// The maximum resource symbol length
 		#[pallet::constant]
@@ -451,7 +454,7 @@ pub mod pallet {
 			transferable: bool,
 			resources: Option<BoundedResourceInfoTypeOf<T>>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin)?;
+			let sender = T::ProtocolOrigin::ensure_origin(origin)?;
 			if let Some(collection_issuer) =
 				pallet_uniques::Pallet::<T>::collection_owner(collection_id)
 			{
@@ -505,7 +508,7 @@ pub mod pallet {
 			transferable: bool,
 			resources: Option<BoundedResourceInfoTypeOf<T>>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin.clone())?;
+			let sender = T::ProtocolOrigin::ensure_origin(origin.clone())?;
 
 			// Collection must exist and sender must be issuer of collection
 			if let Some(collection_issuer) =
@@ -543,7 +546,7 @@ pub mod pallet {
 			max: Option<u32>,
 			symbol: BoundedCollectionSymbolOf<T>,
 		) -> DispatchResult {
-			let sender = ensure_signed(origin)?;
+			let sender = T::ProtocolOrigin::ensure_origin(origin)?;
 
 			Self::collection_create(sender, collection_id, metadata, max, symbol)?;
 
