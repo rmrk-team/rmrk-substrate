@@ -59,40 +59,52 @@ impl<T: Config> Property<KeyLimitOf<T>, ValueLimitOf<T>, T::AccountId, T::Collec
 {
 	fn property_set(
 		sender: T::AccountId,
-		collection_id: T::CollectionId,
-		maybe_nft_id: Option<T::ItemId>,
+		entity: EntityOf<T>,
 		key: KeyLimitOf<T>,
 		value: ValueLimitOf<T>,
 	) -> DispatchResult {
-		let collection =
-			Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-		ensure!(collection.issuer == sender, Error::<T>::NoPermission);
-		if let Some(nft_id) = &maybe_nft_id {
-			// Check NFT lock status
-			ensure!(
-				!Pallet::<T>::is_locked(collection_id, *nft_id),
-				pallet_uniques::Error::<T>::Locked
-			);
-			let budget = budget::Value::new(T::NestingBudget::get());
-			let (root_owner, _) = Pallet::<T>::lookup_root_owner(collection_id, *nft_id, &budget)?;
-			ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
+		match entity {
+			Entity::Collection(_collection_id) => todo!(),
+			Entity::Nft(collection_id, nft_id) => {
+				let collection =
+					Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+				ensure!(collection.issuer == sender, Error::<T>::NoPermission);
+				// Check NFT lock status
+				ensure!(
+					!Pallet::<T>::is_locked(collection_id, nft_id),
+					pallet_uniques::Error::<T>::Locked
+				);
+				let budget = budget::Value::new(T::NestingBudget::get());
+				let (root_owner, _) =
+					Pallet::<T>::lookup_root_owner(collection_id, nft_id, &budget)?;
+				ensure!(root_owner == collection.issuer, Error::<T>::NoPermission);
+
+				Properties::<T>::insert((&collection_id, Some(nft_id), &key), &value);
+			},
+			Entity::Base(_base_id) => todo!(),
+			Entity::Part(_part_id) => todo!(),
 		}
-		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
 		Ok(())
 	}
 
 	// Internal function to set a property for downstream `Origin::root()` calls.
 	fn do_set_property(
-		collection_id: T::CollectionId,
-		maybe_nft_id: Option<T::ItemId>,
+		entity: EntityOf<T>,
 		key: KeyLimitOf<T>,
 		value: ValueLimitOf<T>,
 	) -> sp_runtime::DispatchResult {
 		// Ensure collection exists
-		Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
-		Properties::<T>::insert((&collection_id, maybe_nft_id, &key), &value);
+		match entity {
+			Entity::Collection(_collection_id) => todo!(),
+			Entity::Nft(collection_id, nft_id) => {
+				Collections::<T>::get(&collection_id).ok_or(Error::<T>::CollectionUnknown)?;
+				Properties::<T>::insert((&collection_id, Some(nft_id), &key), &value);
+			},
+			Entity::Base(_base_id) => todo!(),
+			Entity::Part(_part_id) => todo!(),
+		}
 
-		Self::deposit_event(Event::PropertySet { collection_id, maybe_nft_id, key, value });
+		Self::deposit_event(Event::PropertySet { entity, key, value });
 		Ok(())
 	}
 

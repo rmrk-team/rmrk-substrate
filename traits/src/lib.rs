@@ -7,6 +7,7 @@
 pub mod base;
 pub mod budget;
 pub mod collection;
+pub mod entity;
 pub mod misc;
 pub mod nft;
 pub mod part;
@@ -19,6 +20,7 @@ pub mod theme;
 
 pub use base::{Base, BaseInfo};
 pub use collection::{Collection, CollectionInfo};
+pub use entity::Entity;
 pub use misc::TransferHooks;
 pub use nft::{AccountIdOrCollectionNftTuple, Nft, NftChild, NftInfo, RoyaltyInfo};
 pub use part::{EquippableList, FixedPart, PartType, SlotPart};

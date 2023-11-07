@@ -1814,9 +1814,11 @@ fn set_property_works() {
 		let key = stbk("test-key");
 		// Define property value
 		let value = stb("test-value");
+		// Define the entity.
+		let nft = Entity::Nft(0, 0);
 		// set_property fails without a collection (CollectionUnknown)
 		assert_noop!(
-			RMRKCore::set_property(Origin::signed(ALICE), 0, Some(0), key.clone(), value.clone()),
+			RMRKCore::set_property(Origin::signed(ALICE), nft.clone(), key.clone(), value.clone()),
 			Error::<Test>::CollectionUnknown
 		);
 		// Create a basic collection
@@ -1826,15 +1828,13 @@ fn set_property_works() {
 		// ALICE sets property on NFT
 		assert_ok!(RMRKCore::set_property(
 			Origin::signed(ALICE),
-			0,
-			Some(0),
+			nft.clone(),
 			key.clone(),
 			value.clone()
 		));
 		// Successful property setting should trigger a PropertySet event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
-			collection_id: 0,
-			maybe_nft_id: Some(0),
+			entity: nft.clone(),
 			key: key.clone(),
 			value: value.clone(),
 		}));
@@ -1842,7 +1842,7 @@ fn set_property_works() {
 		assert_eq!(RMRKCore::properties((0, Some(0), key.clone())).unwrap(), value.clone());
 		// BOB does not own NFT so attempt to set property should fail
 		assert_noop!(
-			RMRKCore::set_property(Origin::signed(BOB), 0, Some(0), key.clone(), value.clone()),
+			RMRKCore::set_property(Origin::signed(BOB), nft, key.clone(), value.clone()),
 			Error::<Test>::NoPermission
 		);
 	});
@@ -1855,9 +1855,11 @@ fn set_property_with_internal_works() {
 		let key = stbk("test-key");
 		// Define property value
 		let value = stb("test-value");
+		// Define the entity.
+		let nft = Entity::Nft(0, 0);
 		// set_property fails without a collection (CollectionUnknown)
 		assert_noop!(
-			RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()),
+			RMRKCore::do_set_property(nft.clone(), key.clone(), value.clone()),
 			Error::<Test>::CollectionUnknown
 		);
 		// Create a basic collection
@@ -1865,11 +1867,10 @@ fn set_property_with_internal_works() {
 		// Mint NFT
 		assert_ok!(basic_mint(0));
 		// Root sets property on NFT
-		assert_ok!(RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()));
+		assert_ok!(RMRKCore::do_set_property(nft.clone(), key.clone(), value.clone()));
 		// Successful property setting should trigger a `PropertySet` event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
-			collection_id: 0,
-			maybe_nft_id: Some(0),
+			entity: nft,
 			key: key.clone(),
 			value: value.clone(),
 		}));
@@ -1885,16 +1886,17 @@ fn remove_property_with_internal_works() {
 		let key = stbk("test-key");
 		// Define property value
 		let value = stb("test-value");
+		// Define the entity.
+		let nft = Entity::Nft(0, 0);
 		// Create a basic collection
 		assert_ok!(basic_collection());
 		// Mint NFT
 		assert_ok!(basic_mint(0));
 		// Root sets property on NFT
-		assert_ok!(RMRKCore::do_set_property(0, Some(0), key.clone(), value.clone()));
+		assert_ok!(RMRKCore::do_set_property(nft.clone(), key.clone(), value.clone()));
 		// Successful property setting should trigger a PropertySet event
 		System::assert_last_event(MockEvent::RmrkCore(crate::Event::PropertySet {
-			collection_id: 0,
-			maybe_nft_id: Some(0),
+			entity: nft,
 			key: key.clone(),
 			value: value.clone(),
 		}));
